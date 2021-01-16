@@ -9,6 +9,7 @@ defmodule MayorGame.City.Info do
     belongs_to :user, MayorGame.Auth.User
 
     # outline relationship between city and citizens
+    # this has to be passed as a list []
     has_many :citizens, Citizens
     has_one :detail, Details
 
@@ -18,6 +19,7 @@ defmodule MayorGame.City.Info do
   @doc false
   def changeset(info, attrs) do
     info
+    # add a validation here to limit the types of regions
     |> cast(attrs, [:title, :region])
     |> validate_required([:title, :region])
     |> unique_constraint(:title)

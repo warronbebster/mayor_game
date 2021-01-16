@@ -3,7 +3,7 @@ defmodule MayorGame.City.Citizens do
   import Ecto.Changeset
 
   schema "citizens" do
-    field :lastMoved, :naive_datetime
+    # probably can get rid of this and just rely on lastUpdated in the DB
     field :money, :integer
     field :name, :string
     # set citizens to belong to Info schema
