@@ -5,7 +5,7 @@ defmodule MayorGame.Repo.Migrations.CreateCities do
     create table(:cities) do
       add :title, :string, null: false
       add :region, :string
-      add :user_id, references(:auth_users, on_delete: :nothing), null: false
+      add :user_id, references(:auth_users, on_delete: :nothing)
 
       timestamps()
     end

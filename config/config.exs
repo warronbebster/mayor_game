@@ -16,7 +16,7 @@ config :mayor_game, MayorGameWeb.Endpoint,
   secret_key_base: "0mKur1+t9xUhzGesuvASZlGAu1N+itFCwWHlLYL2bxxz9XVtWxI6b+sy4KKGK2+J",
   render_errors: [view: MayorGameWeb.ErrorView, accepts: ~w(html json), layout: false],
   pubsub_server: MayorGame.PubSub,
-  live_view: [signing_salt: "AGkhAKLx"]
+  live_view: [signing_salt: "kNrd8ApH2OXJhnjBBnJz7dXuy5qjP2Zh"]
 
 # Configures Elixir's Logger
 config :logger, :console,

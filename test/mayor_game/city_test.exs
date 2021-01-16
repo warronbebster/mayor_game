@@ -67,9 +67,9 @@ defmodule MayorGame.CityTest do
   describe "citizens" do
     alias MayorGame.City.Citizens
 
-    @valid_attrs %{lastMoved: ~N[2010-04-17 14:00:00], money: 42, name: "some name"}
-    @update_attrs %{lastMoved: ~N[2011-05-18 15:01:01], money: 43, name: "some updated name"}
-    @invalid_attrs %{lastMoved: nil, money: nil, name: nil}
+    @valid_attrs %{money: 42, name: "some name"}
+    @update_attrs %{money: 43, name: "some updated name"}
+    @invalid_attrs %{money: nil, name: nil}
 
     def citizens_fixture(attrs \\ %{}) do
       {:ok, citizens} =
@@ -92,7 +92,6 @@ defmodule MayorGame.CityTest do
 
     test "create_citizens/1 with valid data creates a citizens" do
       assert {:ok, %Citizens{} = citizens} = City.create_citizens(@valid_attrs)
-      assert citizens.lastMoved == ~N[2010-04-17 14:00:00]
       assert citizens.money == 42
       assert citizens.name == "some name"
     end
@@ -104,7 +103,6 @@ defmodule MayorGame.CityTest do
     test "update_citizens/2 with valid data updates the citizens" do
       citizens = citizens_fixture()
       assert {:ok, %Citizens{} = citizens} = City.update_citizens(citizens, @update_attrs)
-      assert citizens.lastMoved == ~N[2011-05-18 15:01:01]
       assert citizens.money == 43
       assert citizens.name == "some updated name"
     end

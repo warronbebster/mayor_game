@@ -24,6 +24,7 @@ defmodule MayorGameWeb do
       import Plug.Conn
       import MayorGameWeb.Gettext
       alias MayorGameWeb.Router.Helpers, as: Routes
+      import Phoenix.LiveView.Controller
     end
   end
 
@@ -39,6 +40,10 @@ defmodule MayorGameWeb do
 
       # Include shared imports and aliases for views
       unquote(view_helpers())
+
+      # not sure why we only import some of this or whatever
+      # import Phoenix.LiveView, only: [live_render: 2, live_render: 3, live_link: 1, live_link: 2]
+      import Phoenix.LiveView.Helpers
     end
   end
 
@@ -48,6 +53,7 @@ defmodule MayorGameWeb do
 
       import Plug.Conn
       import Phoenix.Controller
+      import Phoenix.LiveView.Router
     end
   end
 

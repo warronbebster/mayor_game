@@ -5,8 +5,7 @@ defmodule MayorGame.Repo.Migrations.CreateCitizens do
     create table(:citizens) do
       add :name, :string, null: false
       add :money, :integer, null: false
-      add :lastMoved, :naive_datetime
-      add :info_id, references(:cities, on_delete: :nothing), null: false
+      add :info_id, references(:cities, on_delete: :nothing)
 
       timestamps()
     end

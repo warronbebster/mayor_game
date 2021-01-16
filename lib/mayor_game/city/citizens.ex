@@ -15,7 +15,7 @@ defmodule MayorGame.City.Citizens do
   @doc false
   def changeset(citizens, attrs) do
     citizens
-    |> cast(attrs, [:name, :money, :lastMoved])
-    |> validate_required([:name, :money, :lastMoved])
+    |> cast(attrs, [:name, :money])
+    |> validate_required([:name, :money])
   end
 end

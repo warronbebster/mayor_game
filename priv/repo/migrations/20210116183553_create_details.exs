@@ -6,7 +6,7 @@ defmodule MayorGame.Repo.Migrations.CreateDetails do
       add :roads, :integer
       add :schools, :integer
       add :houses, :integer
-      add :info_id, references(:cities, on_delete: :nothing), null: false
+      add :info_id, references(:cities, on_delete: :nothing)
 
       timestamps()
     end

@@ -5,8 +5,12 @@ defmodule MayorGameWeb.Router do
     plug :accepts, ["html"]
     plug :fetch_session
     plug :fetch_flash
+    plug :fetch_live_flash
     plug :protect_from_forgery
     plug :put_secure_browser_headers
+
+    # :put_root_layout ensures that LiveView layouts and plain Phoenix layouts use a common template as their basis.
+    plug :put_root_layout, {MayorGameWeb.LayoutView, :root}
   end
 
   pipeline :api do
