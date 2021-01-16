@@ -6,7 +6,8 @@ defmodule MayorGame.City.Citizens do
     field :lastMoved, :naive_datetime
     field :money, :integer
     field :name, :string
-    field :city, :id
+    # set citizens to belong to Info schema
+    belongs_to :city, MayorGame.City.Info
 
     timestamps()
   end

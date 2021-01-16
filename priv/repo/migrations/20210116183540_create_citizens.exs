@@ -3,10 +3,10 @@ defmodule MayorGame.Repo.Migrations.CreateCitizens do
 
   def change do
     create table(:citizens) do
-      add :name, :string
-      add :money, :integer
+      add :name, :string, null: false
+      add :money, :integer, null: false
       add :lastMoved, :naive_datetime
-      add :city, references(:cities, on_delete: :nothing)
+      add :city_id, references(:cities, on_delete: :nothing), null: false
 
       timestamps()
     end

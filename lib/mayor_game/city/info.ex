@@ -1,11 +1,16 @@
 defmodule MayorGame.City.Info do
   use Ecto.Schema
   import Ecto.Changeset
+  alias MayorGame.City.{Citizens, Details}
 
   schema "cities" do
     field :region, :string
     field :title, :string
-    field :user_id, :id
+    belongs_to :user_id, MayorGame.Auth.User
+
+    # outline relationship between city and citizens
+    has_many :citizens, Citizens
+    has_one :detail, Details
 
     timestamps()
   end

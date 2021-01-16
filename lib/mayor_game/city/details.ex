@@ -6,7 +6,7 @@ defmodule MayorGame.City.Details do
     field :houses, :integer
     field :roads, :integer
     field :schools, :integer
-    field :city, :id
+    belongs_to :city, MayorGame.City.Info
 
     timestamps()
   end
