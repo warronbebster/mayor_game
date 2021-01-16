@@ -6,11 +6,11 @@ defmodule MayorGame.Repo.Migrations.CreateCitizens do
       add :name, :string, null: false
       add :money, :integer, null: false
       add :lastMoved, :naive_datetime
-      add :city_id, references(:cities, on_delete: :nothing), null: false
+      add :info_id, references(:cities, on_delete: :nothing), null: false
 
       timestamps()
     end
 
-    create index(:citizens, [:city])
+    create index(:citizens, [:info_id])
   end
 end

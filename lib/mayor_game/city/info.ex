@@ -6,7 +6,7 @@ defmodule MayorGame.City.Info do
   schema "cities" do
     field :region, :string
     field :title, :string
-    belongs_to :user_id, MayorGame.Auth.User
+    belongs_to :user, MayorGame.Auth.User
 
     # outline relationship between city and citizens
     has_many :citizens, Citizens

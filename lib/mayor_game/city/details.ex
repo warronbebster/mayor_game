@@ -6,7 +6,11 @@ defmodule MayorGame.City.Details do
     field :houses, :integer
     field :roads, :integer
     field :schools, :integer
-    belongs_to :city, MayorGame.City.Info
+    # ok so basically
+    # this "belongs to is called "city" but it belongs to the "info" schema
+    # so there has to be a "whatever_id" field in the migration
+    # automatically adds "_id" when looking for a foreign key, unless you set it
+    belongs_to :info, MayorGame.City.Info
 
     timestamps()
   end

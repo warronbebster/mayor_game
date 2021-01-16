@@ -7,7 +7,7 @@ defmodule MayorGame.City.Citizens do
     field :money, :integer
     field :name, :string
     # set citizens to belong to Info schema
-    belongs_to :city, MayorGame.City.Info
+    belongs_to :info, MayorGame.City.Info
 
     timestamps()
   end

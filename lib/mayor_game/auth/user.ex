@@ -4,7 +4,7 @@ defmodule MayorGame.Auth.User do
 
   schema "auth_users" do
     field :nickname, :string
-    has_one :info, MayorGame.City.Info
+    has_one :info, MayorGame.City.Info, foreign_key: :title
 
     timestamps()
   end
