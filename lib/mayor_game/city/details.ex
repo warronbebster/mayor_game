@@ -18,7 +18,7 @@ defmodule MayorGame.City.Details do
   @doc false
   def changeset(details, attrs) do
     details
-    |> cast(attrs, [:roads, :schools, :houses])
-    |> validate_required([:roads, :schools, :houses])
+    |> cast(attrs, [:roads, :schools, :houses, :info_id])
+    |> validate_required([:roads, :schools, :houses, :info_id])
   end
 end

@@ -20,8 +20,8 @@ defmodule MayorGame.City.Info do
   def changeset(info, attrs) do
     info
     # add a validation here to limit the types of regions
-    |> cast(attrs, [:title, :region])
-    |> validate_required([:title, :region])
+    |> cast(attrs, [:title, :region, :user_id])
+    |> validate_required([:title, :region, :user_id])
     |> unique_constraint(:title)
   end
 end

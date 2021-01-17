@@ -7,6 +7,7 @@ defmodule MayorGame.City.Citizens do
     field :money, :integer
     field :name, :string
     # set citizens to belong to Info schema
+    # uses foreign key (in this case, :info_id is automatically inferred)
     belongs_to :info, MayorGame.City.Info
 
     timestamps()
@@ -15,7 +16,7 @@ defmodule MayorGame.City.Citizens do
   @doc false
   def changeset(citizens, attrs) do
     citizens
-    |> cast(attrs, [:name, :money])
-    |> validate_required([:name, :money])
+    |> cast(attrs, [:name, :money, :info_id])
+    |> validate_required([:name, :money, :info_id])
   end
 end

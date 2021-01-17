@@ -14,9 +14,10 @@ defmodule MayorGameWeb.Endpoint do
     websocket: true,
     longpoll: false
 
-  socket "/live", Phoenix.LiveView.Socket, websocket: [connect_info: [session: @session_options]]
+  # socket "/live", Phoenix.LiveView.Socket, websocket: [connect_info: [session: @session_options]]
   # so it wants me to put the below line, but the one above might work also?
-  # socket "/live", Phoenix.LiveView.Socket
+  # oh there's where those errors were coming from
+  socket "/live", Phoenix.LiveView.Socket
 
   # Serve at "/" the static files from "priv/static" directory.
   #
