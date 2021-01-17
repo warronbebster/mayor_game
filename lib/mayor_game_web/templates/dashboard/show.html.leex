@@ -1,0 +1,27 @@
+<article class="column">
+  <h2>Cities</h2>
+  <%= for city <- @cities do %>
+    <div>
+      <%= link city.title,
+               to: Routes.city_path(@socket,
+                                            MayorGameWeb.CityLive,
+                                            city.id,
+                                            @current_user.id) %>
+    </div>
+  <% end %>
+</article>
+
+<article class="column">
+  <h2>Create City</h2>
+  <%# On form submit, the create_city event is being emitted %>
+
+  <%= form_for @city_changeset, "", [phx_submit: :create_city], fn f -> %>
+
+    <p>
+      <%= text_input f, :title, placeholder: "Title" %>
+      <%= text_input f, :region, placeholder: "Region" %>
+      <%= submit "Create" %>
+    </p>
+
+  <% end %>
+</article>

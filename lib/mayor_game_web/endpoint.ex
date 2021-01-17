@@ -53,5 +53,10 @@ defmodule MayorGameWeb.Endpoint do
   plug Plug.MethodOverride
   plug Plug.Head
   plug Plug.Session, @session_options
+
+  plug Pow.Plug.Session,
+    otp_app: :mayor_game,
+    cache_store_backend: Pow.Store.Backend.MnesiaCache
+
   plug MayorGameWeb.Router
 end

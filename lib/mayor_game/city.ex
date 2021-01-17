@@ -38,7 +38,7 @@ defmodule MayorGame.City do
   def get_info!(id), do: Repo.get!(Info, id)
 
   @doc """
-  Creates a info.
+  Creates a info. which is a city
 
   ## Examples
 
@@ -53,6 +53,25 @@ defmodule MayorGame.City do
     %Info{}
     |> Info.changeset(attrs)
     |> Repo.insert()
+  end
+
+  def create_city(attrs \\ %{}) do
+    case create_info(attrs) do
+      # if city built successfully, automatically build Details with it's id
+      {:ok, %{id: city_created_id}} ->
+        detail = %{
+          houses: 0,
+          schools: 0,
+          roads: 0,
+          info_id: city_created_id
+        }
+
+        # and create a detail in the DB, tied to this city
+        create_details(detail)
+
+      {:error, err} ->
+        err
+    end
   end
 
   @doc """

@@ -1,5 +1,7 @@
 defmodule MayorGameWeb.Router do
   use MayorGameWeb, :router
+  # Pow route macros
+  use Pow.Phoenix.Router
 
   pipeline :browser do
     plug :accepts, ["html"]
@@ -13,8 +15,21 @@ defmodule MayorGameWeb.Router do
     plug :put_root_layout, {MayorGameWeb.LayoutView, :root}
   end
 
+  # add pipeline for protected resources
+  pipeline :protected do
+    plug Pow.Plug.RequireAuthenticated,
+      error_handler: Pow.Phoenix.PlugErrorHandler
+  end
+
   pipeline :api do
     plug :accepts, ["json"]
+  end
+
+  scope "/" do
+    pipe_through :browser
+
+    # honestly no idea what this is doing
+    pow_routes()
   end
 
   scope "/", MayorGameWeb do
@@ -23,6 +38,16 @@ defmodule MayorGameWeb.Router do
     get "/", PageController, :index
 
     live "/cities/:info_id/users/:user_id", CityLive
+  end
+
+  # Make city routes protected by requiring authentication
+  scope "/", MayorGameWeb do
+    pipe_through [:browser, :protected]
+
+    # don't think we made this yet
+    resources "/cities", CityController
+
+    live "/cities/:info_id/users/:user_id", CityLive, as: :city
   end
 
   # Other scopes may use custom stacks.

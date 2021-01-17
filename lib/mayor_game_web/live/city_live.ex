@@ -1,38 +1,15 @@
 defmodule MayorGameWeb.CityLive do
+  require Logger
   use Phoenix.LiveView
   use Phoenix.HTML
 
   alias MayorGame.{Auth, City, Repo}
 
-  def render(assigns) do
-    ~L"""
-    <div>
-      <b>User name:</b> <%= @user.nickname %>
-    </div>
-    <div>
-      <b>city title:</b> <%= @city.title %>
+  alias MayorGameWeb.CityView
 
-      <b>city region:</b> <%= @city.region %>
-      <b>detail houses:</b> <%= @detail.houses %>
-      <b>detail schools:</b> <%= @detail.schools %>
-      <b>detail roads:</b> <%= @detail.roads %>
-    </div>
-    <div>
-      <%= f = form_for :message, "#", [phx_submit: "update_city_name"] %>
-        <%= label f, :content %>
-        <%= text_input f, :content %>
-        <%= submit "Send" %>
-      </form>
-    </div>
-    <div>
-      <b>citizens:</b>
-      <%= for citizen <- @citizens do %>
-        <div>
-          <b><%= citizen.name %></b> money:: <%= citizen.money %>
-        </div>
-      <% end %>
-    </div>
-    """
+  def render(assigns) do
+    # use CityView view to render city/show.html.leex template with assigns
+    CityView.render("show.html", assigns)
   end
 
   # mount/2 is the callback that runs right at the beginning of LiveView's lifecycle, wiring up socket assigns necessary for rendering the view.
@@ -40,8 +17,10 @@ defmodule MayorGameWeb.CityLive do
     {:ok, socket}
   end
 
+  # this handles different events
+  # this one in particular handles "add_citizen"
   def handle_event(
-        "update_city_name",
+        "add_citizen",
         %{"message" => %{"content" => content}},
         %{assigns: %{info_id: info_id, user_id: user_id, user: user}} = socket
       ) do
@@ -51,22 +30,38 @@ defmodule MayorGameWeb.CityLive do
            money: 5
          }) do
       # pattern match to assign new_citizen to what's returned from City.create_citizens
-      {:ok, new_citizen} ->
-        # this takes new_citizen and updates the user field (which it doesn't have lol?)
-        # new_citizen = %{new_citizen | user: user}
-        # add citizen to assigns?
-        updated_citizens = socket.assigns[:citizens] ++ [new_citizen]
+      {:ok, updated_citizens} ->
+        # send a message to channel cityPubSub with updatedCitizens
+        MayorGameWeb.Endpoint.broadcast!(
+          "cityPubSub",
+          "updated_citizens",
+          updated_citizens
+        )
 
-        {:noreply, socket |> assign(:citizens, updated_citizens)}
-
-      {:error, _} ->
-        {:noreply, socket}
+      {:error, err} ->
+        Logger.error(inspect(err))
     end
+
+    {:noreply, socket}
+  end
+
+  # handle_info recieves broadcasts. in this case, a broadcast with name "updated_citizens"
+  # probably need to make another one of these for recieving updates from the system that
+  # moves citizens around, eventually. like "citizenArrives" and "citizenLeaves"
+  def handle_info(%{event: "updated_citizens", payload: updated_citizens}, socket) do
+    # add updated citizens to existing socket assigns
+    updated_citizens = socket.assigns[:citizens] ++ [updated_citizens]
+
+    # then return to socket with the citizens to the socket under :citizens
+    {:noreply, socket |> assign(:citizens, updated_citizens)}
   end
 
   # handle_params/3 runs after mount
   # pattern matches the parameters; ignores _uri, then assigns params to socket
   def handle_params(%{"info_id" => info_id, "user_id" => user_id}, _uri, socket) do
+    # subscribe to the channel "cityPubSub". everyone subscribes to this channel
+    MayorGameWeb.Endpoint.subscribe("cityPubSub")
+
     {:noreply,
      socket
      # put the user_id in assigns

@@ -40,28 +40,4 @@ alias MayorGame.{Auth, City}
 {:ok, %Citizens{}} =
   City.create_citizens(%{money: 50, name: "citizen of " <> cityName, info_id: madeInfo_id})
 
-# citizen = %Citizens{money: 50, name: "citizen kane", info_id: madeInfo_id}
-
 # Ecto.build_assoc(user, :posts, %{header: "Clickbait header", body: "No real content"})
-
-# create city
-# {:ok, city} =
-#   City.create_info(%{
-#     region: "space",
-#     title: cityName,
-#     citizens: [citizen],
-#     details: details
-#   })
-
-# city = %Info{
-#   title: cityName,
-#   region: "space",
-#   citizens: [citizen],
-#   detail: details
-# }
-
-# {:ok, user} =
-#   Auth.create_user(%{
-#     nickname: "user" <> String.replace(randomString, "/", "a"),
-#     info: city
-#   })

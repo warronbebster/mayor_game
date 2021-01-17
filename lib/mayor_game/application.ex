@@ -14,9 +14,12 @@ defmodule MayorGame.Application do
       # Start the PubSub system
       {Phoenix.PubSub, name: MayorGame.PubSub},
       # Start the Endpoint (http/https)
-      MayorGameWeb.Endpoint
+      MayorGameWeb.Endpoint,
       # Start a worker by calling: MayorGame.Worker.start_link(arg)
       # {MayorGame.Worker, arg}
+
+      # mnesia cache for sessions?
+      Pow.Store.Backend.MnesiaCache
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

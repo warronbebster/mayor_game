@@ -13,7 +13,13 @@
       <section class="container">
         <nav role="navigation">
           <ul>
-            <li><a href="https://hexdocs.pm/phoenix/overview.html">Get Started</a></li>
+            <%= if Pow.Plug.current_user(@conn) do %>
+              <li><%= link "Profile", to: Routes.pow_registration_path(@conn, :edit) %></li>
+              <li><%= link "Sign out", to: Routes.pow_session_path(@conn, :delete), method: :delete %></li>
+            <% else %>
+              <li><%= link "Register", to: Routes.pow_registration_path(@conn, :new) %></li>
+              <li><%= link "Sign in", to: Routes.pow_session_path(@conn, :new) %></li>
+            <% end %>
             <%= if function_exported?(Routes, :live_dashboard_path, 2) do %>
               <li><%= link "LiveDashboard", to: Routes.live_dashboard_path(@conn, :home) %></li>
             <% end %>

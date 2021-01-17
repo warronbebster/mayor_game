@@ -3,6 +3,12 @@
   <p>Peace of mind from prototype to production</p>
 </section>
 
+<%= if @current_user do %>
+  <%= live_render(@conn,
+                  MayorGameWeb.DashboardLive,
+                  session: %{"current_user" => @current_user}) %>
+<% end %>
+
 <section class="row">
   <article class="column">
     <h2>Resources</h2>
