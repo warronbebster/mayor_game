@@ -22,3 +22,6 @@ config :mayor_game, MayorGameWeb.Endpoint,
 config :logger, level: :warn
 
 import_config "test.secret.exs"
+
+# lower iteration for speed
+config :pow, Pow.Ecto.Schema.Password, iterations: 1

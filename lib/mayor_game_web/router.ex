@@ -37,7 +37,7 @@ defmodule MayorGameWeb.Router do
 
     get "/", PageController, :index
 
-    live "/cities/:info_id/users/:user_id", CityLive
+    # live "/cities/:info_id/users/:user_id", CityLive
   end
 
   # Make city routes protected by requiring authentication

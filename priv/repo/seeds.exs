@@ -19,13 +19,17 @@ alias MayorGame.City.{Details, Info, Citizens}
 
 alias MayorGame.{Auth, City}
 
+# does just adding an email and password here work?
 {:ok, %User{id: madeUser_id}} =
   Auth.create_user(%{
-    nickname: "user" <> String.replace(randomString, "/", "a")
+    nickname: "user" <> String.replace(randomString, "/", "a"),
+    email: randomString <> "@test.com",
+    password: "password",
+    confirm_password: "password"
   })
 
-{:ok, %Info{id: madeInfo_id}} =
-  City.create_info(%{
+{:ok, %Details{info_id: madeInfo_id}} =
+  City.create_city(%{
     region: "space",
     title: cityName,
     user_id: madeUser_id
@@ -33,7 +37,7 @@ alias MayorGame.{Auth, City}
 
 # create details
 # first one doesn't work because it just makes a "details" entry in the DB. and we don't associate it later
-{:ok, %Details{}} = City.create_details(%{houses: 3, roads: 6, schools: 9, info_id: madeInfo_id})
+# {:ok, %Details{}} = City.create_details(%{houses: 3, roads: 6, schools: 9, info_id: madeInfo_id})
 # details = %Details{houses: 3, roads: 6, schools: 9}
 
 # create citizens

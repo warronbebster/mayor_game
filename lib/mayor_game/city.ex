@@ -55,6 +55,8 @@ defmodule MayorGame.City do
     |> Repo.insert()
   end
 
+  # hmm. I should probably figure out a way to make this return the city, not the details.
+  # currently this returns the %Details struct
   def create_city(attrs \\ %{}) do
     case create_info(attrs) do
       # if city built successfully, automatically build Details with it's id

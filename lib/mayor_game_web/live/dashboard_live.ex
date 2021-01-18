@@ -73,6 +73,7 @@ defmodule MayorGameWeb.DashboardLive do
   end
 
   # Assign all cities as the cities list. Maybe I should figure out a way to only show cities for that user.
+  # at  some point should sort by number of citizens
   defp assign_cities(socket, _current_user) do
     cities = City.list_cities()
 
