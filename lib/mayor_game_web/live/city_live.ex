@@ -12,7 +12,8 @@ defmodule MayorGameWeb.CityLive do
     CityView.render("show.html", assigns)
   end
 
-  # mount/2 is the callback that runs right at the beginning of LiveView's lifecycle, wiring up socket assigns necessary for rendering the view.
+  # mount/2 is the callback that runs right at the beginning of LiveView's lifecycle,
+  # wiring up socket assigns necessary for rendering the view.
   def mount(_assigns, socket) do
     {:ok, socket}
   end
@@ -32,6 +33,7 @@ defmodule MayorGameWeb.CityLive do
       # pattern match to assign new_citizen to what's returned from City.create_citizens
       {:ok, updated_citizens} ->
         # send a message to channel cityPubSub with updatedCitizens
+        # so technically here I could also send to "addlog" function or whatever?
         MayorGameWeb.Endpoint.broadcast!(
           "cityPubSub",
           "updated_citizens",
@@ -60,6 +62,8 @@ defmodule MayorGameWeb.CityLive do
   # pattern matches the parameters; ignores _uri, then assigns params to socket
   def handle_params(%{"info_id" => info_id, "user_id" => user_id}, _uri, socket) do
     # subscribe to the channel "cityPubSub". everyone subscribes to this channel
+    # this is the BACKEND process that runs this particular liveview subscribing to this BACKEND pubsub
+    # perhaps each city should have its own channel? and then the other backend systems can broadcast to it?
     MayorGameWeb.Endpoint.subscribe("cityPubSub")
 
     {:noreply,
@@ -85,7 +89,5 @@ defmodule MayorGameWeb.CityLive do
     |> assign(:city, city)
     |> assign(:citizens, city.citizens)
     |> assign(:detail, city.detail)
-
-    # |> assign(:messages, conversation.messages)
   end
 end

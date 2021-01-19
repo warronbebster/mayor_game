@@ -60,19 +60,26 @@ defmodule MayorGame.City do
   def create_city(attrs \\ %{}) do
     case create_info(attrs) do
       # if city built successfully, automatically build Details with it's id
-      {:ok, %{id: city_created_id}} ->
+      {:ok, created_city} ->
         detail = %{
           houses: 0,
           schools: 0,
           roads: 0,
-          info_id: city_created_id
+          info_id: created_city.id
         }
 
         # and create a detail in the DB, tied to this city
-        create_details(detail)
+        case create_details(detail) do
+          {:ok, _} ->
+            # return the city created
+            {:ok, created_city}
+
+          {:error, err} ->
+            {:error, err}
+        end
 
       {:error, err} ->
-        err
+        {:error, err}
     end
   end
 
@@ -136,6 +143,10 @@ defmodule MayorGame.City do
   """
   def list_citizens do
     Repo.all(Citizens)
+  end
+
+  def list_citizens_preload do
+    Repo.all(Citizens) |> Repo.preload([:info])
   end
 
   @doc """

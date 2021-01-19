@@ -45,7 +45,7 @@ defmodule MayorGameWeb.Router do
     pipe_through [:browser, :protected]
 
     # don't think we made this yet
-    resources "/cities", CityController
+    # resources "/cities", CityController
 
     live "/cities/:info_id/users/:user_id", CityLive, as: :city
   end

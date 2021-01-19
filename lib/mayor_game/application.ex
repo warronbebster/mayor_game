@@ -15,8 +15,12 @@ defmodule MayorGame.Application do
       {Phoenix.PubSub, name: MayorGame.PubSub},
       # Start the Endpoint (http/https)
       MayorGameWeb.Endpoint,
-      # Start a worker by calling: MayorGame.Worker.start_link(arg)
-      # {MayorGame.Worker, arg}
+
+      # start mover process with initial value 15
+      # oh this is how you can start multiple children
+      # Start a worker by calling: MayorGame.Mover.start_link(arg)
+      Supervisor.child_spec({MayorGame.Mover, 15}, id: :long),
+      # Supervisor.child_spec({MayorGame.Mover, 5}, id: :short),
 
       # mnesia cache for sessions?
       Pow.Store.Backend.MnesiaCache

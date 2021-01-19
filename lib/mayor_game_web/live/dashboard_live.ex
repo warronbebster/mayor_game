@@ -80,8 +80,8 @@ defmodule MayorGameWeb.DashboardLive do
     assign(socket, :cities, cities)
   end
 
-  defp build_title() do
-    randomString = :crypto.strong_rand_bytes(4) |> Base.encode64() |> binary_part(0, 4)
-    String.replace(randomString, "/", "a") <> "ville"
-  end
+  # defp build_title() do
+  #   randomString = :crypto.strong_rand_bytes(4) |> Base.encode64() |> binary_part(0, 4)
+  #   String.replace(randomString, "/", "a") <> "ville"
+  # end
 end
