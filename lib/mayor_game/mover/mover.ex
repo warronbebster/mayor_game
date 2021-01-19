@@ -48,7 +48,7 @@ defmodule MayorGame.Mover do
 
   def init(initial_val) do
     # send message :tick to self process after 1000ms
-    Process.send_after(self(), :citizens, 1000)
+    Process.send_after(self(), :citizens, 5000)
 
     # returns ok tuple when u start
     {:ok, initial_val}
@@ -66,13 +66,21 @@ defmodule MayorGame.Mover do
 
     IO.inspect(citizens)
 
+    # send info to liveView process that manages frontEnd
+    MayorGameWeb.Endpoint.broadcast!(
+      "cityPubSub",
+      "ping",
+      val
+    )
+
     # recurse, do it again
-    Process.send_after(self(), :citizens, 200_000)
+    Process.send_after(self(), :citizens, 50000)
 
     # I guess this is where you could do all the citizen switching?
     # would this be where you can also pubsub over to users that are connected?
     # return noreply and val
-    {:noreply, val}
+    # increment val
+    {:noreply, val + 1}
   end
 
   # def handle_info(:cities) do

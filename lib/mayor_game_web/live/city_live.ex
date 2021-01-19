@@ -20,9 +20,11 @@ defmodule MayorGameWeb.CityLive do
 
   # this handles different events
   # this one in particular handles "add_citizen"
+  # do "events" only come from the .leex front-end?
   def handle_event(
         "add_citizen",
         %{"message" => %{"content" => content}},
+        # pull these assigns out of the socket?
         %{assigns: %{info_id: info_id, user_id: user_id, user: user}} = socket
       ) do
     case City.create_citizens(%{
@@ -47,6 +49,11 @@ defmodule MayorGameWeb.CityLive do
     {:noreply, socket}
   end
 
+  # huh, so this is what gets the message from Mover
+  def handle_info(%{event: "ping", payload: ping}, socket) do
+    {:noreply, socket |> assign(:ping, ping)}
+  end
+
   # handle_info recieves broadcasts. in this case, a broadcast with name "updated_citizens"
   # probably need to make another one of these for recieving updates from the system that
   # moves citizens around, eventually. like "citizenArrives" and "citizenLeaves"
@@ -58,7 +65,7 @@ defmodule MayorGameWeb.CityLive do
     {:noreply, socket |> assign(:citizens, updated_citizens)}
   end
 
-  # handle_params/3 runs after mount
+  # handle_params/3 runs after mount; somehow grabs the info from url?
   # pattern matches the parameters; ignores _uri, then assigns params to socket
   def handle_params(%{"info_id" => info_id, "user_id" => user_id}, _uri, socket) do
     # subscribe to the channel "cityPubSub". everyone subscribes to this channel
@@ -70,6 +77,8 @@ defmodule MayorGameWeb.CityLive do
      socket
      # put the user_id in assigns
      |> assign(:user_id, user_id)
+     # assign ping
+     |> assign(:ping, 0)
      # put the info_id in assigns
      |> assign(:info_id, info_id)
      # run helper function to get the stuff from the DB for those things

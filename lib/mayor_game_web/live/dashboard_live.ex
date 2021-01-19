@@ -23,7 +23,6 @@ defmodule MayorGameWeb.DashboardLive do
   end
 
   # Build a changeset for the newly created city,
-  #
   # We'll use the changeset to drive a form to be displayed in the rendered template.
   defp assign_new_city_changeset(socket) do
     changeset =
