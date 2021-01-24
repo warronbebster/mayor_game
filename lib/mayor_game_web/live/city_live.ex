@@ -7,6 +7,15 @@ defmodule MayorGameWeb.CityLive do
 
   alias MayorGameWeb.CityView
 
+  # defp authenticate(conn, _opts) do
+  #   if conn.assigns.current_user do
+  #     IO.inspect
+  #   end
+  #     conn
+  #   else
+  #     conn
+  # end
+
   def render(assigns) do
     # use CityView view to render city/show.html.leex template with assigns
     CityView.render("show.html", assigns)
@@ -17,6 +26,11 @@ defmodule MayorGameWeb.CityLive do
   def mount(_assigns, socket) do
     {:ok, socket}
   end
+
+  # if I wanted to grab info on mount, instead of later?
+  # def mount(_params, %{"user_id" => user_id}, socket) do
+  #   {:ok, assign_new(socket, :current_user, fn -> Auth.get_user!(user_id) end)}
+  # end
 
   # this handles different events
   # this one in particular handles "add_citizen"
@@ -77,10 +91,11 @@ defmodule MayorGameWeb.CityLive do
      socket
      # put the user_id in assigns
      |> assign(:user_id, user_id)
-     # assign ping
-     |> assign(:ping, 0)
      # put the info_id in assigns
      |> assign(:info_id, info_id)
+     # assign ping
+     |> assign(:ping, 0)
+
      # run helper function to get the stuff from the DB for those things
      |> assign_records()}
   end
@@ -98,5 +113,9 @@ defmodule MayorGameWeb.CityLive do
     |> assign(:city, city)
     |> assign(:citizens, city.citizens)
     |> assign(:detail, city.detail)
+    # check if user_id in url is same as current user ID
+    |> assign(:is_user_mayor, user_id == to_string(city.user_id))
+
+    # |> assign(:is_user_mayor, city.)
   end
 end

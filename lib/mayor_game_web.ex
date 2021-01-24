@@ -22,7 +22,7 @@ defmodule MayorGameWeb do
       use Phoenix.Controller, namespace: MayorGameWeb
 
       import Plug.Conn
-      import MayorGameWeb.Gettext
+      # import MayorGameWeb.Gettext
       alias MayorGameWeb.Router.Helpers, as: Routes
       import Phoenix.LiveView.Controller
     end

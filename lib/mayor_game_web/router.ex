@@ -3,6 +3,7 @@ defmodule MayorGameWeb.Router do
   # Pow route macros
   use Pow.Phoenix.Router
 
+  # create pipeline for general browser
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session
@@ -37,18 +38,19 @@ defmodule MayorGameWeb.Router do
 
     get "/", PageController, :index
 
-    # live "/cities/:info_id/users/:user_id", CityLive
+    live "/cities/:info_id/users/:user_id", CityLive, as: :city
   end
 
   # Make city routes protected by requiring authentication
-  scope "/", MayorGameWeb do
-    pipe_through [:browser, :protected]
+  # don't need to do this tho
+  # scope "/", MayorGameWeb do
+  #   pipe_through [:browser, :protected]
 
-    # don't think we made this yet
-    # resources "/cities", CityController
+  #   # don't think we made this yet
+  #   # resources "/cities", CityController
 
-    live "/cities/:info_id/users/:user_id", CityLive, as: :city
-  end
+  #   live "/cities/:info_id/users/:user_id", CityLive, as: :city
+  # end
 
   # Other scopes may use custom stacks.
   # scope "/api", MayorGameWeb do

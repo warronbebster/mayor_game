@@ -19,7 +19,7 @@ alias MayorGame.City.{Details, Info, Citizens}
 
 alias MayorGame.{Auth, City}
 
-# does just adding an email and password here work?
+# create a user
 {:ok, %User{id: madeUser_id}} =
   Auth.create_user(%{
     nickname: "user" <> String.replace(randomString, "/", "a"),
