@@ -24,6 +24,7 @@ defmodule MayorGameWeb.CityLive do
   # mount/2 is the callback that runs right at the beginning of LiveView's lifecycle,
   # wiring up socket assigns necessary for rendering the view.
   def mount(_assigns, socket) do
+    # MayorGameWeb.Endpoint.subscribe("cityPubSub")
     {:ok, socket}
   end
 
@@ -73,6 +74,8 @@ defmodule MayorGameWeb.CityLive do
   # moves citizens around, eventually. like "citizenArrives" and "citizenLeaves"
   def handle_info(%{event: "updated_citizens", payload: updated_citizens}, socket) do
     # add updated citizens to existing socket assigns
+    # ok so right now this only updates the assigns for citizens
+    # but can it do it for the whole city struct?
     updated_citizens = socket.assigns[:citizens] ++ [updated_citizens]
 
     # then return to socket with the citizens to the socket under :citizens
@@ -85,6 +88,7 @@ defmodule MayorGameWeb.CityLive do
     # subscribe to the channel "cityPubSub". everyone subscribes to this channel
     # this is the BACKEND process that runs this particular liveview subscribing to this BACKEND pubsub
     # perhaps each city should have its own channel? and then the other backend systems can broadcast to it?
+
     MayorGameWeb.Endpoint.subscribe("cityPubSub")
 
     {:noreply,
@@ -112,7 +116,7 @@ defmodule MayorGameWeb.CityLive do
     |> assign(:user, user)
     |> assign(:city, city)
     |> assign(:citizens, city.citizens)
-    |> assign(:detail, city.detail)
+    # |> assign(:detail, city.detail)
     # check if user_id in url is same as current user ID
     |> assign(:is_user_mayor, user_id == to_string(city.user_id))
 

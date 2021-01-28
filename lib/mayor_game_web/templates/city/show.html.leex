@@ -5,13 +5,13 @@
       <b>city title:</b> <%= @city.title %>
 
       <b>city region:</b> <%= @city.region %>
-      <b>detail houses:</b> <%= @detail.houses %>
-      <b>detail schools:</b> <%= @detail.schools %>
-      <b>detail roads:</b> <%= @detail.roads %>
+      <b>detail houses:</b> <%= @city.detail.houses %>
+      <b>detail schools:</b> <%= @city.detail.schools %>
+      <b>detail roads:</b> <%= @city.detail.roads %>
       <b>ping:</b> <%= @ping %>
       <b>is_user_mayor:</b> <%= @is_user_mayor %>
     </div>
-    <%= if @is_user_mayor do%>
+    <%= if @is_user_mayor do %>
     <div>
       <%= f = form_for :message, "#", [phx_submit: "add_citizen"] %>
         <%= label f, :content %>
