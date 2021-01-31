@@ -7,15 +7,6 @@ defmodule MayorGameWeb.CityLive do
 
   alias MayorGameWeb.CityView
 
-  # defp authenticate(conn, _opts) do
-  #   if conn.assigns.current_user do
-  #     IO.inspect
-  #   end
-  #     conn
-  #   else
-  #     conn
-  # end
-
   def render(assigns) do
     # use CityView view to render city/show.html.leex template with assigns
     CityView.render("show.html", assigns)
@@ -24,7 +15,6 @@ defmodule MayorGameWeb.CityLive do
   # mount/2 is the callback that runs right at the beginning of LiveView's lifecycle,
   # wiring up socket assigns necessary for rendering the view.
   def mount(_assigns, socket) do
-    # MayorGameWeb.Endpoint.subscribe("cityPubSub")
     {:ok, socket}
   end
 
@@ -39,8 +29,8 @@ defmodule MayorGameWeb.CityLive do
   def handle_event(
         "add_citizen",
         %{"message" => %{"content" => content}},
-        # pull these assigns out of the socket?
-        %{assigns: %{info_id: info_id, user_id: user_id, user: user}} = socket
+        # pull these variables out of the socket
+        %{assigns: %{info_id: info_id}} = socket
       ) do
     case City.create_citizens(%{
            info_id: info_id,
@@ -51,7 +41,7 @@ defmodule MayorGameWeb.CityLive do
       {:ok, updated_citizens} ->
         # send a message to channel cityPubSub with updatedCitizens
         # so technically here I could also send to "addlog" function or whatever?
-        MayorGameWeb.Endpoint.broadcast!(
+        MayorGameWeb.Endpoint.local_broadcast(
           "cityPubSub",
           "updated_citizens",
           updated_citizens
@@ -65,6 +55,7 @@ defmodule MayorGameWeb.CityLive do
   end
 
   # huh, so this is what gets the message from Mover
+  # when it gets ping, it updates just ping
   def handle_info(%{event: "ping", payload: ping}, socket) do
     {:noreply, socket |> assign(:ping, ping)}
   end
@@ -76,10 +67,12 @@ defmodule MayorGameWeb.CityLive do
     # add updated citizens to existing socket assigns
     # ok so right now this only updates the assigns for citizens
     # but can it do it for the whole city struct?
-    updated_citizens = socket.assigns[:citizens] ++ [updated_citizens]
-
+    # updated_citizens = socket.assigns[:citizens] ++ [updated_citizens]
     # then return to socket with the citizens to the socket under :citizens
-    {:noreply, socket |> assign(:citizens, updated_citizens)}
+    # {:noreply, socket |> assign(:citizens, updated_citizens)}
+
+    # jk just update the whole city
+    {:noreply, socket |> grab_city_from_db()}
   end
 
   # handle_params/3 runs after mount; somehow grabs the info from url?
@@ -101,25 +94,23 @@ defmodule MayorGameWeb.CityLive do
      |> assign(:ping, 0)
 
      # run helper function to get the stuff from the DB for those things
-     |> assign_records()}
+     |> grab_city_from_db()}
   end
 
   # takes an assign with user_id and info_id
-  defp assign_records(%{assigns: %{user_id: user_id, info_id: info_id}} = socket) do
+  defp grab_city_from_db(%{assigns: %{user_id: user_id, info_id: info_id}} = socket) do
     user = Auth.get_user!(user_id)
 
+    # grab city from DB
     city =
       City.get_info!(info_id)
       |> Repo.preload([:detail, :citizens])
 
     socket
-    |> assign(:user, user)
+    |> assign(:username, user.nickname)
     |> assign(:city, city)
-    |> assign(:citizens, city.citizens)
-    # |> assign(:detail, city.detail)
+
     # check if user_id in url is same as current user ID
     |> assign(:is_user_mayor, user_id == to_string(city.user_id))
-
-    # |> assign(:is_user_mayor, city.)
   end
 end

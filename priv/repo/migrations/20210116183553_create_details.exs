@@ -3,9 +3,9 @@ defmodule MayorGame.Repo.Migrations.CreateDetails do
 
   def change do
     create table(:details) do
-      add :roads, :integer
-      add :schools, :integer
-      add :houses, :integer
+      add :roads, :integer, default: 0
+      add :schools, :integer, default: 0
+      add :houses, :integer, default: 0
       add :info_id, references(:cities, on_delete: :nothing)
 
       timestamps()

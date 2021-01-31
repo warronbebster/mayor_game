@@ -6,6 +6,8 @@ defmodule MayorGame.City.Info do
   schema "cities" do
     field :region, :string
     field :title, :string
+    # this corresponds to an elixer list
+    field :logs, {:array, :string}
     belongs_to :user, MayorGame.Auth.User
 
     # outline relationship between city and citizens
@@ -22,6 +24,7 @@ defmodule MayorGame.City.Info do
     # add a validation here to limit the types of regions
     |> cast(attrs, [:title, :region, :user_id])
     |> validate_required([:title, :region, :user_id])
+    |> validate_length(:title, min: 1, max: 20)
     |> unique_constraint(:title)
   end
 end

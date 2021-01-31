@@ -1,15 +1,30 @@
 <div>
-      <b>User name:</b> <%= @user.nickname %>
+      <b>User name:</b> <%= @username %>
     </div>
     <div>
       <b>city title:</b> <%= @city.title %>
 
       <b>city region:</b> <%= @city.region %>
-      <b>detail houses:</b> <%= @city.detail.houses %>
-      <b>detail schools:</b> <%= @city.detail.schools %>
-      <b>detail roads:</b> <%= @city.detail.roads %>
+      <b>houses:</b> <%= @city.detail.houses %>
+      <b>schools:</b> <%= @city.detail.schools %>
+      <b>roads:</b> <%= @city.detail.roads %>
+      <b>libraries:</b> <%= @city.detail.libraries %>
+      <b>city money:</b> <%= @city.detail.city_treasury %>
+      <b>universities:</b> <%= @city.detail.universities %>
+      <b>airports:</b> <%= @city.detail.airports %>
+      <b>office buildings:</b> <%= @city.detail.office_buildings %>
+
       <b>ping:</b> <%= @ping %>
       <b>is_user_mayor:</b> <%= @is_user_mayor %>
+      <br/>
+       <b>Log:</b>
+       <br/>
+      <%= for log_item <- @city.logs do %>
+        <span>
+          <%= log_item %></b>
+        </span>
+        <br/>
+      <% end %>
     </div>
     <%= if @is_user_mayor do %>
     <div>
@@ -22,7 +37,7 @@
     <% end %>
     <div>
       <b>citizens:</b>
-      <%= for citizen <- @citizens do %>
+      <%= for citizen <- @city.citizens do %>
         <div>
           <b><%= citizen.name %></b> money: <%= citizen.money %>
         </div>

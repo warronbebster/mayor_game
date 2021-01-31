@@ -65,6 +65,12 @@ defmodule MayorGame.City do
           houses: 0,
           schools: 0,
           roads: 0,
+          libraries: 0,
+          parks: 0,
+          universities: 0,
+          airports: 0,
+          office_buildings: 0,
+          city_treasury: 500,
           info_id: created_city.id
         }
 
@@ -83,6 +89,7 @@ defmodule MayorGame.City do
     end
   end
 
+  # ok so i think this is the closest thing I need to update the log
   @doc """
   Updates a info.
 
@@ -98,6 +105,31 @@ defmodule MayorGame.City do
   def update_info(%Info{} = info, attrs) do
     info
     |> Info.changeset(attrs)
+    |> Repo.update()
+  end
+
+  # might not need to type guard here because DB does it; but
+  @doc """
+  updates log. Expects the info struct & just a single string.
+
+  ## Examples
+      iex> update_log(info, "string to add to log")
+      {:ok, %Info{}}
+
+      iex> update_info(info, bad_value)
+      {:error, %Ecto.Changeset{}}
+  """
+  def update_log(%Info{} = info, log_item) do
+    # add new item to head of list
+    updated_log = [log_item | info.logs]
+
+    # if list is longer than 50, remove last item
+    if length(updated_log) > 50 do
+      updated_log |> Enum.reverse() |> tl() |> Enum.reverse()
+    end
+
+    info
+    |> Info.changeset(%{logs: updated_log})
     |> Repo.update()
   end
 

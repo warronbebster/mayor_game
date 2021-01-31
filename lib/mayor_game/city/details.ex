@@ -6,6 +6,13 @@ defmodule MayorGame.City.Details do
     field :houses, :integer
     field :roads, :integer
     field :schools, :integer
+
+    field :parks, :integer
+    field :libraries, :integer
+    field :universities, :integer
+    field :airports, :integer
+    field :office_buildings, :integer
+    field :city_treasury, :integer
     # ok so basically
     # this "belongs to is called "city" but it belongs to the "info" schema
     # so there has to be a "whatever_id" field in the migration
@@ -17,8 +24,23 @@ defmodule MayorGame.City.Details do
 
   @doc false
   def changeset(details, attrs) do
+    detail_fields = [
+      :houses,
+      :roads,
+      :schools,
+      :parks,
+      :libraries,
+      :universities,
+      :airports,
+      :office_buildings,
+      :city_treasury,
+      :info_id
+    ]
+
     details
-    |> cast(attrs, [:roads, :schools, :houses, :info_id])
-    |> validate_required([:roads, :schools, :houses, :info_id])
+    # this basically defines the fields users can change
+    |> cast(attrs, detail_fields)
+    # and this is required fields
+    |> validate_required(detail_fields)
   end
 end

@@ -1,9 +1,9 @@
 defmodule MayorGame.Mover do
   use GenServer, restart: :permanent
 
-  def inc(pid), do: GenServer.cast(pid, :inc)
+  # def inc(pid), do: GenServer.cast(pid, :inc)
 
-  def dec(pid), do: GenServer.cast(pid, :dec)
+  # def dec(pid), do: GenServer.cast(pid, :dec)
 
   def val(pid) do
     GenServer.call(pid, :val)
