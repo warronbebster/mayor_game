@@ -1,5 +1,5 @@
 <div>
-      <b>User name:</b> <%= @username %>
+    <b>Mayor name:</b> <%= @username %>
     </div>
     <div>
       <b>city title:</b> <%= @city.title %>
@@ -17,8 +17,8 @@
       <b>ping:</b> <%= @ping %>
       <b>is_user_mayor:</b> <%= @is_user_mayor %>
       <br/>
-       <b>Log:</b>
-       <br/>
+      <b>Log:</b>
+      <br/>
       <%= for log_item <- @city.logs do %>
         <span>
           <%= log_item %></b>
