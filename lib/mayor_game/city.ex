@@ -37,6 +37,8 @@ defmodule MayorGame.City do
   """
   def get_info!(id), do: Repo.get!(Info, id)
 
+  def get_info_by_title!(title), do: Repo.get_by!(Info, title: title)
+
   @doc """
   Creates a info. which is a city
 

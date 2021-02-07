@@ -8,7 +8,7 @@ defmodule MayorGameWeb.CityLive do
   alias MayorGameWeb.CityView
 
   alias Pow.Store.CredentialsCache
-  alias MayorGameWeb.Pow.Routes
+  # alias MayorGameWeb.Pow.Routes
 
   def render(assigns) do
     # use CityView view to render city/show.html.leex template with assigns
@@ -21,15 +21,11 @@ defmodule MayorGameWeb.CityLive do
   #   {:ok, socket}
   # end
 
+  @spec mount(map, any, Phoenix.LiveView.Socket.t()) :: {:ok, Phoenix.LiveView.Socket.t()}
   def mount(%{"info_id" => info_id, "user_id" => user_id}, session, socket) do
     # subscribe to the channel "cityPubSub". everyone subscribes to this channel
     # this is the BACKEND process that runs this particular liveview subscribing to this BACKEND pubsub
     # perhaps each city should have its own channel? and then the other backend systems can broadcast to it?
-
-    IO.puts("SESSION PRINT:")
-    IO.inspect(session)
-    # gotta pull info out of mayor_game_auth here
-
     MayorGameWeb.Endpoint.subscribe("cityPubSub")
 
     {:ok,
@@ -41,9 +37,27 @@ defmodule MayorGameWeb.CityLive do
      # assign ping
      |> assign(:ping, 0)
      |> assign_auth(session)
-
      # run helper function to get the stuff from the DB for those things
      |> grab_city_from_db()}
+  end
+
+  def mount(%{"title" => title}, session, socket) do
+    # subscribe to the channel "cityPubSub". everyone subscribes to this channel
+    # this is the BACKEND process that runs this particular liveview subscribing to this BACKEND pubsub
+    # perhaps each city should have its own channel? and then the other backend systems can broadcast to it?
+    MayorGameWeb.Endpoint.subscribe("cityPubSub")
+
+    {
+      :ok,
+      socket
+      # put the title in assigns
+      |> assign(:title, title)
+      # assign ping
+      |> assign(:ping, 0)
+      |> grab_city_by_title()
+      |> assign_auth(session)
+      # run helper function to get the stuff from the DB for those things
+    }
   end
 
   # handle_params/3 runs after mount; somehow grabs the info from url?
@@ -105,11 +119,13 @@ defmodule MayorGameWeb.CityLive do
     {:noreply, socket |> assign(:ping, ping)}
   end
 
-  # I think i can get away  with it with the basic "update_info" function… but need to look into constraints
+  # I think i can get away with it with the basic "update_info" function… but need to look into constraints
 
   # handle_info recieves broadcasts. in this case, a broadcast with name "updated_citizens"
   # probably need to make another one of these for recieving updates from the system that
   # moves citizens around, eventually. like "citizenArrives" and "citizenLeaves"
+
+  # this is just the generic handle_info if nothing else matches
   def handle_info(_assigns, socket) do
     # def handle_info(%{event: "updated_citizens", payload: updated_citizens}, socket) do
     # add updated citizens to existing socket assigns
@@ -138,6 +154,27 @@ defmodule MayorGameWeb.CityLive do
     |> assign(:city, city)
   end
 
+  defp grab_city_by_title(%{assigns: %{title: title}} = socket) do
+    city =
+      City.get_info_by_title!(title)
+      |> Repo.preload([:detail, :citizens])
+
+    IO.inspect(city)
+    # grab whole user struct
+    user = Auth.get_user!(city.user_id)
+
+    # grab city from DB
+    # city =
+    #   City.get_info!(info_id)
+    #   |> Repo.preload([:detail, :citizens])
+
+    socket
+    |> assign(:user_id, user.id)
+    |> assign(:info_id, city.id)
+    |> assign(:username, user.nickname)
+    |> assign(:city, city)
+  end
+
   # POW AUTH STUFF DOWN HERE BAYBEE
 
   def assign_auth(socket, session) do
@@ -149,7 +186,7 @@ defmodule MayorGameWeb.CityLive do
       socket
       |> assign(
         :is_user_mayor,
-        socket.assigns.user_id == to_string(socket.assigns.current_user.id)
+        to_string(socket.assigns.user_id) == to_string(socket.assigns.current_user.id)
       )
     else
       # if there's no user logged in

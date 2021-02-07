@@ -15,6 +15,8 @@ defmodule MayorGameWeb.DashboardLive do
   end
 
   def mount(_params, %{"current_user" => current_user}, socket) do
+    # IO.inspect(session)
+
     {:ok,
      socket
      |> assign(current_user: current_user)

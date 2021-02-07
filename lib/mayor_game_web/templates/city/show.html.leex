@@ -1,5 +1,11 @@
 <div>
     <b>Mayor name:</b> <%= @username %>
+    <b>user_id:</b> <%= @user_id %>
+
+    <%= if @current_user do %>
+    <b><%= @current_user.id %></b>
+    <% end %>
+
     </div>
     <div>
       <b>city title:</b> <%= @city.title %>

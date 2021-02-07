@@ -30,6 +30,7 @@ defmodule MayorGameWeb.Router do
     pipe_through :browser
 
     # honestly no idea what this is doing
+    # maybe this is what's giving the @current_user in the conn to /?
     pow_routes()
   end
 
@@ -37,8 +38,10 @@ defmodule MayorGameWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :index
+    # live "/cities/:info_id/users/:user_id", CityLive, as: :city
+    live "/city/:title", CityLive, as: :city
 
-    live "/cities/:info_id/users/:user_id", CityLive, as: :city
+    # get "/cities/:info_id/users/:user_id", CityController, :index
   end
 
   # Make city routes protected by requiring authentication

@@ -5,8 +5,7 @@
       <%= link city.title,
                to: Routes.city_path(@socket,
                                             MayorGameWeb.CityLive,
-                                            city.id,
-                                            @current_user.id) %>
+                                            city.title) %>
     </div>
   <% end %>
 </article>
