@@ -3,9 +3,7 @@
   <%= for city <- @cities do %>
     <div>
       <%= link city.title,
-               to: Routes.city_path(@socket,
-                                            MayorGameWeb.CityLive,
-                                            city.title) %>
+               to: Routes.city_path(@socket, MayorGameWeb.CityLive, city.title) %>
     </div>
   <% end %>
 </article>

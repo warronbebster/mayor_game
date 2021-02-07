@@ -15,32 +15,6 @@ defmodule MayorGameWeb.CityLive do
     CityView.render("show.html", assigns)
   end
 
-  # mount/2 is the callback that runs right at the beginning of LiveView's lifecycle,
-  # wiring up socket assigns necessary for rendering the view.
-  # def mount(_assigns, socket) do
-  #   {:ok, socket}
-  # end
-
-  @spec mount(map, any, Phoenix.LiveView.Socket.t()) :: {:ok, Phoenix.LiveView.Socket.t()}
-  def mount(%{"info_id" => info_id, "user_id" => user_id}, session, socket) do
-    # subscribe to the channel "cityPubSub". everyone subscribes to this channel
-    # this is the BACKEND process that runs this particular liveview subscribing to this BACKEND pubsub
-    # perhaps each city should have its own channel? and then the other backend systems can broadcast to it?
-    MayorGameWeb.Endpoint.subscribe("cityPubSub")
-
-    {:ok,
-     socket
-     # put the user_id in assigns
-     |> assign(:user_id, user_id)
-     # put the info_id in assigns
-     |> assign(:info_id, info_id)
-     # assign ping
-     |> assign(:ping, 0)
-     |> assign_auth(session)
-     # run helper function to get the stuff from the DB for those things
-     |> grab_city_from_db()}
-  end
-
   def mount(%{"title" => title}, session, socket) do
     # subscribe to the channel "cityPubSub". everyone subscribes to this channel
     # this is the BACKEND process that runs this particular liveview subscribing to this BACKEND pubsub
@@ -59,28 +33,6 @@ defmodule MayorGameWeb.CityLive do
       # run helper function to get the stuff from the DB for those things
     }
   end
-
-  # handle_params/3 runs after mount; somehow grabs the info from url?
-  # pattern matches the parameters; ignores _uri, then assigns params to socket
-  # def handle_params(%{"info_id" => info_id, "user_id" => user_id}, _uri, socket) do
-  #   # subscribe to the channel "cityPubSub". everyone subscribes to this channel
-  #   # this is the BACKEND process that runs this particular liveview subscribing to this BACKEND pubsub
-  #   # perhaps each city should have its own channel? and then the other backend systems can broadcast to it?
-
-  #   MayorGameWeb.Endpoint.subscribe("cityPubSub")
-
-  #   {:noreply,
-  #    socket
-  #    # put the user_id in assigns
-  #    |> assign(:user_id, user_id)
-  #    # put the info_id in assigns
-  #    |> assign(:info_id, info_id)
-  #    # assign ping
-  #    |> assign(:ping, 0)
-
-  #    # run helper function to get the stuff from the DB for those things
-  #    |> grab_city_from_db()}
-  # end
 
   # this handles different events
   # this one in particular handles "add_citizen"
@@ -127,31 +79,8 @@ defmodule MayorGameWeb.CityLive do
 
   # this is just the generic handle_info if nothing else matches
   def handle_info(_assigns, socket) do
-    # def handle_info(%{event: "updated_citizens", payload: updated_citizens}, socket) do
-    # add updated citizens to existing socket assigns
-    # ok so right now this only updates the assigns for citizens
-    # but can it do it for the whole city struct?
-    # updated_citizens = socket.assigns[:citizens] ++ [updated_citizens]
-    # then return to socket with the citizens to the socket under :citizens
-    # {:noreply, socket |> assign(:citizens, updated_citizens)}
-
     # jk just update the whole city
-    {:noreply, socket |> grab_city_from_db()}
-  end
-
-  # takes an assign with user_id and info_id
-  defp grab_city_from_db(%{assigns: %{user_id: user_id, info_id: info_id}} = socket) do
-    # grab whole user struct
-    user = Auth.get_user!(user_id)
-
-    # grab city from DB
-    city =
-      City.get_info!(info_id)
-      |> Repo.preload([:detail, :citizens])
-
-    socket
-    |> assign(:username, user.nickname)
-    |> assign(:city, city)
+    {:noreply, socket |> grab_city_by_title()}
   end
 
   defp grab_city_by_title(%{assigns: %{title: title}} = socket) do
@@ -159,18 +88,11 @@ defmodule MayorGameWeb.CityLive do
       City.get_info_by_title!(title)
       |> Repo.preload([:detail, :citizens])
 
-    IO.inspect(city)
     # grab whole user struct
     user = Auth.get_user!(city.user_id)
 
-    # grab city from DB
-    # city =
-    #   City.get_info!(info_id)
-    #   |> Repo.preload([:detail, :citizens])
-
     socket
     |> assign(:user_id, user.id)
-    |> assign(:info_id, city.id)
     |> assign(:username, user.nickname)
     |> assign(:city, city)
   end
