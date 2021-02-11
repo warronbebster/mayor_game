@@ -1,10 +1,12 @@
 <div>
     <b>Mayor name:</b> <%= @username %>
-    <b>user_id:</b> <%= @user_id %>
+    <b>mayor user_id:</b> <%= @user_id %>
 
     <%= if @current_user do %>
-    <b><%= @current_user.id %></b>
+    <b>current user ID:</b> <%= @current_user.id %>
     <% end %>
+
+    <b>is_user_mayor:</b> <%= @is_user_mayor %>
 
     </div>
     <div>
@@ -13,15 +15,24 @@
       <b>city region:</b> <%= @city.region %>
       <b>houses:</b> <%= @city.detail.houses %>
       <b>schools:</b> <%= @city.detail.schools %>
+      <button phx-click="purchase_building" phx-value-building_to_purchase="schools" >purchase schools</button>
       <b>roads:</b> <%= @city.detail.roads %>
       <b>libraries:</b> <%= @city.detail.libraries %>
       <b>city money:</b> <%= @city.detail.city_treasury %>
+
       <b>universities:</b> <%= @city.detail.universities %>
       <b>airports:</b> <%= @city.detail.airports %>
       <b>office buildings:</b> <%= @city.detail.office_buildings %>
 
+      <%= if @is_user_mayor && @city.detail.city_treasury > 400 do %>
+      <%# add section here to only allow actions if requirements are met %>
+      <button phx-click="adjust_city">eyyyyy adjust my city</button>
+      <% end %>
+
+
+
       <b>ping:</b> <%= @ping %>
-      <b>is_user_mayor:</b> <%= @is_user_mayor %>
+
       <br/>
       <b>Log:</b>
       <br/>

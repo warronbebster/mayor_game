@@ -4,7 +4,7 @@ defmodule MayorGame.Repo.Migrations.AddCityLogs do
   def change do
     alter table(:cities) do
       # this corresponds to an elixer list
-      add :logs, {:array, :string}, default: ["default log","second log item"]
+      add :logs, {:array, :string}, default: ["City created","second log item"]
     end
   end
 end

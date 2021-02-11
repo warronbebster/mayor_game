@@ -112,7 +112,7 @@ defmodule MayorGame.City do
 
   # might not need to type guard here because DB does it; but
   @doc """
-  updates log. Expects the info struct & just a single string.
+  updates log. Expects the info(city) struct & a single string.
 
   ## Examples
       iex> update_log(info, "string to add to log")
@@ -163,6 +163,10 @@ defmodule MayorGame.City do
   def change_info(%Info{} = info, attrs \\ %{}) do
     Info.changeset(info, attrs)
   end
+
+  # ###############################################
+  # CITIZENS CITIZENS CITIZENS CITIZENS CITIZENS CITIZENS
+  # ###############################################
 
   alias MayorGame.City.Citizens
 
@@ -264,6 +268,10 @@ defmodule MayorGame.City do
     Citizens.changeset(citizens, attrs)
   end
 
+  # ###############################################
+  # DETAILS DETAILS DETAILS DETAILS DETAILS DETAILS DETAILS
+  # ###############################################
+
   alias MayorGame.City.Details
 
   @doc """
@@ -325,9 +333,41 @@ defmodule MayorGame.City do
       {:error, %Ecto.Changeset{}}
 
   """
-  def update_details(%Details{} = details, attrs) do
+  def update_details(%Details{} = details, attrs \\ %{}) do
     details
     |> Details.changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
+  purchase 1 of a given building
+  expects (details, :atom of )
+
+  ## Examples
+
+      iex> purchase_details(details, :schools, 300)
+      {:ok, %Details{}}
+
+  """
+
+  def purchase_details(%Details{} = details, field_to_purchase, purchase_price) do
+    price = purchase_price
+
+    {:ok, current_value} = Map.fetch(details, field_to_purchase)
+
+    IO.puts("details.city_treasury: " <> to_string(details.city_treasury))
+
+    attrs =
+      Map.new([
+        {field_to_purchase, current_value + 1},
+        {:city_treasury, details.city_treasury - price}
+      ])
+
+    # Map.update!(details, field_to_purchase, &(&1 + 1))
+
+    details
+    |> Details.changeset(attrs)
+    |> Ecto.Changeset.validate_number(:city_treasury, greater_than: 0)
     |> Repo.update()
   end
 

@@ -73,7 +73,8 @@ defmodule MayorGameWeb do
       import Phoenix.View
 
       import MayorGameWeb.ErrorHelpers
-      import MayorGameWeb.Gettext
+      # commented this out cuz why not
+      # import MayorGameWeb.Gettext
       alias MayorGameWeb.Router.Helpers, as: Routes
     end
   end

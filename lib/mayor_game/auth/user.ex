@@ -19,6 +19,7 @@ defmodule MayorGame.Auth.User do
     |> pow_changeset(attrs)
     |> cast(attrs, [:nickname])
     |> validate_required([:nickname])
+    |> validate_length(:nickname, min: 1, max: 20)
     |> unique_constraint(:nickname)
   end
 end

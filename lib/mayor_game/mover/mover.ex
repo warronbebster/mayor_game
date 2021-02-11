@@ -42,7 +42,9 @@ defmodule MayorGame.Mover do
   def handle_info(:citizens, val) do
     # ok so here I grab citizens
     # maybe should write function that grabs a single citizen and preloads its :info (city) and then preloads its :detail
-    citizens = MayorGame.City.list_citizens_preload()
+    # huh ok this function does not exist lol
+    # citizens = MayorGame.City.list_citizens_preload()
+    citizens = MayorGame.City.list_citizens()
 
     # this grabs head of citizens list (hd) then preloads details
     # IO.inspect(MayorGame.Repo.preload(hd(citizens).info, :detail))

@@ -1,8 +1,9 @@
 defmodule MayorGameWeb.DashboardLive do
-  require Logger
+  # require Logger
 
   use Phoenix.LiveView, container: {:div, [class: "row"]}
-  use Phoenix.HTML
+  # don't need this because you get it in DashboardView?
+  # use Phoenix.HTML
 
   alias MayorGame.City
   alias MayorGame.City.Info
@@ -22,6 +23,15 @@ defmodule MayorGameWeb.DashboardLive do
      |> assign(current_user: current_user)
      |> assign_new_city_changeset()
      |> assign_cities(current_user)}
+  end
+
+  # if user is not logged in
+  def mount(_params, _session, socket) do
+    # IO.inspect(session)
+
+    {:ok,
+     socket
+     |> assign_cities(nil)}
   end
 
   # Build a changeset for the newly created city,
@@ -68,13 +78,18 @@ defmodule MayorGameWeb.DashboardLive do
            #  Repo.preload(current_user, :info, force: true)
          )}
 
-      {:error, err} ->
-        Logger.error(inspect(err))
+      # {:error, err} ->
+      #   Logger.error(inspect(err))
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        IO.puts("eyyy error")
+        IO.inspect(changeset)
+        {:noreply, assign(socket, :city_changeset, changeset)}
     end
   end
 
   # Assign all cities as the cities list. Maybe I should figure out a way to only show cities for that user.
-  # at  some point should sort by number of citizens
+  # at some point should sort by number of citizens
   defp assign_cities(socket, _current_user) do
     cities = City.list_cities()
 

@@ -41,10 +41,10 @@ defmodule MayorGameWeb.CityLive do
         "add_citizen",
         %{"message" => %{"content" => content}},
         # pull these variables out of the socket
-        %{assigns: %{info_id: info_id}} = socket
+        %{assigns: %{city: city}} = socket
       ) do
     case City.create_citizens(%{
-           info_id: info_id,
+           info_id: city.id,
            name: content,
            money: 5
          }) do
@@ -52,6 +52,7 @@ defmodule MayorGameWeb.CityLive do
       {:ok, updated_citizens} ->
         # send a message to channel cityPubSub with updatedCitizens
         # so technically here I could also send to "addlog" function or whatever?
+        # I don't think here I even really need to broadcast this
         MayorGameWeb.Endpoint.local_broadcast(
           "cityPubSub",
           "updated_citizens",
@@ -63,6 +64,41 @@ defmodule MayorGameWeb.CityLive do
     end
 
     {:noreply, socket}
+  end
+
+  # event
+  # ok so it works baybeee
+  def handle_event("adjust_city", _value, %{assigns: %{city: city}} = socket) do
+    case City.update_details(city.detail, %{city_treasury: 100}) do
+      {:ok, updated_info} ->
+        IO.puts("success")
+        IO.inspect(updated_info)
+
+      {:error, err} ->
+        Logger.error(inspect(err))
+    end
+
+    # this is all ya gotta do to update, baybee
+    {:noreply, socket |> grab_city_by_title()}
+  end
+
+  def handle_event(
+        "purchase_building",
+        %{"building_to_purchase" => building_to_purchase},
+        %{assigns: %{city: city}} = socket
+      ) do
+    # check if user is mayor here?
+
+    case City.purchase_details(city.detail, String.to_existing_atom(building_to_purchase), 3) do
+      {:ok, _updated_detail} ->
+        IO.puts("purchase success")
+
+      {:error, err} ->
+        Logger.error(inspect(err))
+    end
+
+    # this is all ya gotta do to update, baybee
+    {:noreply, socket |> grab_city_by_title()}
   end
 
   # huh, so this is what gets the message from Mover
@@ -83,6 +119,8 @@ defmodule MayorGameWeb.CityLive do
     {:noreply, socket |> grab_city_by_title()}
   end
 
+  # function to update city
+  # maybe i should make one just for "updating" — e.g. only pull details and citizens from DB
   defp grab_city_by_title(%{assigns: %{title: title}} = socket) do
     city =
       City.get_info_by_title!(title)
