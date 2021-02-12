@@ -5,6 +5,8 @@ defmodule MayorGameWeb.CityLive do
 
   alias MayorGame.{Auth, City, Repo}
 
+  alias MayorGame.City.Details
+
   alias MayorGameWeb.CityView
 
   alias Pow.Store.CredentialsCache
@@ -26,6 +28,7 @@ defmodule MayorGameWeb.CityLive do
       socket
       # put the title in assigns
       |> assign(:title, title)
+      |> assign(:detail_options, Details.detail_options())
       # assign ping
       |> assign(:ping, 0)
       |> grab_city_by_title()
@@ -84,12 +87,19 @@ defmodule MayorGameWeb.CityLive do
 
   def handle_event(
         "purchase_building",
-        %{"building_to_purchase" => building_to_purchase},
+        %{"building" => building_to_buy, "category" => building_category},
         %{assigns: %{city: city}} = socket
       ) do
     # check if user is mayor here?
 
-    case City.purchase_details(city.detail, String.to_existing_atom(building_to_purchase), 3) do
+    building_to_buy_atom = String.to_existing_atom(building_to_buy)
+    building_category_atom = String.to_existing_atom(building_category)
+
+    # get price — don't want to set price on front-end for cheating reasons
+    purchase_price =
+      get_in(Details.detail_options(), [building_category_atom, building_to_buy_atom, :price])
+
+    case City.purchase_details(city.detail, building_to_buy_atom, purchase_price) do
       {:ok, _updated_detail} ->
         IO.puts("purchase success")
 

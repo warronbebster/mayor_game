@@ -6,7 +6,7 @@ defmodule MayorGame.City.Info do
   schema "cities" do
     field :region, :string
     field :title, :string
-    # this corresponds to an elixer list
+    # this corresponds to an elixir list
     field :logs, {:array, :string}
     belongs_to :user, MayorGame.Auth.User
 

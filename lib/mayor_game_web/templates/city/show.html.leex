@@ -13,12 +13,28 @@
       <b>city title:</b> <%= @city.title %>
 
       <b>city region:</b> <%= @city.region %>
-      <b>houses:</b> <%= @city.detail.houses %>
-      <b>schools:</b> <%= @city.detail.schools %>
-      <button phx-click="purchase_building" phx-value-building_to_purchase="schools" >purchase schools</button>
-      <b>roads:</b> <%= @city.detail.roads %>
-      <b>libraries:</b> <%= @city.detail.libraries %>
       <b>city money:</b> <%= @city.detail.city_treasury %>
+      <br/>
+
+<%# add gate for if_user_mayor, and price limits %>
+      <%= for {category, buildings} <- @detail_options do %>
+        <b><%= category %></b>
+        <br/>
+        <%= for {building_type, options} <- buildings do %>
+          <span>
+          <%= building_type %>
+          <%= Map.get(@city.detail, building_type) %>
+          <%= if @is_user_mayor && @city.detail.city_treasury > options.price do %>
+            <button phx-click="purchase_building" phx-value-building="<%= building_type %>" phx-value-category="<%= category %>" >purchase <%= options.price %></button>
+          <% end %>
+          </span>
+          <br/>
+        <% end %>
+      <% end %>
+
+      <b>schools:</b> <%= @city.detail.schools %>
+      <b>libraries:</b> <%= @city.detail.libraries %>
+
 
       <b>universities:</b> <%= @city.detail.universities %>
       <b>airports:</b> <%= @city.detail.airports %>

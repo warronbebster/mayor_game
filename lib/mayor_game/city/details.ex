@@ -3,7 +3,9 @@ defmodule MayorGame.City.Details do
   import Ecto.Changeset
 
   schema "details" do
+    # field :housing, Ecto.Enum, values: [:houses, :apartments]
     field :houses, :integer
+    field :apartments, :integer
     field :roads, :integer
     field :schools, :integer
 
@@ -22,10 +24,23 @@ defmodule MayorGame.City.Details do
     timestamps()
   end
 
+  def detail_options do
+    %{
+      housing: %{
+        houses: %{price: 20, fits: 4},
+        apartments: %{price: 20, fits: 4}
+      },
+      transit: %{
+        roads: %{price: 20, fits: 4}
+      }
+    }
+  end
+
   @doc false
   def changeset(details, attrs) do
     detail_fields = [
       :houses,
+      :apartments,
       :roads,
       :schools,
       :parks,
