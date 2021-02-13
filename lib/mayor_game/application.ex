@@ -19,7 +19,8 @@ defmodule MayorGame.Application do
       # start mover process with initial value 15
       # oh this is how you can start multiple children
       # Start a worker by calling: MayorGame.Mover.start_link(arg)
-      Supervisor.child_spec({MayorGame.Mover, 15}, id: :long),
+      Supervisor.child_spec({MayorGame.Mover, 15}, id: :mover),
+      Supervisor.child_spec({MayorGame.Taxer, 1}, id: :taxer),
       # Supervisor.child_spec({MayorGame.Mover, 5}, id: :short),
 
       # mnesia cache for sessions?

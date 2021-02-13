@@ -114,7 +114,7 @@ defmodule MayorGameWeb.CityLive do
   # huh, so this is what gets the message from Mover
   # when it gets ping, it updates just ping
   def handle_info(%{event: "ping", payload: ping}, socket) do
-    {:noreply, socket |> assign(:ping, ping)}
+    {:noreply, socket |> assign(:ping, ping) |> grab_city_by_title()}
   end
 
   # I think i can get away with it with the basic "update_info" function… but need to look into constraints

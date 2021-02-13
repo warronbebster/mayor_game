@@ -21,6 +21,10 @@ defmodule MayorGame.City do
     Repo.all(Info)
   end
 
+  def list_cities_preload do
+    Repo.all(Info) |> Repo.preload([:citizens, :user, :detail])
+  end
+
   @doc """
   Gets a single info.
 
