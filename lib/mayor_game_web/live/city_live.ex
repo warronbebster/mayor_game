@@ -71,8 +71,8 @@ defmodule MayorGameWeb.CityLive do
 
   # event
   # ok so it works baybeee
-  def handle_event("adjust_city", _value, %{assigns: %{city: city}} = socket) do
-    case City.update_details(city.detail, %{city_treasury: 100}) do
+  def handle_event("gib_money", _value, %{assigns: %{city: city}} = socket) do
+    case City.update_details(city.detail, %{city_treasury: city.detail.city_treasury + 1000}) do
       {:ok, updated_info} ->
         IO.puts("success")
         IO.inspect(updated_info)

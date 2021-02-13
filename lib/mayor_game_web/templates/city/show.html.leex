@@ -16,7 +16,6 @@
       <b>city money:</b> <%= @city.detail.city_treasury %>
       <br/>
 
-<%# add gate for if_user_mayor, and price limits %>
       <%= for {category, buildings} <- @detail_options do %>
         <b><%= category %></b>
         <br/>
@@ -25,28 +24,19 @@
           <%= building_type %>
           <%= Map.get(@city.detail, building_type) %>
           <%= if @is_user_mayor && @city.detail.city_treasury > options.price do %>
-            <button phx-click="purchase_building" phx-value-building="<%= building_type %>" phx-value-category="<%= category %>" >purchase <%= options.price %></button>
+            <button phx-click="purchase_building" phx-value-building="<%= building_type %>" phx-value-category="<%= category %>" >build $<%= options.price %></button>
           <% end %>
           </span>
           <br/>
         <% end %>
       <% end %>
 
-      <b>schools:</b> <%= @city.detail.schools %>
-      <b>libraries:</b> <%= @city.detail.libraries %>
-
-
-      <b>universities:</b> <%= @city.detail.universities %>
-      <b>airports:</b> <%= @city.detail.airports %>
-      <b>office buildings:</b> <%= @city.detail.office_buildings %>
-
       <%= if @is_user_mayor && @city.detail.city_treasury > 400 do %>
       <%# add section here to only allow actions if requirements are met %>
-      <button phx-click="adjust_city">eyyyyy adjust my city</button>
+      <button phx-click="gib_money">eyyyyy refill my money</button>
       <% end %>
 
-
-
+      <br/>
       <b>ping:</b> <%= @ping %>
 
       <br/>

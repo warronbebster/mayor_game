@@ -31,7 +31,19 @@ defmodule MayorGame.City.Details do
         apartments: %{price: 20, fits: 4}
       },
       transit: %{
-        roads: %{price: 20, fits: 4}
+        roads: %{price: 20, fits: 4},
+        airports: %{price: 200, fits: 4}
+      },
+      civic: %{
+        parks: %{price: 20, fits: 4},
+        libraries: %{price: 20, fits: 4}
+      },
+      education: %{
+        schools: %{price: 20, fits: 4},
+        universities: %{price: 20, fits: 4}
+      },
+      work: %{
+        office_buildings: %{price: 20, fits: 4}
       }
     }
   end
