@@ -24,7 +24,9 @@
           <%= building_type %>
           <%= Map.get(@city.detail, building_type) %>
           <%= if @is_user_mayor && @city.detail.city_treasury > options.price do %>
-            <button phx-click="purchase_building" phx-value-building="<%= building_type %>" phx-value-category="<%= category %>" >build $<%= options.price %></button>
+            <button phx-click="purchase_building" phx-value-building="<%= building_type %>" phx-value-category="<%= category %>" >build </button>
+            build cost:$<%= options.price %>
+            maintenence cost:$<%= options.ongoing_price %>/day
           <% end %>
           </span>
           <br/>

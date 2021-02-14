@@ -42,22 +42,24 @@ defmodule MayorGame.Taxer do
   def handle_info(:tax, val) do
     cities = MayorGame.City.list_cities_preload()
 
-    IO.inspect(cities)
-
     for city <- cities do
-      IO.puts(city.title)
+      operating_cost =
+        Enum.reduce(MayorGame.City.Details.detail_options(), 0, fn category, acc ->
+          calculate_cost(category, acc, city.detail)
+        end)
 
+      # check amount
+
+      # then calculate income to the city
+      # if there are citizens
       if List.first(city.citizens) != nil do
-        # ok lol so this just returns [5,5,5,5,5] i think
-        value_per_citizen = for citizen <- city.citizens, do: 5
-        # some function here to determine tax value
+        # eventually i could use Stream instead of Enum if cities is loooooong
+        tax_income =
+          Enum.reduce(city.citizens, 0, fn citizen, acc -> calculate_taxes(citizen, acc) end)
 
-        # if it's not empty
-        tax_income = Enum.reduce(value_per_citizen, fn x, acc -> x + acc end)
-        # could I do the whole thing with a reduce on city.citizens?
-
+        # check here for if tax_income - operating_cost is less than zero
         case MayorGame.City.update_details(city.detail, %{
-               city_treasury: city.detail.city_treasury + tax_income
+               city_treasury: city.detail.city_treasury + tax_income - operating_cost
              }) do
           {:ok, _updated_details} ->
             IO.puts("success bringing in taxes")
@@ -67,11 +69,6 @@ defmodule MayorGame.Taxer do
         end
       end
     end
-
-    # this grabs head of citizens list (hd) then preloads details
-    # IO.inspect(MayorGame.Repo.preload(hd(citizens).info, :detail))
-
-    # IO.inspect(citizens)
 
     # send info to liveView process that manages frontEnd
     # this basically sends to every client.
@@ -90,4 +87,25 @@ defmodule MayorGame.Taxer do
     # increment val
     {:noreply, val + 1}
   end
+
+  def calculate_taxes(citizen, acc \\ 0) do
+    # more complicated stuff to come here
+    citizen.money + acc
+  end
+
+  def calculate_cost(category, acc \\ 0, detail) do
+    # more complicated stuff to come here
+    {_categoryName, buildings} = category
+
+    acc +
+      Enum.reduce(buildings, 0, fn {building_type, building_options}, acc2 ->
+        acc2 + building_options.ongoing_price * Map.get(detail, building_type)
+      end)
+  end
+
+  #   # first, calculate operating costs
+  #   for {category, buildings} <- MayorGame.City.Details.detail_options do
+  #     for {building_type, options} <- buildings
+  #     end
+  #   end
 end

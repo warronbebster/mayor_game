@@ -27,23 +27,23 @@ defmodule MayorGame.City.Details do
   def detail_options do
     %{
       housing: %{
-        houses: %{price: 20, fits: 4},
-        apartments: %{price: 20, fits: 4}
+        houses: %{price: 20, fits: 4, ongoing_price: 0},
+        apartments: %{price: 20, fits: 20, ongoing_price: 0}
       },
       transit: %{
-        roads: %{price: 20, fits: 4},
-        airports: %{price: 200, fits: 4}
+        roads: %{price: 20, fits: 4, ongoing_price: 0},
+        airports: %{price: 200, fits: 4, ongoing_price: 10}
       },
       civic: %{
-        parks: %{price: 20, fits: 4},
-        libraries: %{price: 20, fits: 4}
+        parks: %{price: 20, fits: 4, ongoing_price: 5},
+        libraries: %{price: 20, fits: 4, ongoing_price: 10}
       },
       education: %{
-        schools: %{price: 20, fits: 4},
-        universities: %{price: 20, fits: 4}
+        schools: %{price: 20, fits: 4, ongoing_price: 20},
+        universities: %{price: 20, fits: 4, ongoing_price: 20}
       },
       work: %{
-        office_buildings: %{price: 20, fits: 4}
+        office_buildings: %{price: 20, fits: 4, ongoing_price: 5}
       }
     }
   end
