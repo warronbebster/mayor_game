@@ -96,7 +96,7 @@ defmodule MayorGame.Taxer do
     citizen.money + acc
   end
 
-  def calculate_ongoing_cost(city) do
+  def calculate_ongoing_cost(%MayorGame.City.Info{} = city) do
     # for each element in the details struct options
     Enum.reduce(MayorGame.City.Details.detail_buildables(), 0, fn category, acc ->
       {_categoryName, buildings} = category

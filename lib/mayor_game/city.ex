@@ -359,8 +359,6 @@ defmodule MayorGame.City do
 
     {:ok, current_value} = Map.fetch(details, field_to_purchase)
 
-    IO.puts("details.city_treasury: " <> to_string(details.city_treasury))
-
     attrs =
       Map.new([
         {field_to_purchase, current_value + 1},

@@ -111,21 +111,43 @@ defmodule MayorGameWeb.CityLive do
     {:noreply, socket |> grab_city_by_title()}
   end
 
-  # huh, so this is what gets the message from Mover
-  # when it gets ping, it updates just ping
+  def handle_event(
+        "demolish_building",
+        %{"building" => building_to_demolish},
+        %{assigns: %{city: city}} = socket
+      ) do
+    # check if user is mayor here?
+
+    building_to_demolish_atom = String.to_existing_atom(building_to_demolish)
+
+    # how many buildings are there now
+    {:ok, current_value} = Map.fetch(city.detail, building_to_demolish_atom)
+
+    attrs =
+      Map.new([
+        {building_to_demolish_atom, current_value - 1}
+      ])
+
+    case City.update_details(city.detail, attrs) do
+      {:ok, _updated_detail} ->
+        IO.puts("demolition success")
+
+      {:error, err} ->
+        Logger.error(inspect(err))
+    end
+
+    # this is all ya gotta do to update, baybee
+    {:noreply, socket |> grab_city_by_title()}
+  end
+
+  # this is what gets the message from Mover/taxer
   def handle_info(%{event: "ping", payload: ping}, socket) do
     {:noreply, socket |> assign(:ping, ping) |> grab_city_by_title()}
   end
 
-  # I think i can get away with it with the basic "update_info" function… but need to look into constraints
-
-  # handle_info recieves broadcasts. in this case, a broadcast with name "updated_citizens"
-  # probably need to make another one of these for recieving updates from the system that
-  # moves citizens around, eventually. like "citizenArrives" and "citizenLeaves"
-
   # this is just the generic handle_info if nothing else matches
   def handle_info(_assigns, socket) do
-    # jk just update the whole city
+    # just update the whole city
     {:noreply, socket |> grab_city_by_title()}
   end
 
@@ -147,7 +169,7 @@ defmodule MayorGameWeb.CityLive do
 
   # POW AUTH STUFF DOWN HERE BAYBEE
 
-  def assign_auth(socket, session) do
+  defp assign_auth(socket, session) do
     # add an assign :current_user to the socket
     socket = assign_new(socket, :current_user, fn -> get_user(socket, session) end)
 
