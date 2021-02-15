@@ -3,7 +3,6 @@ defmodule MayorGame.City.Details do
   import Ecto.Changeset
 
   schema "details" do
-    # field :housing, Ecto.Enum, values: [:houses, :apartments]
     field :houses, :integer
     field :apartments, :integer
     field :roads, :integer

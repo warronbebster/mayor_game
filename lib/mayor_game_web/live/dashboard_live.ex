@@ -21,6 +21,7 @@ defmodule MayorGameWeb.DashboardLive do
     {:ok,
      socket
      |> assign(current_user: current_user)
+     |> assign(regions: Info.regions())
      |> assign_new_city_changeset()
      |> assign_cities(current_user)}
   end

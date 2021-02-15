@@ -18,13 +18,25 @@ defmodule MayorGame.City.Info do
     timestamps()
   end
 
+  def regions do
+    [
+      "ocean",
+      "mountain",
+      "desert",
+      "forest"
+    ]
+  end
+
   @doc false
   def changeset(info, attrs) do
+    # regions = regions()
+
     info
     # add a validation here to limit the types of regions
     |> cast(attrs, [:title, :region, :user_id])
     |> validate_required([:title, :region, :user_id])
     |> validate_length(:title, min: 1, max: 20)
+    |> validate_inclusion(:region, regions())
     |> unique_constraint(:title)
   end
 end

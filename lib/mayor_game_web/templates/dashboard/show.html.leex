@@ -19,13 +19,14 @@
       <div class="alert alert-danger"> uh oh, something's up!</div>
     <% end %>
 
-      <p>
-        <%= text_input f, :title, required: true, placeholder: "Title" %>
-        <%= error_tag f, :title %>
-        <%= text_input f, :region, placeholder: "Region" %>
-        <%= # select f, :category_id, category_select_options(@categories), prompt: "Choose a category" %>
-        <%= submit "Create" %>
-      </p>
+    <%= text_input f, :title, required: true, placeholder: "Title" %>
+    <%= error_tag f, :title %>
+
+    <%= select f, :region, @regions, required: true, prompt: "Select a region" %>
+    <%= error_tag f, :region %>
+    <br/>
+    <%= # select f, :category_id, category_select_options(@categories), prompt: "Choose a category" %>
+    <%= submit "Create city" %>
 
     </form>
   </article>
