@@ -66,9 +66,11 @@ defmodule MayorGame.City do
   def create_city(attrs \\ %{}) do
     case create_info(attrs) do
       # if city built successfully, automatically build Details with it's id
+      # update this so these fields are automatically generated
       {:ok, created_city} ->
         detail = %{
           houses: 0,
+          apartments: 0,
           schools: 0,
           roads: 0,
           libraries: 0,
@@ -130,12 +132,18 @@ defmodule MayorGame.City do
     updated_log = [log_item | info.logs]
 
     # if list is longer than 50, remove last item
-    if length(updated_log) > 50 do
-      updated_log |> Enum.reverse() |> tl() |> Enum.reverse()
-    end
+    limited_log =
+      if length(updated_log) > 50 do
+        updated_log |> Enum.reverse() |> tl() |> Enum.reverse()
+      else
+        updated_log
+      end
+
+    IO.inspect(limited_log)
+    IO.inspect(info)
 
     info
-    |> Info.changeset(%{logs: updated_log})
+    |> Info.changeset(%{logs: limited_log})
     |> Repo.update()
   end
 

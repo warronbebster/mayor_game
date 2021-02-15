@@ -33,7 +33,7 @@ defmodule MayorGame.City.Info do
 
     info
     # add a validation here to limit the types of regions
-    |> cast(attrs, [:title, :region, :user_id])
+    |> cast(attrs, [:title, :region, :user_id, :logs])
     |> validate_required([:title, :region, :user_id])
     |> validate_length(:title, min: 1, max: 20)
     |> validate_inclusion(:region, regions())

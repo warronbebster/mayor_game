@@ -28,9 +28,9 @@ alias MayorGame.{Auth, City}
     confirm_password: "password"
   })
 
-{:ok, %Details{info_id: madeInfo_id}} =
+{:ok, %Info{id: madeInfo_id}} =
   City.create_city(%{
-    region: "space",
+    region: "mountain",
     title: cityName,
     user_id: madeUser_id
   })
