@@ -24,7 +24,7 @@ defmodule MayorGame.City.Details do
     timestamps()
   end
 
-  def detail_options do
+  def detail_buildables do
     %{
       housing: %{
         houses: %{price: 20, fits: 4, ongoing_price: 0},

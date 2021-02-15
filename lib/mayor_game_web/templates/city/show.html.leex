@@ -16,7 +16,7 @@
       <b>city money:</b> <%= @city.detail.city_treasury %>
       <br/>
 
-      <%= for {category, buildings} <- @detail_options do %>
+      <%= for {category, buildings} <- @detail_buildables do %>
         <b><%= category %></b>
         <br/>
         <%= for {building_type, options} <- buildings do %>

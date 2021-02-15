@@ -43,12 +43,8 @@ defmodule MayorGame.Taxer do
     cities = MayorGame.City.list_cities_preload()
 
     for city <- cities do
-      operating_cost =
-        Enum.reduce(MayorGame.City.Details.detail_options(), 0, fn category, acc ->
-          calculate_cost(category, acc, city.detail)
-        end)
-
-      # check amount
+      # calculate the ongoing costs for existing buildables
+      operating_cost = calculate_ongoing_cost(city)
 
       # then calculate income to the city
       # if there are citizens
@@ -57,9 +53,16 @@ defmodule MayorGame.Taxer do
         tax_income =
           Enum.reduce(city.citizens, 0, fn citizen, acc -> calculate_taxes(citizen, acc) end)
 
+        updated_city_treasury =
+          if city.detail.city_treasury + tax_income - operating_cost < 0 do
+            0
+          else
+            city.detail.city_treasury + tax_income - operating_cost
+          end
+
         # check here for if tax_income - operating_cost is less than zero
         case MayorGame.City.update_details(city.detail, %{
-               city_treasury: city.detail.city_treasury + tax_income - operating_cost
+               city_treasury: updated_city_treasury
              }) do
           {:ok, _updated_details} ->
             IO.puts("success bringing in taxes")
@@ -93,19 +96,15 @@ defmodule MayorGame.Taxer do
     citizen.money + acc
   end
 
-  def calculate_cost(category, acc \\ 0, detail) do
-    # more complicated stuff to come here
-    {_categoryName, buildings} = category
+  def calculate_ongoing_cost(city) do
+    # for each element in the details struct options
+    Enum.reduce(MayorGame.City.Details.detail_buildables(), 0, fn category, acc ->
+      {_categoryName, buildings} = category
 
-    acc +
-      Enum.reduce(buildings, 0, fn {building_type, building_options}, acc2 ->
-        acc2 + building_options.ongoing_price * Map.get(detail, building_type)
-      end)
+      acc +
+        Enum.reduce(buildings, 0, fn {building_type, building_options}, acc2 ->
+          acc2 + building_options.ongoing_price * Map.get(city.detail, building_type)
+        end)
+    end)
   end
-
-  #   # first, calculate operating costs
-  #   for {category, buildings} <- MayorGame.City.Details.detail_options do
-  #     for {building_type, options} <- buildings
-  #     end
-  #   end
 end
