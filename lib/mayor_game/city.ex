@@ -7,6 +7,8 @@ defmodule MayorGame.City do
   alias MayorGame.Repo
 
   alias MayorGame.City.Info
+  alias MayorGame.City.Details
+  alias MayorGame.City.Citizens
 
   @doc """
   Returns the list of cities.
@@ -68,19 +70,9 @@ defmodule MayorGame.City do
       # if city built successfully, automatically build Details with it's id
       # update this so these fields are automatically generated
       {:ok, created_city} ->
-        detail = %{
-          houses: 0,
-          apartments: 0,
-          schools: 0,
-          roads: 0,
-          libraries: 0,
-          parks: 0,
-          universities: 0,
-          airports: 0,
-          office_buildings: 0,
-          city_treasury: 500,
-          info_id: created_city.id
-        }
+        buildables = Map.new(Details.buildables_list(), fn buildable -> {buildable, 0} end)
+
+        detail = Map.merge(buildables, %{city_treasury: 500, info_id: created_city.id})
 
         # and create a detail in the DB, tied to this city
         case create_details(detail) do
@@ -139,9 +131,6 @@ defmodule MayorGame.City do
         updated_log
       end
 
-    IO.inspect(limited_log)
-    IO.inspect(info)
-
     info
     |> Info.changeset(%{logs: limited_log})
     |> Repo.update()
@@ -179,8 +168,6 @@ defmodule MayorGame.City do
   # ###############################################
   # CITIZENS CITIZENS CITIZENS CITIZENS CITIZENS CITIZENS
   # ###############################################
-
-  alias MayorGame.City.Citizens
 
   @doc """
   Returns the list of citizens.
@@ -283,8 +270,6 @@ defmodule MayorGame.City do
   # ###############################################
   # DETAILS DETAILS DETAILS DETAILS DETAILS DETAILS DETAILS
   # ###############################################
-
-  alias MayorGame.City.Details
 
   @doc """
   Returns the list of details.

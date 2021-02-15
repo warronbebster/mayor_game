@@ -91,6 +91,7 @@ defmodule MayorGameWeb.CityLive do
         %{assigns: %{city: city}} = socket
       ) do
     # check if user is mayor here?
+    IO.inspect(Details.buildables_list())
 
     building_to_buy_atom = String.to_existing_atom(building_to_buy)
     building_category_atom = String.to_existing_atom(building_category)

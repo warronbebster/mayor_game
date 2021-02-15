@@ -39,8 +39,7 @@
         <% end %>
       <% end %>
 
-      <%= if @is_user_mayor && @city.detail.city_treasury > 400 do %>
-      <%# add section here to only allow actions if requirements are met %>
+      <%= if @is_user_mayor do %>
       <button phx-click="gib_money">eyyyyy refill my money</button>
       <% end %>
 

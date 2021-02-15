@@ -65,8 +65,6 @@ defmodule MayorGame.Taxer do
                city_treasury: updated_city_treasury
              }) do
           {:ok, _updated_details} ->
-            IO.puts("success taxing")
-
             MayorGame.City.update_log(
               city,
               "today's tax income:" <>

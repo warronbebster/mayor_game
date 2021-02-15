@@ -47,21 +47,18 @@ defmodule MayorGame.City.Details do
     }
   end
 
+  def buildables_list() do
+    Enum.reduce(detail_buildables(), [], fn {_categoryName, buildings}, acc ->
+      Enum.reduce(buildings, [], fn {building_type, _building_options}, acc2 ->
+        [building_type | acc2]
+      end) ++
+        acc
+    end)
+  end
+
   @doc false
   def changeset(details, attrs) do
-    detail_fields = [
-      :houses,
-      :apartments,
-      :roads,
-      :schools,
-      :parks,
-      :libraries,
-      :universities,
-      :airports,
-      :office_buildings,
-      :city_treasury,
-      :info_id
-    ]
+    detail_fields = buildables_list() ++ [:city_treasury, :info_id]
 
     details
     # this basically defines the fields users can change
