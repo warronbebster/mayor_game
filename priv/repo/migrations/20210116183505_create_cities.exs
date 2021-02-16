@@ -5,6 +5,8 @@ defmodule MayorGame.Repo.Migrations.CreateCities do
     create table(:cities) do
       add :title, :string, null: false
       add :region, :string
+      add :logs, {:array, :string}, default: ["City created","second log item"]
+      # add :treasury, :integer, default: 500
       add :user_id, references(:auth_users, on_delete: :nothing)
 
       timestamps()

@@ -346,10 +346,10 @@ defmodule MayorGame.City do
       {:ok, %Details{}}
 
   """
-
   def purchase_details(%Details{} = details, field_to_purchase, purchase_price) do
     price = purchase_price
 
+    # how many building are there rn
     {:ok, current_value} = Map.fetch(details, field_to_purchase)
 
     attrs =
