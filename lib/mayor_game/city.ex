@@ -6,9 +6,7 @@ defmodule MayorGame.City do
   import Ecto.Query, warn: false
   alias MayorGame.Repo
 
-  alias MayorGame.City.Info
-  alias MayorGame.City.Details
-  alias MayorGame.City.Citizens
+  alias MayorGame.City.{Details, Info, Citizens, World}
 
   @doc """
   Returns the list of cities.
@@ -393,5 +391,17 @@ defmodule MayorGame.City do
   """
   def change_details(%Details{} = details, attrs \\ %{}) do
     Details.changeset(details, attrs)
+  end
+
+  def create_update_world(attrs \\ %{}) do
+    %World{}
+    |> World.changeset(attrs)
+    |> Repo.insert_or_update()
+  end
+
+  def update_world(%World{} = world, attrs \\ %{}) do
+    world
+    |> World.changeset(attrs)
+    |> Repo.update()
   end
 end

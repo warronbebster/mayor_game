@@ -9,30 +9,26 @@ defmodule MayorGameWeb.DashboardLive do
   alias MayorGame.City.Info
   alias MayorGameWeb.DashboardView
   # alias MayorGame.Repo
-  alias Ecto.Changeset
+  # alias Ecto.Changeset
 
   def render(assigns) do
     DashboardView.render("show.html", assigns)
   end
 
   def mount(_params, %{"current_user" => current_user}, socket) do
-    # IO.inspect(session)
-
     {:ok,
      socket
      |> assign(current_user: current_user)
      |> assign(regions: Info.regions())
      |> assign_new_city_changeset()
-     |> assign_cities(current_user)}
+     |> assign_cities()}
   end
 
   # if user is not logged in
   def mount(_params, _session, socket) do
-    # IO.inspect(session)
-
     {:ok,
      socket
-     |> assign_cities(nil)}
+     |> assign_cities()}
   end
 
   # Build a changeset for the newly created city,
@@ -58,9 +54,8 @@ defmodule MayorGameWeb.DashboardLive do
         # pattern match to pull these variables out of the socket
         %{
           assigns: %{
-            city_changeset: changeset,
-            current_user: current_user,
-            cities: cities
+            # city_changeset: changeset,
+            current_user: current_user
           }
         } = socket
       ) do
@@ -91,14 +86,8 @@ defmodule MayorGameWeb.DashboardLive do
 
   # Assign all cities as the cities list. Maybe I should figure out a way to only show cities for that user.
   # at some point should sort by number of citizens
-  defp assign_cities(socket, _current_user) do
+  defp assign_cities(socket) do
     cities = City.list_cities()
-
     assign(socket, :cities, cities)
   end
-
-  # defp build_title() do
-  #   randomString = :crypto.strong_rand_bytes(4) |> Base.encode64() |> binary_part(0, 4)
-  #   String.replace(randomString, "/", "a") <> "ville"
-  # end
 end

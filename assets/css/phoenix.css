@@ -14,16 +14,17 @@
 html {
 	box-sizing: border-box;
 	font-size: 62.5%;
+	background-color: #000000;
 }
 body {
-	color: #000000;
+	color: #ffffff;
 	font-family: "Helvetica", "Arial", sans-serif;
 	font-size: 1.6em;
 	font-weight: 300;
 	line-height: 1.6;
 }
 blockquote {
-	border-left: 0.3rem solid #d1d1d1;
+	border-left: 0.3rem solid #ffffff;
 	margin-left: 0;
 	margin-right: 0;
 	padding: 1rem 1.5rem;
@@ -36,8 +37,9 @@ button,
 input[type="button"],
 input[type="reset"],
 input[type="submit"] {
-	background-color: #ebebeb;
+	background-color: #000000;
 	border: 0.1rem solid #606c76;
+	color: #ffffff;
 	border-radius: 0.4rem;
 	cursor: pointer;
 	display: inline-block;
@@ -56,9 +58,10 @@ input[type="reset"]:focus,
 input[type="reset"]:hover,
 input[type="submit"]:focus,
 input[type="submit"]:hover {
-	background-color: #b8c3cd;
+	background-color: #1f1f1f;
 	border-color: #606c76;
 	outline: 0;
+	color: #ffffff;
 }
 .button[disabled],
 button[disabled],
@@ -78,8 +81,8 @@ input[type="reset"][disabled]:focus,
 input[type="reset"][disabled]:hover,
 input[type="submit"][disabled]:focus,
 input[type="submit"][disabled]:hover {
-	background-color: #0069d9;
-	border-color: #0069d9;
+	background-color: #86c1ff;
+	border-color: #86c1ff;
 }
 .button.button-outline,
 button.button-outline,
@@ -87,7 +90,7 @@ input[type="button"].button-outline,
 input[type="reset"].button-outline,
 input[type="submit"].button-outline {
 	background-color: transparent;
-	color: #0069d9;
+	color: #86c1ff;
 }
 .button.button-outline:focus,
 .button.button-outline:hover,
@@ -114,7 +117,7 @@ input[type="reset"].button-outline[disabled]:hover,
 input[type="submit"].button-outline[disabled]:focus,
 input[type="submit"].button-outline[disabled]:hover {
 	border-color: inherit;
-	color: #0069d9;
+	color: #86c1ff;
 }
 .button.button-clear,
 button.button-clear,
@@ -123,7 +126,7 @@ input[type="reset"].button-clear,
 input[type="submit"].button-clear {
 	background-color: transparent;
 	border-color: transparent;
-	color: #0069d9;
+	color: #86c1ff;
 }
 .button.button-clear:focus,
 .button.button-clear:hover,
@@ -149,7 +152,7 @@ input[type="reset"].button-clear[disabled]:focus,
 input[type="reset"].button-clear[disabled]:hover,
 input[type="submit"].button-clear[disabled]:focus,
 input[type="submit"].button-clear[disabled]:hover {
-	color: #0069d9;
+	color: #86c1ff;
 }
 code {
 	background: #f4f5f6;
@@ -161,7 +164,7 @@ code {
 }
 pre {
 	background: #f4f5f6;
-	border-left: 0.3rem solid #0069d9;
+	border-left: 0.3rem solid #86c1ff;
 	overflow-y: hidden;
 }
 pre > code {
@@ -188,7 +191,8 @@ select {
 	-moz-appearance: none;
 	appearance: none;
 	background-color: transparent;
-	border: 0.1rem solid #d1d1d1;
+	border: 0.1rem solid #ffffff;
+	color: #ffffff;
 	border-radius: 0.4rem;
 	box-shadow: none;
 	box-sizing: inherit;
@@ -205,7 +209,7 @@ input[type="text"]:focus,
 input[type="url"]:focus,
 textarea:focus,
 select:focus {
-	border-color: #0069d9;
+	border-color: #86c1ff;
 	outline: 0;
 }
 select {
@@ -214,7 +218,7 @@ select {
 	padding-right: 3rem;
 }
 select:focus {
-	background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="14" viewBox="0 0 29 14" width="29"><path fill="%230069d9" d="M9.37727 3.625l5.08154 6.93523L19.54036 3.625"/></svg>');
+	background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="14" viewBox="0 0 29 14" width="29"><path fill="%2386c1ff" d="M9.37727 3.625l5.08154 6.93523L19.54036 3.625"/></svg>');
 }
 textarea {
 	min-height: 6.5rem;
@@ -373,12 +377,12 @@ input[type="radio"] {
 	}
 }
 a {
-	color: #0069d9;
+	color: #86c1ff;
 	text-decoration: none;
 }
 a:focus,
 a:hover {
-	color: #606c76;
+	color: #5d7a91;
 }
 dl,
 ol,
@@ -435,7 +439,7 @@ table {
 }
 td,
 th {
-	border-bottom: 0.1rem solid #e1e1e1;
+	border-bottom: 0.1rem solid #ffffff;
 	padding: 1.2rem 1.5rem;
 	text-align: left;
 }
@@ -555,7 +559,8 @@ select {
 .phx-hero {
 	text-align: center;
 	border-bottom: 1px solid #e3e3e3;
-	background: #eee;
+	background: #000000;
+	color: #ffffff;
 	border-radius: 6px;
 	padding: 3em 3em 1em;
 	margin-bottom: 3rem;
@@ -563,7 +568,7 @@ select {
 	font-size: 120%;
 }
 .phx-hero input {
-	background: #ffffff;
+	background: #000000;
 }
 .phx-logo {
 	min-width: 300px;
@@ -578,7 +583,7 @@ select {
 /* Headers */
 header {
 	width: 100%;
-	background: #fdfdfd;
+	background: #000000;
 	border-bottom: 1px solid #eaeaea;
 	margin-bottom: 2rem;
 }

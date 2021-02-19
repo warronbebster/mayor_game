@@ -49,7 +49,11 @@ defmodule MayorGameWeb.CityLive do
     case City.create_citizens(%{
            info_id: city.id,
            name: content,
-           money: 5
+           money: 5,
+           education: 0,
+           age: 0,
+           has_car: false,
+           last_moved: 0
          }) do
       # pattern match to assign new_citizen to what's returned from City.create_citizens
       {:ok, updated_citizens} ->
@@ -91,7 +95,6 @@ defmodule MayorGameWeb.CityLive do
         %{assigns: %{city: city}} = socket
       ) do
     # check if user is mayor here?
-    IO.inspect(Details.buildables_list())
 
     building_to_buy_atom = String.to_existing_atom(building_to_buy)
     building_category_atom = String.to_existing_atom(building_category)

@@ -15,7 +15,7 @@ randomString = :crypto.strong_rand_bytes(4) |> Base.encode64() |> binary_part(0,
 cityName = String.replace(randomString, "/", "a") <> "ville"
 
 alias MayorGame.Auth.User
-alias MayorGame.City.{Details, Info, Citizens}
+alias MayorGame.City.{Details, Info, Citizens, World}
 
 alias MayorGame.{Auth, City}
 
@@ -42,6 +42,16 @@ alias MayorGame.{Auth, City}
 
 # create citizens
 {:ok, %Citizens{}} =
-  City.create_citizens(%{money: 50, name: "citizen of " <> cityName, info_id: madeInfo_id})
+  City.create_citizens(%{
+    money: 50,
+    name: "citizen of " <> cityName,
+    info_id: madeInfo_id,
+    age: 0,
+    education: 0,
+    has_car: false,
+    last_moved: 0
+  })
+
+{:ok, %World{}} = City.create_update_world(%{day: 0})
 
 # Ecto.build_assoc(user, :posts, %{header: "Clickbait header", body: "No real content"})

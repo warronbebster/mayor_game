@@ -44,7 +44,8 @@
       <% end %>
 
       <br/>
-      <b>ping:</b> <%= @ping %>
+      <b>year:</b> <%= div(@ping, 365) %>
+      <b>day:</b> <%= rem(@ping, 365) %>
 
       <br/>
       <b>Log:</b>
