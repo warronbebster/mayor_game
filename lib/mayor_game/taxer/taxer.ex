@@ -14,9 +14,11 @@ defmodule MayorGame.Taxer do
   def start_link(_initial_val) do
     # starts link based on this file
     # triggers init function in module
-    world = MayorGame.Repo.get!(MayorGame.City.World, 1)
 
-    GenServer.start_link(__MODULE__, world.day)
+    # ok, for some reason, resetting the ecto repo does not like this being in start_link
+    # world = MayorGame.Repo.get!(MayorGame.City.World, 0)
+
+    GenServer.start_link(__MODULE__, 0)
   end
 
   # when GenServer.call is called:
@@ -43,16 +45,32 @@ defmodule MayorGame.Taxer do
 
   # when tick is sent
   def handle_info(:tax, val) do
+    buildables = MayorGame.City.Details.detail_buildables()
     cities = City.list_cities_preload()
 
     world = MayorGame.Repo.get!(MayorGame.City.World, 1)
     # increment day
     City.update_world(world, %{day: world.day + 1})
-    IO.puts(to_string(world.day))
+    IO.puts("day: " <> to_string(world.day))
 
     for city <- cities do
       # calculate the ongoing costs for existing buildables
-      operating_cost = calculate_ongoing_cost(city)
+      operating_cost = calculate_daily_cost(city)
+
+      # for each building in housing
+      housing_stock =
+        Enum.reduce(buildables.housing, 0, fn {building_type, building_options}, acc ->
+          # get fits, multiply by number of buildings
+          acc + building_options.fits * Map.get(city.detail, building_type)
+        end)
+
+      IO.puts(city.title <> " housing_stock: " <> to_string(housing_stock))
+
+      # maybe build list of possible jobs and levels
+      # some things are constrained, like jobs, housing.
+      # but some aren't, like education (which should cost something) and entertainment
+      # also housing and cost
+      # and entertainment value and stuff
 
       # then calculate income to the city
       # if there are citizens
@@ -109,6 +127,10 @@ defmodule MayorGame.Taxer do
     Enum.reduce(city.citizens, 0, fn citizen, acc ->
       City.update_citizens(citizen, %{age: citizen.age + 1})
 
+      # function to spawn children
+
+      # function to look for other cities
+
       # kill citizen if over this age
       if citizen.age > 36500, do: City.delete_citizens(citizen)
 
@@ -116,7 +138,7 @@ defmodule MayorGame.Taxer do
     end)
   end
 
-  def calculate_ongoing_cost(%MayorGame.City.Info{} = city) do
+  def calculate_daily_cost(%MayorGame.City.Info{} = city) do
     # for each element in the details struct options
     Enum.reduce(MayorGame.City.Details.detail_buildables(), 0, fn category, acc ->
       {_categoryName, buildings} = category

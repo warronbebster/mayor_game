@@ -19,8 +19,6 @@ defmodule MayorGameWeb.CityLive do
 
   def mount(%{"title" => title}, session, socket) do
     # subscribe to the channel "cityPubSub". everyone subscribes to this channel
-    # this is the BACKEND process that runs this particular liveview subscribing to this BACKEND pubsub
-    # perhaps each city should have its own channel? and then the other backend systems can broadcast to it?
     MayorGameWeb.Endpoint.subscribe("cityPubSub")
 
     {

@@ -26,13 +26,17 @@
 
           <%= if @is_user_mayor do %>
             <%= if @city.detail.city_treasury > options.price do %>
-              <button phx-click="purchase_building" phx-value-building="<%= building_type %>" phx-value-category="<%= category %>" >build 1</button>
+              <button phx-click="purchase_building" phx-value-building="<%= building_type %>" phx-value-category="<%= category %>" >build</button>
+            <% else %>
+              <button disabled>build</button>
             <% end %>
             <%= if Map.get(@city.detail, building_type) > 0 do %>
-              <button phx-click="demolish_building" phx-value-building="<%= building_type %>" >demolish 1</button>
+              <button phx-click="demolish_building" phx-value-building="<%= building_type %>" >demolish</button>
+            <% else %>
+              <button disabled>demolish</button>
             <% end %>
             build cost:$<%= options.price %>
-            maintenence cost:$<%= options.ongoing_price %>/day
+            daily cost:$<%= options.ongoing_price %>/day
           <% end %>
 
           <br/>

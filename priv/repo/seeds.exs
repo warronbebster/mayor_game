@@ -19,6 +19,13 @@ alias MayorGame.City.{Details, Info, Citizens, World}
 
 alias MayorGame.{Auth, City}
 
+Auth.create_user(%{
+  nickname: "bwebs",
+  email: "hi@test.com",
+  password: "barronbarron",
+  confirm_password: "barronbarron"
+})
+
 # create a user
 {:ok, %User{id: madeUser_id}} =
   Auth.create_user(%{
