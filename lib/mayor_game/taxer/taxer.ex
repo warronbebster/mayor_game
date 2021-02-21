@@ -54,17 +54,20 @@ defmodule MayorGame.Taxer do
     IO.puts("day: " <> to_string(world.day))
 
     for city <- cities do
-      # calculate the ongoing costs for existing buildables
       operating_cost = calculate_daily_cost(city)
 
       # for each building in housing
-      housing_stock =
+      # eventually i could use Stream instead of Enum if cities is loooooong
+      available_housing =
         Enum.reduce(buildables.housing, 0, fn {building_type, building_options}, acc ->
           # get fits, multiply by number of buildings
           acc + building_options.fits * Map.get(city.detail, building_type)
         end)
 
-      IO.puts(city.title <> " housing_stock: " <> to_string(housing_stock))
+      # returns a map of %{0 => #, 0 => #, etc}
+      available_jobs = calculate_jobs(city)
+
+      tax_income = calculate_taxes(city)
 
       # maybe build list of possible jobs and levels
       # some things are constrained, like jobs, housing.
@@ -72,12 +75,8 @@ defmodule MayorGame.Taxer do
       # also housing and cost
       # and entertainment value and stuff
 
-      # then calculate income to the city
       # if there are citizens
       if List.first(city.citizens) != nil do
-        # eventually i could use Stream instead of Enum if cities is loooooong
-        tax_income = calculate_taxes(city)
-
         updated_city_treasury =
           if city.detail.city_treasury + tax_income - operating_cost < 0 do
             0
@@ -123,18 +122,49 @@ defmodule MayorGame.Taxer do
   end
 
   def calculate_taxes(%MayorGame.City.Info{} = city) do
-    # for each citizen
-    Enum.reduce(city.citizens, 0, fn citizen, acc ->
-      City.update_citizens(citizen, %{age: citizen.age + 1})
+    # if there is a citizen
+    if List.first(city.citizens) != nil do
+      Enum.reduce(city.citizens, 0, fn citizen, acc ->
+        City.update_citizens(citizen, %{age: citizen.age + 1})
 
-      # function to spawn children
+        # function to spawn children
 
-      # function to look for other cities
+        # function to look for other cities
 
-      # kill citizen if over this age
-      if citizen.age > 36500, do: City.delete_citizens(citizen)
+        # kill citizen if over this age
+        # should add if there are no houses + citizen has no other city option
+        if citizen.age > 36500, do: City.delete_citizens(citizen)
 
-      1 + citizen.job + acc
+        1 + citizen.job + acc
+      end)
+    else
+      0
+    end
+  end
+
+  def calculate_jobs(%MayorGame.City.Info{} = city) do
+    empty_jobs_map = %{0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0}
+
+    Enum.reduce(MayorGame.City.Details.detail_buildables(), empty_jobs_map, fn category, acc ->
+      {categoryName, buildings} = category
+
+      if categoryName != :housing && categoryName != :civic do
+        acc
+        |> Enum.map(fn {job_level, jobs} ->
+          {job_level,
+           jobs +
+             Enum.reduce(buildings, 0, fn {building_type, building_options}, acc2 ->
+               if building_options.job_level == job_level do
+                 acc2 + building_options.jobs * Map.get(city.detail, building_type)
+               else
+                 acc2
+               end
+             end)}
+        end)
+        |> Enum.into(%{})
+      else
+        acc
+      end
     end)
   end
 

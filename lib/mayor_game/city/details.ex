@@ -41,26 +41,26 @@ defmodule MayorGame.City.Details do
         apartments: %{price: 20, fits: 20, ongoing_price: 0}
       },
       transit: %{
-        roads: %{price: 20, fits: 4, ongoing_price: 0},
-        airports: %{price: 200, fits: 4, ongoing_price: 10},
-        bus_lines: %{price: 100, fits: 4, ongoing_price: 30},
-        subway_lines: %{price: 200, fits: 4, ongoing_price: 40}
+        roads: %{price: 20, ongoing_price: 0, jobs: 0, job_level: 0},
+        airports: %{price: 200, ongoing_price: 10, jobs: 10, job_level: 0},
+        bus_lines: %{price: 100, ongoing_price: 30, jobs: 10, job_level: 0},
+        subway_lines: %{price: 200, ongoing_price: 40, jobs: 20, job_level: 0}
       },
       civic: %{
         parks: %{price: 20, ongoing_price: 5},
         libraries: %{price: 20, ongoing_price: 10}
       },
       education: %{
-        schools: %{price: 20, fits: 4, ongoing_price: 20},
-        universities: %{price: 20, fits: 4, ongoing_price: 20}
+        schools: %{price: 20, ongoing_price: 20, jobs: 10, job_level: 1},
+        universities: %{price: 20, ongoing_price: 20, jobs: 10, job_level: 2}
       },
       work: %{
-        factories: %{price: 20, fits: 4, ongoing_price: 5},
-        office_buildings: %{price: 20, fits: 4, ongoing_price: 5}
+        factories: %{price: 20, ongoing_price: 5, jobs: 20, job_level: 0},
+        office_buildings: %{price: 20, ongoing_price: 5, jobs: 20, job_level: 0}
       },
       entertainment: %{
-        theatres: %{price: 20, ongoing_price: 5},
-        arenas: %{price: 20, ongoing_price: 5}
+        theatres: %{price: 20, ongoing_price: 5, jobs: 10, job_level: 0},
+        arenas: %{price: 20, ongoing_price: 5, jobs: 20, job_level: 0}
       }
     }
   end
