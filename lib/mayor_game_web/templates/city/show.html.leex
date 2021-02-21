@@ -16,7 +16,7 @@
       <b>city money:</b> <%= @city.detail.city_treasury %>
       <br/>
 
-      <%= for {category, buildings} <- @detail_buildables do %>
+      <%= for {category, buildings} <- @buildables do %>
         <b><%= category %></b>
         <br/>
         <%= for {building_type, options} <- buildings do %>
@@ -48,6 +48,7 @@
       <% end %>
 
       <br/>
+      <b>raw:</b> <%= @ping %>
       <b>year:</b> <%= div(@ping, 365) %>
       <b>day:</b> <%= rem(@ping, 365) %>
 

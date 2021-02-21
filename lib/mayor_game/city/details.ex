@@ -34,7 +34,7 @@ defmodule MayorGame.City.Details do
     timestamps()
   end
 
-  def detail_buildables do
+  def buildables do
     %{
       housing: %{
         houses: %{price: 20, fits: 4, ongoing_price: 0},
@@ -66,7 +66,7 @@ defmodule MayorGame.City.Details do
   end
 
   def buildables_list() do
-    Enum.reduce(detail_buildables(), [], fn {_categoryName, buildings}, acc ->
+    Enum.reduce(buildables(), [], fn {_categoryName, buildings}, acc ->
       Enum.reduce(buildings, [], fn {building_type, _building_options}, acc2 ->
         [building_type | acc2]
       end) ++

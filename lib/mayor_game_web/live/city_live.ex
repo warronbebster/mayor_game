@@ -26,7 +26,7 @@ defmodule MayorGameWeb.CityLive do
       socket
       # put the title in assigns
       |> assign(:title, title)
-      |> assign(:detail_buildables, Details.detail_buildables())
+      |> assign(:buildables, Details.buildables())
       # assign ping
       |> assign(:ping, 0)
       |> grab_city_by_title()
@@ -48,7 +48,7 @@ defmodule MayorGameWeb.CityLive do
            info_id: city.id,
            name: content,
            money: 5,
-           education: 0,
+           education: Enum.random([0, 1, 2, 3, 4]),
            age: 0,
            has_car: false,
            last_moved: 0
@@ -99,7 +99,7 @@ defmodule MayorGameWeb.CityLive do
 
     # get price — don't want to set price on front-end for cheating reasons
     purchase_price =
-      get_in(Details.detail_buildables(), [building_category_atom, building_to_buy_atom, :price])
+      get_in(Details.buildables(), [building_category_atom, building_to_buy_atom, :price])
 
     case City.purchase_details(city.detail, building_to_buy_atom, purchase_price) do
       {:ok, _updated_detail} ->
