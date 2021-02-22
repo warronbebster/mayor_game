@@ -54,10 +54,20 @@ defmodule MayorGame.Taxer do
     City.update_world(world, %{day: world.day + 1})
     IO.puts("day: " <> to_string(world.day))
 
+    # i could switch this to an Enum.map or Stream situation
+    # and get a return of cities with available housing, and citizens without housing/jobs
+    # although i could also do that in DB, but would have to read/write every cycle
+
+    # Enum.reduce(cities, 0, fn {building_type, building_options}, acc ->
+
+    # end
+
     for city <- cities do
       operating_cost = calculate_daily_cost(city)
 
-      tax_income = calculate_taxes(city)
+      # results look like:
+      # %{jobs: available_jobs, tax: 0, housing: available_housing},
+      city_calculation = calculate_per_city(city)
 
       # maybe build list of possible jobs and levels
       # some things are constrained, like jobs, housing.
@@ -68,11 +78,12 @@ defmodule MayorGame.Taxer do
       # if there are citizens
       if List.first(city.citizens) != nil do
         updated_city_treasury =
-          if city.detail.city_treasury + tax_income - operating_cost < 0 do
+          if city.detail.city_treasury + city_calculation.tax - operating_cost < 0 do
+            # if tax income is less than operating cost
             # maybe some other consequences here
             0
           else
-            city.detail.city_treasury + tax_income - operating_cost
+            city.detail.city_treasury + city_calculation.tax - operating_cost
           end
 
         # check here for if tax_income - operating_cost is less than zero
@@ -83,7 +94,7 @@ defmodule MayorGame.Taxer do
             City.update_log(
               city,
               "today's tax income:" <>
-                to_string(tax_income) <>
+                to_string(city_calculation.tax) <>
                 " operating cost: " <>
                 to_string(operating_cost)
             )
@@ -112,7 +123,7 @@ defmodule MayorGame.Taxer do
     {:noreply, world.day + 1}
   end
 
-  def calculate_taxes(%MayorGame.City.Info{} = city) do
+  def calculate_per_city(%MayorGame.City.Info{} = city) do
     city_preloaded = preload_city_check(city)
     # if there is a citizen
     available_housing = calculate_housing(city_preloaded)
@@ -129,17 +140,15 @@ defmodule MayorGame.Taxer do
 
             # function to spawn children
 
-            # function to look for other cities
+            # function to look for education if have money
 
             # if there are NO jobs for citizen, returns -1.
             best_possible_job =
               if citizen.education > 0 do
                 # [3,2,1,0]
-                job_levels_to_check = Enum.reverse(0..citizen.education)
-                IO.inspect(job_levels_to_check)
+                levels = Enum.reverse(0..citizen.education)
 
-                Enum.reduce_while(job_levels_to_check, citizen.education, fn level_to_check,
-                                                                             job_acc ->
+                Enum.reduce_while(levels, citizen.education, fn level_to_check, job_acc ->
                   if acc.jobs[level_to_check] > 0,
                     do: {:halt, job_acc},
                     else: {:cont, job_acc - 1}
@@ -148,17 +157,16 @@ defmodule MayorGame.Taxer do
                 if acc.jobs[0] > 0, do: 0, else: -1
               end
 
-            IO.puts("citizen edu level: " <> to_string(citizen.education))
-            IO.puts("best_possible_job: " <> to_string(best_possible_job))
             job_gap = citizen.education - best_possible_job
 
-            # function to look for education if have money
+            # give citizen money if they have job
+            # take away based on house price
 
-            # need deeper logic here to check if there are jobs available at the level
-            # basically… "check if there is job at my max level"
-            # if there is, great
-            # if not, add variable to search other cities
-            # right now you can end up with negative jobs in a job_level
+            # function to look for other cities
+            # first — if housing
+            # if yes, then — job gap
+            # if that's fine, then look at travel time — houses, roads, etc
+            # basically, look for other cities, and if there isn't housing available, then DIE
 
             updated_jobs =
               if best_possible_job >= 0,
@@ -175,9 +183,9 @@ defmodule MayorGame.Taxer do
         )
 
       # return just the tax number
-      results.tax
+      results
     else
-      0
+      %{jobs: available_jobs, tax: 0, housing: available_housing}
     end
   end
 
@@ -188,6 +196,16 @@ defmodule MayorGame.Taxer do
       # get fits, multiply by number of buildings
       acc + building_options.fits * Map.get(city_preloaded.detail, building_type)
     end)
+  end
+
+  # i think this needs to happen after it loops through the first time.
+  # then match
+  def look_for_cities(%MayorGame.City.Citizens{} = citizen, job_gap) do
+    # Enum.reduce_while(levels, citizen.education, fn level_to_check, job_acc ->
+    #   if acc.jobs[level_to_check] > 0,
+    #     do: {:halt, job_acc},
+    #     else: {:cont, job_acc - 1}
+    # end)
   end
 
   def calculate_jobs(%MayorGame.City.Info{} = city) do

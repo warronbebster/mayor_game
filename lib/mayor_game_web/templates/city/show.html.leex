@@ -73,7 +73,13 @@
       <b>citizens:</b>
       <%= for citizen <- @city.citizens do %>
         <div>
-          <b><%= citizen.name %></b> money: <%= citizen.money %>
+          <b><%= citizen.name %></b>
+          money: <%= citizen.money %>
+          education: <%= citizen.education %>
+          education: <%= citizen.education %>
+          age: <%= citizen.age %>
+          has_car: <%= citizen.has_car %>
+          <br/>
         </div>
       <% end %>
     </div>
