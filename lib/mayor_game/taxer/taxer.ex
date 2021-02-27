@@ -58,10 +58,11 @@ defmodule MayorGame.Taxer do
     # and citizens without housing/jobs
     # although i could also do that in DB, but would have to read/write every cycle
 
-    # result is list with [city => %{jobs: #, housing: #, tax: #, daily_cost: #, citizens_looking: []}]
-    cities_with_capacity =
-      Enum.reduce(cities, [], fn city, acc ->
-        city_calc = calculate_per_city(city)
+    # result is map %{cities_w_room: [], citizens_looking: []}
+    leftovers =
+      Enum.reduce(cities, %{cities_w_room: [], citizens_looking: []}, fn city, acc ->
+        # result here is %{jobs: #, housing: #, tax: #, daily_cost: #, citizens_looking: []}
+        city_calc = calculate_city_stats(city)
 
         updated_city_treasury =
           if city.detail.city_treasury + city_calc.tax - city_calc.daily_cost < 0 do
@@ -89,16 +90,65 @@ defmodule MayorGame.Taxer do
         end
 
         # if city isn't at capacity?
-        if city_calc.housing > 0 && city_calc.jobs > 0 do
-          # add city to acc
-          [%{city => city_calc} | acc]
+        are_there_jobs =
+          Enum.any?(city_calc.jobs, fn {_level, amount_of_jobs} -> amount_of_jobs > 0 end)
+
+        IO.puts("are there still jobs in " <> city.title <> ": " <> to_string(are_there_jobs))
+
+        if city_calc.housing > 0 && are_there_jobs do
+          %{
+            cities_w_room: [Map.put(city_calc, :city, city) | acc.cities_w_room],
+            citizens_looking: city_calc.citizens_looking ++ acc.citizens_looking
+          }
         else
-          acc
+          %{
+            cities_w_room: acc.cities_w_room,
+            citizens_looking: city_calc.citizens_looking ++ acc.citizens_looking
+          }
         end
       end)
 
-    # IO.inspect(cities_with_capacity)
-    # second round checks (move citizens to better city, etc) here
+    # SECOND ROUND CHECK (move citizens to better city, etc) here
+    # if there are cities with room at all:
+    if List.first(leftovers.cities_w_room) != nil do
+      first_citizen = hd(leftovers.citizens_looking)
+
+      Enum.reduce(leftovers.citizens_looking, leftovers.cities_w_room, fn citizen,
+                                                                          acc_city_list ->
+        best_job = find_best_job(acc_city_list, citizen)
+
+        if best_job != nil do
+          IO.puts(best_job.best_city.city.title)
+          # move citizen to city
+
+          # return list with city job_level decremented by 1
+          # look at this batshit functional garbage. haha
+          get_and_update_in(
+            acc_city_list,
+            [Access.filter(&(&1 == best_job.best_city)), :jobs],
+            fn prev_jobs ->
+              {prev_jobs, Map.get_and_update(prev_jobs, best_job.job_level, &(&1 - 1))}
+            end
+          )
+
+          # decrement best_job.best_city.jobs[best_job.job_level]
+        else
+          # kill citizen
+          IO.puts("no jobs left ")
+
+          acc_city_list
+        end
+
+        # replace city.job.level with 1 less than it had best_job.job_level.
+
+        #
+      end)
+
+      # returns nil if no jobs out there :(
+      best_possible_job = find_best_job(leftovers.cities_w_room, first_citizen)
+
+      if best_possible_job != nil, do: IO.puts(best_possible_job.city.title)
+    end
 
     # send val to liveView process that manages frontEnd; this basically sends to every client.
     MayorGameWeb.Endpoint.broadcast!(
@@ -113,7 +163,61 @@ defmodule MayorGame.Taxer do
     {:noreply, world.day + 1}
   end
 
-  def calculate_per_city(%MayorGame.City.Info{} = city) do
+  # CUSTOM FUNCTIONS BELOW
+  # CUSTOM FUNCTIONS BELOW
+  # CUSTOM FUNCTIONS BELOW
+  # CUSTOM FUNCTIONS BELOW
+
+  @doc """
+  tries to find a city with matching job level. expects an array of city_calcs and a level to check.
+  returns a city_calc map if successful, otherwise nil
+
+  ## Examples
+      iex> find_city_with_job(city_list, 2)
+      {:ok, %{city: city, jobs: #, housing: #, etc}}
+  """
+  def find_city_with_job(cities, level) do
+    result =
+      Enum.reduce_while(cities, level, fn city_to_check, level_acc ->
+        if city_to_check.jobs[level_acc] > 0,
+          do: {:halt, city_to_check},
+          else: {:cont, level_acc}
+      end)
+
+    if is_integer(result), do: nil, else: result
+  end
+
+  @doc """
+  tries to find city with best match for citizen job based on education level
+  takes list of city_calc maps and a %Citizens{} struct
+  returns either city_calc map or nil if no results
+
+  ## Examples
+      iex> find_best_job(city_list, %Citizens{})
+      {:ok, %{city: city, jobs: #, housing: #, etc}}
+  """
+  def find_best_job(cities_to_check, %MayorGame.City.Citizens{} = citizen) do
+    result =
+      if citizen.education > 0 do
+        # [3,2,1,0]
+        levels = Enum.reverse(0..citizen.education)
+
+        Enum.reduce_while(levels, citizen.education, fn level_to_check, job_acc ->
+          check_result = find_city_with_job(cities_to_check, level_to_check)
+
+          if check_result != nil,
+            do: {:halt, %{best_city: check_result, job_level: level_to_check}},
+            else: {:cont, job_acc - 1}
+        end)
+      else
+        check_result = find_city_with_job(cities_to_check, 0)
+        if check_result != nil, do: %{best_city: check_result, job_level: 0}, else: -1
+      end
+
+    if is_integer(result), do: nil, else: result
+  end
+
+  def calculate_city_stats(%MayorGame.City.Info{} = city) do
     city_preloaded = preload_city_check(city)
     daily_cost = calculate_daily_cost(city_preloaded)
     available_housing = calculate_housing(city_preloaded)

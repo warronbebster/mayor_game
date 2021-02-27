@@ -35,8 +35,13 @@
             <% else %>
               <button disabled>demolish</button>
             <% end %>
-            build cost:$<%= options.price %>
-            daily cost:$<%= options.ongoing_price %>/day
+            build cost:$<%= options.price %> |
+            daily cost:$<%= options.ongoing_price %>/day |
+            <%= if Enum.any?(options, fn {key, _value} -> key == :jobs end) do %>
+              jobs:<%= options.jobs %>
+            <% end %>
+
+
           <% end %>
 
           <br/>
@@ -53,13 +58,9 @@
       <b>day:</b> <%= rem(@ping, 365) %>
 
       <br/>
-      <b>Log:</b>
-      <br/>
-      <%= for log_item <- @city.logs do %>
-          <%= log_item %></b>
-        <br/>
-      <% end %>
+
     </div>
+    <br/>
     <%= if @is_user_mayor do %>
     <div>
       <%= f = form_for :message, "#", [phx_submit: "add_citizen"] %>
@@ -81,5 +82,13 @@
           has_car: <%= citizen.has_car %>
           <br/>
         </div>
+      <% end %>
+
+      <br/>
+      <b>Log:</b>
+      <br/>
+      <%= for log_item <- @city.logs do %>
+          <%= log_item %></b>
+        <br/>
       <% end %>
     </div>
