@@ -113,28 +113,37 @@ defmodule MayorGame.Taxer do
     if List.first(leftovers.cities_w_room) != nil do
       first_citizen = hd(leftovers.citizens_looking)
 
+      # for each citizen
       Enum.reduce(leftovers.citizens_looking, leftovers.cities_w_room, fn citizen,
                                                                           acc_city_list ->
         best_job = find_best_job(acc_city_list, citizen)
 
         if best_job != nil do
           IO.puts(best_job.best_city.city.title)
+
           # move citizen to city
+          move_citizen(citizen, best_job.best_city.city)
 
           # return list with city job_level decremented by 1
           # look at this batshit functional garbage. haha
+          # this whole thing returns tuple of {[key], [resulting list]}
+          # updated_cities_list =
           get_and_update_in(
             acc_city_list,
             [Access.filter(&(&1 == best_job.best_city)), :jobs],
             fn prev_jobs ->
-              {prev_jobs, Map.get_and_update(prev_jobs, best_job.job_level, &(&1 - 1))}
+              IO.inspect(prev_jobs)
+
+              # ok so it's about this return value not bein an Enum
+              {prev_jobs,
+               Map.get_and_update(prev_jobs, best_job.job_level, &{&1, &1 - 1}) |> elem(1)}
             end
           )
+          |> elem(1)
 
           # decrement best_job.best_city.jobs[best_job.job_level]
         else
-          # kill citizen
-          IO.puts("no jobs left ")
+          kill_citizen(citizen)
 
           acc_city_list
         end
@@ -147,7 +156,7 @@ defmodule MayorGame.Taxer do
       # returns nil if no jobs out there :(
       best_possible_job = find_best_job(leftovers.cities_w_room, first_citizen)
 
-      if best_possible_job != nil, do: IO.puts(best_possible_job.city.title)
+      if best_possible_job != nil, do: IO.puts(best_possible_job.best_city.city.title)
     end
 
     # send val to liveView process that manages frontEnd; this basically sends to every client.
@@ -174,17 +183,38 @@ defmodule MayorGame.Taxer do
 
   ## Examples
       iex> find_city_with_job(city_list, 2)
-      {:ok, %{city: city, jobs: #, housing: #, etc}}
+       %{city: city, jobs: #, housing: #, etc}
   """
   def find_city_with_job(cities, level) do
-    result =
+    city_result =
       Enum.reduce_while(cities, level, fn city_to_check, level_acc ->
+        IO.puts("level_acc" <> to_string(level_acc))
+
+        IO.inspect(city_to_check.jobs)
+
+        # ok, somewhere, this is getting passed a messed up job map
         if city_to_check.jobs[level_acc] > 0,
           do: {:halt, city_to_check},
           else: {:cont, level_acc}
       end)
 
-    if is_integer(result), do: nil, else: result
+    # if there is no city with job
+    if is_integer(city_result), do: nil, else: city_result
+  end
+
+  def move_citizen(%MayorGame.City.Citizens{} = citizen, city_to_move_to) do
+    City.update_log(
+      City.get_info!(citizen.info_id),
+      citizen.name <> " moved to " <> city_to_move_to.title
+    )
+
+    City.update_citizens(citizen, %{info_id: city_to_move_to.id})
+    City.update_log(city_to_move_to, citizen.name <> " just moved here")
+  end
+
+  def kill_citizen(%MayorGame.City.Citizens{} = citizen) do
+    City.update_log(City.get_info!(citizen.info_id), citizen.name <> " has died. RIP")
+    City.delete_citizens(citizen)
   end
 
   @doc """
@@ -203,6 +233,7 @@ defmodule MayorGame.Taxer do
         levels = Enum.reverse(0..citizen.education)
 
         Enum.reduce_while(levels, citizen.education, fn level_to_check, job_acc ->
+          IO.puts("level_to_check:" <> to_string(level_to_check))
           check_result = find_city_with_job(cities_to_check, level_to_check)
 
           if check_result != nil,
@@ -278,7 +309,7 @@ defmodule MayorGame.Taxer do
             # kill citizen if over this age
             # should add if there are no houses + citizen has no other city option
             # also kill based on cars
-            if citizen.age > 36500, do: City.delete_citizens(citizen)
+            if citizen.age > 36500, do: kill_citizen(citizen)
 
             # return this
             %{
