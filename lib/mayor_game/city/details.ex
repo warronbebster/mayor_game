@@ -56,7 +56,7 @@ defmodule MayorGame.City.Details do
       },
       work: %{
         factories: %{price: 20, ongoing_price: 5, jobs: 20, job_level: 0},
-        office_buildings: %{price: 20, ongoing_price: 5, jobs: 20, job_level: 0}
+        office_buildings: %{price: 20, ongoing_price: 5, jobs: 20, job_level: 1}
       },
       entertainment: %{
         theatres: %{price: 20, ongoing_price: 5, jobs: 10, job_level: 0},

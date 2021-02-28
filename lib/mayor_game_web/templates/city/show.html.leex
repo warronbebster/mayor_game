@@ -74,12 +74,11 @@
     </div>
     <% end %>
     <div>
-      <b>citizens:</b>
-      <%= for citizen <- @city.citizens do %>
+      <b><%= length(@city.citizens) %> citizens:</b>
+      <%= for citizen <- Enum.sort(@city.citizens, &(&1.name < &2.name)) do %>
         <div>
           <b><%= citizen.name %></b>
           money: <%= citizen.money %>
-          education: <%= citizen.education %>
           education: <%= citizen.education %>
           age: <%= citizen.age %>
           has_car: <%= citizen.has_car %>
