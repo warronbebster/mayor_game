@@ -393,10 +393,12 @@ defmodule MayorGame.City do
     Details.changeset(details, attrs)
   end
 
-  def create_update_world(attrs \\ %{}) do
+  # WORLD
+
+  def create_world(attrs \\ %{}) do
     %World{}
     |> World.changeset(attrs)
-    |> Repo.insert_or_update()
+    |> Repo.insert()
   end
 
   def update_world(%World{} = world, attrs \\ %{}) do

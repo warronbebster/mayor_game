@@ -18,6 +18,7 @@ defmodule MayorGame.City.Details do
     # education
     field :schools, :integer
     field :universities, :integer
+    field :research_labs, :integer
     # work
     field :factories, :integer
     field :office_buildings, :integer
@@ -52,7 +53,8 @@ defmodule MayorGame.City.Details do
       },
       education: %{
         schools: %{price: 20, ongoing_price: 20, jobs: 10, job_level: 1},
-        universities: %{price: 20, ongoing_price: 20, jobs: 10, job_level: 2}
+        universities: %{price: 20, ongoing_price: 20, jobs: 10, job_level: 2},
+        research_labs: %{price: 20, ongoing_price: 20, jobs: 10, job_level: 3}
       },
       work: %{
         factories: %{price: 20, ongoing_price: 5, jobs: 20, job_level: 0},

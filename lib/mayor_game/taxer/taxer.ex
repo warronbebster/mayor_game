@@ -3,61 +3,29 @@ defmodule MayorGame.Taxer do
   alias MayorGame.City
   alias MayorGame.City.Details
 
-  def val(pid) do
-    GenServer.call(pid, :val)
-  end
-
-  def cities(pid) do
-    # call gets stuff back
-    GenServer.call(pid, :cities)
-  end
-
-  def start_link(_initial_val) do
+  def start_link(initial_val) do
     # starts link based on this file
-    # triggers init function in module
+    # which triggers init function in module
 
-    # ok, for some reason, resetting the ecto repo does not like this being in start_link
-    # world = MayorGame.Repo.get!(MayorGame.City.World, 0)
-
-    GenServer.start_link(__MODULE__, 0)
+    GenServer.start_link(__MODULE__, initial_val)
   end
 
-  # when GenServer.call is called:
-  def handle_call(:cities, _from, val) do
-    cities = City.list_cities()
+  def init(initial_val) do
+    # initial_val is 0 here, set in application.ex
 
-    # I guess this is where you could do all the citizen switching?
-    # would this be where you can also pubsub over to users that are connected?
-    # send back to the thingy?
-    {:reply, cities, val}
-  end
-
-  def handle_call(:val, _from, val) do
-    {:reply, val, val}
-  end
-
-  def init(_initial_val) do
     # send message :tax to self process after 5000ms
     Process.send_after(self(), :tax, 5000)
-    world = MayorGame.Repo.get!(MayorGame.City.World, 1)
 
     # returns ok tuple when u start
-    {:ok, world.day}
+    {:ok, initial_val}
   end
 
   # when tick is sent
   def handle_info(:tax, val) do
     cities = City.list_cities_preload()
     world = MayorGame.Repo.get!(MayorGame.City.World, 1)
-    # increment day
     City.update_world(world, %{day: world.day + 1})
-    IO.puts("day: " <> to_string(world.day) <> "———————————————————————")
-    IO.puts("—————————————————————————————————————————————————————————————————————")
-
-    # i could switch this to an Enum.map or Stream situation
-    # and get a return of cities with available housing + jobs + other "move" factos
-    # and citizens without housing/jobs
-    # although i could also do that in DB, but would have to read/write every cycle
+    IO.puts("day: " <> to_string(world.day) <> "——————————————————————————————————————————————")
 
     # result is map %{cities_w_room: [], citizens_looking: []}
     leftovers =
@@ -112,11 +80,10 @@ defmodule MayorGame.Taxer do
     # SECOND ROUND CHECK (move citizens to better city, etc) here
     # if there are cities with room at all:
     if List.first(leftovers.cities_w_room) != nil do
-      # first_citizen = hd(leftovers.citizens_looking)
-
       # for each citizen
       Enum.reduce(leftovers.citizens_looking, leftovers.cities_w_room, fn citizen,
                                                                           acc_city_list ->
+        # results are map %{best_city: %{city: city, jobs: #, housing: #, etc}, job_level: #}
         best_job = find_best_job(acc_city_list, citizen)
 
         if not is_nil(best_job) do
@@ -128,11 +95,10 @@ defmodule MayorGame.Taxer do
           # move citizen to city
           move_citizen(citizen, best_job.best_city.city)
 
-          # return list with city jobs[job_level] and housing decremented by 1
-          # look at this batshit functional garbage. haha
-
+          # find where the city is in the list
           indexx = Enum.find_index(acc_city_list, &(&1 == best_job.best_city))
 
+          # make updated list, decrement housing and jobs
           updated_acc_city_list =
             List.update_at(acc_city_list, indexx, fn update ->
               update
@@ -140,14 +106,14 @@ defmodule MayorGame.Taxer do
               |> update_in([:jobs, best_job.job_level], &(&1 - 1))
             end)
 
-          IO.inspect(
-            Enum.map(updated_acc_city_list, fn city_calc ->
-              Map.take(city_calc, [:housing, :city])
-              |> Map.update!(:city, fn city ->
-                Map.take(city, [:title])
-              end)
-            end)
-          )
+          # IO.inspect(
+          #   Enum.map(updated_acc_city_list, fn city_calc ->
+          #     Map.take(city_calc, [:housing, :city])
+          #     |> Map.update!(:city, fn city ->
+          #       Map.take(city, [:title])
+          #     end)
+          #   end)
+          # )
 
           updated_acc_city_list
         else
@@ -167,7 +133,6 @@ defmodule MayorGame.Taxer do
 
     # recurse, do it again
     Process.send_after(self(), :tax, 5000)
-
     {:noreply, world.day + 1}
   end
 
@@ -203,9 +168,11 @@ defmodule MayorGame.Taxer do
   def find_city_with_job(cities, level) do
     city_result =
       Enum.reduce_while(cities, level, fn city_to_check, level_acc ->
-        if is_number(city_to_check.jobs[level_acc]) && city_to_check.jobs[level_acc] > 0,
-          do: {:halt, city_to_check},
-          else: {:cont, level_acc}
+        if is_number(city_to_check.jobs[level_acc]) &&
+             city_to_check.jobs[level_acc] > 0 &&
+             city_to_check.housing > 0,
+           do: {:halt, city_to_check},
+           else: {:cont, level_acc}
       end)
 
     # if there is no city with job
@@ -280,19 +247,19 @@ defmodule MayorGame.Taxer do
 
             job_gap = citizen.education - best_possible_job
 
-            is_citizen_gonna_look = best_possible_job < 0 || acc.housing < 1 || job_gap > 1
+            # citizen will look if there is no housing, if there is no best possible job, and if gap > 1
+            will_citizen_look = best_possible_job < 0 || acc.housing < 1 || job_gap > 1
 
             # add to citizens_looking array
             citizens_looking =
-              if is_citizen_gonna_look,
+              if will_citizen_look,
                 do: [citizen | acc.citizens_looking],
                 else: acc.citizens_looking
 
-            # give citizen money if they have job
+            # give citizen money based on job
             # take away based on house price
 
             # function to spawn children
-
             # function to look for education if have money
 
             updated_jobs =
@@ -300,15 +267,13 @@ defmodule MayorGame.Taxer do
                 do: Map.update!(acc.jobs, best_possible_job, &(&1 - 1)),
                 else: acc.jobs
 
-            # kill citizen if over this age
-            # should add if there are no houses + citizen has no other city option
-            # also kill based on cars
+            # also kill based on roads / random chance
             if citizen.age > 36500, do: kill_citizen(citizen)
 
             # return this
             %{
               jobs: updated_jobs,
-              tax: 1 + citizen.job + acc.tax,
+              tax: 1 + best_possible_job + acc.tax,
               housing: acc.housing - 1,
               daily_cost: daily_cost,
               citizens_looking: citizens_looking
@@ -316,7 +281,6 @@ defmodule MayorGame.Taxer do
           end
         )
 
-      # return
       results
     else
       %{

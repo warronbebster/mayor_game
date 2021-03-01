@@ -19,6 +19,7 @@ defmodule MayorGame.Repo.Migrations.CreateDetails do
       # education
       add :schools, :integer, default: 0
       add :universities, :integer, default: 0
+      add :research_labs, :integer, default: 0
       # work
       add :factories, :integer, default: 0
       add :office_buildings, :integer, default: 0

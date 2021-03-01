@@ -59,6 +59,6 @@ Auth.create_user(%{
     last_moved: 0
   })
 
-{:ok, %World{}} = City.create_update_world(%{day: 0})
+{:ok, %World{}} = City.create_world(%{day: 0})
 
 # Ecto.build_assoc(user, :posts, %{header: "Clickbait header", body: "No real content"})
