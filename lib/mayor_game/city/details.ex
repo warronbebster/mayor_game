@@ -9,9 +9,15 @@ defmodule MayorGame.City.Details do
     field :apartments, :integer
     # transit
     field :roads, :integer
+    field :highways, :integer
     field :airports, :integer
     field :bus_lines, :integer
     field :subway_lines, :integer
+    # infrastructure
+    field :coal_plants, :integer
+    field :wind_turbines, :integer
+    field :solar_plants, :integer
+    field :nuclear_plants, :integer
     # civic
     field :parks, :integer
     field :libraries, :integer
@@ -38,31 +44,45 @@ defmodule MayorGame.City.Details do
   def buildables do
     %{
       housing: %{
-        houses: %{price: 20, fits: 4, ongoing_price: 0},
-        apartments: %{price: 20, fits: 20, ongoing_price: 0}
+        houses: %{price: 20, fits: 4, daily_cost: 0},
+        apartments: %{price: 20, fits: 20, daily_cost: 0}
       },
       transit: %{
-        roads: %{price: 20, ongoing_price: 0, jobs: 0, job_level: 0},
-        airports: %{price: 200, ongoing_price: 10, jobs: 10, job_level: 0},
-        bus_lines: %{price: 100, ongoing_price: 30, jobs: 10, job_level: 0},
-        subway_lines: %{price: 200, ongoing_price: 40, jobs: 20, job_level: 0}
+        roads: %{price: 20, daily_cost: 0, jobs: 0, job_level: 0, sprawl: 10, mobility: 10},
+        highways: %{price: 40, daily_cost: 0, jobs: 0, job_level: 0, sprawl: 20, mobility: 20},
+        airports: %{price: 200, daily_cost: 10, jobs: 10, job_level: 0, sprawl: 5, mobility: 10},
+        bus_lines: %{price: 100, daily_cost: 30, jobs: 10, job_level: 0, sprawl: 3, mobility: 50},
+        subway_lines: %{
+          price: 200,
+          daily_cost: 40,
+          jobs: 10,
+          job_level: 0,
+          sprawl: 1,
+          mobility: 100
+        }
+      },
+      infrastructure: %{
+        coal_plants: %{price: 20, daily_cost: 10, jobs: 100, job_level: 0},
+        wind_turbines: %{price: 100, daily_cost: 3, jobs: 10, job_level: 1},
+        solar_plants: %{price: 200, daily_cost: 3, jobs: 10, job_level: 2},
+        nuclear_plants: %{price: 20, daily_cost: 10, jobs: 100, job_level: 3}
       },
       civic: %{
-        parks: %{price: 20, ongoing_price: 5},
-        libraries: %{price: 20, ongoing_price: 10}
+        parks: %{price: 20, daily_cost: 5},
+        libraries: %{price: 20, daily_cost: 10}
       },
       education: %{
-        schools: %{price: 20, ongoing_price: 20, jobs: 10, job_level: 1},
-        universities: %{price: 20, ongoing_price: 20, jobs: 10, job_level: 2},
-        research_labs: %{price: 20, ongoing_price: 20, jobs: 10, job_level: 3}
+        schools: %{price: 20, daily_cost: 20, jobs: 10, job_level: 1},
+        universities: %{price: 20, daily_cost: 20, jobs: 10, job_level: 2},
+        research_labs: %{price: 20, daily_cost: 20, jobs: 10, job_level: 3}
       },
       work: %{
-        factories: %{price: 20, ongoing_price: 5, jobs: 20, job_level: 0},
-        office_buildings: %{price: 20, ongoing_price: 5, jobs: 20, job_level: 1}
+        factories: %{price: 20, daily_cost: 5, jobs: 20, job_level: 0},
+        office_buildings: %{price: 20, daily_cost: 5, jobs: 20, job_level: 1}
       },
       entertainment: %{
-        theatres: %{price: 20, ongoing_price: 5, jobs: 10, job_level: 0},
-        arenas: %{price: 20, ongoing_price: 5, jobs: 20, job_level: 0}
+        theatres: %{price: 20, daily_cost: 5, jobs: 10, job_level: 0},
+        arenas: %{price: 20, daily_cost: 5, jobs: 20, job_level: 0}
       }
     }
   end

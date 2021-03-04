@@ -26,17 +26,14 @@
 
           <%= if @is_user_mayor do %>
             <%= if @city.detail.city_treasury > options.price do %>
-              <button phx-click="purchase_building" phx-value-building="<%= building_type %>" phx-value-category="<%= category %>" >build</button>
+              <button phx-click="purchase_building" phx-value-building="<%= building_type %>" phx-value-category="<%= category %>" >build $<%= options.price %></button>
             <% else %>
-              <button disabled>build</button>
+              <button disabled>build $<%= options.price %></button>
             <% end %>
             <%= if Map.get(@city.detail, building_type) > 0 do %>
               <button phx-click="demolish_building" phx-value-building="<%= building_type %>" >demolish</button>
-            <% else %>
-              <button disabled>demolish</button>
             <% end %>
-            $<%= options.price %> to build |
-            $<%= options.ongoing_price %>/day |
+            $<%= options.daily_cost %>/day |
             <%= if Enum.any?(options, fn {key, _value} -> key == :jobs end) do %>
               jobs: <%= options.jobs %>
             <% end %>

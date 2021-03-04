@@ -10,9 +10,16 @@ defmodule MayorGame.Repo.Migrations.CreateDetails do
       add :apartments, :integer, default: 0
       # transit
       add :roads, :integer, default: 0
+      add :highways, :integer, default: 0
       add :airports, :integer, default: 0
       add :bus_lines, :integer, default: 0
       add :subway_lines, :integer, default: 0
+      # infrastructure
+      add :coal_plants, :integer, default: 0
+      add :power_plants, :integer, default: 0
+      add :wind_turbines, :integer, default: 0
+      add :solar_plants, :integer, default: 0
+      add :nuclear_plants, :integer, default: 0
       # civic
       add :parks, :integer, default: 0
       add :libraries, :integer, default: 0

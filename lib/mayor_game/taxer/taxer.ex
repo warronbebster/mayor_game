@@ -6,12 +6,13 @@ defmodule MayorGame.Taxer do
   def start_link(initial_val) do
     # starts link based on this file
     # which triggers init function in module
+    # do a check to see if World exists, and if so, send world.day
 
     GenServer.start_link(__MODULE__, initial_val)
   end
 
   def init(initial_val) do
-    # initial_val is 0 here, set in application.ex
+    # initial_val is 0 here, set in application.ex then started with start_link
 
     # send message :tax to self process after 5000ms
     Process.send_after(self(), :tax, 5000)
@@ -33,6 +34,9 @@ defmodule MayorGame.Taxer do
         # result here is %{jobs: #, housing: #, tax: #, daily_cost: #, citizens_looking: []}
         city_calc = calculate_city_stats(city)
 
+        # should i loop through citizens here, instead of in calculate_city_stats?
+        # that way I can use the same function later?
+
         updated_city_treasury =
           if city.detail.city_treasury + city_calc.tax - city_calc.daily_cost < 0 do
             # maybe some other consequences here
@@ -49,9 +53,7 @@ defmodule MayorGame.Taxer do
             City.update_log(
               city,
               "today's tax income:" <>
-                to_string(city_calc.tax) <>
-                " operating cost: " <>
-                to_string(city_calc.daily_cost)
+                to_string(city_calc.tax) <> " operating cost: " <> to_string(city_calc.daily_cost)
             )
 
           {:error, err} ->
@@ -62,19 +64,14 @@ defmodule MayorGame.Taxer do
         are_there_jobs =
           Enum.any?(city_calc.jobs, fn {_level, amount_of_jobs} -> amount_of_jobs > 0 end)
 
-        IO.puts("are there still jobs in " <> city.title <> ": " <> to_string(are_there_jobs))
-
-        if city_calc.housing > 0 && are_there_jobs do
-          %{
-            cities_w_room: [Map.put(city_calc, :city, city) | acc.cities_w_room],
-            citizens_looking: city_calc.citizens_looking ++ acc.citizens_looking
-          }
-        else
-          %{
-            cities_w_room: acc.cities_w_room,
-            citizens_looking: city_calc.citizens_looking ++ acc.citizens_looking
-          }
-        end
+        %{
+          cities_w_room:
+            if(city_calc.housing > 0 && are_there_jobs,
+              do: [Map.put(city_calc, :city, city) | acc.cities_w_room],
+              else: acc.cities_w_room
+            ),
+          citizens_looking: city_calc.citizens_looking ++ acc.citizens_looking
+        }
       end)
 
     # SECOND ROUND CHECK (move citizens to better city, etc) here
@@ -93,7 +90,9 @@ defmodule MayorGame.Taxer do
           )
 
           # move citizen to city
-          move_citizen(citizen, best_job.best_city.city)
+
+          if best_job.best_city.city.id != citizen.info_id,
+            do: move_citizen(citizen, best_job.best_city.city)
 
           # find where the city is in the list
           indexx = Enum.find_index(acc_city_list, &(&1 == best_job.best_city))
@@ -148,8 +147,13 @@ defmodule MayorGame.Taxer do
       citizen.name <> " moved to " <> city_to_move_to.title
     )
 
+    City.update_log(
+      city_to_move_to,
+      citizen.name <> " just moved here from " <> City.get_info!(citizen.info_id).title
+    )
+
     City.update_citizens(citizen, %{info_id: city_to_move_to.id})
-    City.update_log(city_to_move_to, citizen.name <> " just moved here")
+    # City.update_log(city_to_move_to, citizen.name <> " just moved here from" <> citizen.info_id)
   end
 
   def kill_citizen(%MayorGame.City.Citizens{} = citizen) do
@@ -209,12 +213,17 @@ defmodule MayorGame.Taxer do
     if is_integer(result), do: nil, else: result
   end
 
+  @doc """
+    # result here is %{jobs: #, housing: #, tax: #, daily_cost: #, citizens_looking: []}
+  """
   def calculate_city_stats(%MayorGame.City.Info{} = city) do
     city_preloaded = preload_city_check(city)
     daily_cost = calculate_daily_cost(city_preloaded)
     available_housing = calculate_housing(city_preloaded)
     # returns a map of %{0 => #, 0 => #, etc}
     available_jobs = calculate_jobs(city_preloaded)
+    # returns map of %{sprawl: int, mobility: int}
+    mobility_score = calculate_mobility(city_preloaded)
 
     if List.first(city_preloaded.citizens) != nil do
       results =
@@ -302,6 +311,24 @@ defmodule MayorGame.Taxer do
     end)
   end
 
+  @doc """
+  returns transit & mobility info in map %{sprawl: int, mobility: int}
+  """
+  def calculate_mobility(%MayorGame.City.Info{} = city) do
+    city_preloaded = preload_city_check(city)
+
+    Enum.reduce(Details.buildables().transit, %{sprawl: 0, mobility: 0}, fn {transit_type,
+                                                                             transit_options},
+                                                                            acc ->
+      sprawl = acc.sprawl + transit_options.sprawl * Map.get(city_preloaded.detail, transit_type)
+
+      mobility =
+        acc.mobility + transit_options.mobility * Map.get(city_preloaded.detail, transit_type)
+
+      %{sprawl: sprawl, mobility: mobility}
+    end)
+  end
+
   def calculate_jobs(%MayorGame.City.Info{} = city) do
     city_preloaded = preload_city_check(city)
     empty_jobs_map = %{0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0}
@@ -337,7 +364,7 @@ defmodule MayorGame.Taxer do
 
       acc +
         Enum.reduce(buildings, 0, fn {building_type, building_options}, acc2 ->
-          acc2 + building_options.ongoing_price * Map.get(city_preloaded.detail, building_type)
+          acc2 + building_options.daily_cost * Map.get(city_preloaded.detail, building_type)
         end)
     end)
   end

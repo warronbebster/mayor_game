@@ -20,6 +20,7 @@ defmodule MayorGameWeb.CityLive do
   def mount(%{"title" => title}, session, socket) do
     # subscribe to the channel "cityPubSub". everyone subscribes to this channel
     MayorGameWeb.Endpoint.subscribe("cityPubSub")
+    world = MayorGame.Repo.get!(MayorGame.City.World, 1)
 
     {
       :ok,
@@ -27,8 +28,7 @@ defmodule MayorGameWeb.CityLive do
       # put the title in assigns
       |> assign(:title, title)
       |> assign(:buildables, Details.buildables())
-      # assign ping
-      |> assign(:ping, 0)
+      |> assign(:ping, world.day)
       |> grab_city_by_title()
       |> assign_auth(session)
       # run helper function to get the stuff from the DB for those things
@@ -54,30 +54,21 @@ defmodule MayorGameWeb.CityLive do
            last_moved: 0
          }) do
       # pattern match to assign new_citizen to what's returned from City.create_citizens
-      {:ok, updated_citizens} ->
-        # send a message to channel cityPubSub with updatedCitizens
-        # so technically here I could also send to "addlog" function or whatever?
-        # I don't think here I even really need to broadcast this
-        MayorGameWeb.Endpoint.local_broadcast(
-          "cityPubSub",
-          "updated_citizens",
-          updated_citizens
-        )
+      {:ok, _updated_citizens} ->
+        IO.puts("updated 1 citizen")
 
       {:error, err} ->
         Logger.error(inspect(err))
     end
 
-    {:noreply, socket}
+    {:noreply, socket |> grab_city_by_title()}
   end
 
   # event
-  # ok so it works baybeee
   def handle_event("gib_money", _value, %{assigns: %{city: city}} = socket) do
     case City.update_details(city.detail, %{city_treasury: city.detail.city_treasury + 1000}) do
-      {:ok, updated_info} ->
-        IO.puts("success")
-        IO.inspect(updated_info)
+      {:ok, _updated_info} ->
+        IO.puts("money gabe")
 
       {:error, err} ->
         Logger.error(inspect(err))
@@ -100,6 +91,8 @@ defmodule MayorGameWeb.CityLive do
     # get price — don't want to set price on front-end for cheating reasons
     purchase_price =
       get_in(Details.buildables(), [building_category_atom, building_to_buy_atom, :price])
+
+    # check for upgrade requirements?
 
     case City.purchase_details(city.detail, building_to_buy_atom, purchase_price) do
       {:ok, _updated_detail} ->
@@ -125,10 +118,7 @@ defmodule MayorGameWeb.CityLive do
     # how many buildings are there now
     {:ok, current_value} = Map.fetch(city.detail, building_to_demolish_atom)
 
-    attrs =
-      Map.new([
-        {building_to_demolish_atom, current_value - 1}
-      ])
+    attrs = Map.new([{building_to_demolish_atom, current_value - 1}])
 
     case City.update_details(city.detail, attrs) do
       {:ok, _updated_detail} ->
