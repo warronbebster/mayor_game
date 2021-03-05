@@ -5,15 +5,19 @@ defmodule MayorGame.City.Details do
   schema "details" do
     field :city_treasury, :integer
     # housing
-    field :houses, :integer
+    field :single_family_homes, :integer
+    field :multi_family_homes, :integer
+    field :homeless_shelter, :integer
     field :apartments, :integer
+    field :micro_apartments, :integer
+    field :high_rises, :integer
     # transit
     field :roads, :integer
     field :highways, :integer
     field :airports, :integer
     field :bus_lines, :integer
     field :subway_lines, :integer
-    # infrastructure
+    # energy
     field :coal_plants, :integer
     field :wind_turbines, :integer
     field :solar_plants, :integer
@@ -44,8 +48,12 @@ defmodule MayorGame.City.Details do
   def buildables do
     %{
       housing: %{
-        houses: %{price: 20, fits: 4, daily_cost: 0},
-        apartments: %{price: 20, fits: 20, daily_cost: 0}
+        single_family_homes: %{price: 20, fits: 2, daily_cost: 0, mobility_req: 2},
+        multi_family_homes: %{price: 60, fits: 6, daily_cost: 0, mobility_req: 2},
+        homeless_shelter: %{price: 60, fits: 20, daily_cost: 10, mobility_req: 10},
+        apartments: %{price: 60, fits: 20, daily_cost: 0, mobility_req: 10},
+        micro_apartments: %{price: 80, fits: 20, daily_cost: 0, mobility_req: 5},
+        high_rises: %{price: 200, fits: 20, daily_cost: 0, mobility_req: 2}
       },
       transit: %{
         roads: %{price: 20, daily_cost: 0, jobs: 0, job_level: 0, sprawl: 10, mobility: 10},
@@ -61,11 +69,39 @@ defmodule MayorGame.City.Details do
           mobility: 100
         }
       },
-      infrastructure: %{
-        coal_plants: %{price: 20, daily_cost: 10, jobs: 100, job_level: 0},
-        wind_turbines: %{price: 100, daily_cost: 3, jobs: 10, job_level: 1},
-        solar_plants: %{price: 200, daily_cost: 3, jobs: 10, job_level: 2},
-        nuclear_plants: %{price: 20, daily_cost: 10, jobs: 100, job_level: 3}
+      energy: %{
+        coal_plants: %{
+          price: 20,
+          daily_cost: 10,
+          jobs: 30,
+          job_level: 0,
+          energy: 10,
+          pollution: 10
+        },
+        wind_turbines: %{
+          price: 100,
+          daily_cost: 3,
+          jobs: 10,
+          job_level: 1,
+          energy: 5,
+          pollution: 0
+        },
+        solar_plants: %{
+          price: 200,
+          daily_cost: 3,
+          jobs: 10,
+          job_level: 2,
+          energy: 10,
+          pollution: 0
+        },
+        nuclear_plants: %{
+          price: 2000,
+          daily_cost: 50,
+          jobs: 10,
+          job_level: 3,
+          energy: 100,
+          pollution: 0
+        }
       },
       civic: %{
         parks: %{price: 20, daily_cost: 5},

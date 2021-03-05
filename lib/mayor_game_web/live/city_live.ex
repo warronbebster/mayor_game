@@ -132,7 +132,7 @@ defmodule MayorGameWeb.CityLive do
     {:noreply, socket |> grab_city_by_title()}
   end
 
-  # this is what gets the message from Mover/taxer
+  # this is what gets messages from CityCalculator
   def handle_info(%{event: "ping", payload: ping}, socket) do
     {:noreply, socket |> assign(:ping, ping) |> grab_city_by_title()}
   end

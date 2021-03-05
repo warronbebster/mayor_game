@@ -42,11 +42,6 @@ Auth.create_user(%{
     user_id: madeUser_id
   })
 
-# create details
-# first one doesn't work because it just makes a "details" entry in the DB. and we don't associate it later
-# {:ok, %Details{}} = City.create_details(%{houses: 3, roads: 6, schools: 9, info_id: madeInfo_id})
-# details = %Details{houses: 3, roads: 6, schools: 9}
-
 # create citizens
 {:ok, %Citizens{}} =
   City.create_citizens(%{

@@ -6,8 +6,12 @@ defmodule MayorGame.Repo.Migrations.CreateDetails do
       add :city_treasury, :integer, default: 500
       add :info_id, references(:cities, on_delete: :nothing)
       # housing
-      add :houses, :integer, default: 0
+      add :single_family_homes, :integer, default: 0
+      add :multi_family_homes, :integer, default: 0
+      add :homeless_shelter, :integer, default: 0
       add :apartments, :integer, default: 0
+      add :micro_apartments, :integer, default: 0
+      add :high_rises, :integer, default: 0
       # transit
       add :roads, :integer, default: 0
       add :highways, :integer, default: 0

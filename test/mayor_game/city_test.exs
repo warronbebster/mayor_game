@@ -128,9 +128,9 @@ defmodule MayorGame.CityTest do
   describe "details" do
     alias MayorGame.City.Details
 
-    @valid_attrs %{houses: 42, roads: 42, schools: 42}
-    @update_attrs %{houses: 43, roads: 43, schools: 43}
-    @invalid_attrs %{houses: nil, roads: nil, schools: nil}
+    @valid_attrs %{single_family_homes: 42, roads: 42, schools: 42}
+    @update_attrs %{single_family_homes: 43, roads: 43, schools: 43}
+    @invalid_attrs %{single_family_homes: nil, roads: nil, schools: nil}
 
     def details_fixture(attrs \\ %{}) do
       {:ok, details} =
@@ -153,7 +153,7 @@ defmodule MayorGame.CityTest do
 
     test "create_details/1 with valid data creates a details" do
       assert {:ok, %Details{} = details} = City.create_details(@valid_attrs)
-      assert details.houses == 42
+      assert details.single_family_homes == 42
       assert details.roads == 42
       assert details.schools == 42
     end
@@ -165,7 +165,7 @@ defmodule MayorGame.CityTest do
     test "update_details/2 with valid data updates the details" do
       details = details_fixture()
       assert {:ok, %Details{} = details} = City.update_details(details, @update_attrs)
-      assert details.houses == 43
+      assert details.single_family_homes == 43
       assert details.roads == 43
       assert details.schools == 43
     end

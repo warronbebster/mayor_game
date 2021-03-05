@@ -13,13 +13,12 @@
 }
 html {
 	box-sizing: border-box;
-	font-size: 62.5%;
 	background-color: #000000;
 }
 body {
 	color: #ffffff;
 	font-family: "Helvetica", "Arial", sans-serif;
-	font-size: 1.6em;
+	font-size: 1em;
 	font-weight: 300;
 	line-height: 1.6;
 }
@@ -43,7 +42,7 @@ input[type="submit"] {
 	border-radius: 0.4rem;
 	cursor: pointer;
 	display: inline-block;
-	padding: 0.5rem;
+	padding: 0.2rem;
 	text-align: center;
 	text-decoration: none;
 	white-space: nowrap;

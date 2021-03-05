@@ -38,7 +38,7 @@
               jobs: <%= options.jobs %>
             <% end %>
             <%= if Enum.any?(options, fn {key, _value} -> key == :fits end) do %>
-              houses: <%= options.fits %>
+              single_family_homes: <%= options.fits %>
             <% end %>
 
 

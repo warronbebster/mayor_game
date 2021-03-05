@@ -1,4 +1,4 @@
-defmodule MayorGame.Taxer do
+defmodule MayorGame.CityCalculator do
   use GenServer, restart: :permanent
   alias MayorGame.City
   alias MayorGame.City.Details
@@ -32,7 +32,8 @@ defmodule MayorGame.Taxer do
     leftovers =
       Enum.reduce(cities, %{cities_w_room: [], citizens_looking: []}, fn city, acc ->
         # result here is %{jobs: #, housing: #, tax: #, daily_cost: #, citizens_looking: []}
-        city_calc = calculate_city_stats(city)
+        city_stats = calculate_city_stats(city)
+        city_calc = calculate_stats_based_on_citizens(city.citizens, city_stats)
 
         # should i loop through citizens here, instead of in calculate_city_stats?
         # that way I can use the same function later?
@@ -52,7 +53,7 @@ defmodule MayorGame.Taxer do
           {:ok, _updated_details} ->
             City.update_log(
               city,
-              "today's tax income:" <>
+              "today's tax income: " <>
                 to_string(city_calc.tax) <> " operating cost: " <> to_string(city_calc.daily_cost)
             )
 
@@ -61,8 +62,7 @@ defmodule MayorGame.Taxer do
         end
 
         # if city isn't at capacity?
-        are_there_jobs =
-          Enum.any?(city_calc.jobs, fn {_level, amount_of_jobs} -> amount_of_jobs > 0 end)
+        are_there_jobs = Enum.any?(city_calc.jobs, fn {_level, number} -> number > 0 end)
 
         %{
           cities_w_room:
@@ -84,15 +84,8 @@ defmodule MayorGame.Taxer do
         best_job = find_best_job(acc_city_list, citizen)
 
         if not is_nil(best_job) do
-          IO.puts(
-            "housing left in " <>
-              best_job.best_city.city.title <> ": " <> to_string(best_job.best_city.housing)
-          )
-
           # move citizen to city
-
-          if best_job.best_city.city.id != citizen.info_id,
-            do: move_citizen(citizen, best_job.best_city.city)
+          move_citizen(citizen, best_job.best_city.city)
 
           # find where the city is in the list
           indexx = Enum.find_index(acc_city_list, &(&1 == best_job.best_city))
@@ -104,15 +97,6 @@ defmodule MayorGame.Taxer do
               |> Map.update!(:housing, &(&1 - 1))
               |> update_in([:jobs, best_job.job_level], &(&1 - 1))
             end)
-
-          # IO.inspect(
-          #   Enum.map(updated_acc_city_list, fn city_calc ->
-          #     Map.take(city_calc, [:housing, :city])
-          #     |> Map.update!(:city, fn city ->
-          #       Map.take(city, [:title])
-          #     end)
-          #   end)
-          # )
 
           updated_acc_city_list
         else
@@ -142,18 +126,21 @@ defmodule MayorGame.Taxer do
   # CUSTOM HELPER FUNCTIONS BELOW
 
   def move_citizen(%MayorGame.City.Citizens{} = citizen, %MayorGame.City.Info{} = city_to_move_to) do
-    City.update_log(
-      City.get_info!(citizen.info_id),
-      citizen.name <> " moved to " <> city_to_move_to.title
-    )
+    prev_city = City.get_info!(citizen.info_id)
 
-    City.update_log(
-      city_to_move_to,
-      citizen.name <> " just moved here from " <> City.get_info!(citizen.info_id).title
-    )
+    if prev_city.id != city_to_move_to.id do
+      City.update_log(
+        prev_city,
+        citizen.name <> " moved to " <> city_to_move_to.title
+      )
 
-    City.update_citizens(citizen, %{info_id: city_to_move_to.id})
-    # City.update_log(city_to_move_to, citizen.name <> " just moved here from" <> citizen.info_id)
+      City.update_log(
+        city_to_move_to,
+        citizen.name <> " just moved here from " <> prev_city.title
+      )
+
+      City.update_citizens(citizen, %{info_id: city_to_move_to.id})
+    end
   end
 
   def kill_citizen(%MayorGame.City.Citizens{} = citizen) do
@@ -214,28 +201,49 @@ defmodule MayorGame.Taxer do
   end
 
   @doc """
-    # result here is %{jobs: #, housing: #, tax: #, daily_cost: #, citizens_looking: []}
+    takes a %MayorGame.City.Info{} struct
+    result here is %{jobs: #, housing: #, tax: #, daily_cost: #, citizens_looking: []}
   """
   def calculate_city_stats(%MayorGame.City.Info{} = city) do
     city_preloaded = preload_city_check(city)
     daily_cost = calculate_daily_cost(city_preloaded)
-    available_housing = calculate_housing(city_preloaded)
+    total_housing = calculate_housing(city_preloaded)
     # returns a map of %{0 => #, 0 => #, etc}
-    available_jobs = calculate_jobs(city_preloaded)
+    total_jobs = calculate_jobs(city_preloaded)
     # returns map of %{sprawl: int, mobility: int}
-    mobility_score = calculate_mobility(city_preloaded)
+    # calculate *available* mobility vs total
+    total_mobility = calculate_mobility(city_preloaded)
+    # calculate *available* energy vs total
+    total_energy = calculate_energy(city_preloaded)
 
-    if List.first(city_preloaded.citizens) != nil do
+    %{
+      jobs: total_jobs,
+      tax: 0,
+      housing: total_housing,
+      daily_cost: daily_cost,
+      citizens_looking: []
+    }
+
+    # end
+  end
+
+  @doc """
+    takes a list of citizens from a city, and a city_stats map:
+    %{
+      jobs: total_jobs,
+      tax: 0,
+      housing: total_housing,
+      daily_cost: daily_cost,
+      citizens_looking: []
+    }
+    result here is %{jobs: #, housing: #, tax: #, daily_cost: #, citizens_looking: []}
+  """
+  def calculate_stats_based_on_citizens(citizens, city_stats) do
+    if List.first(citizens) != nil do
       results =
         Enum.reduce(
-          city_preloaded.citizens,
-          %{
-            jobs: available_jobs,
-            tax: 0,
-            housing: available_housing,
-            daily_cost: daily_cost,
-            citizens_looking: []
-          },
+          citizens,
+          city_stats,
           fn citizen, acc ->
             City.update_citizens(citizen, %{age: citizen.age + 1})
 
@@ -284,7 +292,7 @@ defmodule MayorGame.Taxer do
               jobs: updated_jobs,
               tax: 1 + best_possible_job + acc.tax,
               housing: acc.housing - 1,
-              daily_cost: daily_cost,
+              daily_cost: acc.daily_cost,
               citizens_looking: citizens_looking
             }
           end
@@ -292,13 +300,7 @@ defmodule MayorGame.Taxer do
 
       results
     else
-      %{
-        jobs: available_jobs,
-        tax: 0,
-        housing: available_housing,
-        daily_cost: daily_cost,
-        citizens_looking: []
-      }
+      city_stats
     end
   end
 
@@ -326,6 +328,24 @@ defmodule MayorGame.Taxer do
         acc.mobility + transit_options.mobility * Map.get(city_preloaded.detail, transit_type)
 
       %{sprawl: sprawl, mobility: mobility}
+    end)
+  end
+
+  @doc """
+  returns energy info in map %{energy: int, pollution: int}
+  """
+  def calculate_energy(%MayorGame.City.Info{} = city) do
+    city_preloaded = preload_city_check(city)
+
+    Enum.reduce(Details.buildables().energy, %{energy: 0, pollution: 0}, fn {energy_type,
+                                                                             energy_options},
+                                                                            acc ->
+      pollution =
+        acc.pollution + energy_options.pollution * Map.get(city_preloaded.detail, energy_type)
+
+      energy = acc.energy + energy_options.energy * Map.get(city_preloaded.detail, energy_type)
+
+      %{energy: energy, pollution: pollution}
     end)
   end
 
