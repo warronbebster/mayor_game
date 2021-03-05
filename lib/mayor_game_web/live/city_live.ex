@@ -29,7 +29,7 @@ defmodule MayorGameWeb.CityLive do
       |> assign(:title, title)
       |> assign(:buildables, Details.buildables())
       |> assign(:ping, world.day)
-      |> grab_city_by_title()
+      |> update_city_by_title()
       |> assign_auth(session)
       # run helper function to get the stuff from the DB for those things
     }
@@ -61,7 +61,7 @@ defmodule MayorGameWeb.CityLive do
         Logger.error(inspect(err))
     end
 
-    {:noreply, socket |> grab_city_by_title()}
+    {:noreply, socket |> update_city_by_title()}
   end
 
   # event
@@ -75,7 +75,7 @@ defmodule MayorGameWeb.CityLive do
     end
 
     # this is all ya gotta do to update, baybee
-    {:noreply, socket |> grab_city_by_title()}
+    {:noreply, socket |> update_city_by_title()}
   end
 
   def handle_event(
@@ -103,7 +103,7 @@ defmodule MayorGameWeb.CityLive do
     end
 
     # this is all ya gotta do to update, baybee
-    {:noreply, socket |> grab_city_by_title()}
+    {:noreply, socket |> update_city_by_title()}
   end
 
   def handle_event(
@@ -129,29 +129,32 @@ defmodule MayorGameWeb.CityLive do
     end
 
     # this is all ya gotta do to update, baybee
-    {:noreply, socket |> grab_city_by_title()}
+    {:noreply, socket |> update_city_by_title()}
   end
 
   # this is what gets messages from CityCalculator
   def handle_info(%{event: "ping", payload: ping}, socket) do
-    {:noreply, socket |> assign(:ping, ping) |> grab_city_by_title()}
+    {:noreply, socket |> assign(:ping, ping) |> update_city_by_title()}
   end
 
   # this is just the generic handle_info if nothing else matches
   def handle_info(_assigns, socket) do
     # just update the whole city
-    {:noreply, socket |> grab_city_by_title()}
+    {:noreply, socket |> update_city_by_title()}
   end
 
   # function to update city
   # maybe i should make one just for "updating" — e.g. only pull details and citizens from DB
-  defp grab_city_by_title(%{assigns: %{title: title}} = socket) do
+  defp update_city_by_title(%{assigns: %{title: title}} = socket) do
     city =
       City.get_info_by_title!(title)
       |> Repo.preload([:detail, :citizens])
 
     # grab whole user struct
     user = Auth.get_user!(city.user_id)
+
+    mobility = MayorGame.CityCalculator.calculate_mobility(city)
+    energy = MayorGame.CityCalculator.calculate_mobility(city)
 
     socket
     |> assign(:user_id, user.id)

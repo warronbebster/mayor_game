@@ -314,39 +314,83 @@ defmodule MayorGame.CityCalculator do
   end
 
   @doc """
-  returns transit & mobility info in map %{sprawl: int, mobility: int}
+  takes a %MayorGame.City.Info{} struct
+  returns transit & mobility info in map %{sprawl: int, total_mobility: int, available_mobility: int}
   """
   def calculate_mobility(%MayorGame.City.Info{} = city) do
     city_preloaded = preload_city_check(city)
 
-    Enum.reduce(Details.buildables().transit, %{sprawl: 0, mobility: 0}, fn {transit_type,
-                                                                             transit_options},
-                                                                            acc ->
-      sprawl = acc.sprawl + transit_options.sprawl * Map.get(city_preloaded.detail, transit_type)
+    preliminary_results =
+      Enum.reduce(Details.buildables().transit, %{sprawl: 0, mobility: 0}, fn {transit_type,
+                                                                               transit_options},
+                                                                              acc ->
+        sprawl =
+          acc.sprawl + transit_options.sprawl * Map.get(city_preloaded.detail, transit_type)
 
-      mobility =
-        acc.mobility + transit_options.mobility * Map.get(city_preloaded.detail, transit_type)
+        mobility =
+          acc.mobility + transit_options.mobility * Map.get(city_preloaded.detail, transit_type)
 
-      %{sprawl: sprawl, mobility: mobility}
-    end)
+        %{sprawl: sprawl, total_mobility: mobility}
+      end)
+
+    mobility_cost =
+      Enum.reduce(MayorGame.City.Details.buildables(), 0, fn category, acc ->
+        {_categoryName, buildings} = category
+
+        acc +
+          Enum.reduce(buildings, 0, fn {building_type, building_options}, acc2 ->
+            if Map.has_key?(building_options, :mobility_cost),
+              do:
+                acc2 +
+                  building_options.mobility_cost * Map.get(city_preloaded.detail, building_type),
+              else: acc2
+          end)
+      end)
+
+    Map.put_new(
+      preliminary_results,
+      :available_mobility,
+      preliminary_results.total_mobility - mobility_cost
+    )
   end
 
   @doc """
-  returns energy info in map %{energy: int, pollution: int}
+  returns energy info in map %{total_energy: int, available_energy: int, pollution: int}
   """
   def calculate_energy(%MayorGame.City.Info{} = city) do
     city_preloaded = preload_city_check(city)
 
-    Enum.reduce(Details.buildables().energy, %{energy: 0, pollution: 0}, fn {energy_type,
-                                                                             energy_options},
-                                                                            acc ->
-      pollution =
-        acc.pollution + energy_options.pollution * Map.get(city_preloaded.detail, energy_type)
+    preliminary_results =
+      Enum.reduce(Details.buildables().energy, %{energy: 0, pollution: 0}, fn {energy_type,
+                                                                               energy_options},
+                                                                              acc ->
+        pollution =
+          acc.pollution + energy_options.pollution * Map.get(city_preloaded.detail, energy_type)
 
-      energy = acc.energy + energy_options.energy * Map.get(city_preloaded.detail, energy_type)
+        energy = acc.energy + energy_options.energy * Map.get(city_preloaded.detail, energy_type)
 
-      %{energy: energy, pollution: pollution}
-    end)
+        %{total_energy: energy, pollution: pollution}
+      end)
+
+    energy_cost =
+      Enum.reduce(MayorGame.City.Details.buildables(), 0, fn category, acc ->
+        {_categoryName, buildings} = category
+
+        acc +
+          Enum.reduce(buildings, 0, fn {building_type, building_options}, acc2 ->
+            if Map.has_key?(building_options, :energy_cost),
+              do:
+                acc2 +
+                  building_options.energy_cost * Map.get(city_preloaded.detail, building_type),
+              else: acc2
+          end)
+      end)
+
+    Map.put_new(
+      preliminary_results,
+      :available_energy,
+      preliminary_results.total_energy - energy_cost
+    )
   end
 
   def calculate_jobs(%MayorGame.City.Info{} = city) do
