@@ -154,12 +154,14 @@ defmodule MayorGameWeb.CityLive do
     user = Auth.get_user!(city.user_id)
 
     mobility = MayorGame.CityCalculator.calculate_mobility(city)
-    energy = MayorGame.CityCalculator.calculate_mobility(city)
+    energy = MayorGame.CityCalculator.calculate_energy(city)
 
     socket
     |> assign(:user_id, user.id)
     |> assign(:username, user.nickname)
     |> assign(:city, city)
+    |> assign(:mobility, mobility)
+    |> assign(:energy, energy)
   end
 
   # POW AUTH STUFF DOWN HERE BAYBEE

@@ -321,14 +321,15 @@ defmodule MayorGame.CityCalculator do
     city_preloaded = preload_city_check(city)
 
     preliminary_results =
-      Enum.reduce(Details.buildables().transit, %{sprawl: 0, mobility: 0}, fn {transit_type,
-                                                                               transit_options},
-                                                                              acc ->
+      Enum.reduce(Details.buildables().transit, %{sprawl: 0, total_mobility: 0}, fn {transit_type,
+                                                                                     transit_options},
+                                                                                    acc ->
         sprawl =
           acc.sprawl + transit_options.sprawl * Map.get(city_preloaded.detail, transit_type)
 
         mobility =
-          acc.mobility + transit_options.mobility * Map.get(city_preloaded.detail, transit_type)
+          acc.total_mobility +
+            transit_options.mobility * Map.get(city_preloaded.detail, transit_type)
 
         %{sprawl: sprawl, total_mobility: mobility}
       end)
@@ -355,19 +356,21 @@ defmodule MayorGame.CityCalculator do
   end
 
   @doc """
+  takes a %MayorGame.City.Info{} struct
   returns energy info in map %{total_energy: int, available_energy: int, pollution: int}
   """
   def calculate_energy(%MayorGame.City.Info{} = city) do
     city_preloaded = preload_city_check(city)
 
     preliminary_results =
-      Enum.reduce(Details.buildables().energy, %{energy: 0, pollution: 0}, fn {energy_type,
-                                                                               energy_options},
-                                                                              acc ->
+      Enum.reduce(Details.buildables().energy, %{total_energy: 0, pollution: 0}, fn {energy_type,
+                                                                                     energy_options},
+                                                                                    acc ->
         pollution =
           acc.pollution + energy_options.pollution * Map.get(city_preloaded.detail, energy_type)
 
-        energy = acc.energy + energy_options.energy * Map.get(city_preloaded.detail, energy_type)
+        energy =
+          acc.total_energy + energy_options.energy * Map.get(city_preloaded.detail, energy_type)
 
         %{total_energy: energy, pollution: pollution}
       end)
