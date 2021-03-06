@@ -340,25 +340,53 @@ defmodule MayorGame.CityCalculator do
         %{sprawl: sprawl, total_mobility: mobility}
       end)
 
-    mobility_cost =
-      Enum.reduce(MayorGame.City.Details.buildables(), 0, fn category, acc ->
-        {_categoryName, buildings} = category
+    mobility_results =
+      Enum.reduce(
+        MayorGame.City.Details.buildables(),
+        %{disabled_buildings: [], mobility_left: preliminary_results.total_mobility},
+        fn category, acc ->
+          {_categoryName, buildings} = category
 
-        acc +
-          Enum.reduce(buildings, 0, fn {building_type, building_options}, acc2 ->
-            if Map.has_key?(building_options, :mobility_cost),
-              do:
-                acc2 +
-                  building_options.mobility_cost * Map.get(city_preloaded.detail, building_type),
-              else: acc2
-          end)
-      end)
+          Enum.reduce(
+            buildings,
+            %{
+              disabled_buildings: acc.disabled_buildings,
+              mobility_left: acc.mobility_left
+            },
+            fn {building_type, building_options}, acc2 ->
+              building_count = Map.get(city_preloaded.detail, building_type)
 
-    Map.put_new(
-      preliminary_results,
-      :available_mobility,
-      preliminary_results.total_mobility - mobility_cost
-    )
+              if Map.has_key?(building_options, :mobility_cost) && building_count > 0 do
+                Enum.reduce(
+                  1..building_count,
+                  %{
+                    disabled_buildings: acc2.disabled_buildings,
+                    mobility_left: acc2.mobility_left
+                  },
+                  fn _building, acc3 ->
+                    negative_mobility = acc3.mobility_left < building_options.mobility_cost
+
+                    %{
+                      disabled_buildings:
+                        if(negative_mobility,
+                          do: [building_type | acc.disabled_buildings],
+                          else: acc.disabled_buildings
+                        ),
+                      mobility_left: acc3.mobility_left - building_options.mobility_cost
+                    }
+                  end
+                )
+              else
+                acc2
+              end
+            end
+          )
+        end
+      )
+
+    preliminary_results
+    |> Map.put_new(:available_mobility, mobility_results.mobility_left)
+    |> Map.put_new(:disabled_buildings, mobility_results.disabled_buildings)
   end
 
   @doc """
