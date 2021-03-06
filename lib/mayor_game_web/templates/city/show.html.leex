@@ -52,7 +52,7 @@
                   <button phx-click="purchase_building" phx-value-building="<%= building_type %>" phx-value-category="<%= category %>" >build $<%= options.price %></button> 5
                 <%# no energy needed, not enough mobility %>
                 <% !Map.has_key?(options, :energy_cost) && (Map.has_key?(options, :mobility_cost) and @mobility.available_mobility < options.mobility_cost) -> %>
-                  <button disabled>build $<%= options.price %></button> 6 not enough area
+                  <button disabled>build $<%= options.price %></button> 6 not enough areaa
                 <%# no mobility needed, enough energy %>
                 <% !Map.has_key?(options, :mobility_cost) && (Map.has_key?(options, :energy_cost) and @energy.available_energy >= options.energy_cost) -> %>
                   <button phx-click="purchase_building" phx-value-building="<%= building_type %>" phx-value-category="<%= category %>" >build $<%= options.price %></button> 7
@@ -74,18 +74,12 @@
               <button phx-click="demolish_building" phx-value-building="<%= building_type %>" >demolish</button>
             <% end %>
 
-            $<%= options.daily_cost %>/day |
-            <%= if Enum.any?(options, fn {key, _value} -> key == :jobs end) do %>
-              jobs: <%= options.jobs %> |
-            <% end %>
-            <%= if Enum.any?(options, fn {key, _value} -> key == :fits end) do %>
-              fits: <%= options.fits %> |
-            <% end %>
-            <%= if Enum.any?(options, fn {key, _value} -> key == :energy_cost end) do %>
-              energy cost: <%= options.energy_cost %> |
-            <% end %>
-            <%= if Enum.any?(options, fn {key, _value} -> key == :mobility_cost end) do %>
-              area required: <%= options.mobility_cost %>
+            <%# hmm i should just do a comprehension through all key/values in options %>
+
+            <%= for {building_stat, value} <- options do %>
+              <%= if building_stat != :price do %>
+                <%= building_stat %>: <%=value%> |
+              <% end %>
             <% end %>
 
 
