@@ -26,62 +26,65 @@
       <%= for {category, buildings} <- @buildables do %>
         <b><%= category %></b>
         <br/>
-        <%= for {building_type, options} <- buildings do %>
+        <%= for {building_type, building_stats} <- buildings do %>
+
 
           <%= building_type %>
           <%= Map.get(@city.detail, building_type) %>
 
+          <%# do some check here for disabled buildings %>
+          <%# for each blach in assigns[building_type] %>
+
           <%= if @is_user_mayor do %>
 
-            <%= if @city.detail.city_treasury > options.price do %>
+            <%= if @city.detail.city_treasury > building_stats.price do %>
               <%= cond do %>
                 <%# enough energy AND enough mobility %>
-                <%(Map.has_key?(options, :energy_cost) and @energy.available_energy >= options.energy_cost) && (Map.has_key?(options, :mobility_cost) and @mobility.available_mobility >= options.mobility_cost ) -> %>
-                  <button phx-click="purchase_building" phx-value-building="<%= building_type %>" phx-value-category="<%= category %>" >build $<%= options.price %></button> 1
+                <%(Map.has_key?(building_stats, :energy_cost) and @energy.available_energy >= building_stats.energy_cost) && (Map.has_key?(building_stats, :mobility_cost) and @mobility.available_mobility >= building_stats.mobility_cost ) -> %>
+                  <button phx-click="purchase_building" phx-value-building="<%= building_type %>" phx-value-category="<%= category %>" >build $<%= building_stats.price %></button> 1
                 <%# not enough energy, enough mobility  %>
-                <%(Map.has_key?(options, :energy_cost) and @energy.available_energy < options.energy_cost) && (Map.has_key?(options, :mobility_cost) and @mobility.available_mobility >= options.mobility_cost) -> %>
-                  <button disabled>build $<%= options.price %></button> 2 not enough energy
+                <%(Map.has_key?(building_stats, :energy_cost) and @energy.available_energy < building_stats.energy_cost) && (Map.has_key?(building_stats, :mobility_cost) and @mobility.available_mobility >= building_stats.mobility_cost) -> %>
+                  <button disabled>build $<%= building_stats.price %></button> 2 not enough energy
                 <%# enough energy, not enough mobility  %>
-                <%(Map.has_key?(options, :energy_cost) and @energy.available_energy >= options.energy_cost) && (Map.has_key?(options, :mobility_cost) and @mobility.available_mobility < options.mobility_cost) -> %>
-                  <button disabled>build $<%= options.price %></button> 3 not enough area
+                <%(Map.has_key?(building_stats, :energy_cost) and @energy.available_energy >= building_stats.energy_cost) && (Map.has_key?(building_stats, :mobility_cost) and @mobility.available_mobility < building_stats.mobility_cost) -> %>
+                  <button disabled>build $<%= building_stats.price %></button> 3 not enough area
                 <%# not enough energy AND not enough mobility %>
-                <%(Map.has_key?(options, :energy_cost) and @energy.available_energy < options.energy_cost) && (Map.has_key?(options, :mobility_cost) and @mobility.available_mobility < options.mobility_cost) -> %>
-                  <button disabled>build $<%= options.price %></button> 4 not enough area or energy
+                <%(Map.has_key?(building_stats, :energy_cost) and @energy.available_energy < building_stats.energy_cost) && (Map.has_key?(building_stats, :mobility_cost) and @mobility.available_mobility < building_stats.mobility_cost) -> %>
+                  <button disabled>build $<%= building_stats.price %></button> 4 not enough area or energy
                 <%# no energy needed, enough mobility %>
-                <% !Map.has_key?(options, :energy_cost) && (Map.has_key?(options, :mobility_cost) and @mobility.available_mobility >= options.mobility_cost) -> %>
-                  <button phx-click="purchase_building" phx-value-building="<%= building_type %>" phx-value-category="<%= category %>" >build $<%= options.price %></button> 5
+                <% !Map.has_key?(building_stats, :energy_cost) && (Map.has_key?(building_stats, :mobility_cost) and @mobility.available_mobility >= building_stats.mobility_cost) -> %>
+                  <button phx-click="purchase_building" phx-value-building="<%= building_type %>" phx-value-category="<%= category %>" >build $<%= building_stats.price %></button> 5
                 <%# no energy needed, not enough mobility %>
-                <% !Map.has_key?(options, :energy_cost) && (Map.has_key?(options, :mobility_cost) and @mobility.available_mobility < options.mobility_cost) -> %>
-                  <button disabled>build $<%= options.price %></button> 6 not enough areaa
+                <% !Map.has_key?(building_stats, :energy_cost) && (Map.has_key?(building_stats, :mobility_cost) and @mobility.available_mobility < building_stats.mobility_cost) -> %>
+                  <button disabled>build $<%= building_stats.price %></button> 6 not enough areaa
                 <%# no mobility needed, enough energy %>
-                <% !Map.has_key?(options, :mobility_cost) && (Map.has_key?(options, :energy_cost) and @energy.available_energy >= options.energy_cost) -> %>
-                  <button phx-click="purchase_building" phx-value-building="<%= building_type %>" phx-value-category="<%= category %>" >build $<%= options.price %></button> 7
+                <% !Map.has_key?(building_stats, :mobility_cost) && (Map.has_key?(building_stats, :energy_cost) and @energy.available_energy >= building_stats.energy_cost) -> %>
+                  <button phx-click="purchase_building" phx-value-building="<%= building_type %>" phx-value-category="<%= category %>" >build $<%= building_stats.price %></button> 7
                 <%# no mobility needed, not enough energy %>
-                <% !Map.has_key?(options, :mobility_cost) && (Map.has_key?(options, :energy_cost) and @energy.available_energy < options.energy_cost) -> %>
-                  <button disabled>build $<%= options.price %></button> 8 not enough energy
+                <% !Map.has_key?(building_stats, :mobility_cost) && (Map.has_key?(building_stats, :energy_cost) and @energy.available_energy < building_stats.energy_cost) -> %>
+                  <button disabled>build $<%= building_stats.price %></button> 8 not enough energy
                 <%# no mobility needed, no energy needed %>
-                <% !Map.has_key?(options, :mobility_cost) and !Map.has_key?(options, :energy_cost) -> %>
-                  <button phx-click="purchase_building" phx-value-building="<%= building_type %>" phx-value-category="<%= category %>" >build $<%= options.price %></button>9
+                <% !Map.has_key?(building_stats, :mobility_cost) and !Map.has_key?(building_stats, :energy_cost) -> %>
+                  <button phx-click="purchase_building" phx-value-building="<%= building_type %>" phx-value-category="<%= category %>" >build $<%= building_stats.price %></button>9
                 <%# catch-all %>
                 <% true -> %>
-                <button phx-click="purchase_building" phx-value-building="<%= building_type %>" phx-value-category="<%= category %>" >build $<%= options.price %></button> 10
+                <button phx-click="purchase_building" phx-value-building="<%= building_type %>" phx-value-category="<%= category %>" >build $<%= building_stats.price %></button> 10
               <% end %>
             <% else %>
-              <button disabled>build $<%= options.price %></button>
+              <button disabled>build $<%= building_stats.price %></button>
             <% end %>
 
             <%= if Map.get(@city.detail, building_type) > 0 do %>
               <button phx-click="demolish_building" phx-value-building="<%= building_type %>" >demolish</button>
             <% end %>
 
-            <%# hmm i should just do a comprehension through all key/values in options %>
+            <%# hmm i should just do a comprehension through all key/values in building_stats %>
 
-            <%= for {building_stat, value} <- options do %>
+            <%= for {building_stat, value} <- building_stats do %>
               <%= if building_stat != :price do %>
                 <%= building_stat %>: <%=value%> |
               <% end %>
             <% end %>
-
 
           <% end %>
           <br/>

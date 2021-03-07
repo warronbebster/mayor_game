@@ -156,6 +156,58 @@ defmodule MayorGameWeb.CityLive do
     mobility = MayorGame.CityCalculator.calculate_mobility(city)
     energy = MayorGame.CityCalculator.calculate_energy(city)
 
+    # figure out how to send an assign for each building type with disabled buildings
+    # enum map for buildables
+    # adjust some to be disabled
+    buildings_status =
+      Details.buildables_list()
+      |> Enum.reduce(%{}, fn building_type, acc ->
+        building_count = Map.get(city.detail, building_type)
+        mobility_disabled_count = Enum.count(mobility.disabled_buildings, &(&1 == building_type))
+        energy_disabled_count = Enum.count(energy.disabled_buildings, &(&1 == building_type))
+
+        results =
+          cond do
+            # both disabled
+            mobility_disabled_count > 0 && energy_disabled_count > 0 ->
+              total_disabled = max(mobility_disabled_count, energy_disabled_count)
+
+              %{
+                disabled: total_disabled,
+                enabled: building_count - total_disabled,
+                reason: "needs more energy and area to operate"
+              }
+
+            # mobility disabled, not energy
+            mobility_disabled_count > 0 && energy_disabled_count == 0 ->
+              %{
+                disabled: mobility_disabled_count,
+                enabled: building_count - mobility_disabled_count,
+                reason: "needs more area to operate"
+              }
+
+            # mobility fine, energy disabled
+            mobility_disabled_count == 0 && energy_disabled_count > 0 ->
+              %{
+                disabled: mobility_disabled_count,
+                enabled: building_count - energy_disabled_count,
+                reason: "needs more energy to operate"
+              }
+
+            # both fine
+            mobility_disabled_count == 0 && energy_disabled_count == 0 ->
+              %{
+                disabled: 0,
+                enabled: building_count,
+                reason: "can operate"
+              }
+          end
+
+        Map.put_new(acc, building_type, results)
+      end)
+
+    IO.inspect(buildings_status)
+
     socket
     |> assign(:user_id, user.id)
     |> assign(:username, user.nickname)

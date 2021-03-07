@@ -207,12 +207,8 @@ defmodule MayorGame.CityCalculator do
   def calculate_city_stats(%MayorGame.City.Info{} = city) do
     city_preloaded = preload_city_check(city)
     # first check energy and mobility
-    # then if there are disabled buildings, pass them to calculate_jobs and calculate_housing?
-    # returns map of %{sprawl: int, mobility: int}
-    # calculate *available* mobility vs total
+
     mobility = calculate_mobility(city_preloaded)
-    IO.inspect(mobility.disabled_buildings)
-    # calculate *available* energy vs total
     energy = calculate_energy(city_preloaded)
 
     disabled_buildings = mobility.disabled_buildings ++ energy.disabled_buildings
@@ -496,6 +492,11 @@ defmodule MayorGame.CityCalculator do
     results.amount
   end
 
+  @doc """
+  takes a %MayorGame.City.Info{} struct, and a list[] of disabled buildings in atom form
+
+  returns map of available jobs by level: %{0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0}
+  """
   def calculate_jobs(%MayorGame.City.Info{} = city, disabled_buildings) do
     city_preloaded = preload_city_check(city)
     empty_jobs_map = %{0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0}
@@ -562,7 +563,6 @@ defmodule MayorGame.CityCalculator do
         end
       )
 
-    IO.inspect(results.jobs_map)
     results.jobs_map
   end
 
