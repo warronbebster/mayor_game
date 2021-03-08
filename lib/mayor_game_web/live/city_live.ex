@@ -160,6 +160,7 @@ defmodule MayorGameWeb.CityLive do
     # figure out how to send an assign for each building type with disabled buildings
     # enum map for buildables
     # adjust some to be disabled
+
     buildings_status =
       Details.buildables_list()
       |> Enum.reduce(%{}, fn building_type, acc ->
@@ -179,56 +180,36 @@ defmodule MayorGameWeb.CityLive do
         # if total is 0,
         # needs nothing to operate
         # otherwise check values
+        reason =
+          if total_disabled == 0 do
+            "operational"
+          else
+            disabled_list =
+              Enum.reduce(
+                %{
+                  area: mobility_disabled_count,
+                  energy: energy_disabled_count,
+                  money: money_disabled_count
+                },
+                [],
+                fn {name, count}, acc ->
+                  if count > 0,
+                    do: [to_string(name) | acc],
+                    else: acc
+                end
+              )
 
-        # %{
-        #   disabled: total_disabled,
-        #   enabled: building_count - total_disabled,
-        #   reason: "needs more energy, money, & area to operate"
-        # }
-
-        results =
-          cond do
-            # both disabled
-            mobility_disabled_count > 0 && energy_disabled_count > 0 && money_disabled_count > 0 ->
-              total_disabled =
-                max(mobility_disabled_count, energy_disabled_count)
-                |> max(money_disabled_count)
-
-              %{
-                disabled: total_disabled,
-                enabled: building_count - total_disabled,
-                reason: "needs more energy, money, & area to operate"
-              }
-
-            # mobility disabled, not energy
-            mobility_disabled_count > 0 && energy_disabled_count == 0 ->
-              %{
-                disabled: mobility_disabled_count,
-                enabled: building_count - mobility_disabled_count,
-                reason: "needs more area to operate"
-              }
-
-            # mobility fine, energy disabled
-            mobility_disabled_count == 0 && energy_disabled_count > 0 ->
-              %{
-                disabled: energy_disabled_count,
-                enabled: building_count - energy_disabled_count,
-                reason: "needs more energy to operate"
-              }
-
-            # both fine
-            mobility_disabled_count == 0 && energy_disabled_count == 0 ->
-              %{
-                disabled: 0,
-                enabled: building_count,
-                reason: "can operate"
-              }
+            "needs " <> Enum.join(disabled_list, ", ") <> " to operate"
           end
+
+        results = %{
+          disabled: total_disabled,
+          enabled: building_count - total_disabled,
+          reason: reason
+        }
 
         Map.put_new(acc, building_type, results)
       end)
-
-    IO.inspect(buildings_status)
 
     socket
     |> assign(:user_id, user.id)

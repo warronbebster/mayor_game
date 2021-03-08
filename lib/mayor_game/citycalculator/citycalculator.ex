@@ -39,11 +39,11 @@ defmodule MayorGame.CityCalculator do
         # that way I can use the same function later?
 
         updated_city_treasury =
-          if city_calc.money + city_calc.tax < 0 do
+          if city_calc.money.available_money + city_calc.tax < 0 do
             # maybe some other consequences here
             0
           else
-            city_calc.money + city_calc.tax
+            city_calc.money.available_money + city_calc.tax
           end
 
         # check here for if tax_income - money is less than zero
@@ -215,9 +215,6 @@ defmodule MayorGame.CityCalculator do
     disabled_buildings =
       mobility.disabled_buildings ++ energy.disabled_buildings ++ money.disabled_buildings
 
-    # maybe cost is the same
-    # money = calculate_daily_cost(city_preloaded)
-
     # but jobs and stuff aren't
     total_housing = calculate_housing(city_preloaded, disabled_buildings)
     # returns a map of %{0 => #, 0 => #, etc}
@@ -227,7 +224,7 @@ defmodule MayorGame.CityCalculator do
       jobs: total_jobs,
       tax: 0,
       housing: total_housing,
-      money: money.available_money,
+      money: money,
       citizens_looking: []
     }
 
@@ -362,8 +359,8 @@ defmodule MayorGame.CityCalculator do
                     %{
                       disabled_buildings:
                         if(negative_mobility,
-                          do: [building_type | acc.disabled_buildings],
-                          else: acc.disabled_buildings
+                          do: [building_type | acc3.disabled_buildings],
+                          else: acc3.disabled_buildings
                         ),
                       mobility_left: acc3.mobility_left - building_options.mobility_cost
                     }
@@ -432,8 +429,8 @@ defmodule MayorGame.CityCalculator do
                     %{
                       disabled_buildings:
                         if(negative_energy,
-                          do: [building_type | acc.disabled_buildings],
-                          else: acc.disabled_buildings
+                          do: [building_type | acc3.disabled_buildings],
+                          else: acc3.disabled_buildings
                         ),
                       energy_left: acc3.energy_left - building_options.energy_cost
                     }
@@ -568,23 +565,10 @@ defmodule MayorGame.CityCalculator do
     results.jobs_map
   end
 
-  def calculate_daily_cost(%MayorGame.City.Info{} = city) do
-    city_preloaded = preload_city_check(city)
-    # for each element in the details struct options
-    Enum.reduce(MayorGame.City.Details.buildables(), 0, fn category, acc ->
-      {_categoryName, buildings} = category
-
-      acc +
-        Enum.reduce(buildings, 0, fn {building_type, building_options}, acc2 ->
-          acc2 + building_options.daily_cost * Map.get(city_preloaded.detail, building_type)
-        end)
-    end)
-  end
-
   @doc """
   takes a %MayorGame.City.Info{} struct
 
-  returns building cost info in map %{total_money: int, available_energy: int, disabled_buildings: [], pollution: int}
+  returns building cost info in map %{available_money: int, disabled_buildings: [], cost: int}
   """
   def calculate_money(%MayorGame.City.Info{} = city) do
     city_preloaded = preload_city_check(city)
@@ -608,7 +592,9 @@ defmodule MayorGame.CityCalculator do
             fn {building_type, building_options}, acc2 ->
               building_count = Map.get(city_preloaded.detail, building_type)
 
-              if Map.has_key?(building_options, :daily_cost) && building_count > 0 do
+              if Map.has_key?(building_options, :daily_cost) &&
+                   building_count > 0 &&
+                   building_options[:daily_cost] > 0 do
                 Enum.reduce(
                   1..building_count,
                   %{
@@ -622,8 +608,8 @@ defmodule MayorGame.CityCalculator do
                     %{
                       disabled_buildings:
                         if(negative_money,
-                          do: [building_type | acc.disabled_buildings],
-                          else: acc.disabled_buildings
+                          do: [building_type | acc3.disabled_buildings],
+                          else: acc3.disabled_buildings
                         ),
                       money_left: acc3.money_left - building_options.daily_cost,
                       cost: acc3.cost + building_options.daily_cost
