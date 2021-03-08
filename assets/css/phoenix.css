@@ -605,3 +605,19 @@ header nav a {
 		margin: 2rem 1rem;
 	}
 }
+
+.building_enabled {
+	display: inline-block;
+	border-radius: 10px;
+	height: 10px;
+	width: 10px;
+	background-color: rgb(34, 194, 28);
+}
+
+.building_disabled {
+	display: inline-block;
+	border-radius: 10px;
+	height: 10px;
+	width: 10px;
+	background-color: rgb(179, 19, 19);
+}

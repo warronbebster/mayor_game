@@ -28,9 +28,22 @@
         <br/>
         <%= for {building_type, building_stats} <- buildings do %>
 
-
-          <%= building_type %>
           <%= Map.get(@city.detail, building_type) %>
+          <%= building_type %>
+
+          <%= if @buildings_status[building_type].enabled > 0 do %>
+            <%= for building <- 1..@buildings_status[building_type].enabled do%>
+              <div class="building_enabled"></div>
+            <% end %>
+          <% end %>
+
+          <%= if @buildings_status[building_type].disabled > 0 do %>
+            <%= for building <- 1..@buildings_status[building_type].disabled do%>
+              <div class="building_disabled"></div>
+              <%= @buildings_status[building_type].reason %>
+            <% end %>
+          <% end %>
+
 
           <%# do some check here for disabled buildings %>
           <%# for each blach in assigns[building_type] %>
@@ -41,34 +54,34 @@
               <%= cond do %>
                 <%# enough energy AND enough mobility %>
                 <%(Map.has_key?(building_stats, :energy_cost) and @energy.available_energy >= building_stats.energy_cost) && (Map.has_key?(building_stats, :mobility_cost) and @mobility.available_mobility >= building_stats.mobility_cost ) -> %>
-                  <button phx-click="purchase_building" phx-value-building="<%= building_type %>" phx-value-category="<%= category %>" >build $<%= building_stats.price %></button> 1
+                  <button phx-click="purchase_building" phx-value-building="<%= building_type %>" phx-value-category="<%= category %>" >build $<%= building_stats.price %></button>
                 <%# not enough energy, enough mobility  %>
                 <%(Map.has_key?(building_stats, :energy_cost) and @energy.available_energy < building_stats.energy_cost) && (Map.has_key?(building_stats, :mobility_cost) and @mobility.available_mobility >= building_stats.mobility_cost) -> %>
-                  <button disabled>build $<%= building_stats.price %></button> 2 not enough energy
+                  <button disabled>build $<%= building_stats.price %></button> not enough energy |
                 <%# enough energy, not enough mobility  %>
                 <%(Map.has_key?(building_stats, :energy_cost) and @energy.available_energy >= building_stats.energy_cost) && (Map.has_key?(building_stats, :mobility_cost) and @mobility.available_mobility < building_stats.mobility_cost) -> %>
-                  <button disabled>build $<%= building_stats.price %></button> 3 not enough area
+                  <button disabled>build $<%= building_stats.price %></button> not enough area |
                 <%# not enough energy AND not enough mobility %>
                 <%(Map.has_key?(building_stats, :energy_cost) and @energy.available_energy < building_stats.energy_cost) && (Map.has_key?(building_stats, :mobility_cost) and @mobility.available_mobility < building_stats.mobility_cost) -> %>
-                  <button disabled>build $<%= building_stats.price %></button> 4 not enough area or energy
+                  <button disabled>build $<%= building_stats.price %></button> not enough area or energy |
                 <%# no energy needed, enough mobility %>
                 <% !Map.has_key?(building_stats, :energy_cost) && (Map.has_key?(building_stats, :mobility_cost) and @mobility.available_mobility >= building_stats.mobility_cost) -> %>
-                  <button phx-click="purchase_building" phx-value-building="<%= building_type %>" phx-value-category="<%= category %>" >build $<%= building_stats.price %></button> 5
+                  <button phx-click="purchase_building" phx-value-building="<%= building_type %>" phx-value-category="<%= category %>" >build $<%= building_stats.price %></button>
                 <%# no energy needed, not enough mobility %>
                 <% !Map.has_key?(building_stats, :energy_cost) && (Map.has_key?(building_stats, :mobility_cost) and @mobility.available_mobility < building_stats.mobility_cost) -> %>
-                  <button disabled>build $<%= building_stats.price %></button> 6 not enough areaa
+                  <button disabled>build $<%= building_stats.price %></button> not enough area |
                 <%# no mobility needed, enough energy %>
                 <% !Map.has_key?(building_stats, :mobility_cost) && (Map.has_key?(building_stats, :energy_cost) and @energy.available_energy >= building_stats.energy_cost) -> %>
-                  <button phx-click="purchase_building" phx-value-building="<%= building_type %>" phx-value-category="<%= category %>" >build $<%= building_stats.price %></button> 7
+                  <button phx-click="purchase_building" phx-value-building="<%= building_type %>" phx-value-category="<%= category %>" >build $<%= building_stats.price %></button>
                 <%# no mobility needed, not enough energy %>
                 <% !Map.has_key?(building_stats, :mobility_cost) && (Map.has_key?(building_stats, :energy_cost) and @energy.available_energy < building_stats.energy_cost) -> %>
-                  <button disabled>build $<%= building_stats.price %></button> 8 not enough energy
+                  <button disabled>build $<%= building_stats.price %></button> not enough energy |
                 <%# no mobility needed, no energy needed %>
                 <% !Map.has_key?(building_stats, :mobility_cost) and !Map.has_key?(building_stats, :energy_cost) -> %>
-                  <button phx-click="purchase_building" phx-value-building="<%= building_type %>" phx-value-category="<%= category %>" >build $<%= building_stats.price %></button>9
+                  <button phx-click="purchase_building" phx-value-building="<%= building_type %>" phx-value-category="<%= category %>" >build $<%= building_stats.price %></button>
                 <%# catch-all %>
                 <% true -> %>
-                <button phx-click="purchase_building" phx-value-building="<%= building_type %>" phx-value-category="<%= category %>" >build $<%= building_stats.price %></button> 10
+                  <button phx-click="purchase_building" phx-value-building="<%= building_type %>" phx-value-category="<%= category %>" >build $<%= building_stats.price %></button> 10
               <% end %>
             <% else %>
               <button disabled>build $<%= building_stats.price %></button>

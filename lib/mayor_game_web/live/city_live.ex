@@ -155,6 +155,7 @@ defmodule MayorGameWeb.CityLive do
 
     mobility = MayorGame.CityCalculator.calculate_mobility(city)
     energy = MayorGame.CityCalculator.calculate_energy(city)
+    money = MayorGame.CityCalculator.calculate_money(city)
 
     # figure out how to send an assign for each building type with disabled buildings
     # enum map for buildables
@@ -165,17 +166,38 @@ defmodule MayorGameWeb.CityLive do
         building_count = Map.get(city.detail, building_type)
         mobility_disabled_count = Enum.count(mobility.disabled_buildings, &(&1 == building_type))
         energy_disabled_count = Enum.count(energy.disabled_buildings, &(&1 == building_type))
+        money_disabled_count = Enum.count(money.disabled_buildings, &(&1 == building_type))
+
+        total_disabled =
+          max(mobility_disabled_count, energy_disabled_count)
+          |> max(money_disabled_count)
+
+        # add money_disabled count here
+        # somehow, i need to get to this:
+        # really, the only thing that needs to be updated is the reason
+        # no need to go through a crazy cond
+        # if total is 0,
+        # needs nothing to operate
+        # otherwise check values
+
+        # %{
+        #   disabled: total_disabled,
+        #   enabled: building_count - total_disabled,
+        #   reason: "needs more energy, money, & area to operate"
+        # }
 
         results =
           cond do
             # both disabled
-            mobility_disabled_count > 0 && energy_disabled_count > 0 ->
-              total_disabled = max(mobility_disabled_count, energy_disabled_count)
+            mobility_disabled_count > 0 && energy_disabled_count > 0 && money_disabled_count > 0 ->
+              total_disabled =
+                max(mobility_disabled_count, energy_disabled_count)
+                |> max(money_disabled_count)
 
               %{
                 disabled: total_disabled,
                 enabled: building_count - total_disabled,
-                reason: "needs more energy and area to operate"
+                reason: "needs more energy, money, & area to operate"
               }
 
             # mobility disabled, not energy
@@ -189,7 +211,7 @@ defmodule MayorGameWeb.CityLive do
             # mobility fine, energy disabled
             mobility_disabled_count == 0 && energy_disabled_count > 0 ->
               %{
-                disabled: mobility_disabled_count,
+                disabled: energy_disabled_count,
                 enabled: building_count - energy_disabled_count,
                 reason: "needs more energy to operate"
               }
@@ -212,8 +234,9 @@ defmodule MayorGameWeb.CityLive do
     |> assign(:user_id, user.id)
     |> assign(:username, user.nickname)
     |> assign(:city, city)
-    |> assign(:mobility, mobility)
     |> assign(:energy, energy)
+    |> assign(:mobility, mobility)
+    |> assign(:buildings_status, buildings_status)
   end
 
   # POW AUTH STUFF DOWN HERE BAYBEE

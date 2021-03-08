@@ -31,7 +31,7 @@ defmodule MayorGame.CityCalculator do
     # result is map %{cities_w_room: [], citizens_looking: []}
     leftovers =
       Enum.reduce(cities, %{cities_w_room: [], citizens_looking: []}, fn city, acc ->
-        # result here is %{jobs: #, housing: #, tax: #, daily_cost: #, citizens_looking: []}
+        # result here is %{jobs: #, housing: #, tax: #, money: #, citizens_looking: []}
         city_stats = calculate_city_stats(city)
         city_calc = calculate_stats_based_on_citizens(city.citizens, city_stats)
 
@@ -39,14 +39,14 @@ defmodule MayorGame.CityCalculator do
         # that way I can use the same function later?
 
         updated_city_treasury =
-          if city.detail.city_treasury + city_calc.tax - city_calc.daily_cost < 0 do
+          if city_calc.money + city_calc.tax < 0 do
             # maybe some other consequences here
             0
           else
-            city.detail.city_treasury + city_calc.tax - city_calc.daily_cost
+            city_calc.money + city_calc.tax
           end
 
-        # check here for if tax_income - daily_cost is less than zero
+        # check here for if tax_income - money is less than zero
         case City.update_details(city.detail, %{
                city_treasury: updated_city_treasury
              }) do
@@ -54,7 +54,7 @@ defmodule MayorGame.CityCalculator do
             City.update_log(
               city,
               "today's tax income: " <>
-                to_string(city_calc.tax) <> " operating cost: " <> to_string(city_calc.daily_cost)
+                to_string(city_calc.tax) <> " operating cost: " <> to_string(city_calc.money.cost)
             )
 
           {:error, err} ->
@@ -202,7 +202,7 @@ defmodule MayorGame.CityCalculator do
 
   @doc """
     takes a %MayorGame.City.Info{} struct
-    result here is %{jobs: #, housing: #, tax: #, daily_cost: #, citizens_looking: []}
+    result here is %{jobs: #, housing: #, tax: #, money: #, citizens_looking: []}
   """
   def calculate_city_stats(%MayorGame.City.Info{} = city) do
     city_preloaded = preload_city_check(city)
@@ -210,11 +210,13 @@ defmodule MayorGame.CityCalculator do
 
     mobility = calculate_mobility(city_preloaded)
     energy = calculate_energy(city_preloaded)
+    money = calculate_money(city_preloaded)
 
-    disabled_buildings = mobility.disabled_buildings ++ energy.disabled_buildings
+    disabled_buildings =
+      mobility.disabled_buildings ++ energy.disabled_buildings ++ money.disabled_buildings
 
     # maybe cost is the same
-    daily_cost = calculate_daily_cost(city_preloaded)
+    # money = calculate_daily_cost(city_preloaded)
 
     # but jobs and stuff aren't
     total_housing = calculate_housing(city_preloaded, disabled_buildings)
@@ -225,7 +227,7 @@ defmodule MayorGame.CityCalculator do
       jobs: total_jobs,
       tax: 0,
       housing: total_housing,
-      daily_cost: daily_cost,
+      money: money.available_money,
       citizens_looking: []
     }
 
@@ -238,10 +240,10 @@ defmodule MayorGame.CityCalculator do
       jobs: total_jobs,
       tax: 0,
       housing: total_housing,
-      daily_cost: daily_cost,
+      money: #,
       citizens_looking: []
     }
-    result here is %{jobs: #, housing: #, tax: #, daily_cost: #, citizens_looking: []}
+    result here is %{jobs: #, housing: #, tax: #, money: #, citizens_looking: []}
   """
   def calculate_stats_based_on_citizens(citizens, city_stats) do
     if List.first(citizens) != nil do
@@ -297,7 +299,7 @@ defmodule MayorGame.CityCalculator do
               jobs: updated_jobs,
               tax: 1 + best_possible_job + acc.tax,
               housing: acc.housing - 1,
-              daily_cost: acc.daily_cost,
+              money: acc.money,
               citizens_looking: citizens_looking
             }
           end
@@ -577,6 +579,70 @@ defmodule MayorGame.CityCalculator do
           acc2 + building_options.daily_cost * Map.get(city_preloaded.detail, building_type)
         end)
     end)
+  end
+
+  @doc """
+  takes a %MayorGame.City.Info{} struct
+
+  returns building cost info in map %{total_money: int, available_energy: int, disabled_buildings: [], pollution: int}
+  """
+  def calculate_money(%MayorGame.City.Info{} = city) do
+    city_preloaded = preload_city_check(city)
+
+    preliminary_results = city.detail.city_treasury
+
+    cost_results =
+      Enum.reduce(
+        MayorGame.City.Details.buildables(),
+        %{disabled_buildings: [], money_left: preliminary_results, cost: 0},
+        fn category, acc ->
+          {_categoryName, buildings} = category
+
+          Enum.reduce(
+            buildings,
+            %{
+              disabled_buildings: acc.disabled_buildings,
+              money_left: acc.money_left,
+              cost: acc.cost
+            },
+            fn {building_type, building_options}, acc2 ->
+              building_count = Map.get(city_preloaded.detail, building_type)
+
+              if Map.has_key?(building_options, :daily_cost) && building_count > 0 do
+                Enum.reduce(
+                  1..building_count,
+                  %{
+                    disabled_buildings: acc2.disabled_buildings,
+                    money_left: acc2.money_left,
+                    cost: acc2.cost
+                  },
+                  fn _building, acc3 ->
+                    negative_money = acc3.money_left < building_options.daily_cost
+
+                    %{
+                      disabled_buildings:
+                        if(negative_money,
+                          do: [building_type | acc.disabled_buildings],
+                          else: acc.disabled_buildings
+                        ),
+                      money_left: acc3.money_left - building_options.daily_cost,
+                      cost: acc3.cost + building_options.daily_cost
+                    }
+                  end
+                )
+              else
+                acc2
+              end
+            end
+          )
+        end
+      )
+
+    %{
+      available_money: cost_results.money_left,
+      disabled_buildings: cost_results.disabled_buildings,
+      cost: cost_results.cost
+    }
   end
 
   def preload_city_check(%MayorGame.City.Info{} = city) do
