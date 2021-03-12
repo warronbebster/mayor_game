@@ -153,7 +153,7 @@ defmodule MayorGameWeb.CityLive do
     # grab whole user struct
     user = Auth.get_user!(city.user_id)
 
-    mobility = MayorGame.CityCalculator.calculate_mobility(city)
+    area = MayorGame.CityCalculator.calculate_area(city)
     energy = MayorGame.CityCalculator.calculate_energy(city)
     money = MayorGame.CityCalculator.calculate_money(city)
 
@@ -165,12 +165,12 @@ defmodule MayorGameWeb.CityLive do
       Details.buildables_list()
       |> Enum.reduce(%{}, fn building_type, acc ->
         building_count = Map.get(city.detail, building_type)
-        mobility_disabled_count = Enum.count(mobility.disabled_buildings, &(&1 == building_type))
+        area_disabled_count = Enum.count(area.disabled_buildings, &(&1 == building_type))
         energy_disabled_count = Enum.count(energy.disabled_buildings, &(&1 == building_type))
         money_disabled_count = Enum.count(money.disabled_buildings, &(&1 == building_type))
 
         total_disabled =
-          max(mobility_disabled_count, energy_disabled_count)
+          max(area_disabled_count, energy_disabled_count)
           |> max(money_disabled_count)
 
         # add money_disabled count here
@@ -187,7 +187,7 @@ defmodule MayorGameWeb.CityLive do
             disabled_list =
               Enum.reduce(
                 %{
-                  area: mobility_disabled_count,
+                  area: area_disabled_count,
                   energy: energy_disabled_count,
                   money: money_disabled_count
                 },
@@ -216,7 +216,7 @@ defmodule MayorGameWeb.CityLive do
     |> assign(:username, user.nickname)
     |> assign(:city, city)
     |> assign(:energy, energy)
-    |> assign(:mobility, mobility)
+    |> assign(:area, area)
     |> assign(:buildings_status, buildings_status)
   end
 

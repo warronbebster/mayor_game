@@ -52,32 +52,50 @@ defmodule MayorGame.City.Details do
           price: 20,
           fits: 2,
           daily_cost: 0,
-          mobility_cost: 1,
-          energy_cost: 2
+          area_required: 1,
+          energy_required: 12
         },
-        multi_family_homes: %{price: 60, fits: 6, daily_cost: 0, mobility_cost: 1, energy_cost: 4},
+        multi_family_homes: %{
+          price: 60,
+          fits: 6,
+          daily_cost: 0,
+          area_required: 1,
+          energy_required: 18
+        },
         homeless_shelter: %{
           price: 60,
           fits: 20,
           daily_cost: 10,
-          mobility_cost: 5,
-          energy_cost: 10
+          area_required: 5,
+          energy_required: 70
         },
-        apartments: %{price: 60, fits: 20, daily_cost: 0, mobility_cost: 10, energy_cost: 15},
-        micro_apartments: %{price: 80, fits: 20, daily_cost: 0, mobility_cost: 5, energy_cost: 8},
-        high_rises: %{price: 200, fits: 100, daily_cost: 0, mobility_cost: 2, energy_cost: 80}
+        apartments: %{price: 60, fits: 20, daily_cost: 0, area_required: 10, energy_required: 90},
+        micro_apartments: %{
+          price: 80,
+          fits: 20,
+          daily_cost: 0,
+          area_required: 5,
+          energy_required: 50
+        },
+        high_rises: %{
+          price: 200,
+          fits: 100,
+          daily_cost: 0,
+          area_required: 2,
+          energy_required: 150
+        }
       },
       transit: %{
-        roads: %{price: 20, daily_cost: 0, jobs: 0, job_level: 0, sprawl: 10, mobility: 10},
-        highways: %{price: 40, daily_cost: 0, jobs: 0, job_level: 0, sprawl: 20, mobility: 20},
+        roads: %{price: 20, daily_cost: 0, jobs: 0, job_level: 0, sprawl: 10, area: 10},
+        highways: %{price: 40, daily_cost: 0, jobs: 0, job_level: 0, sprawl: 20, area: 20},
         airports: %{
           price: 200,
           daily_cost: 10,
           jobs: 10,
           job_level: 0,
           sprawl: 5,
-          mobility: 10,
-          energy_cost: 120
+          area: 10,
+          energy_required: 150
         },
         bus_lines: %{
           price: 100,
@@ -85,8 +103,8 @@ defmodule MayorGame.City.Details do
           jobs: 10,
           job_level: 0,
           sprawl: 3,
-          mobility: 50,
-          energy_cost: 60
+          area: 50,
+          energy_required: 30
         },
         subway_lines: %{
           price: 200,
@@ -94,8 +112,8 @@ defmodule MayorGame.City.Details do
           jobs: 10,
           job_level: 0,
           sprawl: 1,
-          mobility: 100,
-          energy_cost: 120
+          area: 100,
+          energy_required: 10000
         }
       },
       energy: %{
@@ -104,66 +122,66 @@ defmodule MayorGame.City.Details do
           daily_cost: 10,
           jobs: 30,
           job_level: 0,
-          energy: 10,
+          energy: 3500,
           pollution: 10,
-          mobility_cost: 5
+          area_required: 5
         },
         wind_turbines: %{
           price: 100,
           daily_cost: 3,
           jobs: 10,
           job_level: 1,
-          energy: 5,
+          energy: 600,
           pollution: 0,
-          mobility_cost: 5
+          area_required: 5
         },
         solar_plants: %{
           price: 200,
           daily_cost: 3,
           jobs: 10,
           job_level: 2,
-          energy: 10,
+          energy: 500,
           pollution: 0,
-          mobility_cost: 5
+          area_required: 5
         },
         nuclear_plants: %{
           price: 2000,
           daily_cost: 50,
           jobs: 10,
           job_level: 3,
-          energy: 100,
+          energy: 5000,
           pollution: 0,
-          mobility_cost: 3
+          area_required: 3
         }
       },
       civic: %{
-        parks: %{price: 20, daily_cost: 5, mobility_cost: 10, energy_cost: 1},
-        libraries: %{price: 20, daily_cost: 10, mobility_cost: 1, energy_cost: 8}
+        parks: %{price: 20, daily_cost: 5, area_required: 10, energy_required: 12},
+        libraries: %{price: 20, daily_cost: 10, area_required: 1, energy_required: 200}
       },
       education: %{
         schools: %{
           price: 20,
-          daily_cost: 20,
+          daily_cost: 10,
           jobs: 10,
           job_level: 1,
-          mobility_cost: 1,
-          energy_cost: 12
+          area_required: 5,
+          energy_required: 800
         },
         universities: %{
           price: 20,
-          daily_cost: 20,
+          daily_cost: 15,
           jobs: 10,
           job_level: 2,
-          mobility_cost: 2,
-          energy_cost: 20
+          area_required: 10,
+          energy_required: 1200
         },
         research_labs: %{
           price: 20,
-          daily_cost: 20,
+          daily_cost: 15,
           jobs: 10,
           job_level: 3,
-          mobility_cost: 1,
-          energy_cost: 40
+          area_required: 3,
+          energy_required: 600
         }
       },
       work: %{
@@ -172,16 +190,16 @@ defmodule MayorGame.City.Details do
           daily_cost: 5,
           jobs: 20,
           job_level: 0,
-          mobility_cost: 3,
-          energy_cost: 100
+          area_required: 3,
+          energy_required: 1900
         },
         office_buildings: %{
           price: 20,
           daily_cost: 5,
           jobs: 20,
           job_level: 1,
-          mobility_cost: 3,
-          energy_cost: 80
+          area_required: 3,
+          energy_required: 800
         }
       },
       entertainment: %{
@@ -190,16 +208,16 @@ defmodule MayorGame.City.Details do
           daily_cost: 5,
           jobs: 10,
           job_level: 0,
-          mobility_cost: 5,
-          energy_cost: 20
+          area_required: 5,
+          energy_required: 400
         },
         arenas: %{
           price: 20,
           daily_cost: 5,
           jobs: 20,
           job_level: 0,
-          mobility_cost: 10,
-          energy_cost: 60
+          area_required: 10,
+          energy_required: 500
         }
       }
     }

@@ -33,27 +33,22 @@ defmodule MayorGame.CityCalculator do
       Enum.reduce(cities, %{cities_w_room: [], citizens_looking: []}, fn city, acc ->
         # result here is %{jobs: #, housing: #, tax: #, money: #, citizens_looking: []}
         city_stats = calculate_city_stats(city)
-        city_calc = calculate_stats_based_on_citizens(city.citizens, city_stats)
+        city_calc = calculate_stats_based_on_citizens(city.citizens, city_stats, world.day)
 
         # should i loop through citizens here, instead of in calculate_city_stats?
         # that way I can use the same function later?
 
         updated_city_treasury =
-          if city_calc.money.available_money + city_calc.tax < 0 do
-            # maybe some other consequences here
-            0
-          else
-            city_calc.money.available_money + city_calc.tax
-          end
+          if city_calc.money.available_money + city_calc.tax < 0,
+            do: 0,
+            else: city_calc.money.available_money + city_calc.tax
 
         # check here for if tax_income - money is less than zero
-        case City.update_details(city.detail, %{
-               city_treasury: updated_city_treasury
-             }) do
+        case City.update_details(city.detail, %{city_treasury: updated_city_treasury}) do
           {:ok, _updated_details} ->
             City.update_log(
               city,
-              "today's tax income: " <>
+              "tax income: " <>
                 to_string(city_calc.tax) <> " operating cost: " <> to_string(city_calc.money.cost)
             )
 
@@ -61,7 +56,7 @@ defmodule MayorGame.CityCalculator do
             IO.inspect(err)
         end
 
-        # if city isn't at capacity?
+        # if city has leftover jobs
         are_there_jobs = Enum.any?(city_calc.jobs, fn {_level, number} -> number > 0 end)
 
         %{
@@ -85,7 +80,7 @@ defmodule MayorGame.CityCalculator do
 
         if not is_nil(best_job) do
           # move citizen to city
-          move_citizen(citizen, best_job.best_city.city)
+          move_citizen(citizen, best_job.best_city.city, world.day)
 
           # find where the city is in the list
           indexx = Enum.find_index(acc_city_list, &(&1 == best_job.best_city))
@@ -101,9 +96,12 @@ defmodule MayorGame.CityCalculator do
           updated_acc_city_list
         else
           kill_citizen(citizen)
-
           acc_city_list
         end
+      end)
+    else
+      Enum.map(leftovers.citizens_looking, fn citizen ->
+        kill_citizen(citizen)
       end)
     end
 
@@ -125,7 +123,11 @@ defmodule MayorGame.CityCalculator do
   # CUSTOM HELPER FUNCTIONS BELOW
   # CUSTOM HELPER FUNCTIONS BELOW
 
-  def move_citizen(%MayorGame.City.Citizens{} = citizen, %MayorGame.City.Info{} = city_to_move_to) do
+  def move_citizen(
+        %MayorGame.City.Citizens{} = citizen,
+        %MayorGame.City.Info{} = city_to_move_to,
+        day_moved
+      ) do
     prev_city = City.get_info!(citizen.info_id)
 
     if prev_city.id != city_to_move_to.id do
@@ -139,7 +141,7 @@ defmodule MayorGame.CityCalculator do
         citizen.name <> " just moved here from " <> prev_city.title
       )
 
-      City.update_citizens(citizen, %{info_id: city_to_move_to.id})
+      City.update_citizens(citizen, %{info_id: city_to_move_to.id, last_moved: day_moved})
     end
   end
 
@@ -177,7 +179,7 @@ defmodule MayorGame.CityCalculator do
 
   ## Examples
       iex> find_best_job(city_list, %Citizens{})
-      %{best_city: %{city: city, jobs: #, housing: #, tax: #, cost: #, etc}, job_level: level_to_check}
+      %{best_city: %{city: %Info{} struct, jobs: #, housing: #, tax: #, cost: #, etc}, job_level: level_to_check}
   """
   def find_best_job(cities_to_check, %MayorGame.City.Citizens{} = citizen) do
     result =
@@ -206,14 +208,13 @@ defmodule MayorGame.CityCalculator do
   """
   def calculate_city_stats(%MayorGame.City.Info{} = city) do
     city_preloaded = preload_city_check(city)
-    # first check energy and mobility
 
-    mobility = calculate_mobility(city_preloaded)
+    area = calculate_area(city_preloaded)
     energy = calculate_energy(city_preloaded)
     money = calculate_money(city_preloaded)
 
     disabled_buildings =
-      mobility.disabled_buildings ++ energy.disabled_buildings ++ money.disabled_buildings
+      area.disabled_buildings ++ energy.disabled_buildings ++ money.disabled_buildings
 
     # but jobs and stuff aren't
     total_housing = calculate_housing(city_preloaded, disabled_buildings)
@@ -225,10 +226,10 @@ defmodule MayorGame.CityCalculator do
       tax: 0,
       housing: total_housing,
       money: money,
+      sprawl: area.sprawl,
+      pollution: energy.pollution,
       citizens_looking: []
     }
-
-    # end
   end
 
   @doc """
@@ -242,7 +243,7 @@ defmodule MayorGame.CityCalculator do
     }
     result here is %{jobs: #, housing: #, tax: #, money: #, citizens_looking: []}
   """
-  def calculate_stats_based_on_citizens(citizens, city_stats) do
+  def calculate_stats_based_on_citizens(citizens, city_stats, day) do
     if List.first(citizens) != nil do
       results =
         Enum.reduce(
@@ -268,8 +269,11 @@ defmodule MayorGame.CityCalculator do
 
             job_gap = citizen.education - best_possible_job
 
-            # citizen will look if there is no housing, if there is no best possible job, and if gap > 1
-            will_citizen_look = best_possible_job < 0 || acc.housing < 1 || job_gap > 1
+            # citizen will look if there is no housing, if there is no best possible job, or if gap > 1
+            will_citizen_look =
+              best_possible_job < 0 ||
+                (job_gap > 1 && citizen.last_moved + 30 < day) ||
+                acc.housing < 1
 
             # add to citizens_looking array
             citizens_looking =
@@ -277,26 +281,40 @@ defmodule MayorGame.CityCalculator do
                 do: [citizen | acc.citizens_looking],
                 else: acc.citizens_looking
 
-            # give citizen money based on job
-            # take away based on house price
-
-            # function to spawn children
-            # function to look for education if have money
-
             updated_jobs =
               if best_possible_job > -1,
                 do: Map.update!(acc.jobs, best_possible_job, &(&1 - 1)),
                 else: acc.jobs
 
+            # function to spawn children
+            # function to look for education if have money
+            # or just give education automatically if university exists?
+
+            # spawn new citizens if conditions are right
+            if citizen.age == 9125 && citizen.education > 1,
+              do:
+                City.create_citizens(%{
+                  money: 0,
+                  name: "child",
+                  info_id: citizen.info_id,
+                  age: 0,
+                  education: 0,
+                  has_car: false,
+                  last_moved: 0
+                })
+
+            # kill citizen
             # also kill based on roads / random chance
             if citizen.age > 36500, do: kill_citizen(citizen)
 
             # return this
             %{
               jobs: updated_jobs,
-              tax: 1 + best_possible_job + acc.tax,
+              tax: 2 + best_possible_job + acc.tax,
               housing: acc.housing - 1,
               money: acc.money,
+              sprawl: acc.sprawl,
+              pollution: acc.sprawl,
               citizens_looking: citizens_looking
             }
           end
@@ -311,29 +329,29 @@ defmodule MayorGame.CityCalculator do
   @doc """
   takes a %MayorGame.City.Info{} struct
 
-  returns transit & mobility info in map %{sprawl: int, total_mobility: int, disabled_buildings: [] available_mobility: int}
+  returns transit & area info in map %{sprawl: int, total_area: int, disabled_buildings: [] available_area: int}
   """
-  def calculate_mobility(%MayorGame.City.Info{} = city) do
+  def calculate_area(%MayorGame.City.Info{} = city) do
     city_preloaded = preload_city_check(city)
 
     preliminary_results =
-      Enum.reduce(Details.buildables().transit, %{sprawl: 0, total_mobility: 0}, fn {transit_type,
-                                                                                     transit_options},
-                                                                                    acc ->
+      Enum.reduce(Details.buildables().transit, %{sprawl: 0, total_area: 0}, fn {transit_type,
+                                                                                 transit_options},
+                                                                                acc ->
         sprawl =
           acc.sprawl + transit_options.sprawl * Map.get(city_preloaded.detail, transit_type)
 
-        mobility =
-          acc.total_mobility +
-            transit_options.mobility * Map.get(city_preloaded.detail, transit_type)
+        area =
+          acc.total_area +
+            transit_options.area * Map.get(city_preloaded.detail, transit_type)
 
-        %{sprawl: sprawl, total_mobility: mobility}
+        %{sprawl: sprawl, total_area: area}
       end)
 
-    mobility_results =
+    area_results =
       Enum.reduce(
         MayorGame.City.Details.buildables(),
-        %{disabled_buildings: [], mobility_left: preliminary_results.total_mobility},
+        %{disabled_buildings: [], area_left: preliminary_results.total_area},
         fn category, acc ->
           {_categoryName, buildings} = category
 
@@ -341,28 +359,28 @@ defmodule MayorGame.CityCalculator do
             buildings,
             %{
               disabled_buildings: acc.disabled_buildings,
-              mobility_left: acc.mobility_left
+              area_left: acc.area_left
             },
             fn {building_type, building_options}, acc2 ->
               building_count = Map.get(city_preloaded.detail, building_type)
 
-              if Map.has_key?(building_options, :mobility_cost) && building_count > 0 do
+              if Map.has_key?(building_options, :area_required) && building_count > 0 do
                 Enum.reduce(
                   1..building_count,
                   %{
                     disabled_buildings: acc2.disabled_buildings,
-                    mobility_left: acc2.mobility_left
+                    area_left: acc2.area_left
                   },
                   fn _building, acc3 ->
-                    negative_mobility = acc3.mobility_left < building_options.mobility_cost
+                    negative_area = acc3.area_left < building_options.area_required
 
                     %{
                       disabled_buildings:
-                        if(negative_mobility,
+                        if(negative_area,
                           do: [building_type | acc3.disabled_buildings],
                           else: acc3.disabled_buildings
                         ),
-                      mobility_left: acc3.mobility_left - building_options.mobility_cost
+                      area_left: acc3.area_left - building_options.area_required
                     }
                   end
                 )
@@ -375,8 +393,8 @@ defmodule MayorGame.CityCalculator do
       )
 
     preliminary_results
-    |> Map.put_new(:available_mobility, mobility_results.mobility_left)
-    |> Map.put_new(:disabled_buildings, mobility_results.disabled_buildings)
+    |> Map.put_new(:available_area, area_results.area_left)
+    |> Map.put_new(:disabled_buildings, area_results.disabled_buildings)
   end
 
   @doc """
@@ -416,7 +434,7 @@ defmodule MayorGame.CityCalculator do
             fn {building_type, building_options}, acc2 ->
               building_count = Map.get(city_preloaded.detail, building_type)
 
-              if Map.has_key?(building_options, :energy_cost) && building_count > 0 do
+              if Map.has_key?(building_options, :energy_required) && building_count > 0 do
                 Enum.reduce(
                   1..building_count,
                   %{
@@ -424,7 +442,7 @@ defmodule MayorGame.CityCalculator do
                     energy_left: acc2.energy_left
                   },
                   fn _building, acc3 ->
-                    negative_energy = acc3.energy_left < building_options.energy_cost
+                    negative_energy = acc3.energy_left < building_options.energy_required
 
                     %{
                       disabled_buildings:
@@ -432,7 +450,7 @@ defmodule MayorGame.CityCalculator do
                           do: [building_type | acc3.disabled_buildings],
                           else: acc3.disabled_buildings
                         ),
-                      energy_left: acc3.energy_left - building_options.energy_cost
+                      energy_left: acc3.energy_left - building_options.energy_required
                     }
                   end
                 )
@@ -449,6 +467,11 @@ defmodule MayorGame.CityCalculator do
     |> Map.put_new(:disabled_buildings, energy_results.disabled_buildings)
   end
 
+  @doc """
+  takes a %MayorGame.City.Info{} struct
+
+  returns energy info in map %{amount: int, disabled_buildings: []}
+  """
   def calculate_housing(%MayorGame.City.Info{} = city, disabled_buildings) do
     city_preloaded = preload_city_check(city)
 
