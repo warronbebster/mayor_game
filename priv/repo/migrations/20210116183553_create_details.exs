@@ -33,6 +33,7 @@ defmodule MayorGame.Repo.Migrations.CreateDetails do
       add :research_labs, :integer, default: 0
       # work
       add :factories, :integer, default: 0
+      add :retail, :integer, default: 0
       add :office_buildings, :integer, default: 0
       # entertainment
       add :theatres, :integer, default: 0

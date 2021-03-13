@@ -17,6 +17,8 @@ defmodule MayorGame.City.Details do
     field :airports, :integer
     field :bus_lines, :integer
     field :subway_lines, :integer
+    field :bike_lanes, :integer
+    field :bikeshare_stations, :integer
     # energy
     field :coal_plants, :integer
     field :wind_turbines, :integer
@@ -27,14 +29,20 @@ defmodule MayorGame.City.Details do
     field :libraries, :integer
     # education
     field :schools, :integer
+    field :middle_schools, :integer
+    field :high_schools, :integer
     field :universities, :integer
     field :research_labs, :integer
     # work
     field :factories, :integer
+    field :retail_shops, :integer
     field :office_buildings, :integer
     # entertainment
     field :theatres, :integer
     field :arenas, :integer
+    # health
+    field :doctor_offices, :integer
+    field :hospitals, :integer
 
     # ok so basically
     # this "belongs to is called "city" but it belongs to the "info" schema
@@ -112,8 +120,26 @@ defmodule MayorGame.City.Details do
           jobs: 10,
           job_level: 0,
           sprawl: 1,
-          area: 100,
+          area: 1000,
           energy_required: 10000
+        },
+        bike_lanes: %{
+          price: 100,
+          daily_cost: 0,
+          jobs: 0,
+          job_level: 0,
+          sprawl: 0,
+          area: 10,
+          energy_required: 0
+        },
+        bikeshare_stations: %{
+          price: 100,
+          daily_cost: 0,
+          jobs: 0,
+          job_level: 0,
+          sprawl: 0,
+          area: 10,
+          energy_required: 0
         }
       },
       energy: %{
@@ -164,6 +190,25 @@ defmodule MayorGame.City.Details do
           daily_cost: 10,
           jobs: 10,
           job_level: 1,
+          education_level: 1,
+          area_required: 5,
+          energy_required: 800
+        },
+        middle_schools: %{
+          price: 20,
+          daily_cost: 10,
+          jobs: 10,
+          job_level: 1,
+          education_level: 1,
+          area_required: 5,
+          energy_required: 800
+        },
+        high_schools: %{
+          price: 20,
+          daily_cost: 10,
+          jobs: 10,
+          job_level: 1,
+          education_level: 1,
           area_required: 5,
           energy_required: 800
         },
@@ -172,6 +217,7 @@ defmodule MayorGame.City.Details do
           daily_cost: 15,
           jobs: 10,
           job_level: 2,
+          education_level: 2,
           area_required: 10,
           energy_required: 1200
         },
@@ -180,17 +226,26 @@ defmodule MayorGame.City.Details do
           daily_cost: 15,
           jobs: 10,
           job_level: 3,
+          education_level: 4,
           area_required: 3,
           energy_required: 600
         }
       },
       work: %{
+        retail_shops: %{
+          price: 20,
+          daily_cost: 5,
+          jobs: 5,
+          job_level: 0,
+          area_required: 2,
+          energy_required: 50
+        },
         factories: %{
           price: 20,
           daily_cost: 5,
           jobs: 20,
           job_level: 0,
-          area_required: 3,
+          area_required: 10,
           energy_required: 1900
         },
         office_buildings: %{
@@ -198,7 +253,7 @@ defmodule MayorGame.City.Details do
           daily_cost: 5,
           jobs: 20,
           job_level: 1,
-          area_required: 3,
+          area_required: 5,
           energy_required: 800
         }
       },
@@ -209,7 +264,7 @@ defmodule MayorGame.City.Details do
           jobs: 10,
           job_level: 0,
           area_required: 5,
-          energy_required: 400
+          energy_required: 300
         },
         arenas: %{
           price: 20,
@@ -218,6 +273,24 @@ defmodule MayorGame.City.Details do
           job_level: 0,
           area_required: 10,
           energy_required: 500
+        }
+      },
+      health: %{
+        hospitals: %{
+          price: 20,
+          daily_cost: 5,
+          jobs: 30,
+          job_level: 2,
+          area_required: 20,
+          energy_required: 400
+        },
+        doctor_offices: %{
+          price: 20,
+          daily_cost: 5,
+          jobs: 10,
+          job_level: 4,
+          area_required: 4,
+          energy_required: 50
         }
       }
     }
