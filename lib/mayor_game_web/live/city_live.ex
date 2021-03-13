@@ -132,6 +132,37 @@ defmodule MayorGameWeb.CityLive do
     {:noreply, socket |> update_city_by_title()}
   end
 
+  def handle_event(
+        "update_tax_rates",
+        %{"job_level" => job_level, "value" => updated_value},
+        %{assigns: %{city: city}} = socket
+      ) do
+    # check if user is mayor here?
+    updated_value_float = Float.parse(updated_value)
+
+    if updated_value_float != :error do
+      updated_value_constrained =
+        elem(updated_value_float, 0) |> max(0.0) |> min(1.0) |> Float.round(3)
+
+      IO.puts(to_string(updated_value_constrained))
+
+      # check if it's below 0 or above 1 or not a number
+
+      updated_tax_rates = city.tax_rates |> Map.put(job_level, updated_value_constrained)
+
+      case City.update_info(city, %{tax_rates: updated_tax_rates}) do
+        {:ok, _updated_detail} ->
+          IO.puts("tax rates updated")
+
+        {:error, err} ->
+          Logger.error(inspect(err))
+      end
+    end
+
+    # this is all ya gotta do to update, baybee
+    {:noreply, socket |> update_city_by_title()}
+  end
+
   # this is what gets messages from CityCalculator
   def handle_info(%{event: "ping", payload: ping}, socket) do
     {:noreply, socket |> assign(:ping, ping) |> update_city_by_title()}
