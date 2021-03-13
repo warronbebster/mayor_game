@@ -222,6 +222,7 @@ defmodule MayorGame.CityCalculator do
     total_jobs = calculate_jobs(city_preloaded, disabled_buildings)
 
     %{
+      city: city,
       jobs: total_jobs,
       tax: 0,
       housing: total_housing,
@@ -309,8 +310,13 @@ defmodule MayorGame.CityCalculator do
 
             # return this
             %{
+              city: acc.city,
               jobs: updated_jobs,
-              tax: 2 + best_possible_job + acc.tax,
+              tax:
+                round(
+                  (1 + best_possible_job) * 100 * acc.city.tax_rates[to_string(citizen.education)]
+                ) +
+                  acc.tax,
               housing: acc.housing - 1,
               money: acc.money,
               sprawl: acc.sprawl,

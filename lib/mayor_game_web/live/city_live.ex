@@ -142,7 +142,7 @@ defmodule MayorGameWeb.CityLive do
 
     if updated_value_float != :error do
       updated_value_constrained =
-        elem(updated_value_float, 0) |> max(0.0) |> min(1.0) |> Float.round(3)
+        elem(updated_value_float, 0) |> max(0.0) |> min(1.0) |> Float.round(2)
 
       IO.puts(to_string(updated_value_constrained))
 
