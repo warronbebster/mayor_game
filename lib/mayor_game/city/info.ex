@@ -9,6 +9,7 @@ defmodule MayorGame.City.Info do
     # field :treasury, :integer
     # this corresponds to an elixir list
     field :logs, {:array, :string}
+    field :tax_rates, :map
     belongs_to :user, MayorGame.Auth.User
 
     # outline relationship between city and citizens
@@ -34,7 +35,7 @@ defmodule MayorGame.City.Info do
 
     info
     # add a validation here to limit the types of regions
-    |> cast(attrs, [:title, :region, :user_id, :logs])
+    |> cast(attrs, [:title, :region, :user_id, :logs, :tax_rates])
     |> validate_required([:title, :region, :user_id])
     |> validate_length(:title, min: 1, max: 20)
     |> validate_inclusion(:region, regions())

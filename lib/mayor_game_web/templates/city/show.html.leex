@@ -20,7 +20,11 @@
       <br/>
       <b>total development area:</b> <%= @area.total_area %>
       <b>available development area:</b> <%= @area.available_area %>
-      <br/>
+      <b>taxes:</b>
+      <%= for {job_level, rate} <- @city.tax_rates do %>
+        level: <%= job_level %> rate: <%= rate %>
+        <br/>
+      <% end %>
       <br/>
 
       <%= for {category, buildings} <- @buildables do %>

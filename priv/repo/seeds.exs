@@ -39,6 +39,7 @@ Auth.create_user(%{
   City.create_city(%{
     region: "mountain",
     title: cityName,
+    tax_rate: %{0 => 0.5, 1 => 0.5, 2 => 0.5, 3 => 0.5, 4 => 0.5, 5 => 0.5, 6 => 0.5},
     user_id: madeUser_id
   })
 
