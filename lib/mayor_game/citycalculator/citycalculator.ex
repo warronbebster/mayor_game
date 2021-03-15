@@ -83,7 +83,7 @@ defmodule MayorGame.CityCalculator do
           move_citizen(citizen, best_job.best_city.city, world.day)
 
           # find where the city is in the list
-          indexx = Enum.find_index(acc_city_list, &(&1 == best_job.best_city))
+          indexx = Enum.find_index(acc_city_list, &(&1.city == best_job.best_city.city))
 
           # make updated list, decrement housing and jobs
           updated_acc_city_list =
@@ -152,25 +152,19 @@ defmodule MayorGame.CityCalculator do
   end
 
   @doc """
-  tries to find a city with matching job level. expects a list of city_calcs and a level to check.
-  returns a city_calc map if successful, otherwise nil
+  tries to find a cities with matching job level. expects a list of city_calcs and a level to check.
+  returns a list of city_calc maps if successful, otherwise nil
 
   ## Examples
-      iex> find_city_with_job(city_list, 2)
-       %{city: city, jobs: #, housing: #, etc}
+      iex> find_cities_with_job(city_list, 2)
+       [%{city: city, jobs: #, housing: #, etc}, %{city: city, jobs: #, housing: #, etc}]
   """
-  def find_city_with_job(cities, level) do
-    city_result =
-      Enum.reduce_while(cities, level, fn city_to_check, level_acc ->
-        if is_number(city_to_check.jobs[level_acc]) &&
-             city_to_check.jobs[level_acc] > 0 &&
-             city_to_check.housing > 0,
-           do: {:halt, city_to_check},
-           else: {:cont, level_acc}
-      end)
-
-    # if there is no city with job
-    if is_integer(city_result), do: nil, else: city_result
+  def find_cities_with_job(cities, level) do
+    Enum.filter(cities, fn city_to_check ->
+      is_number(city_to_check.jobs[level]) &&
+        city_to_check.jobs[level] > 0 &&
+        city_to_check.housing > 0
+    end)
   end
 
   @doc """
@@ -193,27 +187,46 @@ defmodule MayorGame.CityCalculator do
     # pollution rating/health rating
     # then make decision
     # oh god how do you do this? are they all normalized to 1? tax_rate is
+    # normalize to 1 (or i guess, you don't even need to?), multiply by citizen priority, sort by total number
 
-    result =
+    results =
       if citizen.education > 0 do
         # [3,2,1,0]
         levels = Enum.reverse(0..citizen.education)
 
-        # this finds first city
-
         Enum.reduce_while(levels, citizen.education, fn level_to_check, job_acc ->
-          check_result = find_city_with_job(cities_to_check, level_to_check)
+          cities_with_jobs = find_cities_with_job(cities_to_check, level_to_check)
 
-          if is_nil(check_result),
+          if List.first(cities_with_jobs) == nil,
             do: {:cont, job_acc - 1},
-            else: {:halt, %{best_city: check_result, job_level: level_to_check}}
+            else: {:halt, %{cities_with_jobs: cities_with_jobs, job_level: level_to_check}}
         end)
       else
-        check_result = find_city_with_job(cities_to_check, 0)
-        if is_nil(check_result), do: -1, else: %{best_city: check_result, job_level: 0}
+        cities_with_jobs = find_cities_with_job(cities_to_check, 0)
+
+        if List.first(cities_with_jobs) == nil,
+          do: -1,
+          else: %{cities_with_jobs: cities_with_jobs, job_level: 0}
       end
 
-    if is_integer(result), do: nil, else: result
+    scored_results =
+      Enum.map(results.cities_with_jobs, fn city_calc ->
+        # normalize pollution by dividing by energy
+        # normalize sprawl by dividing by area
+        # should probably do this when calculating it, not here
+
+        score =
+          city_calc.city.tax_rates[to_string(results.job_level)] +
+            city_calc.pollution +
+            city_calc.sprawl
+
+        Map.put_new(city_calc, :desirability_score, score)
+      end)
+      |> Enum.sort(&(&1.desirability_score >= &2.desirability_score))
+
+    if List.first(scored_results) == nil,
+      do: nil,
+      else: %{best_city: List.first(scored_results), job_level: results.job_level}
   end
 
   @doc """
