@@ -95,6 +95,7 @@ defmodule MayorGame.CityCalculator do
 
           updated_acc_city_list
         else
+          # check here if city citizen wants to move from has housing or not
           kill_citizen(citizen)
           acc_city_list
         end
@@ -151,7 +152,7 @@ defmodule MayorGame.CityCalculator do
   end
 
   @doc """
-  tries to find a city with matching job level. expects an array of city_calcs and a level to check.
+  tries to find a city with matching job level. expects a list of city_calcs and a level to check.
   returns a city_calc map if successful, otherwise nil
 
   ## Examples
@@ -182,10 +183,23 @@ defmodule MayorGame.CityCalculator do
       %{best_city: %{city: %Info{} struct, jobs: #, housing: #, tax: #, cost: #, etc}, job_level: level_to_check}
   """
   def find_best_job(cities_to_check, %MayorGame.City.Citizens{} = citizen) do
+    # pseudo code
+    # find all cities with jobs of best possible job_level
+    # then for each city, get:
+    # tax_rate for job_level
+    # fun rating
+    # sprawl rating
+    # fun rating
+    # pollution rating/health rating
+    # then make decision
+    # oh god how do you do this? are they all normalized to 1? tax_rate is
+
     result =
       if citizen.education > 0 do
         # [3,2,1,0]
         levels = Enum.reverse(0..citizen.education)
+
+        # this finds first city
 
         Enum.reduce_while(levels, citizen.education, fn level_to_check, job_acc ->
           check_result = find_city_with_job(cities_to_check, level_to_check)
