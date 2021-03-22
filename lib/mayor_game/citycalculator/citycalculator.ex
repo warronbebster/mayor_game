@@ -209,24 +209,32 @@ defmodule MayorGame.CityCalculator do
           else: %{cities_with_jobs: cities_with_jobs, job_level: 0}
       end
 
-    scored_results =
-      Enum.map(results.cities_with_jobs, fn city_calc ->
-        # normalize pollution by dividing by energy
-        # normalize sprawl by dividing by area
-        # should probably do this when calculating it, not here
+    if is_map(results) do
+      scored_results =
+        Enum.map(results.cities_with_jobs, fn city_calc ->
+          # normalize pollution by dividing by energy
+          # normalize sprawl by dividing by area
+          # should probably do this when calculating it, not here
+          # here's where i should multiply by citizen preference
 
-        score =
-          city_calc.city.tax_rates[to_string(results.job_level)] +
-            city_calc.pollution +
-            city_calc.sprawl
+          IO.inspect(citizen.preferences)
 
-        Map.put_new(city_calc, :desirability_score, score)
-      end)
-      |> Enum.sort(&(&1.desirability_score >= &2.desirability_score))
+          score =
+            city_calc.city.tax_rates[to_string(results.job_level)] *
+              citizen.preferences["tax_rates"] +
+              city_calc.pollution / city_calc.energy * citizen.preferences["pollution"] +
+              city_calc.sprawl / city_calc.area * citizen.preferences["sprawl"]
 
-    if List.first(scored_results) == nil,
-      do: nil,
-      else: %{best_city: List.first(scored_results), job_level: results.job_level}
+          Map.put_new(city_calc, :desirability_score, score)
+        end)
+        |> Enum.sort(&(&1.desirability_score >= &2.desirability_score))
+
+      if List.first(scored_results) == nil,
+        do: nil,
+        else: %{best_city: List.first(scored_results), job_level: results.job_level}
+    else
+      nil
+    end
   end
 
   @doc """
@@ -254,7 +262,9 @@ defmodule MayorGame.CityCalculator do
       tax: 0,
       housing: total_housing,
       money: money,
+      area: area.total_area,
       sprawl: area.sprawl,
+      energy: energy.total_energy,
       pollution: energy.pollution,
       citizens_looking: []
     }
@@ -279,6 +289,7 @@ defmodule MayorGame.CityCalculator do
           city_stats,
           fn citizen, acc ->
             City.update_citizens(citizen, %{age: citizen.age + 1})
+            IO.inspect(citizen.preferences)
 
             # if there are NO jobs for citizen, returns -1.
             best_possible_job =
@@ -300,7 +311,7 @@ defmodule MayorGame.CityCalculator do
             # citizen will look if there is no housing, if there is no best possible job, or if gap > 1
             will_citizen_look =
               best_possible_job < 0 ||
-                (job_gap > 1 && citizen.last_moved + 30 < day) ||
+                (job_gap > 1 && citizen.last_moved + 365 < day) ||
                 acc.housing < 1
 
             # add to citizens_looking array
@@ -346,8 +357,10 @@ defmodule MayorGame.CityCalculator do
                   acc.tax,
               housing: acc.housing - 1,
               money: acc.money,
+              area: acc.area,
               sprawl: acc.sprawl,
-              pollution: acc.sprawl,
+              energy: acc.energy,
+              pollution: acc.pollution,
               citizens_looking: citizens_looking
             }
           end

@@ -11,6 +11,7 @@ defmodule MayorGame.City.Citizens do
     field :job, :integer
     field :has_car, :boolean
     field :last_moved, :integer
+    field :preferences, :map
     # set citizens to belong to Info schema
     # uses foreign key (in this case, :info_id is automatically inferred)
     belongs_to :info, MayorGame.City.Info
@@ -25,7 +26,16 @@ defmodule MayorGame.City.Citizens do
       :age,
       :education,
       :has_car,
-      :last_moved
+      :last_moved,
+      :preferences
+    ]
+  end
+
+  def decision_factors do
+    [
+      :tax_rates,
+      :sprawl,
+      :pollution
     ]
   end
 

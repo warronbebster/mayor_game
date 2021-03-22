@@ -213,8 +213,16 @@ defmodule MayorGame.City do
 
   """
   def create_citizens(attrs \\ %{}) do
+    random_preferences =
+      Map.new(Citizens.decision_factors(), fn x ->
+        {to_string(x), :rand.uniform() |> Float.round(2)}
+      end)
+
+    attrs_plus_preferences = Map.put(attrs, :preferences, random_preferences)
+    IO.inspect(random_preferences)
+
     %Citizens{}
-    |> Citizens.changeset(attrs)
+    |> Citizens.changeset(attrs_plus_preferences)
     |> Repo.insert()
   end
 
