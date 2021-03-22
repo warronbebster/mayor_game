@@ -214,12 +214,25 @@ defmodule MayorGame.City do
   """
   def create_citizens(attrs \\ %{}) do
     random_preferences =
-      Map.new(Citizens.decision_factors(), fn x ->
-        {to_string(x), :rand.uniform() |> Float.round(2)}
+      Enum.reduce(Citizens.decision_factors(), %{preference_map: %{}, room_taken: 0}, fn x, acc ->
+        value =
+          if x == List.last(Citizens.decision_factors()),
+            do: (1 - acc.room_taken) |> Float.round(2),
+            else: (:rand.uniform() * (1 - acc.room_taken)) |> Float.round(2)
+
+        %{
+          preference_map: Map.put(acc.preference_map, to_string(x), value),
+          room_taken: acc.room_taken + value
+        }
       end)
 
-    attrs_plus_preferences = Map.put(attrs, :preferences, random_preferences)
-    IO.inspect(random_preferences)
+    IO.inspect(random_preferences.preference_map)
+
+    # Map.new(Citizens.decision_factors(), fn x ->
+    #   {to_string(x), :rand.uniform() |> Float.round(2)}
+    # end)
+
+    attrs_plus_preferences = Map.put(attrs, :preferences, random_preferences.preference_map)
 
     %Citizens{}
     |> Citizens.changeset(attrs_plus_preferences)

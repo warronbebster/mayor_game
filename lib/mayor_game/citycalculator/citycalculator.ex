@@ -217,8 +217,6 @@ defmodule MayorGame.CityCalculator do
           # should probably do this when calculating it, not here
           # here's where i should multiply by citizen preference
 
-          IO.inspect(citizen.preferences)
-
           score =
             city_calc.city.tax_rates[to_string(results.job_level)] *
               citizen.preferences["tax_rates"] +
@@ -289,7 +287,6 @@ defmodule MayorGame.CityCalculator do
           city_stats,
           fn citizen, acc ->
             City.update_citizens(citizen, %{age: citizen.age + 1})
-            IO.inspect(citizen.preferences)
 
             # if there are NO jobs for citizen, returns -1.
             best_possible_job =
