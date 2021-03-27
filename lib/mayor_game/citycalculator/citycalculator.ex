@@ -186,8 +186,6 @@ defmodule MayorGame.CityCalculator do
     # fun rating
     # pollution rating/health rating
     # then make decision
-    # oh god how do you do this? are they all normalized to 1? tax_rate is
-    # normalize to 1 (or i guess, you don't even need to?), multiply by citizen priority, sort by total number
 
     results =
       if citizen.education > 0 do
@@ -215,7 +213,6 @@ defmodule MayorGame.CityCalculator do
           # normalize pollution by dividing by energy
           # normalize sprawl by dividing by area
           # should probably do this when calculating it, not here
-          # here's where i should multiply by citizen preference
 
           score =
             city_calc.city.tax_rates[to_string(results.job_level)] *
@@ -253,10 +250,13 @@ defmodule MayorGame.CityCalculator do
     total_housing = calculate_housing(city_preloaded, disabled_buildings)
     # returns a map of %{0 => #, 0 => #, etc}
     total_jobs = calculate_jobs(city_preloaded, disabled_buildings)
+    # returns a map of %{0 => #, 0 => #, etc}
+    total_education = calculate_education(city_preloaded, disabled_buildings)
 
     %{
       city: city,
       jobs: total_jobs,
+      education: total_education,
       tax: 0,
       housing: total_housing,
       money: money,
@@ -322,6 +322,16 @@ defmodule MayorGame.CityCalculator do
                 do: Map.update!(acc.jobs, best_possible_job, &(&1 - 1)),
                 else: acc.jobs
 
+            # once a year
+            updated_education =
+              if rem(day, 365) == 0 && acc.education[citizen.education + 1] > 0 do
+                IO.inspect(acc.education)
+                City.update_citizens(citizen, %{education: citizen.education + 1})
+                Map.update!(acc.education, citizen.education + 1, &(&1 - 1))
+              else
+                acc.education
+              end
+
             # function to spawn children
             # function to look for education if have money
             # or just give education automatically if university exists?
@@ -347,6 +357,7 @@ defmodule MayorGame.CityCalculator do
             %{
               city: acc.city,
               jobs: updated_jobs,
+              education: updated_education,
               tax:
                 round(
                   (1 + best_possible_job) * 100 * acc.city.tax_rates[to_string(citizen.education)]
@@ -629,6 +640,80 @@ defmodule MayorGame.CityCalculator do
       )
 
     results.jobs_map
+  end
+
+  @doc """
+  takes a %MayorGame.City.Info{} struct, and a list[] of disabled buildings in atom form
+
+  returns map of available education by level: %{0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0}
+  """
+  def calculate_education(%MayorGame.City.Info{} = city, disabled_buildings) do
+    city_preloaded = preload_city_check(city)
+    empty_education_map = %{0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0}
+
+    # results =
+    #   Enum.reduce(
+    #     Details.buildables(),
+    #     %{education_map: empty_education_map, disabled_buildings: disabled_buildings},
+    #     fn category, acc ->
+    #       {categoryName, buildings} = category
+
+    # if categoryName == :education do
+    # education_map_results =
+    Enum.map(empty_education_map, fn {education_level, capacity} ->
+      results =
+        Enum.reduce(
+          Details.buildables().education,
+          %{education_amount: 0, disabled_buildings: disabled_buildings},
+          fn {building_type, building_options}, acc2 ->
+            if building_options.education_level == education_level do
+              building_count = Map.get(city_preloaded.detail, building_type)
+
+              if building_count > 0 do
+                Enum.reduce(
+                  1..building_count,
+                  %{
+                    education_amount: acc2.education_amount,
+                    disabled_buildings: acc2.disabled_buildings
+                  },
+                  fn _building, acc3 ->
+                    if Enum.member?(disabled_buildings, building_type) do
+                      %{
+                        education_amount: acc3.education_amount,
+                        disabled_buildings: acc3.disabled_buildings -- [building_type]
+                      }
+                    else
+                      %{
+                        education_amount: acc3.education_amount + building_options.capacity,
+                        disabled_buildings: acc3.disabled_buildings
+                      }
+                    end
+                  end
+                )
+              else
+                acc2
+              end
+            else
+              acc2
+            end
+          end
+        )
+
+      {education_level, capacity + results.education_amount}
+    end)
+
+    # # return this
+    # %{
+    #   education_map: Enum.into(education_map_results, %{}),
+    #   disabled_buildings: acc.disabled_buildings
+    # }
+    # else
+    #   acc
+    # end
+    # end
+    # )
+
+    # results.education_map
   end
 
   @doc """

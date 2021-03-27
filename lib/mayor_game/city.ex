@@ -213,6 +213,7 @@ defmodule MayorGame.City do
 
   """
   def create_citizens(attrs \\ %{}) do
+    # this makes a map with random values that add up to 1
     random_preferences =
       Enum.reduce(Citizens.decision_factors(), %{preference_map: %{}, room_taken: 0}, fn x, acc ->
         value =

@@ -191,15 +191,17 @@ defmodule MayorGame.City.Details do
           jobs: 10,
           job_level: 1,
           education_level: 1,
+          capacity: 10,
           area_required: 5,
           energy_required: 800
         },
         middle_schools: %{
           price: 20,
           daily_cost: 10,
-          jobs: 10,
+          jobs: 5,
           job_level: 1,
-          education_level: 1,
+          education_level: 2,
+          capacity: 5,
           area_required: 5,
           energy_required: 800
         },
@@ -208,7 +210,8 @@ defmodule MayorGame.City.Details do
           daily_cost: 10,
           jobs: 10,
           job_level: 1,
-          education_level: 1,
+          education_level: 3,
+          capacity: 10,
           area_required: 5,
           energy_required: 800
         },
@@ -217,7 +220,8 @@ defmodule MayorGame.City.Details do
           daily_cost: 15,
           jobs: 10,
           job_level: 2,
-          education_level: 2,
+          education_level: 4,
+          capacity: 10,
           area_required: 10,
           energy_required: 1200
         },
@@ -226,7 +230,8 @@ defmodule MayorGame.City.Details do
           daily_cost: 15,
           jobs: 10,
           job_level: 3,
-          education_level: 4,
+          education_level: 5,
+          capacity: 5,
           area_required: 3,
           energy_required: 600
         }
