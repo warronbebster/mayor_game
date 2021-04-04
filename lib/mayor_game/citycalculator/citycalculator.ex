@@ -459,17 +459,26 @@ defmodule MayorGame.CityCalculator do
   def calculate_energy(%MayorGame.City.Info{} = city) do
     city_preloaded = preload_city_check(city)
 
+    # for each building in the energy category
     preliminary_results =
       Enum.reduce(Details.buildables().energy, %{total_energy: 0, pollution: 0}, fn {energy_type,
                                                                                      energy_options},
                                                                                     acc ->
+        # region checking and multipliers
+        region_energy_multiplier =
+          if Map.has_key?(energy_options.region_energy_multipliers, city_preloaded.region),
+            do: energy_options.region_energy_multipliers[city_preloaded.region],
+            else: 1
+
         pollution =
           acc.pollution + energy_options.pollution * Map.get(city_preloaded.detail, energy_type)
 
         energy =
-          acc.total_energy + energy_options.energy * Map.get(city_preloaded.detail, energy_type)
+          acc.total_energy +
+            energy_options.energy * Map.get(city_preloaded.detail, energy_type) *
+              region_energy_multiplier
 
-        %{total_energy: energy, pollution: pollution}
+        %{total_energy: round(energy), pollution: pollution}
       end)
 
     energy_results =

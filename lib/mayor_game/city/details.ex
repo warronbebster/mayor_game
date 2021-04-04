@@ -150,7 +150,8 @@ defmodule MayorGame.City.Details do
           job_level: 0,
           energy: 3500,
           pollution: 10,
-          area_required: 5
+          area_required: 5,
+          region_energy_multipliers: %{"mountain" => 1.2}
         },
         wind_turbines: %{
           price: 100,
@@ -159,7 +160,8 @@ defmodule MayorGame.City.Details do
           job_level: 1,
           energy: 600,
           pollution: 0,
-          area_required: 5
+          area_required: 5,
+          region_energy_multipliers: %{"ocean" => 1.3, "desert" => 1.1}
         },
         solar_plants: %{
           price: 200,
@@ -168,7 +170,8 @@ defmodule MayorGame.City.Details do
           job_level: 2,
           energy: 500,
           pollution: 0,
-          area_required: 5
+          area_required: 5,
+          region_energy_multipliers: %{"desert" => 1.5, "forest" => 0.8}
         },
         nuclear_plants: %{
           price: 2000,
@@ -177,7 +180,8 @@ defmodule MayorGame.City.Details do
           job_level: 3,
           energy: 5000,
           pollution: 0,
-          area_required: 3
+          area_required: 3,
+          region_energy_multipliers: %{}
         }
       },
       civic: %{

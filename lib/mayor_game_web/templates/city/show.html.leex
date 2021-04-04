@@ -105,7 +105,7 @@
             <%# hmm i should just do a comprehension through all key/values in building_stats %>
 
             <%= for {building_stat, value} <- building_stats do %>
-              <%= if building_stat != :price do %>
+              <%= if !String.contains?(Atom.to_string(building_stat), ["multipliers", "price"]) do %>
                 <%= building_stat %>: <%=value%> |
               <% end %>
             <% end %>
