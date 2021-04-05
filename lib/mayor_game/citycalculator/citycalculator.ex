@@ -323,6 +323,7 @@ defmodule MayorGame.CityCalculator do
                 else: acc.jobs
 
             # once a year
+
             updated_education =
               if rem(day, 365) == 0 && acc.education[citizen.education + 1] > 0 do
                 IO.inspect(acc.education)
@@ -668,52 +669,52 @@ defmodule MayorGame.CityCalculator do
     #       {categoryName, buildings} = category
 
     # if categoryName == :education do
-    # education_map_results =
-    Enum.map(empty_education_map, fn {education_level, capacity} ->
-      results =
-        Enum.reduce(
-          Details.buildables().education,
-          %{education_amount: 0, disabled_buildings: disabled_buildings},
-          fn {building_type, building_options}, acc2 ->
-            if building_options.education_level == education_level do
-              building_count = Map.get(city_preloaded.detail, building_type)
+    education_map_results =
+      Enum.map(empty_education_map, fn {education_level, capacity} ->
+        results =
+          Enum.reduce(
+            Details.buildables().education,
+            %{education_amount: 0, disabled_buildings: disabled_buildings},
+            fn {building_type, building_options}, acc2 ->
+              if building_options.education_level == education_level do
+                building_count = Map.get(city_preloaded.detail, building_type)
 
-              if building_count > 0 do
-                Enum.reduce(
-                  1..building_count,
-                  %{
-                    education_amount: acc2.education_amount,
-                    disabled_buildings: acc2.disabled_buildings
-                  },
-                  fn _building, acc3 ->
-                    if Enum.member?(disabled_buildings, building_type) do
-                      %{
-                        education_amount: acc3.education_amount,
-                        disabled_buildings: acc3.disabled_buildings -- [building_type]
-                      }
-                    else
-                      %{
-                        education_amount: acc3.education_amount + building_options.capacity,
-                        disabled_buildings: acc3.disabled_buildings
-                      }
+                if building_count > 0 do
+                  Enum.reduce(
+                    1..building_count,
+                    %{
+                      education_amount: acc2.education_amount,
+                      disabled_buildings: acc2.disabled_buildings
+                    },
+                    fn _building, acc3 ->
+                      if Enum.member?(disabled_buildings, building_type) do
+                        %{
+                          education_amount: acc3.education_amount,
+                          disabled_buildings: acc3.disabled_buildings -- [building_type]
+                        }
+                      else
+                        %{
+                          education_amount: acc3.education_amount + building_options.capacity,
+                          disabled_buildings: acc3.disabled_buildings
+                        }
+                      end
                     end
-                  end
-                )
+                  )
+                else
+                  acc2
+                end
               else
                 acc2
               end
-            else
-              acc2
             end
-          end
-        )
+          )
 
-      {education_level, capacity + results.education_amount}
-    end)
+        {education_level, capacity + results.education_amount}
+      end)
 
     # # return this
     # %{
-    #   education_map: Enum.into(education_map_results, %{}),
+    # education_map: Enum.into(education_map_results, %{}),
     #   disabled_buildings: acc.disabled_buildings
     # }
     # else
@@ -723,6 +724,7 @@ defmodule MayorGame.CityCalculator do
     # )
 
     # results.education_map
+    Enum.into(education_map_results, %{})
   end
 
   @doc """
