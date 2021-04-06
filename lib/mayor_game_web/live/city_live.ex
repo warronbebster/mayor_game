@@ -176,7 +176,7 @@ defmodule MayorGameWeb.CityLive do
 
   # function to update city
   # maybe i should make one just for "updating" — e.g. only pull details and citizens from DB
-  defp update_city_by_title(%{assigns: %{title: title}} = socket) do
+  defp update_city_by_title(%{assigns: %{title: title, ping: ping}} = socket) do
     city =
       City.get_info_by_title!(title)
       |> Repo.preload([:detail, :citizens])
@@ -185,7 +185,7 @@ defmodule MayorGameWeb.CityLive do
     user = Auth.get_user!(city.user_id)
 
     area = MayorGame.CityCalculator.calculate_area(city)
-    energy = MayorGame.CityCalculator.calculate_energy(city)
+    energy = MayorGame.CityCalculator.calculate_energy(city, ping)
     money = MayorGame.CityCalculator.calculate_money(city)
 
     # figure out how to send an assign for each building type with disabled buildings
