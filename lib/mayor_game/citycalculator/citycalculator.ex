@@ -6,7 +6,6 @@ defmodule MayorGame.CityCalculator do
   def start_link(initial_val) do
     # starts link based on this file
     # which triggers init function in module
-    # do a check to see if World exists, and if so, send world.day
 
     GenServer.start_link(__MODULE__, initial_val)
   end
