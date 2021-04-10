@@ -6,7 +6,7 @@ defmodule MayorGame.City do
   import Ecto.Query, warn: false
   alias MayorGame.Repo
 
-  alias MayorGame.City.{Details, Info, Citizens, World}
+  alias MayorGame.City.{Details, Info, Citizens, World, Buildable}
 
   @doc """
   Returns the list of cities.
@@ -68,7 +68,7 @@ defmodule MayorGame.City do
       # if city built successfully, automatically build Details with it's id
       # update this so these fields are automatically generated
       {:ok, created_city} ->
-        buildables = Map.new(Details.buildables_list(), fn buildable -> {buildable, 0} end)
+        buildables = Map.new(Details.buildables_list(), fn buildable -> {buildable, []} end)
 
         detail = Map.merge(buildables, %{city_treasury: 500, info_id: created_city.id})
 
@@ -367,15 +367,15 @@ defmodule MayorGame.City do
 
   """
   def purchase_details(%Details{} = details, field_to_purchase, purchase_price) do
-    price = purchase_price
+    # price = purchase_price
 
     # how many building are there rn
     {:ok, current_value} = Map.fetch(details, field_to_purchase)
 
     attrs =
       Map.new([
-        {field_to_purchase, current_value + 1},
-        {:city_treasury, details.city_treasury - price}
+        {field_to_purchase, [%Buildable{} | current_value]},
+        {:city_treasury, details.city_treasury - purchase_price}
       ])
 
     # Map.update!(details, field_to_purchase, &(&1 + 1))

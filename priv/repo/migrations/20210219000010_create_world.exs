@@ -4,6 +4,7 @@ defmodule MayorGame.Repo.Migrations.CreateWorld do
   def change do
     create table(:world) do
       add :day, :integer, default: 0
+      add :pollution, :integer, default: 0
 
       timestamps()
     end

@@ -39,7 +39,7 @@
         <br/>
         <%= for {building_type, building_stats} <- buildings do %>
 
-          <%= Map.get(@city.detail, building_type) %>
+          <%= length(Map.get(@city.detail, building_type)) %>
           <%= building_type %>
 
           <%= if @buildings_status[building_type].enabled > 0 do %>
@@ -98,7 +98,7 @@
               <button disabled>build $<%= building_stats.price %></button>
             <% end %>
 
-            <%= if Map.get(@city.detail, building_type) > 0 do %>
+            <%= if length(Map.get(@city.detail, building_type)) > 0 do %>
               <button phx-click="demolish_building" phx-throttle="100" phx-value-building="<%= building_type %>" >demolish</button>
             <% end %>
 

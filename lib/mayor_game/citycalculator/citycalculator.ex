@@ -393,11 +393,12 @@ defmodule MayorGame.CityCalculator do
                                                                                  transit_options},
                                                                                 acc ->
         sprawl =
-          acc.sprawl + transit_options.sprawl * Map.get(city_preloaded.detail, transit_type)
+          acc.sprawl +
+            transit_options.sprawl * length(Map.get(city_preloaded.detail, transit_type))
 
         area =
           acc.total_area +
-            transit_options.area * Map.get(city_preloaded.detail, transit_type)
+            transit_options.area * length(Map.get(city_preloaded.detail, transit_type))
 
         %{sprawl: sprawl, total_area: area}
       end)
@@ -416,7 +417,7 @@ defmodule MayorGame.CityCalculator do
               area_left: acc.area_left
             },
             fn {building_type, building_options}, acc2 ->
-              building_count = Map.get(city_preloaded.detail, building_type)
+              building_count = length(Map.get(city_preloaded.detail, building_type))
 
               if Map.has_key?(building_options, :area_required) && building_count > 0 do
                 Enum.reduce(
@@ -484,11 +485,12 @@ defmodule MayorGame.CityCalculator do
             else: 1
 
         pollution =
-          acc.pollution + energy_options.pollution * Map.get(city_preloaded.detail, energy_type)
+          acc.pollution +
+            energy_options.pollution * length(Map.get(city_preloaded.detail, energy_type))
 
         energy =
           acc.total_energy +
-            energy_options.energy * Map.get(city_preloaded.detail, energy_type) *
+            energy_options.energy * length(Map.get(city_preloaded.detail, energy_type)) *
               region_energy_multiplier * season_energy_multiplier
 
         %{total_energy: round(energy), pollution: pollution}
@@ -508,7 +510,7 @@ defmodule MayorGame.CityCalculator do
               energy_left: acc.energy_left
             },
             fn {building_type, building_options}, acc2 ->
-              building_count = Map.get(city_preloaded.detail, building_type)
+              building_count = length(Map.get(city_preloaded.detail, building_type))
 
               if Map.has_key?(building_options, :energy_required) && building_count > 0 do
                 Enum.reduce(
@@ -558,7 +560,7 @@ defmodule MayorGame.CityCalculator do
         fn {building_type, building_options}, acc ->
           # get fits, multiply by number of buildings
 
-          building_count = Map.get(city_preloaded.detail, building_type)
+          building_count = length(Map.get(city_preloaded.detail, building_type))
 
           if building_count > 0 do
             Enum.reduce(
@@ -615,7 +617,7 @@ defmodule MayorGame.CityCalculator do
                     %{job_amount: 0, disabled_buildings: acc.disabled_buildings},
                     fn {building_type, building_options}, acc2 ->
                       if building_options.job_level == job_level do
-                        building_count = Map.get(city_preloaded.detail, building_type)
+                        building_count = length(Map.get(city_preloaded.detail, building_type))
 
                         if building_count > 0 do
                           Enum.reduce(
@@ -689,7 +691,7 @@ defmodule MayorGame.CityCalculator do
           %{education_amount: 0, disabled_buildings: disabled_buildings},
           fn {building_type, building_options}, acc2 ->
             if building_options.education_level == education_level do
-              building_count = Map.get(city_preloaded.detail, building_type)
+              building_count = length(Map.get(city_preloaded.detail, building_type))
 
               if building_count > 0 do
                 Enum.reduce(
@@ -764,7 +766,7 @@ defmodule MayorGame.CityCalculator do
               cost: acc.cost
             },
             fn {building_type, building_options}, acc2 ->
-              building_count = Map.get(city_preloaded.detail, building_type)
+              building_count = length(Map.get(city_preloaded.detail, building_type))
 
               if Map.has_key?(building_options, :daily_cost) &&
                    building_count > 0 &&

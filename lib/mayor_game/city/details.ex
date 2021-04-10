@@ -1,48 +1,49 @@
 defmodule MayorGame.City.Details do
   use Ecto.Schema
   import Ecto.Changeset
+  import MayorGame.City.Buildable
 
   schema "details" do
     field :city_treasury, :integer
     # housing
-    field :single_family_homes, :integer
-    field :multi_family_homes, :integer
-    field :homeless_shelter, :integer
-    field :apartments, :integer
-    field :micro_apartments, :integer
-    field :high_rises, :integer
+    field :single_family_homes, {:array, :map}
+    field :multi_family_homes, {:array, :map}
+    field :homeless_shelter, {:array, :map}
+    field :apartments, {:array, :map}
+    field :micro_apartments, {:array, :map}
+    field :high_rises, {:array, :map}
     # transit
-    field :roads, :integer
-    field :highways, :integer
-    field :airports, :integer
-    field :bus_lines, :integer
-    field :subway_lines, :integer
-    field :bike_lanes, :integer
-    field :bikeshare_stations, :integer
+    field :roads, {:array, :map}
+    field :highways, {:array, :map}
+    field :airports, {:array, :map}
+    field :bus_lines, {:array, :map}
+    field :subway_lines, {:array, :map}
+    field :bike_lanes, {:array, :map}
+    field :bikeshare_stations, {:array, :map}
     # energy
-    field :coal_plants, :integer
-    field :wind_turbines, :integer
-    field :solar_plants, :integer
-    field :nuclear_plants, :integer
+    field :coal_plants, {:array, :map}
+    field :wind_turbines, {:array, :map}
+    field :solar_plants, {:array, :map}
+    field :nuclear_plants, {:array, :map}
     # civic
-    field :parks, :integer
-    field :libraries, :integer
+    field :parks, {:array, :map}
+    field :libraries, {:array, :map}
     # education
-    field :schools, :integer
-    field :middle_schools, :integer
-    field :high_schools, :integer
-    field :universities, :integer
-    field :research_labs, :integer
+    field :schools, {:array, :map}
+    field :middle_schools, {:array, :map}
+    field :high_schools, {:array, :map}
+    field :universities, {:array, :map}
+    field :research_labs, {:array, :map}
     # work
-    field :factories, :integer
-    field :retail_shops, :integer
-    field :office_buildings, :integer
+    field :factories, {:array, :map}
+    field :retail_shops, {:array, :map}
+    field :office_buildings, {:array, :map}
     # entertainment
-    field :theatres, :integer
-    field :arenas, :integer
+    field :theatres, {:array, :map}
+    field :arenas, {:array, :map}
     # health
-    field :doctor_offices, :integer
-    field :hospitals, :integer
+    field :doctor_offices, {:array, :map}
+    field :hospitals, {:array, :map}
 
     # ok so basically
     # this "belongs to is called "city" but it belongs to the "info" schema

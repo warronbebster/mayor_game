@@ -118,7 +118,8 @@ defmodule MayorGameWeb.CityLive do
     # how many buildings are there now
     {:ok, current_value} = Map.fetch(city.detail, building_to_demolish_atom)
 
-    attrs = Map.new([{building_to_demolish_atom, current_value - 1}])
+    # gotta fix this so it's ID-specific
+    attrs = Map.new([{building_to_demolish_atom, tl(current_value)}])
 
     case City.update_details(city.detail, attrs) do
       {:ok, _updated_detail} ->
@@ -195,7 +196,7 @@ defmodule MayorGameWeb.CityLive do
     buildings_status =
       Details.buildables_list()
       |> Enum.reduce(%{}, fn building_type, acc ->
-        building_count = Map.get(city.detail, building_type)
+        building_count = length(Map.get(city.detail, building_type))
         area_disabled_count = Enum.count(area.disabled_buildings, &(&1 == building_type))
         energy_disabled_count = Enum.count(energy.disabled_buildings, &(&1 == building_type))
         money_disabled_count = Enum.count(money.disabled_buildings, &(&1 == building_type))
