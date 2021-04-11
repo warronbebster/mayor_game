@@ -358,7 +358,43 @@ defmodule MayorGame.City do
 
   @doc """
   purchase 1 of a given building
-  expects (details, :atom of )
+  expects (details, :atom of building, pric)
+
+  ## Examples
+
+      iex> purchase_buildable(details, :schools, 300)
+      {:ok, %Details{}}
+
+  """
+  def purchase_buildable(%Details{} = details, field_to_purchase, purchase_price) do
+    # price = purchase_price
+
+    # how many building are there rn
+    # IO.inspect(details[field_to_purchase])
+    {:ok, current_value} = Map.fetch(details, field_to_purchase)
+
+    attrs =
+      Map.new([
+        {field_to_purchase, [%Buildable{enabled: false, upgrades: %{}} | current_value]},
+        {:city_treasury, details.city_treasury - purchase_price}
+      ])
+
+    IO.inspect(attrs)
+
+    # Map.update!(details, field_to_purchase, &(&1 + 1))
+
+    # Ecto.Changeset.put_change(:addresses, addresses)
+
+    details
+    |> Details.changeset(attrs)
+    |> Ecto.Changeset.validate_number(:city_treasury, greater_than: 0)
+    |> Ecto.Changeset.put_change(field_to_purchase, attrs[field_to_purchase])
+    |> Repo.update()
+  end
+
+  @doc """
+  remove 1 of a given building
+  expects (details, :atom of building, building id)
 
   ## Examples
 
@@ -366,23 +402,33 @@ defmodule MayorGame.City do
       {:ok, %Details{}}
 
   """
-  def purchase_details(%Details{} = details, field_to_purchase, purchase_price) do
+  def demolish_buildable(%Details{} = details, field_to_demolish, id) do
     # price = purchase_price
 
     # how many building are there rn
-    {:ok, current_value} = Map.fetch(details, field_to_purchase)
+    # IO.inspect(details[field_to_purchase])
+    {:ok, current_value} = Map.fetch(details, field_to_demolish)
 
-    attrs =
-      Map.new([
-        {field_to_purchase, [%Buildable{} | current_value]},
-        {:city_treasury, details.city_treasury - purchase_price}
-      ])
+    # IO.inspect(current_value)
+
+    updated_list =
+      current_value
+      |> Enum.reject(fn buildable -> buildable.id == id end)
+
+    # IO.inspect(updated_list)
+
+    # attrs = %{field_to_demolish => updated_list}
+
+    # IO.inspect(attrs)
 
     # Map.update!(details, field_to_purchase, &(&1 + 1))
 
+    # Ecto.Changeset.put_change(:addresses, addresses)
+
     details
-    |> Details.changeset(attrs)
-    |> Ecto.Changeset.validate_number(:city_treasury, greater_than: 0)
+    # |> Details.changeset(attrs)
+    |> Ecto.Changeset.change()
+    |> Ecto.Changeset.put_change(field_to_demolish, updated_list)
     |> Repo.update()
   end
 

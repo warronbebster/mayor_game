@@ -3,6 +3,9 @@ defmodule MayorGame.City.Info do
   import Ecto.Changeset
   alias MayorGame.City.{Citizens, Details}
 
+  # don't print these on inspect
+  @derive {Inspect, except: [:logs, :citizens, :detail]}
+
   schema "cities" do
     field :region, :string
     field :title, :string

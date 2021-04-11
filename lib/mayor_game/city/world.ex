@@ -5,13 +5,15 @@ defmodule MayorGame.City.World do
   schema "world" do
     # probably can get rid of this and just rely on lastUpdated in the DB
     field :day, :integer
+    field :pollution, :integer
 
     timestamps()
   end
 
   def attributes do
     [
-      :day
+      :day,
+      :pollution
     ]
   end
 

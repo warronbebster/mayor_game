@@ -93,8 +93,10 @@ defmodule MayorGameWeb.CityLive do
       get_in(Details.buildables(), [building_category_atom, building_to_buy_atom, :price])
 
     # check for upgrade requirements?
+    IO.inspect(building_to_buy_atom)
+    IO.inspect(purchase_price)
 
-    case City.purchase_details(city.detail, building_to_buy_atom, purchase_price) do
+    case City.purchase_buildable(city.detail, building_to_buy_atom, purchase_price) do
       {:ok, _updated_detail} ->
         IO.puts("purchase success")
 
@@ -108,7 +110,7 @@ defmodule MayorGameWeb.CityLive do
 
   def handle_event(
         "demolish_building",
-        %{"building" => building_to_demolish},
+        %{"building" => building_to_demolish, "building_id" => building_id},
         %{assigns: %{city: city}} = socket
       ) do
     # check if user is mayor here?
@@ -116,12 +118,12 @@ defmodule MayorGameWeb.CityLive do
     building_to_demolish_atom = String.to_existing_atom(building_to_demolish)
 
     # how many buildings are there now
-    {:ok, current_value} = Map.fetch(city.detail, building_to_demolish_atom)
+    # {:ok, current_value} = Map.fetch(city.detail, building_to_demolish_atom)
 
     # gotta fix this so it's ID-specific
-    attrs = Map.new([{building_to_demolish_atom, tl(current_value)}])
+    # attrs = Map.new([{building_to_demolish_atom, tl(current_value)}])
 
-    case City.update_details(city.detail, attrs) do
+    case City.demolish_buildable(city.detail, building_to_demolish_atom, building_id) do
       {:ok, _updated_detail} ->
         IO.puts("demolition success")
 

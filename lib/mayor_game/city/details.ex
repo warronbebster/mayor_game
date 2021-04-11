@@ -3,51 +3,53 @@ defmodule MayorGame.City.Details do
   import Ecto.Changeset
   import MayorGame.City.Buildable
 
+  @derive {Inspect, except: [:info]}
+
   schema "details" do
     field :city_treasury, :integer
     # housing
-    field :single_family_homes, {:array, :map}
-    field :multi_family_homes, {:array, :map}
-    field :homeless_shelter, {:array, :map}
-    field :apartments, {:array, :map}
-    field :micro_apartments, {:array, :map}
-    field :high_rises, {:array, :map}
+    embeds_many :single_family_homes, MayorGame.City.Buildable, on_replace: :delete
+    embeds_many :multi_family_homes, MayorGame.City.Buildable, on_replace: :delete
+    embeds_many :homeless_shelter, MayorGame.City.Buildable, on_replace: :delete
+    embeds_many :apartments, MayorGame.City.Buildable, on_replace: :delete
+    embeds_many :micro_apartments, MayorGame.City.Buildable, on_replace: :delete
+    embeds_many :high_rises, MayorGame.City.Buildable, on_replace: :delete
     # transit
-    field :roads, {:array, :map}
-    field :highways, {:array, :map}
-    field :airports, {:array, :map}
-    field :bus_lines, {:array, :map}
-    field :subway_lines, {:array, :map}
-    field :bike_lanes, {:array, :map}
-    field :bikeshare_stations, {:array, :map}
+    embeds_many :roads, MayorGame.City.Buildable, on_replace: :delete
+    embeds_many :highways, MayorGame.City.Buildable, on_replace: :delete
+    embeds_many :airports, MayorGame.City.Buildable, on_replace: :delete
+    embeds_many :bus_lines, MayorGame.City.Buildable, on_replace: :delete
+    embeds_many :subway_lines, MayorGame.City.Buildable, on_replace: :delete
+    embeds_many :bike_lanes, MayorGame.City.Buildable, on_replace: :delete
+    embeds_many :bikeshare_stations, MayorGame.City.Buildable, on_replace: :delete
     # energy
-    field :coal_plants, {:array, :map}
-    field :wind_turbines, {:array, :map}
-    field :solar_plants, {:array, :map}
-    field :nuclear_plants, {:array, :map}
+    embeds_many :coal_plants, MayorGame.City.Buildable, on_replace: :delete
+    embeds_many :wind_turbines, MayorGame.City.Buildable, on_replace: :delete
+    embeds_many :solar_plants, MayorGame.City.Buildable, on_replace: :delete
+    embeds_many :nuclear_plants, MayorGame.City.Buildable, on_replace: :delete
     # civic
-    field :parks, {:array, :map}
-    field :libraries, {:array, :map}
+    embeds_many :parks, MayorGame.City.Buildable, on_replace: :delete
+    embeds_many :libraries, MayorGame.City.Buildable, on_replace: :delete
     # education
-    field :schools, {:array, :map}
-    field :middle_schools, {:array, :map}
-    field :high_schools, {:array, :map}
-    field :universities, {:array, :map}
-    field :research_labs, {:array, :map}
+    embeds_many :schools, MayorGame.City.Buildable, on_replace: :delete
+    embeds_many :middle_schools, MayorGame.City.Buildable, on_replace: :delete
+    embeds_many :high_schools, MayorGame.City.Buildable, on_replace: :delete
+    embeds_many :universities, MayorGame.City.Buildable, on_replace: :delete
+    embeds_many :research_labs, MayorGame.City.Buildable, on_replace: :delete
     # work
-    field :factories, {:array, :map}
-    field :retail_shops, {:array, :map}
-    field :office_buildings, {:array, :map}
+    embeds_many :factories, MayorGame.City.Buildable, on_replace: :delete
+    embeds_many :retail_shops, MayorGame.City.Buildable, on_replace: :delete
+    embeds_many :office_buildings, MayorGame.City.Buildable, on_replace: :delete
     # entertainment
-    field :theatres, {:array, :map}
-    field :arenas, {:array, :map}
+    embeds_many :theatres, MayorGame.City.Buildable, on_replace: :delete
+    embeds_many :arenas, MayorGame.City.Buildable, on_replace: :delete
     # health
-    field :doctor_offices, {:array, :map}
-    field :hospitals, {:array, :map}
+    embeds_many :doctor_offices, MayorGame.City.Buildable, on_replace: :delete
+    embeds_many :hospitals, MayorGame.City.Buildable, on_replace: :delete
 
     # ok so basically
     # this "belongs to is called "city" but it belongs to the "info" schema
-    # so there has to be a "whatever_id" field in the migration
+    # so there has to be a "whatever_id" embeds_many in the migration
     # automatically adds "_id" when looking for a foreign key, unless you set it
     belongs_to :info, MayorGame.City.Info
 
@@ -321,12 +323,20 @@ defmodule MayorGame.City.Details do
 
   @doc false
   def changeset(details, attrs) do
-    detail_fields = buildables_list() ++ [:city_treasury, :info_id]
+    # detail_embeds = buildables_list()
+    detail_fields = [:city_treasury, :info_id]
 
     details
-    # this basically defines the fields users can change
+    # this basically defines the embeds_manys users can change
     |> cast(attrs, detail_fields)
-    # and this is required fields
+    # |> put_assoc(detail_embeds)
+    # |> cast_assoc(detail_embeds)
+    # and this is required embeds_manys
     |> validate_required(detail_fields)
   end
+
+  # def buildable_changeset(buildable, attrs) do
+  #   buildable
+  #   |> cast(attrs, [:enabled, :upgrades])
+  # end
 end

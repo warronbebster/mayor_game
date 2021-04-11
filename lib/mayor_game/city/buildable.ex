@@ -1,14 +1,30 @@
 # ok so these are both structs
 
-defmodule MayorGame.City.Buildable do
-  @derive {Jason.Encoder, only: [:id]}
+# updating structs
+# %{losangeles | name: "Los Angeles"}
 
-  defstruct upgrades: %{}, id: 0
+defmodule MayorGame.City.Buildable do
+  use Ecto.Schema
+
+  @derive {Jason.Encoder, except: [:upgrades]}
+
+  embedded_schema do
+    # has an id built-in
+    field :enabled, :boolean
+    field :upgrades, :map
+  end
+
+  # defstruct upgrades: %{}, id: 0, enabled: false
 end
 
 defmodule MayorGame.City.Upgrade do
-  defstruct cost: 10, active: false, requirements: []
-end
+  use Ecto.Schema
 
-# updating structs
-# %{losangeles | name: "Los Angeles"}
+  embedded_schema do
+    field :cost, :integer
+    field :active, :boolean
+    field :requirements, {:array, :string}
+  end
+
+  # defstruct cost: 10, active: false, requirements: []
+end
