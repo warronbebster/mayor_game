@@ -33,8 +33,8 @@ npm-debug.log
 # this depending on your deployment strategy.
 /priv/static/
 
-/config/dev.secret.exs
-/config/test.secret.exs
+# /config/dev.secret.exs
+# /config/test.secret.exs
 
 /Mnesia.*
 
