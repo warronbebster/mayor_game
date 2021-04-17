@@ -43,13 +43,13 @@
           <%= building_type %>
 
           <%= if @buildings_status[building_type].enabled > 0 do %>
-            <%= for building <- 1..@buildings_status[building_type].enabled do%>
+            <%= for _building <- 1..@buildings_status[building_type].enabled do%>
               <div class="building_enabled"></div>
             <% end %>
           <% end %>
 
           <%= if @buildings_status[building_type].disabled > 0 do %>
-            <%= for building <- 1..@buildings_status[building_type].disabled do%>
+            <%= for _building <- 1..@buildings_status[building_type].disabled do%>
               <div class="building_disabled"></div>
               <%= @buildings_status[building_type].reason %>
             <% end %>
