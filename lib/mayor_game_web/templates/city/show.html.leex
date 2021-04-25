@@ -57,7 +57,9 @@
 
           <%= for building <- Map.get(@city.detail, building_type) do%>
             <div class="building"> <%= building.id%>
+            <%= if @is_user_mayor do %>
               <button phx-click="demolish_building" phx-throttle="100" phx-value-building="<%= building_type %>" phx-value-building_id="<%= building.id %>" >demolish</button>
+            <% end %>
             </div>
           <% end %>
 
