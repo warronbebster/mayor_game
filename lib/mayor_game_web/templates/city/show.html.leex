@@ -42,26 +42,8 @@
           <%= length(Map.get(@city.detail, building_type)) %>
           <%= building_type %>
 
-          <%= if @buildings_status[building_type].enabled > 0 do %>
-            <%= for _building <- 1..@buildings_status[building_type].enabled do%>
-              <div class="building_enabled"></div>
-            <% end %>
-          <% end %>
 
-          <%= if @buildings_status[building_type].disabled > 0 do %>
-            <%= for _building <- 1..@buildings_status[building_type].disabled do%>
-              <div class="building_disabled"></div>
-              <%= @buildings_status[building_type].reason %>
-            <% end %>
-          <% end %>
 
-          <%= for building <- Map.get(@city.detail, building_type) do%>
-            <div class="building"> <%= building.id%>
-            <%= if @is_user_mayor do %>
-              <button phx-click="demolish_building" phx-throttle="100" phx-value-building="<%= building_type %>" phx-value-building_id="<%= building.id %>" >demolish</button>
-            <% end %>
-            </div>
-          <% end %>
 
 
           <%# do some check here for disabled buildings %>
@@ -115,6 +97,26 @@
               <% end %>
             <% end %>
 
+
+
+          <% end %>
+
+          <%= for building <- Map.get(@city.detail, building_type) do%>
+            <div class="building"> <%= building.id%>
+              <%= if building.enabled do%>
+                <div class="building_enabled"></div>
+              <% else %>
+                <div class="building_disabled"></div>
+                <p> Needs <%= for reason <- building.reason do%>
+                <%= reason%>
+                <% end %>
+                to operate</p>
+              <% end %>
+
+              <%= if @is_user_mayor do %>
+                <button phx-click="demolish_building" phx-throttle="100" phx-value-building="<%= building_type %>" phx-value-building_id="<%= building.id %>" >demolish</button>
+              <% end %>
+            </div>
           <% end %>
           <br/>
         <% end %>

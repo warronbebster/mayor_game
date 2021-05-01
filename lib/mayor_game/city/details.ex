@@ -1,51 +1,51 @@
 defmodule MayorGame.City.Details do
   use Ecto.Schema
   import Ecto.Changeset
-  import MayorGame.City.Buildable
+  alias MayorGame.City.Buildable
 
   @derive {Inspect, except: [:info]}
 
   schema "details" do
     field :city_treasury, :integer
     # housing
-    embeds_many :single_family_homes, MayorGame.City.Buildable, on_replace: :delete
-    embeds_many :multi_family_homes, MayorGame.City.Buildable, on_replace: :delete
-    embeds_many :homeless_shelter, MayorGame.City.Buildable, on_replace: :delete
-    embeds_many :apartments, MayorGame.City.Buildable, on_replace: :delete
-    embeds_many :micro_apartments, MayorGame.City.Buildable, on_replace: :delete
-    embeds_many :high_rises, MayorGame.City.Buildable, on_replace: :delete
+    embeds_many :single_family_homes, Buildable, on_replace: :delete
+    embeds_many :multi_family_homes, Buildable, on_replace: :delete
+    embeds_many :homeless_shelter, Buildable, on_replace: :delete
+    embeds_many :apartments, Buildable, on_replace: :delete
+    embeds_many :micro_apartments, Buildable, on_replace: :delete
+    embeds_many :high_rises, Buildable, on_replace: :delete
     # transit
-    embeds_many :roads, MayorGame.City.Buildable, on_replace: :delete
-    embeds_many :highways, MayorGame.City.Buildable, on_replace: :delete
-    embeds_many :airports, MayorGame.City.Buildable, on_replace: :delete
-    embeds_many :bus_lines, MayorGame.City.Buildable, on_replace: :delete
-    embeds_many :subway_lines, MayorGame.City.Buildable, on_replace: :delete
-    embeds_many :bike_lanes, MayorGame.City.Buildable, on_replace: :delete
-    embeds_many :bikeshare_stations, MayorGame.City.Buildable, on_replace: :delete
+    embeds_many :roads, Buildable, on_replace: :delete
+    embeds_many :highways, Buildable, on_replace: :delete
+    embeds_many :airports, Buildable, on_replace: :delete
+    embeds_many :bus_lines, Buildable, on_replace: :delete
+    embeds_many :subway_lines, Buildable, on_replace: :delete
+    embeds_many :bike_lanes, Buildable, on_replace: :delete
+    embeds_many :bikeshare_stations, Buildable, on_replace: :delete
     # energy
-    embeds_many :coal_plants, MayorGame.City.Buildable, on_replace: :delete
-    embeds_many :wind_turbines, MayorGame.City.Buildable, on_replace: :delete
-    embeds_many :solar_plants, MayorGame.City.Buildable, on_replace: :delete
-    embeds_many :nuclear_plants, MayorGame.City.Buildable, on_replace: :delete
+    embeds_many :coal_plants, Buildable, on_replace: :delete
+    embeds_many :wind_turbines, Buildable, on_replace: :delete
+    embeds_many :solar_plants, Buildable, on_replace: :delete
+    embeds_many :nuclear_plants, Buildable, on_replace: :delete
     # civic
-    embeds_many :parks, MayorGame.City.Buildable, on_replace: :delete
-    embeds_many :libraries, MayorGame.City.Buildable, on_replace: :delete
+    embeds_many :parks, Buildable, on_replace: :delete
+    embeds_many :libraries, Buildable, on_replace: :delete
     # education
-    embeds_many :schools, MayorGame.City.Buildable, on_replace: :delete
-    embeds_many :middle_schools, MayorGame.City.Buildable, on_replace: :delete
-    embeds_many :high_schools, MayorGame.City.Buildable, on_replace: :delete
-    embeds_many :universities, MayorGame.City.Buildable, on_replace: :delete
-    embeds_many :research_labs, MayorGame.City.Buildable, on_replace: :delete
+    embeds_many :schools, Buildable, on_replace: :delete
+    embeds_many :middle_schools, Buildable, on_replace: :delete
+    embeds_many :high_schools, Buildable, on_replace: :delete
+    embeds_many :universities, Buildable, on_replace: :delete
+    embeds_many :research_labs, Buildable, on_replace: :delete
     # work
-    embeds_many :factories, MayorGame.City.Buildable, on_replace: :delete
-    embeds_many :retail_shops, MayorGame.City.Buildable, on_replace: :delete
-    embeds_many :office_buildings, MayorGame.City.Buildable, on_replace: :delete
+    embeds_many :factories, Buildable, on_replace: :delete
+    embeds_many :retail_shops, Buildable, on_replace: :delete
+    embeds_many :office_buildings, Buildable, on_replace: :delete
     # entertainment
-    embeds_many :theatres, MayorGame.City.Buildable, on_replace: :delete
-    embeds_many :arenas, MayorGame.City.Buildable, on_replace: :delete
+    embeds_many :theatres, Buildable, on_replace: :delete
+    embeds_many :arenas, Buildable, on_replace: :delete
     # health
-    embeds_many :doctor_offices, MayorGame.City.Buildable, on_replace: :delete
-    embeds_many :hospitals, MayorGame.City.Buildable, on_replace: :delete
+    embeds_many :doctor_offices, Buildable, on_replace: :delete
+    embeds_many :hospitals, Buildable, on_replace: :delete
 
     # ok so basically
     # this "belongs to is called "city" but it belongs to the "info" schema
@@ -329,14 +329,7 @@ defmodule MayorGame.City.Details do
     details
     # this basically defines the embeds_manys users can change
     |> cast(attrs, detail_fields)
-    # |> put_assoc(detail_embeds)
-    # |> cast_assoc(detail_embeds)
-    # and this is required embeds_manys
+    # |> cast_embed(detail_embeds)
     |> validate_required(detail_fields)
   end
-
-  # def buildable_changeset(buildable, attrs) do
-  #   buildable
-  #   |> cast(attrs, [:enabled, :upgrades])
-  # end
 end

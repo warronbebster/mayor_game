@@ -4,6 +4,7 @@ defmodule MayorGameWeb.CityLive do
   use Phoenix.HTML
 
   alias MayorGame.{Auth, City, Repo}
+  import MayorGame.CityCalculator
 
   alias MayorGame.City.Details
 
@@ -187,63 +188,9 @@ defmodule MayorGameWeb.CityLive do
     # grab whole user struct
     user = Auth.get_user!(city.user_id)
 
-    area = MayorGame.CityCalculator.calculate_area(city)
-    energy = MayorGame.CityCalculator.calculate_energy(city, ping)
-    money = MayorGame.CityCalculator.calculate_money(city)
-
-    # figure out how to send an assign for each building type with disabled buildings
-    # enum map for buildables
-    # adjust some to be disabled
-
-    buildings_status =
-      Details.buildables_list()
-      |> Enum.reduce(%{}, fn building_type, acc ->
-        building_count = length(Map.get(city.detail, building_type))
-        area_disabled_count = Enum.count(area.disabled_buildings, &(&1 == building_type))
-        energy_disabled_count = Enum.count(energy.disabled_buildings, &(&1 == building_type))
-        money_disabled_count = Enum.count(money.disabled_buildings, &(&1 == building_type))
-
-        total_disabled =
-          max(area_disabled_count, energy_disabled_count)
-          |> max(money_disabled_count)
-
-        # add money_disabled count here
-        # somehow, i need to get to this:
-        # really, the only thing that needs to be updated is the reason
-        # no need to go through a crazy cond
-        # if total is 0,
-        # needs nothing to operate
-        # otherwise check values
-        reason =
-          if total_disabled == 0 do
-            "operational"
-          else
-            disabled_list =
-              Enum.reduce(
-                %{
-                  area: area_disabled_count,
-                  energy: energy_disabled_count,
-                  money: money_disabled_count
-                },
-                [],
-                fn {name, count}, acc ->
-                  if count > 0,
-                    do: [to_string(name) | acc],
-                    else: acc
-                end
-              )
-
-            "needs " <> Enum.join(disabled_list, ", ") <> " to operate"
-          end
-
-        results = %{
-          disabled: total_disabled,
-          enabled: building_count - total_disabled,
-          reason: reason
-        }
-
-        Map.put_new(acc, building_type, results)
-      end)
+    area = calculate_area(city)
+    energy = calculate_energy(city |> MayorGame.Repo.preload([:detail]), ping)
+    # money = calculate_money(city |> MayorGame.Repo.preload([:detail]))
 
     socket
     |> assign(:user_id, user.id)
@@ -251,7 +198,8 @@ defmodule MayorGameWeb.CityLive do
     |> assign(:city, city)
     |> assign(:energy, energy)
     |> assign(:area, area)
-    |> assign(:buildings_status, buildings_status)
+
+    # |> assign(:buildings_status, buildings_status)
   end
 
   # POW AUTH STUFF DOWN HERE BAYBEE

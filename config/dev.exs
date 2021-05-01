@@ -66,7 +66,9 @@ config :mayor_game, MayorGameWeb.Endpoint,
       ~r"priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$",
       ~r"priv/gettext/.*(po)$",
       ~r"lib/mayor_game_web/(live|views)/.*(ex)$",
-      ~r"lib/mayor_game_web/templates/.*(eex)$"
+      ~r"lib/mayor_game_web/templates/.*(eex)$",
+      ~r"lib/mayor_game/.*(ex)$",
+      ~r"lib/mayor_game/(city|citycalculator)/.*(ex)$"
     ]
   ]
 

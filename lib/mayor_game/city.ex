@@ -375,7 +375,8 @@ defmodule MayorGame.City do
 
     attrs =
       Map.new([
-        {field_to_purchase, [%Buildable{enabled: false, upgrades: %{}} | current_value]},
+        {field_to_purchase,
+         [%Buildable{enabled: true, reason: [], upgrades: %{}} | current_value]},
         {:city_treasury, details.city_treasury - purchase_price}
       ])
 
@@ -398,28 +399,19 @@ defmodule MayorGame.City do
 
   ## Examples
 
-      iex> purchase_details(details, :schools, 300)
+      iex> purchase_details(details, :schools, id##)
       {:ok, %Details{}}
 
   """
   def demolish_buildable(%Details{} = details, field_to_demolish, id) do
-    # price = purchase_price
-
     # how many building are there rn
-    # IO.inspect(details[field_to_purchase])
     {:ok, current_value} = Map.fetch(details, field_to_demolish)
-
-    # IO.inspect(current_value)
 
     updated_list =
       current_value
       |> Enum.reject(fn buildable -> buildable.id == id end)
 
-    # IO.inspect(updated_list)
-
     # attrs = %{field_to_demolish => updated_list}
-
-    # IO.inspect(attrs)
 
     # Map.update!(details, field_to_purchase, &(&1 + 1))
 
@@ -430,6 +422,46 @@ defmodule MayorGame.City do
     |> Ecto.Changeset.change()
     |> Ecto.Changeset.put_change(field_to_demolish, updated_list)
     |> Repo.update()
+  end
+
+  def update_buildable(%Details{} = detail, field_to_update, buildable_id, attrs_to_update \\ %{}) do
+    {:ok, current_value} = Map.fetch(detail, field_to_update)
+
+    updated_list =
+      current_value
+      |> Enum.map(fn buildable ->
+        if buildable.id == buildable_id,
+          do: buildable |> struct(attrs_to_update),
+          else: buildable
+      end)
+
+    # ok, this is right
+    IO.inspect(updated_list, label: "inside update_buildable")
+
+    # buildable_changeset = Ecto.Changeset.change(Map.get(detail, field_to_update), updated_list)
+
+    # IO.inspect(buildable_changeset, label: "inside update_buildable")
+
+    # Map.update!(details, field_to_purchase, &(&1 + 1))
+
+    # Ecto.Changeset.put_change(:addresses, addresses)
+
+    changeset =
+      detail
+      |> Ecto.Changeset.change()
+      |> Ecto.Changeset.put_embed(field_to_update, updated_list)
+
+    # changeset = Details.changeset(detail, %{field_to_update => updated_list})
+
+    IO.inspect(changeset, label: "changeset")
+
+    {:ok, results} =
+      changeset
+      |> Repo.update()
+
+    IO.inspect(Map.get(results, field_to_update), label: "results inside update function")
+
+    results
   end
 
   @doc """

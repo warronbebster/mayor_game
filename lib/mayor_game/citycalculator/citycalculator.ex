@@ -239,21 +239,19 @@ defmodule MayorGame.CityCalculator do
     city_preloaded = preload_city_check(city)
 
     area = calculate_area(city_preloaded)
-    energy = calculate_energy(city_preloaded, day)
-    money = calculate_money(city_preloaded)
+    energy = calculate_energy(city_preloaded |> MayorGame.Repo.preload([:detail]), day)
+    money = calculate_money(city_preloaded |> MayorGame.Repo.preload([:detail]))
 
-    disabled_buildings =
-      area.disabled_buildings ++ energy.disabled_buildings ++ money.disabled_buildings
-
+    city_update = city_preloaded |> MayorGame.Repo.preload([:detail])
     # but jobs and stuff aren't
-    total_housing = calculate_housing(city_preloaded, disabled_buildings)
+    total_housing = calculate_housing(city_update)
     # returns a map of %{0 => #, 0 => #, etc}
-    total_jobs = calculate_jobs(city_preloaded, disabled_buildings)
+    total_jobs = calculate_jobs(city_update)
     # returns a map of %{0 => #, 0 => #, etc}
-    total_education = calculate_education(city_preloaded, disabled_buildings)
+    total_education = calculate_education(city_update)
 
     %{
-      city: city,
+      city: city_update,
       jobs: total_jobs,
       education: total_education,
       tax: 0,
@@ -383,7 +381,7 @@ defmodule MayorGame.CityCalculator do
   @doc """
   takes a %MayorGame.City.Info{} struct
 
-  returns transit & area info in map %{sprawl: int, total_area: int, disabled_buildings: [] available_area: int}
+  returns transit & area info in map %{sprawl: int, total_area: int, available_area: int}
   """
   def calculate_area(%MayorGame.City.Info{} = city) do
     city_preloaded = preload_city_check(city)
@@ -403,59 +401,53 @@ defmodule MayorGame.CityCalculator do
         %{sprawl: sprawl, total_area: area}
       end)
 
+    # this really is only to calculate the disabled buildings; if you just wanted the totals, you could use the above
     area_results =
       Enum.reduce(
         MayorGame.City.Details.buildables(),
-        %{disabled_buildings: [], area_left: preliminary_results.total_area},
+        %{area_left: preliminary_results.total_area},
         fn category, acc ->
           {_categoryName, buildings} = category
 
-          Enum.reduce(
-            buildings,
-            %{
-              disabled_buildings: acc.disabled_buildings,
-              area_left: acc.area_left
-            },
-            fn {building_type, building_options}, acc2 ->
-              building_count = length(Map.get(city_preloaded.detail, building_type))
+          Enum.reduce(buildings, %{area_left: acc.area_left}, fn {building_type, building_options},
+                                                                 acc2 ->
+            buildables = Map.get(city_preloaded.detail, building_type)
 
-              if Map.has_key?(building_options, :area_required) && building_count > 0 do
-                Enum.reduce(
-                  1..building_count,
-                  %{
-                    disabled_buildings: acc2.disabled_buildings,
-                    area_left: acc2.area_left
-                  },
-                  fn _building, acc3 ->
-                    negative_area = acc3.area_left < building_options.area_required
+            if Map.has_key?(building_options, :area_required) && length(buildables) > 0 do
+              Enum.reduce(buildables, %{area_left: acc2.area_left}, fn building, acc3 ->
+                negative_area = acc3.area_left < building_options.area_required
 
-                    %{
-                      disabled_buildings:
-                        if(negative_area,
-                          do: [building_type | acc3.disabled_buildings],
-                          else: acc3.disabled_buildings
-                        ),
-                      area_left: acc3.area_left - building_options.area_required
-                    }
-                  end
-                )
-              else
-                acc2
-              end
+                if negative_area do
+                  updated_details =
+                    City.update_buildable(city.detail, building_type, building.id, %{
+                      enabled: false,
+                      reason: ["area"]
+                    })
+                else
+                  updated_details =
+                    City.update_buildable(city.detail, building_type, building.id, %{
+                      enabled: true,
+                      reason: []
+                    })
+                end
+
+                %{area_left: acc3.area_left - building_options.area_required}
+              end)
+            else
+              acc2
             end
-          )
+          end)
         end
       )
 
     preliminary_results
     |> Map.put_new(:available_area, area_results.area_left)
-    |> Map.put_new(:disabled_buildings, area_results.disabled_buildings)
   end
 
   @doc """
   takes a %MayorGame.City.Info{} struct
 
-  returns energy info in map %{total_energy: int, available_energy: int, disabled_buildings: [], pollution: int}
+  returns energy info in map %{total_energy: int, available_energy: int, pollution: int}
   """
   def calculate_energy(%MayorGame.City.Info{} = city, day) do
     city_preloaded = preload_city_check(city)
@@ -499,87 +491,120 @@ defmodule MayorGame.CityCalculator do
     energy_results =
       Enum.reduce(
         MayorGame.City.Details.buildables(),
-        %{disabled_buildings: [], energy_left: preliminary_results.total_energy},
+        %{energy_left: preliminary_results.total_energy},
         fn category, acc ->
           {_categoryName, buildings} = category
 
-          Enum.reduce(
-            buildings,
-            %{
-              disabled_buildings: acc.disabled_buildings,
-              energy_left: acc.energy_left
-            },
-            fn {building_type, building_options}, acc2 ->
-              building_count = length(Map.get(city_preloaded.detail, building_type))
+          Enum.reduce(buildings, %{energy_left: acc.energy_left}, fn {building_type,
+                                                                      building_options},
+                                                                     acc2 ->
+            buildables = Map.get(city_preloaded.detail, building_type)
 
-              if Map.has_key?(building_options, :energy_required) && building_count > 0 do
-                Enum.reduce(
-                  1..building_count,
-                  %{
-                    disabled_buildings: acc2.disabled_buildings,
-                    energy_left: acc2.energy_left
-                  },
-                  fn _building, acc3 ->
-                    negative_energy = acc3.energy_left < building_options.energy_required
+            if Map.has_key?(building_options, :energy_required) && length(buildables) > 0 do
+              Enum.reduce(buildables, %{energy_left: acc2.energy_left}, fn building, acc3 ->
+                negative_energy = acc3.energy_left < building_options.energy_required
 
-                    %{
-                      disabled_buildings:
-                        if(negative_energy,
-                          do: [building_type | acc3.disabled_buildings],
-                          else: acc3.disabled_buildings
-                        ),
-                      energy_left: acc3.energy_left - building_options.energy_required
-                    }
-                  end
-                )
-              else
-                acc2
-              end
+                if negative_energy do
+                  City.update_buildable(city.detail, building_type, building.id, %{
+                    enabled: false,
+                    reason: building.reason ++ "energy"
+                  })
+                end
+
+                %{energy_left: acc3.energy_left - building_options.energy_required}
+              end)
+            else
+              acc2
             end
-          )
+          end)
         end
       )
 
     preliminary_results
     |> Map.put_new(:available_energy, energy_results.energy_left)
-    |> Map.put_new(:disabled_buildings, energy_results.disabled_buildings)
   end
 
   @doc """
   takes a %MayorGame.City.Info{} struct
 
-  returns energy info in map %{amount: int, disabled_buildings: []}
+  returns building cost info in map %{available_money: int, cost: int}
   """
-  def calculate_housing(%MayorGame.City.Info{} = city, disabled_buildings) do
+  def calculate_money(%MayorGame.City.Info{} = city) do
+    city_preloaded = preload_city_check(city)
+
+    preliminary_results = city.detail.city_treasury
+
+    cost_results =
+      Enum.reduce(
+        MayorGame.City.Details.buildables(),
+        %{money_left: preliminary_results, cost: 0},
+        fn category, acc ->
+          {_categoryName, buildings} = category
+
+          Enum.reduce(buildings, %{money_left: acc.money_left, cost: acc.cost}, fn {building_type,
+                                                                                    building_options},
+                                                                                   acc2 ->
+            buildables = Map.get(city_preloaded.detail, building_type)
+
+            if Map.has_key?(building_options, :daily_cost) &&
+                 length(buildables) > 0 &&
+                 building_options[:daily_cost] > 0 do
+              Enum.reduce(
+                buildables,
+                %{money_left: acc2.money_left, cost: acc2.cost},
+                fn building, acc3 ->
+                  negative_money = acc3.money_left < building_options.daily_cost
+
+                  if negative_money,
+                    do:
+                      City.update_buildable(city.detail, building_type, building.id, %{
+                        enabled: false,
+                        reason: building.reason ++ "money"
+                      })
+
+                  %{
+                    money_left: acc3.money_left - building_options.daily_cost,
+                    cost: acc3.cost + building_options.daily_cost
+                  }
+                end
+              )
+            else
+              acc2
+            end
+          end)
+        end
+      )
+
+    %{
+      available_money: cost_results.money_left,
+      cost: cost_results.cost
+    }
+  end
+
+  @doc """
+  takes a %MayorGame.City.Info{} struct
+
+  returns energy info in map %{amount: int}
+  """
+  def calculate_housing(%MayorGame.City.Info{} = city) do
     city_preloaded = preload_city_check(city)
 
     results =
       Enum.reduce(
         Details.buildables().housing,
-        %{amount: 0, disabled_buildings: disabled_buildings},
+        %{amount: 0},
         fn {building_type, building_options}, acc ->
-          # get fits, multiply by number of buildings
+          buildables = Map.get(city_preloaded.detail, building_type)
 
-          building_count = length(Map.get(city_preloaded.detail, building_type))
-
-          if building_count > 0 do
+          if length(buildables) > 0 do
             Enum.reduce(
-              1..building_count,
-              %{
-                amount: acc.amount,
-                disabled_buildings: acc.disabled_buildings
-              },
-              fn _building, acc2 ->
-                if Enum.member?(disabled_buildings, building_type) do
-                  %{
-                    amount: acc2.amount,
-                    disabled_buildings: acc2.disabled_buildings -- [building_type]
-                  }
+              buildables,
+              %{amount: acc.amount},
+              fn building, acc2 ->
+                if !building.enabled do
+                  %{amount: acc2.amount}
                 else
-                  %{
-                    amount: acc2.amount + building_options.fits,
-                    disabled_buildings: acc2.disabled_buildings
-                  }
+                  %{amount: acc2.amount + building_options.fits}
                 end
               end
             )
@@ -593,18 +618,18 @@ defmodule MayorGame.CityCalculator do
   end
 
   @doc """
-  takes a %MayorGame.City.Info{} struct, and a list[] of disabled buildings in atom form
+  takes a %MayorGame.City.Info{} struct
 
   returns map of available jobs by level: %{0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0}
   """
-  def calculate_jobs(%MayorGame.City.Info{} = city, disabled_buildings) do
+  def calculate_jobs(%MayorGame.City.Info{} = city) do
     city_preloaded = preload_city_check(city)
     empty_jobs_map = %{0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0}
 
     results =
       Enum.reduce(
         Details.buildables(),
-        %{jobs_map: empty_jobs_map, disabled_buildings: disabled_buildings},
+        %{jobs_map: empty_jobs_map},
         fn category, acc ->
           {categoryName, buildings} = category
 
@@ -614,29 +639,20 @@ defmodule MayorGame.CityCalculator do
                 results =
                   Enum.reduce(
                     buildings,
-                    %{job_amount: 0, disabled_buildings: acc.disabled_buildings},
+                    %{job_amount: 0},
                     fn {building_type, building_options}, acc2 ->
                       if building_options.job_level == job_level do
-                        building_count = length(Map.get(city_preloaded.detail, building_type))
+                        buildables = Map.get(city_preloaded.detail, building_type)
 
-                        if building_count > 0 do
+                        if length(buildables) > 0 do
                           Enum.reduce(
-                            1..building_count,
-                            %{
-                              job_amount: acc2.job_amount,
-                              disabled_buildings: acc2.disabled_buildings
-                            },
-                            fn _building, acc3 ->
-                              if Enum.member?(disabled_buildings, building_type) do
-                                %{
-                                  job_amount: acc3.job_amount,
-                                  disabled_buildings: acc3.disabled_buildings -- [building_type]
-                                }
+                            buildables,
+                            %{job_amount: acc2.job_amount},
+                            fn building, acc3 ->
+                              if !building.enabled do
+                                %{job_amount: acc3.job_amount}
                               else
-                                %{
-                                  job_amount: acc3.job_amount + building_options.jobs,
-                                  disabled_buildings: acc3.disabled_buildings
-                                }
+                                %{job_amount: acc3.job_amount + building_options.jobs}
                               end
                             end
                           )
@@ -654,8 +670,7 @@ defmodule MayorGame.CityCalculator do
 
             # return this
             %{
-              jobs_map: Enum.into(job_map_results, %{}),
-              disabled_buildings: acc.disabled_buildings
+              jobs_map: Enum.into(job_map_results, %{})
             }
           else
             acc
@@ -667,18 +682,18 @@ defmodule MayorGame.CityCalculator do
   end
 
   @doc """
-  takes a %MayorGame.City.Info{} struct, and a list[] of disabled buildings in atom form
+  takes a %MayorGame.City.Info{} struct
 
   returns map of available education by level: %{0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0}
   """
-  def calculate_education(%MayorGame.City.Info{} = city, disabled_buildings) do
+  def calculate_education(%MayorGame.City.Info{} = city) do
     city_preloaded = preload_city_check(city)
     empty_education_map = %{0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0}
 
     # results =
     #   Enum.reduce(
     #     Details.buildables(),
-    #     %{education_map: empty_education_map, disabled_buildings: disabled_buildings},
+    #     %{education_map: empty_education_map},
     #     fn category, acc ->
     #       {categoryName, buildings} = category
 
@@ -688,29 +703,20 @@ defmodule MayorGame.CityCalculator do
       results =
         Enum.reduce(
           Details.buildables().education,
-          %{education_amount: 0, disabled_buildings: disabled_buildings},
+          %{education_amount: 0},
           fn {building_type, building_options}, acc2 ->
             if building_options.education_level == education_level do
-              building_count = length(Map.get(city_preloaded.detail, building_type))
+              buildables = Map.get(city_preloaded.detail, building_type)
 
-              if building_count > 0 do
+              if length(buildables) > 0 do
                 Enum.reduce(
-                  1..building_count,
-                  %{
-                    education_amount: acc2.education_amount,
-                    disabled_buildings: acc2.disabled_buildings
-                  },
-                  fn _building, acc3 ->
-                    if Enum.member?(disabled_buildings, building_type) do
-                      %{
-                        education_amount: acc3.education_amount,
-                        disabled_buildings: acc3.disabled_buildings -- [building_type]
-                      }
+                  buildables,
+                  %{education_amount: acc2.education_amount},
+                  fn building, acc3 ->
+                    if !building.enabled do
+                      %{education_amount: acc3.education_amount}
                     else
-                      %{
-                        education_amount: acc3.education_amount + building_options.capacity,
-                        disabled_buildings: acc3.disabled_buildings
-                      }
+                      %{education_amount: acc3.education_amount + building_options.capacity}
                     end
                   end
                 )
@@ -726,85 +732,6 @@ defmodule MayorGame.CityCalculator do
       {education_level, capacity + results.education_amount}
     end)
     |> Enum.into(%{})
-
-    # # return this
-    # %{
-    # education_map: Enum.into(education_map_results, %{}),
-    #   disabled_buildings: acc.disabled_buildings
-    # }
-    # else
-    #   acc
-    # end
-    # end
-    # )
-
-    # results.education_map
-  end
-
-  @doc """
-  takes a %MayorGame.City.Info{} struct
-
-  returns building cost info in map %{available_money: int, disabled_buildings: [], cost: int}
-  """
-  def calculate_money(%MayorGame.City.Info{} = city) do
-    city_preloaded = preload_city_check(city)
-
-    preliminary_results = city.detail.city_treasury
-
-    cost_results =
-      Enum.reduce(
-        MayorGame.City.Details.buildables(),
-        %{disabled_buildings: [], money_left: preliminary_results, cost: 0},
-        fn category, acc ->
-          {_categoryName, buildings} = category
-
-          Enum.reduce(
-            buildings,
-            %{
-              disabled_buildings: acc.disabled_buildings,
-              money_left: acc.money_left,
-              cost: acc.cost
-            },
-            fn {building_type, building_options}, acc2 ->
-              building_count = length(Map.get(city_preloaded.detail, building_type))
-
-              if Map.has_key?(building_options, :daily_cost) &&
-                   building_count > 0 &&
-                   building_options[:daily_cost] > 0 do
-                Enum.reduce(
-                  1..building_count,
-                  %{
-                    disabled_buildings: acc2.disabled_buildings,
-                    money_left: acc2.money_left,
-                    cost: acc2.cost
-                  },
-                  fn _building, acc3 ->
-                    negative_money = acc3.money_left < building_options.daily_cost
-
-                    %{
-                      disabled_buildings:
-                        if(negative_money,
-                          do: [building_type | acc3.disabled_buildings],
-                          else: acc3.disabled_buildings
-                        ),
-                      money_left: acc3.money_left - building_options.daily_cost,
-                      cost: acc3.cost + building_options.daily_cost
-                    }
-                  end
-                )
-              else
-                acc2
-              end
-            end
-          )
-        end
-      )
-
-    %{
-      available_money: cost_results.money_left,
-      disabled_buildings: cost_results.disabled_buildings,
-      cost: cost_results.cost
-    }
   end
 
   def preload_city_check(%MayorGame.City.Info{} = city) do
@@ -813,5 +740,9 @@ defmodule MayorGame.CityCalculator do
     else
       city
     end
+  end
+
+  def reload_city(%MayorGame.City.Info{} = city) do
+    city |> MayorGame.Repo.preload([:citizens, :user, :detail])
   end
 end
