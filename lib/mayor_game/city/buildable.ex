@@ -11,6 +11,7 @@ defmodule MayorGame.City.Buildable do
   embedded_schema do
     # has an id built-in
     field :enabled, :boolean
+    field :reason, {:array, :string}
     field :upgrades, :map
   end
 
