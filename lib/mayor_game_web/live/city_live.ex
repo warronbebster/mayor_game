@@ -94,8 +94,6 @@ defmodule MayorGameWeb.CityLive do
       get_in(Details.buildables(), [building_category_atom, building_to_buy_atom, :price])
 
     # check for upgrade requirements?
-    IO.inspect(building_to_buy_atom)
-    IO.inspect(purchase_price)
 
     case City.purchase_buildable(city.detail, building_to_buy_atom, purchase_price) do
       {:ok, _updated_detail} ->
@@ -116,15 +114,13 @@ defmodule MayorGameWeb.CityLive do
       ) do
     # check if user is mayor here?
 
-    building_to_demolish_atom = String.to_existing_atom(building_to_demolish)
-
     # how many buildings are there now
     # {:ok, current_value} = Map.fetch(city.detail, building_to_demolish_atom)
 
     # gotta fix this so it's ID-specific
     # attrs = Map.new([{building_to_demolish_atom, tl(current_value)}])
 
-    case City.demolish_buildable(city.detail, building_to_demolish_atom, building_id) do
+    case City.demolish_buildable(city.detail, building_to_demolish, building_id) do
       {:ok, _updated_detail} ->
         IO.puts("demolition success")
 
@@ -183,7 +179,9 @@ defmodule MayorGameWeb.CityLive do
   defp update_city_by_title(%{assigns: %{title: title, ping: ping}} = socket) do
     city =
       City.get_info_by_title!(title)
-      |> Repo.preload([:detail, :citizens])
+      |> preload_city_check()
+
+    # city = preload_city_check(City.get_info_by_title!(title))
 
     # grab whole user struct
     user = Auth.get_user!(city.user_id)

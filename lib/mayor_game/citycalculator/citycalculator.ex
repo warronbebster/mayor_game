@@ -418,17 +418,15 @@ defmodule MayorGame.CityCalculator do
                 negative_area = acc3.area_left < building_options.area_required
 
                 if negative_area do
-                  updated_details =
-                    City.update_buildable(city.detail, building_type, building.id, %{
-                      enabled: false,
-                      reason: ["area"]
-                    })
+                  City.update_buildable(city.detail, building_type, building.id, %{
+                    enabled: false,
+                    reason: ["area"]
+                  })
                 else
-                  updated_details =
-                    City.update_buildable(city.detail, building_type, building.id, %{
-                      enabled: true,
-                      reason: []
-                    })
+                  City.update_buildable(city.detail, building_type, building.id, %{
+                    enabled: true,
+                    reason: []
+                  })
                 end
 
                 %{area_left: acc3.area_left - building_options.area_required}
@@ -507,7 +505,11 @@ defmodule MayorGame.CityCalculator do
                 if negative_energy do
                   City.update_buildable(city.detail, building_type, building.id, %{
                     enabled: false,
-                    reason: building.reason ++ "energy"
+                    reason:
+                      if(Enum.empty?(building.reason),
+                        do: ["energy"],
+                        else: building.reason ++ "energy"
+                      )
                   })
                 end
 
@@ -559,7 +561,11 @@ defmodule MayorGame.CityCalculator do
                     do:
                       City.update_buildable(city.detail, building_type, building.id, %{
                         enabled: false,
-                        reason: building.reason ++ "money"
+                        reason:
+                          if(Enum.empty?(building.reason),
+                            do: ["money"],
+                            else: building.reason ++ "money"
+                          )
                       })
 
                   %{
@@ -735,14 +741,16 @@ defmodule MayorGame.CityCalculator do
   end
 
   def preload_city_check(%MayorGame.City.Info{} = city) do
-    if !Ecto.assoc_loaded?(city.detail) do
-      city |> MayorGame.Repo.preload([:citizens, :user, :detail])
-    else
-      city
-    end
+    # if !Ecto.assoc_loaded?(city.detail) do
+    city |> MayorGame.Repo.preload([:citizens, :user, detail: Details.buildables_list()])
+
+    # MayorGame.Repo.preload(street: [city: [region: :country]])
+    # else
+    #   city
+    # end
   end
 
   def reload_city(%MayorGame.City.Info{} = city) do
-    city |> MayorGame.Repo.preload([:citizens, :user, :detail])
+    city |> MayorGame.Repo.preload([:citizens, :user, detail: Details.buildables_list()])
   end
 end
