@@ -22,7 +22,9 @@ defmodule MayorGame.City do
   end
 
   def list_cities_preload do
-    Repo.all(Info) |> Repo.preload([:citizens, :user, :detail])
+    Repo.all(Info) |> Repo.preload([:citizens, :user, detail: Details.buildables_list()])
+
+    # city |> MayorGame.Repo.preload([:citizens, :user, detail: Details.buildables_list()])
   end
 
   @doc """
@@ -356,186 +358,6 @@ defmodule MayorGame.City do
     |> Repo.update()
   end
 
-  # ###############################################
-  # BUILDABLES
-  # ###############################################
-
-  @doc """
-  purchase 1 of a given building
-  expects (details, :atom of building, pric)
-
-  ## Examples
-
-      iex> purchase_buildable(details, :schools, 300)
-      {:ok, %Details{}}
-
-  """
-  def purchase_buildable(%Details{} = details, field_to_purchase, purchase_price) do
-    # price = purchase_price
-
-    # how many building are there rn
-    # IO.inspect(details[field_to_purchase])
-    # {:ok, current_value} = Map.fetch(details, field_to_purchase)
-
-    detail_attrs = %{city_treasury: details.city_treasury - purchase_price}
-
-    buildable_attrs = %{enabled: true, reason: [], upgrades: %{}}
-
-    uhhh =
-      details
-      |> Ecto.build_assoc(field_to_purchase, buildable_attrs)
-
-    IO.inspect(uhhh, label: "built assoc in purchase flow")
-
-    # Map.update!(details, field_to_purchase, &(&1 + 1))
-
-    # insert adds an id when inserted into DB?
-    purchase =
-      details
-      |> Details.changeset(detail_attrs)
-      |> Ecto.Changeset.validate_number(:city_treasury, greater_than: 0)
-      |> Repo.update()
-
-    case purchase do
-      {:ok, _result} -> Repo.insert(uhhh)
-      {:error} -> IO.puts("uh oh, purchase error inside purchase_buildabble")
-      _ -> "Catch all"
-    end
-
-    # %Buildable{}
-    # |> Buildable.changeset(buildable_attrs)
-    # |> Ecto.Changeset.put_assoc(:details, details)
-    # |> Repo.insert()
-  end
-
-  @doc """
-  remove 1 of a given building
-  expects (details, :atom of building, building id)
-
-  ## Examples
-
-      iex> purchase_details(details, :schools, id##)
-      {:ok, %Details{}}
-
-  """
-  def demolish_buildable(%Details{} = details, buildable_to_demolish, buildable_id) do
-    # how many building are there rn
-    # {:ok, current_value} = Map.fetch(details, buildable_to_demolish)
-
-    # updated_list =
-    #   current_value
-    #   |> Enum.reject(fn buildable -> buildable.id == buildable_id end)
-
-    buildable_to_demolish_atom = String.to_existing_atom(buildable_to_demolish)
-
-    # posts = Repo.all(from p in Details, where: p.id == buildable_id)
-
-    # this works
-    # get_assoc = Repo.all(Ecto.assoc(details, buildable_to_demolish_atom))
-
-    buildable_to_delete =
-      Repo.get_by!(Ecto.assoc(details, buildable_to_demolish_atom), id: buildable_id)
-
-    # Ecto.get_meta(user, :prefix)
-
-    # buildable_to_delete =
-    #   Repo.get_by!({buildable_to_demolish, Buildable},
-    #     details_id: details.id,
-    #     id: buildable_id
-    #   )
-
-    Repo.delete(buildable_to_delete)
-
-    # attrs = %{buildable_to_demolish => updated_list}
-
-    # Map.update!(details, field_to_purchase, &(&1 + 1))
-
-    # Ecto.Changeset.put_change(:addresses, addresses)
-
-    # details
-    # # |> Details.changeset(attrs)
-    # |> Ecto.Changeset.change()
-    # |> Ecto.Changeset.put_change(buildable_to_demolish, updated_list)
-    # |> Repo.update()
-  end
-
-  def update_buildable(
-        %Details{} = details,
-        buildable_to_update,
-        buildable_id,
-        attrs_to_update \\ %{}
-      ) do
-    # detail = Repo.get!(Details, detail.id)
-    # {:ok, current_value} = Map.fetch(detail, buildable_to_update)
-    # IO.inspect(current_value, label: "current_value")
-
-    buildable_to_update_atom =
-      if is_atom(buildable_to_update),
-        do: buildable_to_update,
-        else: String.to_existing_atom(buildable_to_update)
-
-    buildable_to_change =
-      Repo.get_by!(Ecto.assoc(details, buildable_to_update_atom), id: buildable_id)
-
-    # ok, this is right
-    # updated_list =
-    #   current_value
-    #   |> Enum.map(fn buildable ->
-    #     if buildable.id == buildable_id,
-    #       do: buildable |> struct(attrs_to_update),
-    #       else: buildable
-    #   end)
-
-    # IO.inspect(updated_list, label: "updated_list")
-
-    # attrs =
-    #   Map.new([
-    #     {field_to_update, updated_list},
-    #     {:city_treasury, detail.city_treasury}
-    #   ])
-
-    # IO.inspect(attrs)
-
-    # details_changeset =
-    #   Map.get(detail, field_to_update)
-    #   |> Ecto.Changeset.change(updated_list)
-
-    # changeset =
-    #   detail
-    #   |> Ecto.Changeset.change()
-    #   |> Ecto.Changeset.put_embed(field_to_update, details_changeset)
-
-    # buildable_changeset = Ecto.Changeset.change(Map.get(detail, field_to_update), updated_list)
-
-    # IO.inspect(buildable_changeset, label: "inside update_buildable")
-
-    # Map.update!(details, field_to_purchase, &(&1 + 1))
-
-    # Ecto.Changeset.put_change(:addresses, addresses)
-
-    # changeset = Details.changeset(detail, %{field_to_update => updated_list})
-
-    # changeset =
-    #   detail
-    #   |> Ecto.Changeset.change()
-    #   |> Ecto.Changeset.put_embed(field_to_update, updated_list)
-
-    # IO.inspect(changeset, label: "changeset")
-    # results =
-    #   changeset
-    #   |> Repo.update!()
-
-    # detail
-    # |> Details.changeset(attrs)
-    # |> Ecto.Changeset.validate_number(:city_treasury, greater_than: 0)
-    results =
-      buildable_to_change
-      |> Buildable.changeset(attrs_to_update)
-      |> Repo.update()
-
-    IO.inspect(results, label: "results")
-  end
-
   @doc """
   Deletes a details.
 
@@ -563,6 +385,95 @@ defmodule MayorGame.City do
   """
   def change_details(%Details{} = details, attrs \\ %{}) do
     Details.changeset(details, attrs)
+  end
+
+  # ###############################################
+  # BUILDABLES
+  # ###############################################
+
+  @doc """
+  purchase 1 of a given building
+  expects (details, :atom of building, pric)
+
+  ## Examples
+
+      iex> purchase_buildable(details, :schools, 300)
+      {:ok, %Details{}}
+
+  """
+  def purchase_buildable(%Details{} = details, field_to_purchase, purchase_price) do
+    detail_attrs = %{city_treasury: details.city_treasury - purchase_price}
+
+    buildable_attrs = %{enabled: true, reason: [], upgrades: %{}}
+
+    uhhh =
+      details
+      |> Ecto.build_assoc(field_to_purchase, buildable_attrs)
+
+    purchase =
+      details
+      |> Details.changeset(detail_attrs)
+      |> Ecto.Changeset.validate_number(:city_treasury, greater_than: 0)
+      |> Repo.update()
+
+    case purchase do
+      {:ok, _result} -> Repo.insert(uhhh)
+      {:error} -> IO.puts("uh oh, purchase error inside purchase_buildabble")
+      _ -> nil
+    end
+  end
+
+  @doc """
+  remove 1 of a given building
+  expects (details, :atom of building, building id)
+
+  ## Examples
+
+      iex> demolish_buildable(details, :schools, buildable_id int)
+      {:ok, %Details{}}
+
+  """
+  def demolish_buildable(%Details{} = details, buildable_to_demolish, buildable_id) do
+    buildable_to_demolish_atom = String.to_existing_atom(buildable_to_demolish)
+
+    buildable_to_delete =
+      Repo.get_by!(Ecto.assoc(details, buildable_to_demolish_atom), id: buildable_id)
+
+    Repo.delete(buildable_to_delete)
+  end
+
+  def update_buildable(
+        %Details{} = details,
+        buildable_to_update,
+        buildable_id,
+        attrs_to_update \\ %{}
+      ) do
+    buildable_to_update_atom =
+      if is_atom(buildable_to_update),
+        do: buildable_to_update,
+        else: String.to_existing_atom(buildable_to_update)
+
+    buildable_to_change =
+      Repo.get_by!(Ecto.assoc(details, buildable_to_update_atom), id: buildable_id)
+
+    results =
+      buildable_to_change
+      |> Buildable.changeset(attrs_to_update)
+      |> Repo.update()
+
+    # IO.inspect(results, label: "update_buildable changeset")
+
+    case results do
+      {:ok, _result} ->
+        nil
+
+      {:error, result} ->
+        IO.inspect(result, label: "error in " <> to_string(buildable_to_update))
+        IO.inspect(attrs_to_update, label: "attrs_to_update")
+
+      _ ->
+        nil
+    end
   end
 
   # WORLD

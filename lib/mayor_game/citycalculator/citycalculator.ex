@@ -238,6 +238,7 @@ defmodule MayorGame.CityCalculator do
   def calculate_city_stats(%MayorGame.City.Info{} = city, day) do
     city_preloaded = preload_city_check(city)
 
+    reset_buildables_to_enabled(city_preloaded)
     area = calculate_area(city_preloaded)
     energy = calculate_energy(city_preloaded |> MayorGame.Repo.preload([:detail]), day)
     money = calculate_money(city_preloaded |> MayorGame.Repo.preload([:detail]))
@@ -381,6 +382,29 @@ defmodule MayorGame.CityCalculator do
   @doc """
   takes a %MayorGame.City.Info{} struct
 
+  resets all buildables in DB to default enabled
+  """
+
+  def reset_buildables_to_enabled(%MayorGame.City.Info{} = city) do
+    city_preloaded = preload_city_check(city)
+
+    for building_type <- MayorGame.City.Details.buildables_list() do
+      buildables = Map.get(city_preloaded.detail, building_type)
+
+      if length(buildables) > 0 do
+        for building <- buildables do
+          City.update_buildable(city.detail, building_type, building.id, %{
+            enabled: true,
+            reason: []
+          })
+        end
+      end
+    end
+  end
+
+  @doc """
+  takes a %MayorGame.City.Info{} struct
+
   returns transit & area info in map %{sprawl: int, total_area: int, available_area: int}
   """
   def calculate_area(%MayorGame.City.Info{} = city) do
@@ -418,14 +442,11 @@ defmodule MayorGame.CityCalculator do
                 negative_area = acc3.area_left < building_options.area_required
 
                 if negative_area do
+                  IO.inspect(building_type, label: "negative area")
+
                   City.update_buildable(city.detail, building_type, building.id, %{
                     enabled: false,
                     reason: ["area"]
-                  })
-                else
-                  City.update_buildable(city.detail, building_type, building.id, %{
-                    enabled: true,
-                    reason: []
                   })
                 end
 
@@ -508,7 +529,7 @@ defmodule MayorGame.CityCalculator do
                     reason:
                       if(Enum.empty?(building.reason),
                         do: ["energy"],
-                        else: building.reason ++ "energy"
+                        else: ["energy" | building.reason]
                       )
                   })
                 end
@@ -557,16 +578,18 @@ defmodule MayorGame.CityCalculator do
                 fn building, acc3 ->
                   negative_money = acc3.money_left < building_options.daily_cost
 
-                  if negative_money,
-                    do:
-                      City.update_buildable(city.detail, building_type, building.id, %{
-                        enabled: false,
-                        reason:
-                          if(Enum.empty?(building.reason),
-                            do: ["money"],
-                            else: building.reason ++ "money"
-                          )
-                      })
+                  if negative_money do
+                    IO.inspect(building_type)
+
+                    City.update_buildable(city.detail, building_type, building.id, %{
+                      enabled: false,
+                      reason:
+                        if(Enum.empty?(building.reason),
+                          do: ["money"],
+                          else: ["money" | building.reason]
+                        )
+                    })
+                  end
 
                   %{
                     money_left: acc3.money_left - building_options.daily_cost,
@@ -741,13 +764,13 @@ defmodule MayorGame.CityCalculator do
   end
 
   def preload_city_check(%MayorGame.City.Info{} = city) do
-    # if !Ecto.assoc_loaded?(city.detail) do
-    city |> MayorGame.Repo.preload([:citizens, :user, detail: Details.buildables_list()])
+    if !Ecto.assoc_loaded?(city.detail) do
+      city |> MayorGame.Repo.preload([:citizens, :user, detail: Details.buildables_list()])
 
-    # MayorGame.Repo.preload(street: [city: [region: :country]])
-    # else
-    #   city
-    # end
+      # MayorGame.Repo.preload(street: [city: [region: :country]])
+    else
+      city
+    end
   end
 
   def reload_city(%MayorGame.City.Info{} = city) do
