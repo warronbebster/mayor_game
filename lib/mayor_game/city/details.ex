@@ -326,7 +326,6 @@ defmodule MayorGame.City.Details do
 
   @doc false
   def changeset(details, attrs) do
-    # detail_embeds = {"micro_apartments", Buildable}s_list()
     detail_fields = [:city_treasury, :info_id]
 
     details

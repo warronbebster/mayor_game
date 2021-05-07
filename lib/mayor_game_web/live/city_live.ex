@@ -186,9 +186,9 @@ defmodule MayorGameWeb.CityLive do
     # grab whole user struct
     user = Auth.get_user!(city.user_id)
 
+    reset_buildables_to_enabled(city)
     area = calculate_area(city)
-    energy = calculate_energy(city |> MayorGame.Repo.preload([:detail]), ping)
-    # money = calculate_money(city |> MayorGame.Repo.preload([:detail]))
+    energy = calculate_energy(city |> Repo.preload([:detail]), ping)
 
     socket
     |> assign(:user_id, user.id)

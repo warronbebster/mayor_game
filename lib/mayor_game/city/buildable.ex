@@ -4,7 +4,6 @@
 defmodule MayorGame.City.Buildable do
   use Ecto.Schema
   import Ecto.Changeset
-  alias MayorGame.City.Details
 
   @derive {Jason.Encoder, except: [:upgrades]}
 
