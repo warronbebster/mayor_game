@@ -4,9 +4,9 @@ defmodule MayorGameWeb.CityLive do
   use Phoenix.HTML
 
   alias MayorGame.{Auth, City, Repo}
-  import MayorGame.CityCalculator
+  import MayorGame.{CityCalculator, CityHelpers}
 
-  alias MayorGame.City.Details
+  alias MayorGame.City.{Details, Buildable}
 
   alias MayorGameWeb.CityView
 
@@ -21,14 +21,14 @@ defmodule MayorGameWeb.CityLive do
   def mount(%{"title" => title}, session, socket) do
     # subscribe to the channel "cityPubSub". everyone subscribes to this channel
     MayorGameWeb.Endpoint.subscribe("cityPubSub")
-    world = MayorGame.Repo.get!(MayorGame.City.World, 1)
+    world = Repo.get!(MayorGame.City.World, 1)
 
     {
       :ok,
       socket
       # put the title in assigns
       |> assign(:title, title)
-      |> assign(:buildables, Details.buildables())
+      |> assign(:buildables, Buildable.buildables())
       |> assign(:ping, world.day)
       |> update_city_by_title()
       |> assign_auth(session)
@@ -91,7 +91,7 @@ defmodule MayorGameWeb.CityLive do
 
     # get price — don't want to set price on front-end for cheating reasons
     purchase_price =
-      get_in(Details.buildables(), [building_category_atom, building_to_buy_atom, :price])
+      get_in(Buildable.buildables(), [building_category_atom, building_to_buy_atom, :price])
 
     # check for upgrade requirements?
 

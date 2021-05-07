@@ -1,57 +1,23 @@
 defmodule MayorGame.City.Details do
   use Ecto.Schema
   import Ecto.Changeset
-  alias MayorGame.City.Buildable
+  alias MayorGame.City.{Buildable, Info}
 
   @derive {Inspect, except: [:info]}
 
   schema "details" do
     field :city_treasury, :integer
-    # housing
-    has_many :single_family_homes, {"single_family_homes", Buildable}
-    has_many :multi_family_homes, {"multi_family_homes", Buildable}
-    has_many :homeless_shelter, {"homeless_shelter", Buildable}
-    has_many :apartments, {"apartments", Buildable}
-    has_many :micro_apartments, {"micro_apartments", Buildable}
-    has_many :high_rises, {"high_rises", Buildable}
-    # transit
-    has_many :roads, {"roads", Buildable}
-    has_many :highways, {"highways", Buildable}
-    has_many :airports, {"airports", Buildable}
-    has_many :bus_lines, {"bus_lines", Buildable}
-    has_many :subway_lines, {"subway_lines", Buildable}
-    has_many :bike_lanes, {"bike_lanes", Buildable}
-    has_many :bikeshare_stations, {"bikeshare_stations", Buildable}
-    # energy
-    has_many :coal_plants, {"coal_plants", Buildable}
-    has_many :wind_turbines, {"wind_turbines", Buildable}
-    has_many :solar_plants, {"solar_plants", Buildable}
-    has_many :nuclear_plants, {"nuclear_plants", Buildable}
-    # civic
-    has_many :parks, {"parks", Buildable}
-    has_many :libraries, {"libraries", Buildable}
-    # education
-    has_many :schools, {"schools", Buildable}
-    has_many :middle_schools, {"middle_schools", Buildable}
-    has_many :high_schools, {"high_schools", Buildable}
-    has_many :universities, {"universities", Buildable}
-    has_many :research_labs, {"research_labs", Buildable}
-    # work
-    has_many :factories, {"factories", Buildable}
-    has_many :retail_shops, {"retail_shops", Buildable}
-    has_many :office_buildings, {"office_buildings", Buildable}
-    # entertainment
-    has_many :theatres, {"theatres", Buildable}
-    has_many :arenas, {"arenas", Buildable}
-    # health
-    has_many :doctor_offices, {"doctor_offices", Buildable}
-    has_many :hospitals, {"hospitals", Buildable}
+
+    # add buildables to schema dynamically
+    for buildable <- Buildable.buildables_list() do
+      has_many buildable, {to_string(buildable), Buildable}
+    end
 
     # ok so basically
     # this "belongs to is called "city" but it belongs to the "info" schema
     # so there has to be a "whatever_id" has_many in the migration
     # automatically adds "_id" when looking for a foreign key, unless you set it
-    belongs_to :info, MayorGame.City.Info
+    belongs_to :info, Info
 
     timestamps()
   end

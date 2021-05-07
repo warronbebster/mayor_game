@@ -22,9 +22,9 @@ defmodule MayorGame.City do
   end
 
   def list_cities_preload do
-    Repo.all(Info) |> Repo.preload([:citizens, :user, detail: Details.buildables_list()])
+    Repo.all(Info) |> Repo.preload([:citizens, :user, detail: Buildable.buildables_list()])
 
-    # city |> MayorGame.Repo.preload([:citizens, :user, detail: Details.buildables_list()])
+    # city |> MayorGame.Repo.preload([:citizens, :user, detail: Buildable.buildables_list()])
   end
 
   @doc """
@@ -70,7 +70,7 @@ defmodule MayorGame.City do
       # if city built successfully, automatically build Details with it's id
       # update this so these fields are automatically generated
       {:ok, created_city} ->
-        buildables = Map.new(Details.buildables_list(), fn buildable -> {buildable, []} end)
+        buildables = Map.new(Buildable.buildables_list(), fn buildable -> {buildable, []} end)
 
         detail = Map.merge(buildables, %{city_treasury: 500, info_id: created_city.id})
 
