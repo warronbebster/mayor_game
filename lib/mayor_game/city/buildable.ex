@@ -38,41 +38,77 @@ defmodule MayorGame.City.Buildable do
           fits: 2,
           daily_cost: 0,
           area_required: 1,
-          energy_required: 12
+          energy_required: 12,
+          purchasable: true,
+          purchasable_reason: "valid"
         },
         multi_family_homes: %{
           price: 60,
           fits: 6,
           daily_cost: 0,
           area_required: 1,
-          energy_required: 18
+          energy_required: 18,
+          purchasable: true,
+          purchasable_reason: "valid"
         },
         homeless_shelter: %{
           price: 60,
           fits: 20,
           daily_cost: 10,
           area_required: 5,
-          energy_required: 70
+          energy_required: 70,
+          purchasable: true,
+          purchasable_reason: "valid"
         },
-        apartments: %{price: 60, fits: 20, daily_cost: 0, area_required: 10, energy_required: 90},
+        apartments: %{
+          price: 60,
+          fits: 20,
+          daily_cost: 0,
+          area_required: 10,
+          energy_required: 90,
+          purchasable: true,
+          purchasable_reason: "valid"
+        },
         micro_apartments: %{
           price: 80,
           fits: 20,
           daily_cost: 0,
           area_required: 5,
-          energy_required: 50
+          energy_required: 50,
+          purchasable: true,
+          purchasable_reason: "valid"
         },
         high_rises: %{
           price: 200,
           fits: 100,
           daily_cost: 0,
           area_required: 2,
-          energy_required: 150
+          energy_required: 150,
+          purchasable: true,
+          purchasable_reason: "valid"
         }
       },
       transit: %{
-        roads: %{price: 20, daily_cost: 0, jobs: 0, job_level: 0, sprawl: 10, area: 10},
-        highways: %{price: 40, daily_cost: 0, jobs: 0, job_level: 0, sprawl: 20, area: 20},
+        roads: %{
+          price: 20,
+          daily_cost: 0,
+          jobs: 0,
+          job_level: 0,
+          sprawl: 10,
+          area: 10,
+          purchasable: true,
+          purchasable_reason: "valid"
+        },
+        highways: %{
+          price: 40,
+          daily_cost: 0,
+          jobs: 0,
+          job_level: 0,
+          sprawl: 20,
+          area: 20,
+          purchasable: true,
+          purchasable_reason: "valid"
+        },
         airports: %{
           price: 200,
           daily_cost: 10,
@@ -80,7 +116,9 @@ defmodule MayorGame.City.Buildable do
           job_level: 0,
           sprawl: 5,
           area: 10,
-          energy_required: 150
+          energy_required: 150,
+          purchasable: true,
+          purchasable_reason: "valid"
         },
         bus_lines: %{
           price: 100,
@@ -89,7 +127,9 @@ defmodule MayorGame.City.Buildable do
           job_level: 0,
           sprawl: 3,
           area: 50,
-          energy_required: 30
+          energy_required: 30,
+          purchasable: true,
+          purchasable_reason: "valid"
         },
         subway_lines: %{
           price: 200,
@@ -98,7 +138,9 @@ defmodule MayorGame.City.Buildable do
           job_level: 0,
           sprawl: 1,
           area: 1000,
-          energy_required: 10000
+          energy_required: 10000,
+          purchasable: true,
+          purchasable_reason: "valid"
         },
         bike_lanes: %{
           price: 100,
@@ -107,7 +149,9 @@ defmodule MayorGame.City.Buildable do
           job_level: 0,
           sprawl: 0,
           area: 10,
-          energy_required: 0
+          energy_required: 0,
+          purchasable: true,
+          purchasable_reason: "valid"
         },
         bikeshare_stations: %{
           price: 100,
@@ -116,7 +160,9 @@ defmodule MayorGame.City.Buildable do
           job_level: 0,
           sprawl: 0,
           area: 10,
-          energy_required: 0
+          energy_required: 0,
+          purchasable: true,
+          purchasable_reason: "valid"
         }
       },
       energy: %{
@@ -129,7 +175,9 @@ defmodule MayorGame.City.Buildable do
           pollution: 10,
           area_required: 5,
           region_energy_multipliers: %{"mountain" => 1.2},
-          season_energy_multipliers: %{}
+          season_energy_multipliers: %{},
+          purchasable: true,
+          purchasable_reason: "valid"
         },
         wind_turbines: %{
           price: 100,
@@ -140,7 +188,9 @@ defmodule MayorGame.City.Buildable do
           pollution: 0,
           area_required: 5,
           region_energy_multipliers: %{"ocean" => 1.3, "desert" => 1.1},
-          season_energy_multipliers: %{spring: 1.2}
+          season_energy_multipliers: %{spring: 1.2},
+          purchasable: true,
+          purchasable_reason: "valid"
         },
         solar_plants: %{
           price: 200,
@@ -151,7 +201,9 @@ defmodule MayorGame.City.Buildable do
           pollution: 0,
           area_required: 5,
           region_energy_multipliers: %{"desert" => 1.5, "forest" => 0.8},
-          season_energy_multipliers: %{spring: 1.2, summer: 1.5, winter: 0.7}
+          season_energy_multipliers: %{spring: 1.2, summer: 1.5, winter: 0.7},
+          purchasable: true,
+          purchasable_reason: "valid"
         },
         nuclear_plants: %{
           price: 2000,
@@ -162,12 +214,28 @@ defmodule MayorGame.City.Buildable do
           pollution: 0,
           area_required: 3,
           region_energy_multipliers: %{},
-          season_energy_multipliers: %{}
+          season_energy_multipliers: %{},
+          purchasable: true,
+          purchasable_reason: "valid"
         }
       },
       civic: %{
-        parks: %{price: 20, daily_cost: 5, area_required: 10, energy_required: 12},
-        libraries: %{price: 20, daily_cost: 10, area_required: 1, energy_required: 200}
+        parks: %{
+          price: 20,
+          daily_cost: 5,
+          area_required: 10,
+          energy_required: 12,
+          purchasable: true,
+          purchasable_reason: "valid"
+        },
+        libraries: %{
+          price: 20,
+          daily_cost: 10,
+          area_required: 1,
+          energy_required: 200,
+          purchasable: true,
+          purchasable_reason: "valid"
+        }
       },
       education: %{
         schools: %{
@@ -178,7 +246,9 @@ defmodule MayorGame.City.Buildable do
           education_level: 1,
           capacity: 10,
           area_required: 5,
-          energy_required: 800
+          energy_required: 800,
+          purchasable: true,
+          purchasable_reason: "valid"
         },
         middle_schools: %{
           price: 20,
@@ -188,7 +258,9 @@ defmodule MayorGame.City.Buildable do
           education_level: 2,
           capacity: 5,
           area_required: 5,
-          energy_required: 800
+          energy_required: 800,
+          purchasable: true,
+          purchasable_reason: "valid"
         },
         high_schools: %{
           price: 20,
@@ -198,7 +270,9 @@ defmodule MayorGame.City.Buildable do
           education_level: 3,
           capacity: 10,
           area_required: 5,
-          energy_required: 800
+          energy_required: 800,
+          purchasable: true,
+          purchasable_reason: "valid"
         },
         universities: %{
           price: 20,
@@ -208,7 +282,9 @@ defmodule MayorGame.City.Buildable do
           education_level: 4,
           capacity: 10,
           area_required: 10,
-          energy_required: 1200
+          energy_required: 1200,
+          purchasable: true,
+          purchasable_reason: "valid"
         },
         research_labs: %{
           price: 20,
@@ -218,7 +294,9 @@ defmodule MayorGame.City.Buildable do
           education_level: 5,
           capacity: 5,
           area_required: 3,
-          energy_required: 600
+          energy_required: 600,
+          purchasable: true,
+          purchasable_reason: "valid"
         }
       },
       work: %{
@@ -228,7 +306,9 @@ defmodule MayorGame.City.Buildable do
           jobs: 5,
           job_level: 0,
           area_required: 2,
-          energy_required: 50
+          energy_required: 50,
+          purchasable: true,
+          purchasable_reason: "valid"
         },
         factories: %{
           price: 20,
@@ -236,7 +316,9 @@ defmodule MayorGame.City.Buildable do
           jobs: 20,
           job_level: 0,
           area_required: 10,
-          energy_required: 1900
+          energy_required: 1900,
+          purchasable: true,
+          purchasable_reason: "valid"
         },
         office_buildings: %{
           price: 20,
@@ -244,7 +326,9 @@ defmodule MayorGame.City.Buildable do
           jobs: 20,
           job_level: 1,
           area_required: 5,
-          energy_required: 800
+          energy_required: 800,
+          purchasable: true,
+          purchasable_reason: "valid"
         }
       },
       entertainment: %{
@@ -254,7 +338,9 @@ defmodule MayorGame.City.Buildable do
           jobs: 10,
           job_level: 0,
           area_required: 5,
-          energy_required: 300
+          energy_required: 300,
+          purchasable: true,
+          purchasable_reason: "valid"
         },
         arenas: %{
           price: 20,
@@ -262,7 +348,9 @@ defmodule MayorGame.City.Buildable do
           jobs: 20,
           job_level: 0,
           area_required: 10,
-          energy_required: 500
+          energy_required: 500,
+          purchasable: true,
+          purchasable_reason: "valid"
         }
       },
       health: %{
@@ -272,7 +360,9 @@ defmodule MayorGame.City.Buildable do
           jobs: 30,
           job_level: 2,
           area_required: 20,
-          energy_required: 400
+          energy_required: 400,
+          purchasable: true,
+          purchasable_reason: "valid"
         },
         doctor_offices: %{
           price: 20,
@@ -280,7 +370,9 @@ defmodule MayorGame.City.Buildable do
           jobs: 10,
           job_level: 4,
           area_required: 4,
-          energy_required: 50
+          energy_required: 50,
+          purchasable: true,
+          purchasable_reason: "valid"
         }
       }
     }

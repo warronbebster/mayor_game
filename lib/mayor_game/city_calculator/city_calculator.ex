@@ -1,7 +1,7 @@
 defmodule MayorGame.CityCalculator do
   use GenServer, restart: :permanent
   alias MayorGame.{City, CityHelpers}
-  alias MayorGame.City.Details
+  # alias MayorGame.City.Details
 
   def start_link(initial_val) do
     # starts link based on this file

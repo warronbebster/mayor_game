@@ -4,9 +4,8 @@ defmodule MayorGameWeb.CityLive do
   use Phoenix.HTML
 
   alias MayorGame.{Auth, City, Repo}
-  import MayorGame.{CityCalculator, CityHelpers}
-
-  alias MayorGame.City.{Details, Buildable}
+  import MayorGame.CityHelpers
+  alias MayorGame.City.Buildable
 
   alias MayorGameWeb.CityView
 
@@ -28,7 +27,6 @@ defmodule MayorGameWeb.CityLive do
       socket
       # put the title in assigns
       |> assign(:title, title)
-      |> assign(:buildables, Buildable.buildables())
       |> assign(:ping, world.day)
       |> update_city_by_title()
       |> assign_auth(session)
@@ -114,12 +112,6 @@ defmodule MayorGameWeb.CityLive do
       ) do
     # check if user is mayor here?
 
-    # how many buildings are there now
-    # {:ok, current_value} = Map.fetch(city.detail, building_to_demolish_atom)
-
-    # gotta fix this so it's ID-specific
-    # attrs = Map.new([{building_to_demolish_atom, tl(current_value)}])
-
     case City.demolish_buildable(city.detail, building_to_demolish, building_id) do
       {:ok, _updated_detail} ->
         IO.puts("demolition success")
@@ -181,7 +173,7 @@ defmodule MayorGameWeb.CityLive do
       City.get_info_by_title!(title)
       |> preload_city_check()
 
-    # city = preload_city_check(City.get_info_by_title!(title))
+    # take buildable list, put something in each one, buildable_status
 
     # grab whole user struct
     user = Auth.get_user!(city.user_id)
@@ -190,14 +182,100 @@ defmodule MayorGameWeb.CityLive do
     area = calculate_area(city)
     energy = calculate_energy(city |> Repo.preload([:detail]), ping)
 
+    buildables_with_status = calculate_buildables_statuses(city, energy, area)
+
     socket
+    |> assign(:buildables, buildables_with_status)
     |> assign(:user_id, user.id)
     |> assign(:username, user.nickname)
     |> assign(:city, city)
     |> assign(:energy, energy)
     |> assign(:area, area)
+  end
 
-    # |> assign(:buildings_status, buildings_status)
+  defp calculate_buildables_statuses(city, energy, area) do
+    Buildable.buildables()
+    |> Enum.map(fn {category, buildables} ->
+      {category,
+       buildables
+       |> Enum.map(fn {buildable_key, buildable_stats} ->
+         {buildable_key, calculate_buildable_status(buildable_stats, city, energy, area)}
+       end)}
+    end)
+  end
+
+  # this takes a buildable
+  defp calculate_buildable_status(buildable, city, energy, area) do
+    if city.detail.city_treasury > buildable.price do
+      cond do
+        # enough energy AND enough area
+        Map.has_key?(buildable, :energy_required) and
+          energy.available_energy >= buildable.energy_required &&
+            (Map.has_key?(buildable, :area_required) and
+               area.available_area >= buildable.area_required) ->
+          # %{buildable | purchasable: true) purchasable_reason: "valid")
+          %{buildable | purchasable: true, purchasable_reason: "valid"}
+
+        # not enough energy, enough area
+        Map.has_key?(buildable, :energy_required) and
+          energy.available_energy < buildable.energy_required &&
+            (Map.has_key?(buildable, :area_required) and
+               area.available_area >= buildable.area_required) ->
+          %{buildable | purchasable: false, purchasable_reason: "not enough energy to build"}
+
+        # enough energy, not enough area
+        Map.has_key?(buildable, :energy_required) and
+          energy.available_energy >= buildable.energy_required &&
+            (Map.has_key?(buildable, :area_required) and
+               area.available_area < buildable.area_required) ->
+          %{buildable | purchasable: false, purchasable_reason: "not enough area to build"}
+
+        # not enough energy AND not enough area
+        Map.has_key?(buildable, :energy_required) and
+          energy.available_energy < buildable.energy_required &&
+            (Map.has_key?(buildable, :area_required) and
+               area.available_area < buildable.area_required) ->
+          %{
+            buildable
+            | purchasable: false,
+              purchasable_reason: "not enough area or energy to build"
+          }
+
+        # no energy needed, enough area
+        !Map.has_key?(buildable, :energy_required) &&
+            (Map.has_key?(buildable, :area_required) and
+               area.available_area >= buildable.area_required) ->
+          %{buildable | purchasable: true, purchasable_reason: "valid"}
+
+        # no energy needed, not enough area
+        !Map.has_key?(buildable, :energy_required) &&
+            (Map.has_key?(buildable, :area_required) and
+               area.available_area < buildable.area_required) ->
+          %{buildable | purchasable: false, purchasable_reason: "not enough area to build"}
+
+        # no area needed, enough energy
+        !Map.has_key?(buildable, :area_required) &&
+            (Map.has_key?(buildable, :energy_required) and
+               energy.available_energy >= buildable.energy_required) ->
+          %{buildable | purchasable: true, purchasable_reason: "valid"}
+
+        # no area needed, not enough energy
+        !Map.has_key?(buildable, :area_required) &&
+            (Map.has_key?(buildable, :energy_required) and
+               energy.available_energy < buildable.energy_required) ->
+          %{buildable | purchasable: false, purchasable_reason: "not enough energy to build"}
+
+        # no area needed, no energy needed
+        !Map.has_key?(buildable, :area_required) and !Map.has_key?(buildable, :energy_required) ->
+          %{buildable | purchasable: true, purchasable_reason: "valid"}
+
+        # catch-all
+        true ->
+          %{buildable | purchasable: true, purchasable_reason: "valid"}
+      end
+    else
+      %{buildable | purchasable: false, purchasable_reason: "not enough money"}
+    end
   end
 
   # POW AUTH STUFF DOWN HERE BAYBEE
