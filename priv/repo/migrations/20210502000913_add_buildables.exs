@@ -1,6 +1,6 @@
 defmodule MayorGame.Repo.Migrations.AddBuildables do
   use Ecto.Migration
-  import MayorGame.City.Details
+  import MayorGame.City.Buildable
 
   def change do
     for buildable <- buildables_list() do
