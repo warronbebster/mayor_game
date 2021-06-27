@@ -25,7 +25,7 @@ defmodule MayorGameWeb.CityLive do
     {
       :ok,
       socket
-      # put the title in assigns
+      # put the title and day in assigns
       |> assign(:title, title)
       |> assign(:ping, world.day)
       |> update_city_by_title()
@@ -39,7 +39,7 @@ defmodule MayorGameWeb.CityLive do
   # do "events" only come from the .leex front-end?
   def handle_event(
         "add_citizen",
-        %{"message" => %{"content" => content}},
+        %{"message" => %{"content" => content}, "value" => _value},
         # pull these variables out of the socket
         %{assigns: %{city: city}} = socket
       ) do
@@ -107,17 +107,61 @@ defmodule MayorGameWeb.CityLive do
 
   def handle_event(
         "demolish_building",
-        %{"building" => building_to_demolish, "building_id" => building_id},
+        %{"building" => building_to_demolish, "buildable_id" => buildable_id},
         %{assigns: %{city: city}} = socket
       ) do
     # check if user is mayor here?
 
-    case City.demolish_buildable(city.detail, building_to_demolish, building_id) do
+    case City.demolish_buildable(city.detail, building_to_demolish, buildable_id) do
       {:ok, _updated_detail} ->
         IO.puts("demolition success")
 
       {:error, err} ->
         Logger.error(inspect(err))
+    end
+
+    # this is all ya gotta do to update, baybee
+    {:noreply, socket |> update_city_by_title()}
+  end
+
+  def handle_event(
+        "buy_upgrade",
+        %{
+          "building" => buildable_to_upgrade,
+          "buildable_id" => buildable_id,
+          "upgrade" => upgrade_name,
+          "upgrade_cost" => upgrade_cost,
+          "value" => _value
+        },
+        %{assigns: %{city: city}} = socket
+      ) do
+    # check if user is mayor here?
+
+    buildable_to_upgrade_atom =
+      if is_atom(buildable_to_upgrade),
+        do: buildable_to_upgrade,
+        else: String.to_existing_atom(buildable_to_upgrade)
+
+    buildable_to_upgrade =
+      Repo.get_by!(Ecto.assoc(city.detail, buildable_to_upgrade_atom), id: buildable_id)
+
+    IO.inspect(buildable_to_upgrade)
+
+    case City.update_buildable(city.detail, buildable_to_upgrade_atom, buildable_id, %{
+           upgrades: [to_string(upgrade_name) | buildable_to_upgrade.upgrades]
+         }) do
+      {:ok, _updated_detail} ->
+        IO.puts("upgrade successful")
+
+        City.update_details(city.detail, %{
+          city_treasury: city.detail.city_treasury - String.to_integer(upgrade_cost)
+        })
+
+      {:error, err} ->
+        Logger.error(inspect(err))
+
+      nil ->
+        IO.puts('wat nil')
     end
 
     # this is all ya gotta do to update, baybee
@@ -193,6 +237,7 @@ defmodule MayorGameWeb.CityLive do
     |> assign(:area, area)
   end
 
+  # this takes the generic buildables map and builds the status (enabled, etc) for each buildable
   defp calculate_buildables_statuses(city, energy, area) do
     Buildable.buildables()
     |> Enum.map(fn {category, buildables} ->
@@ -204,7 +249,7 @@ defmodule MayorGameWeb.CityLive do
     end)
   end
 
-  # this takes a buildable
+  # this takes a buildable, and builds status from database
   defp calculate_buildable_status(buildable, city, energy, area) do
     if city.detail.city_treasury > buildable.price do
       cond do

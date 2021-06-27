@@ -11,7 +11,7 @@ defmodule MayorGame.City.Buildable do
     # has an id built-in?
     field :enabled, :boolean
     field :reason, {:array, :string}
-    field :upgrades, :map
+    field :upgrades, {:array, :string}
     belongs_to :details, MayorGame.City.Details
 
     @doc false
@@ -40,6 +40,10 @@ defmodule MayorGame.City.Buildable do
           area_required: 1,
           energy_required: 12,
           purchasable: true,
+          upgrades: %{
+            upgrade_1: %{cost: 5, description: "hello", requirements: []},
+            upgrade_2: %{cost: 10, description: "hello", requirements: [:upgrade_1]}
+          },
           purchasable_reason: "valid"
         },
         multi_family_homes: %{

@@ -7,7 +7,7 @@ defmodule MayorGame.Repo.Migrations.AddBuildables do
       create table(buildable) do
         add :enabled, :boolean, default: true
         add :reason, {:array, :string}, default: []
-        add :upgrades, :map, default: %{}
+        add :upgrades, {:array, :string}, default: []
 
         add :details_id, references(:details)
       end

@@ -51,7 +51,8 @@
         <% end %>
 
         <%= for {building_stat, value} <- building_stats do %>
-          <%= if !String.contains?(Atom.to_string(building_stat), ["multipliers", "price", "purchasable"]) do %>
+        <%# gotta avoid rendering stuff that's not HTMLsafe, like maps %>
+          <%= if !String.contains?(Atom.to_string(building_stat), ["multipliers", "price", "purchasable", "upgrades"]) do %>
             <%= building_stat %>: <%=value%> |
           <% end %>
         <% end %>
@@ -59,7 +60,7 @@
       <% end %>
 
       <%= for building <- Map.get(@city.detail, building_type) do%>
-        <div class="building"> <%= building.id%>
+        <div class="building"> <%= building.id %>
           <%= if building.enabled do%>
             <div class="building_enabled"></div>
           <% else %>
@@ -70,8 +71,47 @@
             to operate</p>
           <% end %>
 
+          <%= if Map.has_key?(building_stats, :upgrades) do%>
+            <div class="upgrades">
+            Upgrades
+              <%= for {upgrade_name, upgrade_details} <- Map.get(building_stats, :upgrades) do%>
+                <div class="upgrade">
+                  <%= upgrade_name %>
+                  <p class="upgrade_description"><%= upgrade_details.description %></p>
+
+                  <%# if buildable has upgrade already %>
+                  <%= if Enum.member?(building.upgrades, to_string(upgrade_name)) do%>
+                    purchased
+                  <% else %>
+                    <%= if @city.detail.city_treasury >= upgrade_details.cost do %>
+                      <%= if Enum.all?(upgrade_details.requirements, fn x -> x in building.upgrades end) do %>
+                        <button phx-click="buy_upgrade"
+                        phx-throttle="100"
+                        phx-value-building="<%= building_type %>"
+                        phx-value-buildable_id="<%= building.id %>"
+                        phx-value-upgrade_cost="<%= upgrade_details.cost %>"
+                        phx-value-upgrade="<%= upgrade_name %>">
+                          purchase: $<%= upgrade_details.cost %>
+                        </button>
+                      <% else %>
+                        <button disabled>requires
+                        <%= for req <- upgrade_details.requirements do %>
+                          <%= req %>
+                        <% end %>
+                        </button>
+                      <% end %>
+                    <% else %>
+                      <button disabled>not enough money</button>
+                    <% end %>
+                  <% end %>
+                </div>
+              <% end %>
+
+            </div>
+          <% end %>
+
           <%= if @is_user_mayor do %>
-            <button phx-click="demolish_building" phx-throttle="100" phx-value-building="<%= building_type %>" phx-value-building_id="<%= building.id %>"> demolish </button>
+            <button phx-click="demolish_building" phx-throttle="100" phx-value-building="<%= building_type %>" phx-value-buildable_id="<%= building.id %>">demolish</button>
           <% end %>
 
         </div>

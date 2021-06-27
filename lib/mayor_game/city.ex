@@ -404,7 +404,7 @@ defmodule MayorGame.City do
   def purchase_buildable(%Details{} = details, field_to_purchase, purchase_price) do
     detail_attrs = %{city_treasury: details.city_treasury - purchase_price}
 
-    buildable_attrs = %{enabled: true, reason: [], upgrades: %{}}
+    buildable_attrs = %{enabled: true, reason: [], upgrades: []}
 
     uhhh =
       details
@@ -442,6 +442,16 @@ defmodule MayorGame.City do
     Repo.delete(buildable_to_delete)
   end
 
+  @doc """
+  adjust a buildable
+  expects (%Details struct, :atom of type of building, building id, map of attributes to adjust)
+
+  ## Examples
+
+      iex> update_buildable(city.detail, :schools, buildable_id, %{enabled: false})
+      {:ok, %Details{}}
+
+  """
   def update_buildable(
         %Details{} = details,
         buildable_to_update,
@@ -464,8 +474,8 @@ defmodule MayorGame.City do
     # IO.inspect(results, label: "update_buildable changeset")
 
     case results do
-      {:ok, _result} ->
-        nil
+      {:ok, result} ->
+        {:ok, result}
 
       {:error, result} ->
         IO.inspect(result, label: "error in " <> to_string(buildable_to_update))

@@ -1,6 +1,49 @@
 defmodule MayorGame.CityHelpers do
   alias MayorGame.{City, Repo}
-  alias MayorGame.City.{Details, Citizens, Info, Buildable}
+  alias MayorGame.City.{Citizens, Info, Buildable}
+
+  @doc """
+    takes a %MayorGame.City.Info{} struct
+    result here is %{jobs: #, housing: #, tax: #, money: #, citizens_looking: []}
+  """
+  def calculate_city_stats(%Info{} = city, day) do
+    city_preloaded = preload_city_check(city)
+
+    # reset buildables status in database
+    reset_buildables_to_enabled(city_preloaded)
+    # TODO-CLEAN BELOW UP
+    # these basically take a city and then calculate total resource
+    # and then also available resource
+    # the energy and money ones seem not to check the enabled status of the buildings that generate
+    # maybe they should?
+    # if not these could probably all be combined
+    area = calculate_area(city_preloaded)
+    energy = calculate_energy(city_preloaded |> Repo.preload([:detail]), day)
+    money = calculate_money(city_preloaded |> Repo.preload([:detail]))
+
+    # I think the following can all be calculated in the same function?
+    city_update = city_preloaded |> Repo.preload([:detail])
+    # but jobs and stuff aren't
+    total_housing = calculate_housing(city_update)
+    # returns a map of %{0 => #, 0 => #, etc}
+    total_jobs = calculate_jobs(city_update)
+    # returns a map of %{0 => #, 0 => #, etc}
+    total_education = calculate_education(city_update)
+
+    %{
+      city: city_update,
+      jobs: total_jobs,
+      education: total_education,
+      tax: 0,
+      housing: total_housing,
+      money: money,
+      area: area.total_area,
+      sprawl: area.sprawl,
+      energy: energy.total_energy,
+      pollution: energy.pollution,
+      citizens_looking: []
+    }
+  end
 
   def move_citizen(
         %Citizens{} = citizen,
@@ -110,41 +153,7 @@ defmodule MayorGame.CityHelpers do
     end
   end
 
-  @doc """
-    takes a %MayorGame.City.Info{} struct
-    result here is %{jobs: #, housing: #, tax: #, money: #, citizens_looking: []}
-  """
-  def calculate_city_stats(%Info{} = city, day) do
-    city_preloaded = preload_city_check(city)
 
-    reset_buildables_to_enabled(city_preloaded)
-    area = calculate_area(city_preloaded)
-    # TODO-CLEAN BELOW UP
-    energy = calculate_energy(city_preloaded |> Repo.preload([:detail]), day)
-    money = calculate_money(city_preloaded |> Repo.preload([:detail]))
-
-    city_update = city_preloaded |> Repo.preload([:detail])
-    # but jobs and stuff aren't
-    total_housing = calculate_housing(city_update)
-    # returns a map of %{0 => #, 0 => #, etc}
-    total_jobs = calculate_jobs(city_update)
-    # returns a map of %{0 => #, 0 => #, etc}
-    total_education = calculate_education(city_update)
-
-    %{
-      city: city_update,
-      jobs: total_jobs,
-      education: total_education,
-      tax: 0,
-      housing: total_housing,
-      money: money,
-      area: area.total_area,
-      sprawl: area.sprawl,
-      energy: energy.total_energy,
-      pollution: energy.pollution,
-      citizens_looking: []
-    }
-  end
 
   @doc """
     takes a list of citizens from a city, and a city_stats map:
@@ -322,8 +331,7 @@ defmodule MayorGame.CityHelpers do
                 negative_area = acc3.area_left < building_options.area_required
 
                 if negative_area do
-                  IO.inspect(building_type, label: "negative area")
-
+                  # update buildable in DB to enabled: false
                   City.update_buildable(city.detail, building_type, building.id, %{
                     enabled: false,
                     reason: ["area"]
@@ -437,6 +445,7 @@ defmodule MayorGame.CityHelpers do
   def calculate_money(%Info{} = city) do
     city_preloaded = preload_city_check(city)
 
+    # how much money the city currently has
     preliminary_results = city.detail.city_treasury
 
     cost_results =
@@ -461,11 +470,11 @@ defmodule MayorGame.CityHelpers do
                   negative_money = acc3.money_left < building_options.daily_cost
 
                   if negative_money do
-                    IO.inspect(building_type)
 
                     City.update_buildable(city.detail, building_type, building.id, %{
                       enabled: false,
                       reason:
+                      # if there's already a reason it's disabled
                         if(Enum.empty?(building.reason),
                           do: ["money"],
                           else: ["money" | building.reason]

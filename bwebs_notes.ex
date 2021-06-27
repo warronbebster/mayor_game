@@ -9,7 +9,7 @@
 
 # sort cities on homepage by citizen count
 
-# error handling for wrong urls
+# error handling/routing for wrong urls
 
 # figure out how to release prod version
 
@@ -32,6 +32,8 @@
 # clean up preload situation across the board
 
 # clean up calculate_ functions to only enum through buildables once?
+# i think i can do this by just having different preliminary functions before enumerating through the main buildable list
+# and maybe I have to store whether they're enabled or not in that enum
 
 # figure out why moving logs make tax logs not appear?
 # figure out why taxer stops sometimes
@@ -112,6 +114,8 @@ mix ecto.gen.migration _name
 mix ecto.migrate
 # or
 mix ecto.rollback to undo
+
+mix ecto.reset to reset the whole db
 
 # to run the seeds:
 mix run priv/repo/seeds.exs

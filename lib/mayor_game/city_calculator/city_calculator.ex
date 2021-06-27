@@ -29,6 +29,7 @@ defmodule MayorGame.CityCalculator do
 
     # result is map %{cities_w_room: [], citizens_looking: []}
     leftovers =
+      # go through all cities
       Enum.reduce(cities, %{cities_w_room: [], citizens_looking: []}, fn city, acc ->
         # result here is %{jobs: #, housing: #, tax: #, money: #, citizens_looking: []}
         city_stats = CityHelpers.calculate_city_stats(city, world.day)
@@ -119,9 +120,4 @@ defmodule MayorGame.CityCalculator do
     {:noreply, world.day + 1}
   end
 
-  # CUSTOM HELPER FUNCTIONS BELOW
-  # CUSTOM HELPER FUNCTIONS BELOW
-  # CUSTOM HELPER FUNCTIONS BELOW
-  # CUSTOM HELPER FUNCTIONS BELOW
-  # CUSTOM HELPER FUNCTIONS BELOW
 end

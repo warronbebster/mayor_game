@@ -11,8 +11,11 @@ or
 - Create and migrate your database with `mix ecto.setup`
 - Install Node.js dependencies with `npm install` inside the `assets` directory
 
+make sure Postgres is running
+
 then,
 Start Phoenix endpoint with `mix phx.server`
+
 
 Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 
