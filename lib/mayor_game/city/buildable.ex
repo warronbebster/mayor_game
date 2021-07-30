@@ -42,7 +42,7 @@ defmodule MayorGame.City.Buildable do
           purchasable: true,
           upgrades: %{
             upgrade_1: %{cost: 5, description: "hello", requirements: []},
-            upgrade_2: %{cost: 10, description: "hello", requirements: [:upgrade_1]}
+            upgrade_2: %{cost: 10, description: "i am an upgrade", requirements: [:upgrade_1]}
           },
           purchasable_reason: "valid"
         },

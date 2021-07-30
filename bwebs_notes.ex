@@ -7,27 +7,14 @@
 # is this just as simple as changing has_many to has_one in user.ex?
 # 10000 possible cities, 2500 in each environment
 
-# sort cities on homepage by citizen count
+# sort cities on homepage by citizen count?
 
 # error handling/routing for wrong urls
 
 # figure out how to release prod version
 
 # add upgrading system for buildables (like a park can have a soccer field, etc)
-# this would mean changing the details schema to a list of buildings instead of int
-# or maybe you can just buy like, categorical upgrades (like, "solar roofs")
-# maybe this should me a map instead of a list
-# maybe you can built apartment buildings of any story, but it's exponentially more expensive?
-
-[
-  %{
-  upgrades: %{
-    upgrade_name: %{cost: int, active: false, requirements: [:upgrade_name]},
-    upgrade_name: %{cost: int, active: false, requirements: [:upgrade_name]}
-  },
-  id: #
-  }
-]
+# make city_calculator check the upgrades when calculating
 
 # clean up preload situation across the board
 

@@ -35,8 +35,6 @@ defmodule MayorGameWeb.CityLive do
   end
 
   # this handles different events
-  # this one in particular handles "add_citizen"
-  # do "events" only come from the .leex front-end?
   def handle_event(
         "add_citizen",
         %{"message" => %{"content" => content}, "value" => _value},
