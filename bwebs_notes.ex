@@ -7,14 +7,15 @@
 # is this just as simple as changing has_many to has_one in user.ex?
 # 10000 possible cities, 2500 in each environment
 
-# sort cities on homepage by citizen count?
+# sort cities on homepage by citizen count
 
-# error handling/routing for wrong urls
+# error handling/routing for wrong urls — route back to home
 
 # figure out how to release prod version
 
-# add upgrading system for buildables (like a park can have a soccer field, etc)
-# make city_calculator check the upgrades when calculating
+# add upgrading system for buildables (like a park can have a soccer field, etc) [x]
+# upgrades need to check other upgrades [x]
+# make city_calculator check the upgrades when calculating and make changes []
 
 # clean up preload situation across the board
 
