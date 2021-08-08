@@ -83,25 +83,27 @@
                   <%= if Enum.member?(building.upgrades, to_string(upgrade_name)) do%>
                     purchased
                   <% else %>
-                    <%= if @city.detail.city_treasury >= upgrade_details.cost do %>
-                      <%= if Enum.all?(upgrade_details.requirements, fn x -> x in building.upgrades end) do %>
-                        <button phx-click="buy_upgrade"
-                        phx-throttle="100"
-                        phx-value-building="<%= building_type %>"
-                        phx-value-buildable_id="<%= building.id %>"
-                        phx-value-upgrade_cost="<%= upgrade_details.cost %>"
-                        phx-value-upgrade="<%= upgrade_name %>">
-                          purchase: $<%= upgrade_details.cost %>
-                        </button>
-                      <% else %>
-                        <button disabled>requires
-                        <%= for req <- upgrade_details.requirements do %>
-                          <%= req %>
+                    <%= if @is_user_mayor do %>
+                      <%= if @city.detail.city_treasury >= upgrade_details.cost do %>
+                        <%= if Enum.all?(upgrade_details.requirements, fn upgrade -> to_string(upgrade) in building.upgrades end) do %>
+                          <button phx-click="buy_upgrade"
+                          phx-throttle="100"
+                          phx-value-building="<%= building_type %>"
+                          phx-value-buildable_id="<%= building.id %>"
+                          phx-value-upgrade_cost="<%= upgrade_details.cost %>"
+                          phx-value-upgrade="<%= upgrade_name %>">
+                            purchase: $<%= upgrade_details.cost %>
+                          </button>
+                        <% else %>
+                          <button disabled>requires
+                          <%= for req <- upgrade_details.requirements do %>
+                            <%= req %>
+                          <% end %>
+                          </button>
                         <% end %>
-                        </button>
+                      <% else %>
+                        <button disabled>not enough money</button>
                       <% end %>
-                    <% else %>
-                      <button disabled>not enough money</button>
                     <% end %>
                   <% end %>
                 </div>
