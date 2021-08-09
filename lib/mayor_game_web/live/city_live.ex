@@ -27,7 +27,7 @@ defmodule MayorGameWeb.CityLive do
       socket
       # put the title and day in assigns
       |> assign(:title, title)
-      |> assign(:ping, world.day)
+      |> assign(:world, world)
       |> update_city_by_title()
       |> assign_auth(session)
       # run helper function to get the stuff from the DB for those things
@@ -198,8 +198,8 @@ defmodule MayorGameWeb.CityLive do
   end
 
   # this is what gets messages from CityCalculator
-  def handle_info(%{event: "ping", payload: ping}, socket) do
-    {:noreply, socket |> assign(:ping, ping) |> update_city_by_title()}
+  def handle_info(%{event: "ping", payload: world}, socket) do
+    {:noreply, socket |> assign(:world, world) |> update_city_by_title()}
   end
 
   # this is just the generic handle_info if nothing else matches
@@ -210,7 +210,7 @@ defmodule MayorGameWeb.CityLive do
 
   # function to update city
   # maybe i should make one just for "updating" — e.g. only pull details and citizens from DB
-  defp update_city_by_title(%{assigns: %{title: title, ping: ping}} = socket) do
+  defp update_city_by_title(%{assigns: %{title: title, world: world}} = socket) do
     city =
       City.get_info_by_title!(title)
       |> preload_city_check()
@@ -222,7 +222,7 @@ defmodule MayorGameWeb.CityLive do
 
     reset_buildables_to_enabled(city)
     area = calculate_area(city)
-    energy = calculate_energy(city |> Repo.preload([:detail]), ping)
+    energy = calculate_energy(city |> Repo.preload([:detail]), world)
 
     buildables_with_status = calculate_buildables_statuses(city, energy, area)
 

@@ -127,9 +127,10 @@
   <% end %>
 
   <br/>
-  <b>raw:</b> <%= @ping %>
-  <b>year:</b> <%= div(@ping, 365) %>
-  <b>day:</b> <%= rem(@ping, 365) %>
+  <b>raw:</b> <%= @world.day %>
+  <b>year:</b> <%= div(@world.day, 365) %>
+  <b>day:</b> <%= rem(@world.day, 365) %>
+  <b>pollution:</b> <%= @world.pollution %>
   <br/>
 
 </div>

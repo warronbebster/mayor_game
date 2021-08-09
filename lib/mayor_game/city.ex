@@ -494,6 +494,17 @@ defmodule MayorGame.City do
     |> Repo.insert()
   end
 
+  @doc """
+  update a World
+  expects (%World struct, map of attributes to adjust)
+  returns {:ok, %World} or {:error, changeset}
+
+  ## Examples
+
+      iex> update_world(world, %{day: world.day + 1})
+      {:ok, %World{}}
+
+  """
   def update_world(%World{} = world, attrs \\ %{}) do
     world
     |> World.changeset(attrs)

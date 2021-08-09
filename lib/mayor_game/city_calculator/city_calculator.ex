@@ -3,39 +3,40 @@ defmodule MayorGame.CityCalculator do
   alias MayorGame.{City, CityHelpers}
   # alias MayorGame.City.Details
 
-  def start_link(initial_val) do
+  def start_link(_initial_val) do
     # starts link based on this file
     # which triggers init function in module
+    world = MayorGame.Repo.get!(MayorGame.City.World, 1)
 
-    GenServer.start_link(__MODULE__, initial_val)
+    GenServer.start_link(__MODULE__, world)
   end
 
-  def init(initial_val) do
+  def init(initial_world) do
     # initial_val is 0 here, set in application.ex then started with start_link
 
     # send message :tax to self process after 5000ms
     Process.send_after(self(), :tax, 5000)
 
     # returns ok tuple when u start
-    {:ok, initial_val}
+    {:ok, initial_world}
   end
 
   # when tick is sent
-  def handle_info(:tax, val) do
+  def handle_info(:tax, world) do
     cities = City.list_cities_preload()
-    world = MayorGame.Repo.get!(MayorGame.City.World, 1)
-    City.update_world(world, %{day: world.day + 1})
+    # might be able to move this DB call just in the init?
+    {:ok, updated_world} = City.update_world(world, %{day: world.day + 1})
     IO.puts("day: " <> to_string(world.day) <> "——————————————————————————————————————————————")
 
     # result is map %{cities_w_room: [], citizens_looking: []}
+    # go through all cities
     leftovers =
-      # go through all cities
       Enum.reduce(cities, %{cities_w_room: [], citizens_looking: []}, fn city, acc ->
         # result here is %{jobs: #, housing: #, tax: #, money: #, citizens_looking: []}
-        city_stats = CityHelpers.calculate_city_stats(city, world.day)
+        city_stats = CityHelpers.calculate_city_stats(city, updated_world)
 
         city_calc =
-          CityHelpers.calculate_stats_based_on_citizens(city.citizens, city_stats, world.day)
+          CityHelpers.calculate_stats_based_on_citizens(city.citizens, city_stats, updated_world)
 
         # should i loop through citizens here, instead of in calculate_city_stats?
         # that way I can use the same function later?
@@ -82,7 +83,7 @@ defmodule MayorGame.CityCalculator do
 
         if not is_nil(best_job) do
           # move citizen to city
-          CityHelpers.move_citizen(citizen, best_job.best_city.city, world.day)
+          CityHelpers.move_citizen(citizen, best_job.best_city.city, updated_world.day)
 
           # find where the city is in the list
           indexx = Enum.find_index(acc_city_list, &(&1.city == best_job.best_city.city))
@@ -108,16 +109,16 @@ defmodule MayorGame.CityCalculator do
       end)
     end
 
+    # SEND RESULTS TO CLIENT
     # send val to liveView process that manages frontEnd; this basically sends to every client.
     MayorGameWeb.Endpoint.broadcast!(
       "cityPubSub",
       "ping",
-      val
+      updated_world
     )
 
     # recurse, do it again
     Process.send_after(self(), :tax, 5000)
-    {:noreply, world.day + 1}
+    {:noreply, updated_world}
   end
-
 end

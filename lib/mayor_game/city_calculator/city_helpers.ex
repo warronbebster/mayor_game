@@ -1,12 +1,12 @@
 defmodule MayorGame.CityHelpers do
   alias MayorGame.{City, Repo}
-  alias MayorGame.City.{Citizens, Info, Buildable}
+  alias MayorGame.City.{Citizens, Info, Buildable, World}
 
   @doc """
     takes a %MayorGame.City.Info{} struct
     result here is %{jobs: #, housing: #, tax: #, money: #, citizens_looking: []}
   """
-  def calculate_city_stats(%Info{} = city, day) do
+  def calculate_city_stats(%Info{} = city, %World{} = world) do
     city_preloaded = preload_city_check(city)
 
     # reset buildables status in database
@@ -18,7 +18,7 @@ defmodule MayorGame.CityHelpers do
     # maybe they should?
     # if not these could probably all be combined
     area = calculate_area(city_preloaded)
-    energy = calculate_energy(city_preloaded |> Repo.preload([:detail]), day)
+    energy = calculate_energy(city_preloaded |> Repo.preload([:detail]), world)
     money = calculate_money(city_preloaded |> Repo.preload([:detail]))
 
     # I think the following can all be calculated in the same function?
@@ -153,8 +153,6 @@ defmodule MayorGame.CityHelpers do
     end
   end
 
-
-
   @doc """
     takes a list of citizens from a city, and a city_stats map:
     %{
@@ -166,7 +164,7 @@ defmodule MayorGame.CityHelpers do
     }
     result here is %{jobs: #, housing: #, tax: #, money: #, citizens_looking: []}
   """
-  def calculate_stats_based_on_citizens(citizens, city_stats, day) do
+  def calculate_stats_based_on_citizens(citizens, city_stats, world) do
     if List.first(citizens) != nil do
       results =
         Enum.reduce(
@@ -195,7 +193,7 @@ defmodule MayorGame.CityHelpers do
             # citizen will look if there is no housing, if there is no best possible job, or if gap > 1
             will_citizen_look =
               best_possible_job < 0 ||
-                (job_gap > 1 && citizen.last_moved + 365 < day) ||
+                (job_gap > 1 && citizen.last_moved + 365 < world.day) ||
                 acc.housing < 1
 
             # add to citizens_looking array
@@ -212,7 +210,7 @@ defmodule MayorGame.CityHelpers do
             # once a year
 
             updated_education =
-              if rem(day, 365) == 0 && acc.education[citizen.education + 1] > 0 do
+              if rem(world.day, 365) == 0 && acc.education[citizen.education + 1] > 0 do
                 IO.inspect(acc.education)
                 City.update_citizens(citizen, %{education: citizen.education + 1})
                 Map.update!(acc.education, citizen.education + 1, &(&1 - 1))
@@ -356,7 +354,7 @@ defmodule MayorGame.CityHelpers do
 
   returns energy info in map %{total_energy: int, available_energy: int, pollution: int}
   """
-  def calculate_energy(%MayorGame.City.Info{} = city, day) do
+  def calculate_energy(%MayorGame.City.Info{} = city, world) do
     city_preloaded = preload_city_check(city)
 
     # for each building in the energy category
@@ -373,9 +371,9 @@ defmodule MayorGame.CityHelpers do
 
           season =
             cond do
-              rem(day, 365) < 91 -> :winter
-              rem(day, 365) < 182 -> :spring
-              rem(day, 365) < 273 -> :summer
+              rem(world.day, 365) < 91 -> :winter
+              rem(world.day, 365) < 182 -> :spring
+              rem(world.day, 365) < 273 -> :summer
               true -> :fall
             end
 
@@ -470,11 +468,10 @@ defmodule MayorGame.CityHelpers do
                   negative_money = acc3.money_left < building_options.daily_cost
 
                   if negative_money do
-
                     City.update_buildable(city.detail, building_type, building.id, %{
                       enabled: false,
-                      reason:
                       # if there's already a reason it's disabled
+                      reason:
                         if(Enum.empty?(building.reason),
                           do: ["money"],
                           else: ["money" | building.reason]
