@@ -70,8 +70,12 @@ defmodule MayorGame.CityHelpers do
     end
   end
 
-  def kill_citizen(%Citizens{} = citizen) do
-    City.update_log(City.get_info!(citizen.info_id), citizen.name <> " has died. RIP")
+  def kill_citizen(%Citizens{} = citizen, reason) do
+    City.update_log(
+      City.get_info!(citizen.info_id),
+      citizen.name <> " has died because of " <> reason <> ". RIP"
+    )
+
     City.delete_citizens(citizen)
   end
 
@@ -241,15 +245,17 @@ defmodule MayorGame.CityHelpers do
 
             # kill citizen
             # also kill based on roads / random chance
-            if citizen.age > 36500, do: kill_citizen(citizen)
+            if citizen.age > 36500, do: kill_citizen(citizen, "old age")
 
-            pollution_ceiling = :rand.uniform(cities_count * 100)
+            pollution_ceiling = :rand.uniform(cities_count * 1000)
 
             if world.pollution > pollution_ceiling do
               IO.puts(
                 "pollution too high: " <>
                   to_string(world.pollution) <> " above ceiling: " <> to_string(pollution_ceiling)
               )
+
+              kill_citizen(citizen, "pollution")
             end
 
             # return this

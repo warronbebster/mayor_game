@@ -113,14 +113,14 @@ defmodule MayorGame.CityCalculator do
           updated_acc_city_list
         else
           # check here if city citizen wants to move from has housing or not
-          CityHelpers.kill_citizen(citizen)
+          CityHelpers.kill_citizen(citizen, "no housing available")
           acc_city_list
         end
       end)
     else
       # if there is no room anywhere, RIP the citizens
       Enum.map(leftovers.citizens_looking, fn citizen ->
-        CityHelpers.kill_citizen(citizen)
+        CityHelpers.kill_citizen(citizen, "pollution")
       end)
     end
 

@@ -4,11 +4,12 @@
 
 # show citizen count on homepage & show which ones are urs
 
+# way to remove pollution
+
 # maybe add global limits for amount of cities… artificial scarcity?
 # one per email, in that case? no redos, baybeee
 # is this just as simple as changing has_many to has_one in user.ex?
 # 10000 possible cities, 2500 in each environment
-
 
 # add upgrading system for buildables (like a park can have a soccer field, etc) [x]
 # upgrades need to check other upgrades [x]
