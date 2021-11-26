@@ -45,6 +45,9 @@ defmodule MayorGame.CityHelpers do
     }
   end
 
+  @doc """
+  moves a given %Citizen{} into a given %Info{}, also takes a `day_moved`
+  """
   def move_citizen(
         %Citizens{} = citizen,
         %Info{} = city_to_move_to,
@@ -72,6 +75,7 @@ defmodule MayorGame.CityHelpers do
     City.delete_citizens(citizen)
   end
 
+  @spec find_cities_with_job(list(), integer()) :: list()
   @doc """
   tries to find a cities with matching job level. expects a list of city_calcs and a level to check.
   returns a list of city_calc maps if successful, otherwise nil
@@ -164,7 +168,7 @@ defmodule MayorGame.CityHelpers do
     }
     result here is %{jobs: #, housing: #, tax: #, money: #, citizens_looking: []}
   """
-  def calculate_stats_based_on_citizens(citizens, city_stats, world) do
+  def calculate_stats_based_on_citizens(citizens, city_stats, world, cities_count) do
     if List.first(citizens) != nil do
       results =
         Enum.reduce(
@@ -238,6 +242,15 @@ defmodule MayorGame.CityHelpers do
             # kill citizen
             # also kill based on roads / random chance
             if citizen.age > 36500, do: kill_citizen(citizen)
+
+            pollution_ceiling = :rand.uniform(cities_count * 100)
+
+            if world.pollution > pollution_ceiling do
+              IO.puts(
+                "pollution too high: " <>
+                  to_string(world.pollution) <> " above ceiling: " <> to_string(pollution_ceiling)
+              )
+            end
 
             # return this
             %{
@@ -353,6 +366,7 @@ defmodule MayorGame.CityHelpers do
   takes a %MayorGame.City.Info{} struct
 
   returns energy info in map %{total_energy: int, available_energy: int, pollution: int}
+  total_energy is all energy generated, available_energy is after accounting for usage
   """
   def calculate_energy(%MayorGame.City.Info{} = city, world) do
     city_preloaded = preload_city_check(city)

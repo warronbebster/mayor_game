@@ -1,4 +1,5 @@
 # MayorGame
+
 Make sure postgres is installed./
 
 To start your Phoenix server:
@@ -16,6 +17,13 @@ make sure Postgres is running
 then,
 Start Phoenix endpoint with `mix phx.server`
 
+Most of the code is in `lib`
+
+- `mayor_game` folder has the server stuff
+  - `auth` has auth
+  - `city` has modules for city stuff — buildables, citizens, details, info(cities)
+  - other files like city, repo are functions for DB calls / etc
+- `mayor_game_web` has the live-view and web stuff
 
 Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 

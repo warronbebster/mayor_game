@@ -2,20 +2,36 @@
 
 # todo:
 
+# show citizen count on homepage & show which ones are urs
+
 # maybe add global limits for amount of cities… artificial scarcity?
 # one per email, in that case? no redos, baybeee
 # is this just as simple as changing has_many to has_one in user.ex?
 # 10000 possible cities, 2500 in each environment
 
-# sort cities on homepage by citizen count
-
-# error handling/routing for wrong urls — route back to home
-
-# figure out how to release prod version
 
 # add upgrading system for buildables (like a park can have a soccer field, etc) [x]
 # upgrades need to check other upgrades [x]
 # make city_calculator check the upgrades when calculating and make changes []
+
+# make pollution matter in calculations []
+
+# implement regional differences (check region in generation functions) (done for energy, should do for fun)
+
+# add hospitals, doctor offices and other health impacts stats (factory work? parks?)
+# add grocery stores? farmers markets? farms?
+# add "fun" and "health" calculations to check for
+# add water power (more effective in mountains, less in desert)
+
+# add general "policy" options that aren't buildings
+# (speed limits — increase sprawl, increase health)
+# (bike lanes?)
+
+# figure out how to release prod version
+
+### nice to have —————————————————————————————————————
+
+# error handling/routing for wrong urls — route back to home
 
 # clean up preload situation across the board
 
@@ -26,24 +42,9 @@
 # figure out why moving logs make tax logs not appear?
 # figure out why taxer stops sometimes
 
-# make a "world" variable for CO2/pollution? that affects every city?
-# write to world.pollution every day
-
 # function to loan/give other cities money?
 
 # eventually could write calculate functions with Stream instead of Enum to speed up
-
-# implement regional differences (check region in generation functions) (done for energy, should do for fun)
-
-# add hospitals, doctor offices and other health impacts stats (factory work? parks?)
-# make pollution kill people (does pollution just impact health directly?)
-# add grocery stores? farmers markets? farms?
-# add "fun" and "health" calculations to check for
-# add water power (more effective in mountains, less in desert)
-
-# add general "policy" options
-# (speed limits — increase sprawl, increase health)
-# (bike lanes?)
 
 # probably should move treasury out of details and reserve details just for buildables
 
@@ -52,6 +53,7 @@
 #   — (although maybe you just couldn't send to the submit action from console?)
 
 # — adjust signin/session time limit (maybe done with persistent session plugin?)
+
 
 
 
@@ -116,15 +118,10 @@ iex> izzy = %{"name" => "Izzy", "age" => "30ish", "gender" => "Female"}
 iex> %{izzy | "age" => "40ish", "name" => "Isadora"}
 %{"age" => "40ish", "gender" => "Female", "name" => "Isadora"}
 
-
-# ok for pubsub… theoretically, they all need to be subscribed to the same pubsub system to get updates, right?
-
-
-
-fake user:
-hi@test.com
-barron
-pw: barronbarron
+# fake user:
+# hi@test.com
+# barron
+# pw: barronbarron
 
 
 ————————————————————————————————————————————————————————
@@ -139,7 +136,6 @@ maybe that makes sense in this case? but idk
 
 # ok this worked when trying to preload stuff
 Repo.all(MayorGame.City.Citizens) |> Repo.preload([:info])
-
 
 # get stuff from a struct with the key atom:
 Map.get(city.detail, building_type)

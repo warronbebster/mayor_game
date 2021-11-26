@@ -3,13 +3,13 @@ defmodule MayorGame.City.Citizens do
   import Ecto.Changeset
 
   schema "citizens" do
-    # probably can get rid of this and just rely on lastUpdated in the DB
     field :money, :integer
     field :name, :string
     field :age, :integer
     field :education, :integer
     field :job, :integer
     field :has_car, :boolean
+    # probably can get rid of this and just rely on lastUpdated in the DB
     field :last_moved, :integer
     field :preferences, :map
     # set citizens to belong to Info schema

@@ -7,7 +7,7 @@ defmodule MayorGame.Auth.User do
     pow_user_fields()
 
     field :nickname, :string
-    # it's got one city
+    # it's got many city
     has_many :info, MayorGame.City.Info
 
     timestamps()

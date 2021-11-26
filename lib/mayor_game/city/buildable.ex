@@ -383,7 +383,7 @@ defmodule MayorGame.City.Buildable do
   end
 
   @doc """
-  generates and returns a list [] of buildabless in atom form
+  generates and returns a list [] of buildables in atom form
   """
   def buildables_list do
     Enum.reduce(buildables(), [], fn {_categoryName, buildings}, acc ->

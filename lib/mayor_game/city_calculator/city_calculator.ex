@@ -15,20 +15,29 @@ defmodule MayorGame.CityCalculator do
     # initial_val is 0 here, set in application.ex then started with start_link
 
     # send message :tax to self process after 5000ms
+    # calls `handle_info` function
     Process.send_after(self(), :tax, 5000)
 
     # returns ok tuple when u start
     {:ok, initial_world}
   end
 
-  # when tick is sent
+  # when :tax is sent
   def handle_info(:tax, world) do
     cities = City.list_cities_preload()
+    cities_count = Enum.count(cities)
     # might be able to move this DB call just in the init?
     {:ok, updated_world} = City.update_world(world, %{day: world.day + 1})
-    IO.puts("day: " <> to_string(world.day) <> "——————————————————————————————————————————————")
+
+    IO.puts(
+      "day: " <>
+        to_string(world.day) <>
+        " | cities: " <>
+        to_string(cities_count) <> " | —————————————————————————————————————————————"
+    )
 
     # result is map %{cities_w_room: [], citizens_looking: []}
+    # FIRST ROUND CHECK
     # go through all cities
     leftovers =
       Enum.reduce(cities, %{cities_w_room: [], citizens_looking: []}, fn city, acc ->
@@ -36,7 +45,12 @@ defmodule MayorGame.CityCalculator do
         city_stats = CityHelpers.calculate_city_stats(city, updated_world)
 
         city_calc =
-          CityHelpers.calculate_stats_based_on_citizens(city.citizens, city_stats, updated_world)
+          CityHelpers.calculate_stats_based_on_citizens(
+            city.citizens,
+            city_stats,
+            updated_world,
+            cities_count
+          )
 
         # should i loop through citizens here, instead of in calculate_city_stats?
         # that way I can use the same function later?
@@ -104,13 +118,16 @@ defmodule MayorGame.CityCalculator do
         end
       end)
     else
+      # if there is no room anywhere, RIP the citizens
       Enum.map(leftovers.citizens_looking, fn citizen ->
         CityHelpers.kill_citizen(citizen)
       end)
     end
 
-    # SEND RESULTS TO CLIENT
-    # send val to liveView process that manages frontEnd; this basically sends to every client.
+    # function to kill rando citizens based on
+
+    # SEND RESULTS TO CLIENTS
+    # send val to liveView process that manages front-end; this basically sends to every client.
     MayorGameWeb.Endpoint.broadcast!(
       "cityPubSub",
       "ping",
@@ -119,6 +136,8 @@ defmodule MayorGame.CityCalculator do
 
     # recurse, do it again
     Process.send_after(self(), :tax, 5000)
+
+    # returns this to whatever calls ?
     {:noreply, updated_world}
   end
 end

@@ -5,7 +5,6 @@ defmodule MayorGame.City do
 
   import Ecto.Query, warn: false
   alias MayorGame.Repo
-
   alias MayorGame.City.{Details, Info, Citizens, World, Buildable}
 
   @doc """
@@ -21,6 +20,21 @@ defmodule MayorGame.City do
     Repo.all(Info)
   end
 
+  @doc """
+  Returns the list of cities with preloads on the cities: preloads :citizens, :user, :detail
+
+  ## Examples
+
+      iex> list_cities()
+      [%Info{
+        :citizens: [...],
+        :user: %User{},
+        :detail: %Detail{
+
+        }
+      }, ...]
+
+  """
   def list_cities_preload do
     Repo.all(Info) |> Repo.preload([:citizens, :user, detail: Buildable.buildables_list()])
 
@@ -495,7 +509,7 @@ defmodule MayorGame.City do
   end
 
   @doc """
-  update a World
+  update a World in the DB
   expects (%World struct, map of attributes to adjust)
   returns {:ok, %World} or {:error, changeset}
 
