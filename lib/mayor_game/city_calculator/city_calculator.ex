@@ -26,8 +26,6 @@ defmodule MayorGame.CityCalculator do
   def handle_info(:tax, world) do
     cities = City.list_cities_preload()
     cities_count = Enum.count(cities)
-    # might be able to move this DB call just in the init?
-    {:ok, updated_world} = City.update_world(world, %{day: world.day + 1})
 
     IO.puts(
       "day: " <>
@@ -40,15 +38,16 @@ defmodule MayorGame.CityCalculator do
     # FIRST ROUND CHECK
     # go through all cities
     leftovers =
-      Enum.reduce(cities, %{cities_w_room: [], citizens_looking: []}, fn city, acc ->
+      Enum.reduce(cities, %{cities_w_room: [], citizens_looking: [], new_pollution: 0}, fn city,
+                                                                                           acc ->
         # result here is %{jobs: #, housing: #, tax: #, money: #, citizens_looking: []}
-        city_stats = CityHelpers.calculate_city_stats(city, updated_world)
+        city_stats = CityHelpers.calculate_city_stats(city, world)
 
         city_calc =
           CityHelpers.calculate_stats_based_on_citizens(
             city.citizens,
             city_stats,
-            updated_world,
+            world,
             cities_count
           )
 
@@ -82,7 +81,8 @@ defmodule MayorGame.CityCalculator do
               do: [Map.put(city_calc, :city, city) | acc.cities_w_room],
               else: acc.cities_w_room
             ),
-          citizens_looking: city_calc.citizens_looking ++ acc.citizens_looking
+          citizens_looking: city_calc.citizens_looking ++ acc.citizens_looking,
+          new_pollution: city_stats.pollution + acc.new_pollution
         }
       end)
 
@@ -97,7 +97,7 @@ defmodule MayorGame.CityCalculator do
 
         if not is_nil(best_job) do
           # move citizen to city
-          CityHelpers.move_citizen(citizen, best_job.best_city.city, updated_world.day)
+          CityHelpers.move_citizen(citizen, best_job.best_city.city, world.day)
 
           # find where the city is in the list
           indexx = Enum.find_index(acc_city_list, &(&1.city == best_job.best_city.city))
@@ -120,11 +120,16 @@ defmodule MayorGame.CityCalculator do
     else
       # if there is no room anywhere, RIP the citizens
       Enum.map(leftovers.citizens_looking, fn citizen ->
-        CityHelpers.kill_citizen(citizen, "pollution")
+        CityHelpers.kill_citizen(citizen, "no housing available")
       end)
     end
 
-    # function to kill rando citizens based on
+    # update World in DB
+    {:ok, updated_world} =
+      City.update_world(world, %{
+        day: world.day + 1,
+        pollution: world.pollution + leftovers.new_pollution
+      })
 
     # SEND RESULTS TO CLIENTS
     # send val to liveView process that manages front-end; this basically sends to every client.

@@ -4,13 +4,26 @@ defmodule MayorGame.CityHelpers do
 
   @doc """
     takes a %MayorGame.City.Info{} struct
-    result here is %{jobs: #, housing: #, tax: #, money: #, citizens_looking: []}
+    returns a map: %{
+      city: city_update,
+      jobs: total_jobs,
+      education: total_education,
+      tax: 0,
+      housing: total_housing,
+      money: money,
+      area: area.total_area,
+      sprawl: area.sprawl,
+      energy: energy.total_energy,
+      pollution: energy.pollution,
+      citizens_looking: []
+    }
   """
   def calculate_city_stats(%Info{} = city, %World{} = world) do
     city_preloaded = preload_city_check(city)
 
     # reset buildables status in database
     reset_buildables_to_enabled(city_preloaded)
+
     # TODO-CLEAN BELOW UP
     # these basically take a city and then calculate total resource
     # and then also available resource
@@ -30,6 +43,7 @@ defmodule MayorGame.CityHelpers do
     # returns a map of %{0 => #, 0 => #, etc}
     total_education = calculate_education(city_update)
 
+    # return this map:
     %{
       city: city_update,
       jobs: total_jobs,
@@ -247,7 +261,7 @@ defmodule MayorGame.CityHelpers do
             # also kill based on roads / random chance
             if citizen.age > 36500, do: kill_citizen(citizen, "old age")
 
-            pollution_ceiling = :rand.uniform(cities_count * 1000)
+            pollution_ceiling = :rand.uniform(cities_count * 10000) + 1000
 
             if world.pollution > pollution_ceiling do
               IO.puts(
