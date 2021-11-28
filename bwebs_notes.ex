@@ -15,8 +15,6 @@
 # upgrades need to check other upgrades [x]
 # make city_calculator check the upgrades when calculating and make changes []
 
-# make pollution matter in calculations []
-
 # implement regional differences (check region in generation functions) (done for energy, should do for fun)
 
 # add hospitals, doctor offices and other health impacts stats (factory work? parks?)
@@ -24,13 +22,13 @@
 # add "fun" and "health" calculations to check for
 # add water power (more effective in mountains, less in desert)
 
-# add general "policy" options that aren't buildings
-# (speed limits — increase sprawl, increase health)
-# (bike lanes?)
 
 # figure out how to release prod version
 
 ### nice to have —————————————————————————————————————
+# add general "policy" options that aren't buildings
+# (speed limits — increase sprawl, increase health)
+# (bike lanes?)
 
 # error handling/routing for wrong urls — route back to home
 
