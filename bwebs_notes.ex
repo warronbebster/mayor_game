@@ -4,7 +4,7 @@
 
 # show citizen count on homepage & show which ones are urs
 
-# way to remove pollution
+# way to remove pollution with certain buildings
 
 # maybe add global limits for amount of cities… artificial scarcity?
 # one per email, in that case? no redos, baybeee
@@ -12,14 +12,13 @@
 # 10000 possible cities, 2500 in each environment
 
 # add upgrading system for buildables (like a park can have a soccer field, etc) [x]
-# upgrades need to check other upgrades [x]
 # make city_calculator check the upgrades when calculating and make changes []
 
 # implement regional differences (check region in generation functions) (done for energy, should do for fun)
 
 # add hospitals, doctor offices and other health impacts stats (factory work? parks?)
 # add grocery stores? farmers markets? farms?
-# add "fun" and "health" calculations to check for
+# add "fun" and "health" calculations to check for (like energy)
 # add water power (more effective in mountains, less in desert)
 
 
@@ -102,9 +101,9 @@ mix ecto.gen.migration _name
 # then in /priv/repo/migrations it'll make a file you can edit
 mix ecto.migrate
 # or
-mix ecto.rollback to undo
-
-mix ecto.reset to reset the whole db
+mix ecto.rollback # to undo
+# or
+mix ecto.reset # to reset the whole db
 
 # to run the seeds:
 mix run priv/repo/seeds.exs

@@ -6,7 +6,7 @@ defmodule MayorGame.CityCalculator do
   def start_link(_initial_val) do
     # starts link based on this file
     # which triggers init function in module
-    world = MayorGame.Repo.get!(MayorGame.City.World, 1)
+    world = MayorGame.Repo.get(MayorGame.City.World, 1)
 
     GenServer.start_link(__MODULE__, world)
   end

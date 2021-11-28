@@ -16,8 +16,9 @@ cityName = String.replace(randomString, "/", "a") <> "ville"
 
 alias MayorGame.Auth.User
 alias MayorGame.City.{Info, Citizens, World}
-
 alias MayorGame.{Auth, City}
+
+{:ok, %World{}} = City.create_world(%{day: 0, pollution: 0})
 
 Auth.create_user(%{
   nickname: "bwebs",
@@ -54,7 +55,5 @@ Auth.create_user(%{
     has_car: false,
     last_moved: 0
   })
-
-{:ok, %World{}} = City.create_world(%{day: 0, pollution: 0})
 
 # Ecto.build_assoc(user, :posts, %{header: "Clickbait header", body: "No real content"})
