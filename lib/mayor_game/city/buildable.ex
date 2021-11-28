@@ -13,6 +13,7 @@ defmodule MayorGame.City.Buildable do
     field :reason, {:array, :string}
     field :upgrades, {:array, :string}
     belongs_to :details, MayorGame.City.Details
+    belongs_to :details, MayorGame.City.Details
 
     @doc false
     def changeset(buildable, attrs \\ %{}) do
