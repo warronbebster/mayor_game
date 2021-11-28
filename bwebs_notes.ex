@@ -93,6 +93,8 @@ mix phx.gen.context City Details details \
 
 # so after running all these, they get migration files in /priv/repo/migrations
 
+# run iex for the project
+iex -S mix phx.server
 
 # to adjust database:
 # first, make an ecto migration
@@ -108,13 +110,6 @@ mix ecto.reset # to reset the whole db
 # to run the seeds:
 mix run priv/repo/seeds.exs
 
-
-# this format is called "Pipe merging:" https://joyofelixir.com/10-maps
-# combines two maps to update existing map
-iex> izzy = %{"name" => "Izzy", "age" => "30ish", "gender" => "Female"}
-%{"age" => "30ish", "gender" => "Female", "name" => "Izzy"}
-iex> %{izzy | "age" => "40ish", "name" => "Isadora"}
-%{"age" => "40ish", "gender" => "Female", "name" => "Isadora"}
 
 # fake user:
 # hi@test.com

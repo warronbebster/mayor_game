@@ -399,9 +399,15 @@ defmodule MayorGame.CityHelpers do
         fn {energy_type, energy_options}, acc ->
           # region checking and multipliers
           region_energy_multiplier =
-            if Map.has_key?(energy_options.region_energy_multipliers, city_preloaded.region),
-              do: energy_options.region_energy_multipliers[city_preloaded.region],
-              else: 1
+            if Map.has_key?(
+                 energy_options.region_energy_multipliers,
+                 String.to_existing_atom(city_preloaded.region)
+               ),
+               do:
+                 energy_options.region_energy_multipliers[
+                   String.to_existing_atom(city_preloaded.region)
+                 ],
+               else: 1
 
           season =
             cond do

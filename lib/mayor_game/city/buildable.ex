@@ -178,7 +178,7 @@ defmodule MayorGame.City.Buildable do
           energy: 3500,
           pollution: 10,
           area_required: 5,
-          region_energy_multipliers: %{"mountain" => 1.3},
+          region_energy_multipliers: %{mountain: 1.3},
           season_energy_multipliers: %{},
           purchasable: true,
           purchasable_reason: "valid"
@@ -191,7 +191,7 @@ defmodule MayorGame.City.Buildable do
           energy: 600,
           pollution: 0,
           area_required: 5,
-          region_energy_multipliers: %{"ocean" => 1.3, "desert" => 1.1},
+          region_energy_multipliers: %{ocean: 1.3, desert: 1.1},
           season_energy_multipliers: %{spring: 1.2},
           purchasable: true,
           purchasable_reason: "valid"
@@ -204,7 +204,7 @@ defmodule MayorGame.City.Buildable do
           energy: 500,
           pollution: 0,
           area_required: 5,
-          region_energy_multipliers: %{"desert" => 1.5, "ocean" => 1.2, "forest" => 0.7},
+          region_energy_multipliers: %{desert: 1.5, ocean: 1.2, forest: 0.7},
           season_energy_multipliers: %{spring: 1.2, summer: 1.5, winter: 0.7},
           purchasable: true,
           purchasable_reason: "valid"
@@ -230,7 +230,7 @@ defmodule MayorGame.City.Buildable do
           energy: 2000,
           pollution: 0,
           area_required: 10,
-          region_energy_multipliers: %{"mountain" => 1.5},
+          region_energy_multipliers: %{mountain: 1.5},
           season_energy_multipliers: %{winter: 0.7, spring: 1.3},
           purchasable: true,
           purchasable_reason: "valid"
