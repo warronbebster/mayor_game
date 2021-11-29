@@ -125,7 +125,7 @@ defmodule MayorGame.City.Buildable do
           purchasable_reason: "valid"
         },
         bus_lines: %{
-          price: 100,
+          price: 70,
           daily_cost: 30,
           jobs: 10,
           job_level: 0,
@@ -147,7 +147,7 @@ defmodule MayorGame.City.Buildable do
           purchasable_reason: "valid"
         },
         bike_lanes: %{
-          price: 100,
+          price: 60,
           daily_cost: 0,
           jobs: 0,
           job_level: 0,
@@ -158,7 +158,7 @@ defmodule MayorGame.City.Buildable do
           purchasable_reason: "valid"
         },
         bikeshare_stations: %{
-          price: 100,
+          price: 70,
           daily_cost: 0,
           jobs: 0,
           job_level: 0,
@@ -372,7 +372,7 @@ defmodule MayorGame.City.Buildable do
       },
       health: %{
         hospitals: %{
-          price: 20,
+          price: 40,
           daily_cost: 5,
           jobs: 30,
           job_level: 2,
