@@ -1,3 +1,5 @@
+# this file serves to the front-end and talks to the back-end
+
 defmodule MayorGameWeb.CityLive do
   require Logger
   use Phoenix.LiveView

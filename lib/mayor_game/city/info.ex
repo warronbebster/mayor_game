@@ -7,9 +7,10 @@ defmodule MayorGame.City.Info do
   @derive {Inspect, except: [:logs, :citizens, :detail]}
 
   schema "cities" do
-    field :region, :string
     field :title, :string
-    # field :treasury, :integer
+    field :region, :string
+    field :climate, :string
+    field :resources, :map
     # this corresponds to an elixir list
     field :logs, {:array, :string}
     field :tax_rates, :map
@@ -28,20 +29,44 @@ defmodule MayorGame.City.Info do
       "ocean",
       "mountain",
       "desert",
-      "forest"
+      "forest",
+      "lake"
+    ]
+  end
+
+  def climates do
+    [
+      "arctic",
+      "tundra",
+      "temperate",
+      "subtropical",
+      "tropical"
+    ]
+  end
+
+  def resources do
+    [
+      "oil",
+      "coal",
+      "gems",
+      "gold",
+      "diamond",
+      "stone",
+      "copper",
+      "iron",
+      "water"
     ]
   end
 
   @doc false
   def changeset(info, attrs) do
-    # regions = regions()
-
     info
     # add a validation here to limit the types of regions
-    |> cast(attrs, [:title, :region, :user_id, :logs, :tax_rates])
-    |> validate_required([:title, :region, :user_id])
+    |> cast(attrs, [:title, :region, :climate, :resources, :user_id, :logs, :tax_rates])
+    |> validate_required([:title, :region, :climate, :resources, :user_id])
     |> validate_length(:title, min: 1, max: 20)
     |> validate_inclusion(:region, regions())
+    |> validate_inclusion(:climate, climates())
     |> unique_constraint(:title)
   end
 end

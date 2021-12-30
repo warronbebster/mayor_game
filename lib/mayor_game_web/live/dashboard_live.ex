@@ -20,6 +20,7 @@ defmodule MayorGameWeb.DashboardLive do
      socket
      |> assign(current_user: current_user)
      |> assign(regions: Info.regions())
+     |> assign(climates: Info.climates())
      |> assign_new_city_changeset()
      |> assign_cities()}
   end

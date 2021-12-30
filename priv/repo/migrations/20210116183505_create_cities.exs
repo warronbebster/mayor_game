@@ -5,8 +5,14 @@ defmodule MayorGame.Repo.Migrations.CreateCities do
     create table(:cities) do
       add :title, :string, null: false
       add :region, :string
+      add :climate, :string
+      add :resources, :map, default: Map.new(MayorGame.City.Info.resources(), fn x -> {x, 0} end)
+
       add :logs, {:array, :string}, default: ["City created"]
-      add :tax_rates, :map, default: %{0 => 0.5, 1 => 0.5, 2=> 0.5, 3 => 0.5, 4 => 0.5, 5 => 0.5, 6 => 0.5}
+
+      add :tax_rates, :map,
+        default: %{0 => 0.5, 1 => 0.5, 2 => 0.5, 3 => 0.5, 4 => 0.5, 5 => 0.5, 6 => 0.5}
+
       add :user_id, references(:auth_users, on_delete: :nothing)
 
       timestamps()

@@ -11,12 +11,12 @@
 <%= if assigns[:current_user] do %>
   <article class="column">
     <h2>Create City</h2>
-    <%# On form submit, the create_city event is being emitted %>
 
+    <%# On form submit, the create_city event is being emitted %>
     <%=f = form_for @city_changeset, "#", [phx_submit: :create_city] %>
 
     <%= if @city_changeset.action do %>
-      <div class="alert alert-danger"> uh oh, something's up!</div>
+      <div class="alert alert-danger"> uh oh, something's up! <%= @city_changeset.action %> </div>
     <% end %>
 
     <%= text_input f, :title, required: true, placeholder: "Title" %>
@@ -24,8 +24,11 @@
 
     <%= select f, :region, @regions, required: true, prompt: "Select a region" %>
     <%= error_tag f, :region %>
+
+    <%= select f, :climate, @climates, required: true, prompt: "Select a climate" %>
+    <%= error_tag f, :climate %>
     <br/>
-    <%= # select f, :category_id, category_select_options(@categories), prompt: "Choose a category" %>
+
     <%= submit "Create city" %>
 
     </form>

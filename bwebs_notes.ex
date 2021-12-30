@@ -1,28 +1,35 @@
 # society simulator 2021
 
-# todo:
+# TODO:
+
+# add tailwind
 
 # show citizen count on homepage & show which ones are urs
 
 # way to remove pollution with certain buildings
+
+# pollution listeners
 
 # maybe add global limits for amount of cities… artificial scarcity?
 # one per email, in that case? no redos, baybeee
 # is this just as simple as changing has_many to has_one in user.ex?
 # 10000 possible cities, 2500 in each environment
 
+# add "fun" and "health" calculations to check for (like energy)
+
 # add upgrading system for buildables (like a park can have a soccer field, etc) [x]
 # make city_calculator check the upgrades when calculating and make changes []
 
-# implement regional differences (check region in generation functions) (done for energy, should do for fun)
+# utilities for
+
+# implement regional differences (check region in generation functions) (done for energy, should do for health & fun)
 
 # add hospitals, doctor offices and other health impacts stats (factory work? parks?)
 # add grocery stores? farmers markets? farms?
-# add "fun" and "health" calculations to check for (like energy)
-# add water power (more effective in mountains, less in desert)
-
 
 # figure out how to release prod version
+
+
 
 ### nice to have —————————————————————————————————————
 # add general "policy" options that aren't buildings
@@ -120,12 +127,10 @@ mix run priv/repo/seeds.exs
 ————————————————————————————————————————————————————————
 OTP stuff
 
-
 {:ok, mover} = MayorGame.Mover.start_link(10)
 
 ok so in the rumble example, the *client* starts a task. it does it async
 maybe that makes sense in this case? but idk
-
 
 # ok this worked when trying to preload stuff
 Repo.all(MayorGame.City.Citizens) |> Repo.preload([:info])

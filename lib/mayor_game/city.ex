@@ -72,8 +72,11 @@ defmodule MayorGame.City do
 
   """
   def create_info(attrs \\ %{}) do
+    # have to create a resourcemap from scratch when creating a new info cuz it's required
+    resourceMap = %{"resources" => Map.new(MayorGame.City.Info.resources(), fn x -> {x, 0} end)}
+
     %Info{}
-    |> Info.changeset(attrs)
+    |> Info.changeset(Map.merge(attrs, resourceMap))
     |> Repo.insert()
   end
 
@@ -103,7 +106,6 @@ defmodule MayorGame.City do
     end
   end
 
-  # ok so i think this is the closest thing I need to update the log
   @doc """
   Updates a info.
 
@@ -124,7 +126,7 @@ defmodule MayorGame.City do
 
   # might not need to type guard here because DB does it; but
   @doc """
-  updates log. Expects the info(city) struct & a single string.
+  updates log for a city. Expects the info(city) struct & a single string.
 
   ## Examples
       iex> update_log(info, "string to add to log")
