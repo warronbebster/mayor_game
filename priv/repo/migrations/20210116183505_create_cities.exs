@@ -6,7 +6,7 @@ defmodule MayorGame.Repo.Migrations.CreateCities do
       add :title, :string, null: false
       add :region, :string
       add :climate, :string
-      add :resources, :map, default: Map.new(MayorGame.City.Info.resources(), fn x -> {x, 0} end)
+      add :resources, :map, default: Map.new(MayorGame.City.Town.resources(), fn x -> {x, 0} end)
 
       add :logs, {:array, :string}, default: ["City created"]
 

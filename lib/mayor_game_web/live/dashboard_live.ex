@@ -6,7 +6,7 @@ defmodule MayorGameWeb.DashboardLive do
   # use Phoenix.HTML
 
   alias MayorGame.City
-  alias MayorGame.City.Info
+  alias MayorGame.City.Town
   alias MayorGameWeb.DashboardView
   # alias MayorGame.Repo
   # alias Ecto.Changeset
@@ -19,8 +19,8 @@ defmodule MayorGameWeb.DashboardLive do
     {:ok,
      socket
      |> assign(current_user: current_user)
-     |> assign(regions: Info.regions())
-     |> assign(climates: Info.climates())
+     |> assign(regions: Town.regions())
+     |> assign(climates: Town.climates())
      |> assign_new_city_changeset()
      |> assign_cities()}
   end
@@ -36,8 +36,8 @@ defmodule MayorGameWeb.DashboardLive do
   # We'll use the changeset to drive a form to be displayed in the rendered template.
   defp assign_new_city_changeset(socket) do
     changeset =
-      %Info{}
-      |> Info.changeset(%{
+      %Town{}
+      |> Town.changeset(%{
         "user" => [%{user_id: socket.assigns[:current_user].id}]
       })
 
@@ -50,8 +50,8 @@ defmodule MayorGameWeb.DashboardLive do
   # so the template will be re-rendered.
   def handle_event(
         "create_city",
-        # grab "info" map from response and cast it into city_form
-        %{"info" => city_form},
+        # grab "town" map from response and cast it into city_form
+        %{"town" => city_form},
         # pattern match to pull these variables out of the socket
         %{
           assigns: %{
@@ -72,7 +72,7 @@ defmodule MayorGameWeb.DashboardLive do
            socket,
            :cities,
            City.list_cities()
-           #  Repo.preload(current_user, :info, force: true)
+           #  Repo.preload(current_user, :town, force: true)
          )}
 
       # {:error, err} ->

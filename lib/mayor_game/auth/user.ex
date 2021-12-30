@@ -8,7 +8,7 @@ defmodule MayorGame.Auth.User do
 
     field :nickname, :string
     # it's got many city
-    has_many :info, MayorGame.City.Info
+    has_many :town, MayorGame.City.Town
 
     timestamps()
   end

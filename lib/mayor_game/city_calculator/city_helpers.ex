@@ -1,9 +1,9 @@
 defmodule MayorGame.CityHelpers do
   alias MayorGame.{City, Repo}
-  alias MayorGame.City.{Citizens, Info, Buildable, World}
+  alias MayorGame.City.{Citizens, Town, Buildable, World}
 
   @doc """
-    takes a %MayorGame.City.Info{} struct
+    takes a %MayorGame.City.Town{} struct
     returns a map: %{
       city: city_update,
       jobs: total_jobs,
@@ -18,7 +18,7 @@ defmodule MayorGame.CityHelpers do
       citizens_looking: []
     }
   """
-  def calculate_city_stats(%Info{} = city, %World{} = world) do
+  def calculate_city_stats(%Town{} = city, %World{} = world) do
     city_preloaded = preload_city_check(city)
 
     # reset buildables status in database
@@ -60,14 +60,14 @@ defmodule MayorGame.CityHelpers do
   end
 
   @doc """
-  moves a given %Citizen{} into a given %Info{}, also takes a `day_moved`
+  moves a given %Citizen{} into a given %Town{}, also takes a `day_moved`
   """
   def move_citizen(
         %Citizens{} = citizen,
-        %Info{} = city_to_move_to,
+        %Town{} = city_to_move_to,
         day_moved
       ) do
-    prev_city = City.get_info!(citizen.info_id)
+    prev_city = City.get_town!(citizen.town_id)
 
     if prev_city.id != city_to_move_to.id do
       City.update_log(
@@ -80,13 +80,13 @@ defmodule MayorGame.CityHelpers do
         citizen.name <> " just moved here from " <> prev_city.title
       )
 
-      City.update_citizens(citizen, %{info_id: city_to_move_to.id, last_moved: day_moved})
+      City.update_citizens(citizen, %{town_id: city_to_move_to.id, last_moved: day_moved})
     end
   end
 
   def kill_citizen(%Citizens{} = citizen, reason) do
     City.update_log(
-      City.get_info!(citizen.info_id),
+      City.get_town!(citizen.town_id),
       citizen.name <> " has died because of " <> reason <> ". RIP"
     )
 
@@ -117,7 +117,7 @@ defmodule MayorGame.CityHelpers do
 
   ## Examples
       iex> find_best_job(city_list, %Citizens{})
-      %{best_city: %{city: %Info{} struct, jobs: #, housing: #, tax: #, cost: #, etc}, job_level: level_to_check}
+      %{best_city: %{city: %Town{} struct, jobs: #, housing: #, tax: #, cost: #, etc}, job_level: level_to_check}
   """
   def find_best_job(cities_to_check, %Citizens{} = citizen) do
     # pseudo code
@@ -250,7 +250,7 @@ defmodule MayorGame.CityHelpers do
                 City.create_citizens(%{
                   money: 0,
                   name: "child",
-                  info_id: citizen.info_id,
+                  town_id: citizen.town_id,
                   age: 0,
                   education: 0,
                   has_car: false,
@@ -300,12 +300,12 @@ defmodule MayorGame.CityHelpers do
   end
 
   @doc """
-  takes a %MayorGame.City.Info{} struct
+  takes a %MayorGame.City.Town{} struct
 
   resets all buildables in DB to default enabled
   """
 
-  def reset_buildables_to_enabled(%Info{} = city) do
+  def reset_buildables_to_enabled(%Town{} = city) do
     city_preloaded = preload_city_check(city)
 
     for building_type <- Buildable.buildables_list() do
@@ -323,11 +323,11 @@ defmodule MayorGame.CityHelpers do
   end
 
   @doc """
-  takes a %MayorGame.City.Info{} struct
+  takes a %MayorGame.City.Town{} struct
 
-  returns transit & area info in map %{sprawl: int, total_area: int, available_area: int}
+  returns transit & area town in map %{sprawl: int, total_area: int, available_area: int}
   """
-  def calculate_area(%Info{} = city) do
+  def calculate_area(%Town{} = city) do
     city_preloaded = preload_city_check(city)
 
     preliminary_results =
@@ -383,12 +383,12 @@ defmodule MayorGame.CityHelpers do
   end
 
   @doc """
-  takes a %MayorGame.City.Info{} struct
+  takes a %MayorGame.City.Town{} struct
 
-  returns energy info in map %{total_energy: int, available_energy: int, pollution: int}
+  returns energy town in map %{total_energy: int, available_energy: int, pollution: int}
   total_energy is all energy generated, available_energy is after accounting for usage
   """
-  def calculate_energy(%MayorGame.City.Info{} = city, world) do
+  def calculate_energy(%MayorGame.City.Town{} = city, world) do
     city_preloaded = preload_city_check(city)
 
     # for each building in the energy category
@@ -476,11 +476,11 @@ defmodule MayorGame.CityHelpers do
   end
 
   @doc """
-  takes a %MayorGame.City.Info{} struct
+  takes a %MayorGame.City.Town{} struct
 
-  returns building cost info in map %{available_money: int, cost: int}
+  returns building cost town in map %{available_money: int, cost: int}
   """
-  def calculate_money(%Info{} = city) do
+  def calculate_money(%Town{} = city) do
     city_preloaded = preload_city_check(city)
 
     # how much money the city currently has
@@ -539,11 +539,11 @@ defmodule MayorGame.CityHelpers do
   end
 
   @doc """
-  takes a %MayorGame.City.Info{} struct
+  takes a %MayorGame.City.Town{} struct
 
-  returns energy info in map %{amount: int}
+  returns energy town in map %{amount: int}
   """
-  def calculate_housing(%Info{} = city) do
+  def calculate_housing(%Town{} = city) do
     city_preloaded = preload_city_check(city)
 
     results =
@@ -575,11 +575,11 @@ defmodule MayorGame.CityHelpers do
   end
 
   @doc """
-  takes a %MayorGame.City.Info{} struct
+  takes a %MayorGame.City.Town{} struct
 
   returns map of available jobs by level: %{0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0}
   """
-  def calculate_jobs(%Info{} = city) do
+  def calculate_jobs(%Town{} = city) do
     city_preloaded = preload_city_check(city)
     empty_jobs_map = %{0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0}
 
@@ -639,11 +639,11 @@ defmodule MayorGame.CityHelpers do
   end
 
   @doc """
-  takes a %MayorGame.City.Info{} struct
+  takes a %MayorGame.City.Town{} struct
 
   returns map of available education by level: %{0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0}
   """
-  def calculate_education(%Info{} = city) do
+  def calculate_education(%Town{} = city) do
     city_preloaded = preload_city_check(city)
     empty_education_map = %{0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0}
 
@@ -691,7 +691,7 @@ defmodule MayorGame.CityHelpers do
     |> Enum.into(%{})
   end
 
-  def preload_city_check(%Info{} = city) do
+  def preload_city_check(%Town{} = city) do
     if !Ecto.assoc_loaded?(city.detail) do
       city |> MayorGame.Repo.preload([:citizens, :user, detail: Buildable.buildables_list()])
 
@@ -701,7 +701,7 @@ defmodule MayorGame.CityHelpers do
     end
   end
 
-  def reload_city(%Info{} = city) do
+  def reload_city(%Town{} = city) do
     city |> MayorGame.Repo.preload([:citizens, :user, detail: Buildable.buildables_list()])
   end
 end

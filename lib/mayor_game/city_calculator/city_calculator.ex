@@ -15,7 +15,7 @@ defmodule MayorGame.CityCalculator do
     # initial_val is 0 here, set in application.ex then started with start_link
 
     # send message :tax to self process after 5000ms
-    # calls `handle_info` function
+    # calls `handle_town` function
     Process.send_after(self(), :tax, 5000)
 
     # returns ok tuple when u start
@@ -23,7 +23,7 @@ defmodule MayorGame.CityCalculator do
   end
 
   # when :tax is sent
-  def handle_info(:tax, world) do
+  def handle_town(:tax, world) do
     cities = City.list_cities_preload()
     cities_count = Enum.count(cities)
 

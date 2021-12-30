@@ -38,10 +38,10 @@ defmodule MayorGameWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :index
-    # live "/cities/:info_id/users/:user_id", CityLive, as: :city
+    # live "/cities/:town_id/users/:user_id", CityLive, as: :city
     live "/city/:title", CityLive, as: :city
 
-    # get "/cities/:info_id/users/:user_id", CityController, :index
+    # get "/cities/:town_id/users/:user_id", CityController, :index
   end
 
   # Make city routes protected by requiring authentication
@@ -52,7 +52,7 @@ defmodule MayorGameWeb.Router do
   #   # don't think we made this yet
   #   # resources "/cities", CityController
 
-  #   live "/cities/:info_id/users/:user_id", CityLive, as: :city
+  #   live "/cities/:town_id/users/:user_id", CityLive, as: :city
   # end
 
   # Other scopes may use custom stacks.

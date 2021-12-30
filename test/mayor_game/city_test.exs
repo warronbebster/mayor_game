@@ -4,63 +4,63 @@ defmodule MayorGame.CityTest do
   alias MayorGame.City
 
   describe "cities" do
-    alias MayorGame.City.Info
+    alias MayorGame.City.Town
 
     @valid_attrs %{region: "some region", title: "some title"}
     @update_attrs %{region: "some updated region", title: "some updated title"}
     @invalid_attrs %{region: nil, title: nil}
 
-    def info_fixture(attrs \\ %{}) do
-      {:ok, info} =
+    def town_fixture(attrs \\ %{}) do
+      {:ok, town} =
         attrs
         |> Enum.into(@valid_attrs)
-        |> City.create_info()
+        |> City.create_town()
 
-      info
+      town
     end
 
     test "list_cities/0 returns all cities" do
-      info = info_fixture()
-      assert City.list_cities() == [info]
+      town = town_fixture()
+      assert City.list_cities() == [town]
     end
 
-    test "get_info!/1 returns the info with given id" do
-      info = info_fixture()
-      assert City.get_info!(info.id) == info
+    test "get_town!/1 returns the town with given id" do
+      town = town_fixture()
+      assert City.get_town!(town.id) == town
     end
 
-    test "create_info/1 with valid data creates a info" do
-      assert {:ok, %Info{} = info} = City.create_info(@valid_attrs)
-      assert info.region == "some region"
-      assert info.title == "some title"
+    test "create_town/1 with valid data creates a town" do
+      assert {:ok, %Town{} = town} = City.create_town(@valid_attrs)
+      assert town.region == "some region"
+      assert town.title == "some title"
     end
 
-    test "create_info/1 with invalid data returns error changeset" do
-      assert {:error, %Ecto.Changeset{}} = City.create_info(@invalid_attrs)
+    test "create_town/1 with invalid data returns error changeset" do
+      assert {:error, %Ecto.Changeset{}} = City.create_town(@invalid_attrs)
     end
 
-    test "update_info/2 with valid data updates the info" do
-      info = info_fixture()
-      assert {:ok, %Info{} = info} = City.update_info(info, @update_attrs)
-      assert info.region == "some updated region"
-      assert info.title == "some updated title"
+    test "update_town/2 with valid data updates the town" do
+      town = town_fixture()
+      assert {:ok, %Town{} = town} = City.update_town(town, @update_attrs)
+      assert town.region == "some updated region"
+      assert town.title == "some updated title"
     end
 
-    test "update_info/2 with invalid data returns error changeset" do
-      info = info_fixture()
-      assert {:error, %Ecto.Changeset{}} = City.update_info(info, @invalid_attrs)
-      assert info == City.get_info!(info.id)
+    test "update_town/2 with invalid data returns error changeset" do
+      town = town_fixture()
+      assert {:error, %Ecto.Changeset{}} = City.update_town(town, @invalid_attrs)
+      assert town == City.get_town!(town.id)
     end
 
-    test "delete_info/1 deletes the info" do
-      info = info_fixture()
-      assert {:ok, %Info{}} = City.delete_info(info)
-      assert_raise Ecto.NoResultsError, fn -> City.get_info!(info.id) end
+    test "delete_town/1 deletes the town" do
+      town = town_fixture()
+      assert {:ok, %Town{}} = City.delete_town(town)
+      assert_raise Ecto.NoResultsError, fn -> City.get_town!(town.id) end
     end
 
-    test "change_info/1 returns a info changeset" do
-      info = info_fixture()
-      assert %Ecto.Changeset{} = City.change_info(info)
+    test "change_town/1 returns a town changeset" do
+      town = town_fixture()
+      assert %Ecto.Changeset{} = City.change_town(town)
     end
   end
 

@@ -82,7 +82,7 @@
 
 # :rand.uniform() random float between 0 and 1
 
-mix phx.gen.context City Info cities \
+mix phx.gen.context City Town cities \
   title:string \
   user_id:references:auth_users \
   region:string
@@ -133,7 +133,7 @@ ok so in the rumble example, the *client* starts a task. it does it async
 maybe that makes sense in this case? but idk
 
 # ok this worked when trying to preload stuff
-Repo.all(MayorGame.City.Citizens) |> Repo.preload([:info])
+Repo.all(MayorGame.City.Citizens) |> Repo.preload([:town])
 
 # get stuff from a struct with the key atom:
 Map.get(city.detail, building_type)

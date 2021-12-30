@@ -1,4 +1,4 @@
-defmodule MayorGame.City.Info do
+defmodule MayorGame.City.Town do
   use Ecto.Schema
   import Ecto.Changeset
   alias MayorGame.City.{Citizens, Details}
@@ -59,8 +59,8 @@ defmodule MayorGame.City.Info do
   end
 
   @doc false
-  def changeset(info, attrs) do
-    info
+  def changeset(town, attrs) do
+    town
     # add a validation here to limit the types of regions
     |> cast(attrs, [:title, :region, :climate, :resources, :user_id, :logs, :tax_rates])
     |> validate_required([:title, :region, :climate, :resources, :user_id])

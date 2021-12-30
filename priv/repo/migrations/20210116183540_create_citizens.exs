@@ -11,12 +11,12 @@ defmodule MayorGame.Repo.Migrations.CreateCitizens do
       add :has_car, :boolean, default: false
       add :last_moved, :integer, default: 0
 
-      # adds a info_id column to the :citizens table which references an entry in the :cities table.
-      add :info_id, references(:cities, on_delete: :nothing)
+      # adds a town_id column to the :citizens table which references an entry in the :cities table.
+      add :town_id, references(:cities, on_delete: :nothing)
 
       timestamps()
     end
 
-    create index(:citizens, [:info_id])
+    create index(:citizens, [:town_id])
   end
 end

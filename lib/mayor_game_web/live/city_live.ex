@@ -44,7 +44,7 @@ defmodule MayorGameWeb.CityLive do
         %{assigns: %{city: city}} = socket
       ) do
     case City.create_citizens(%{
-           info_id: city.id,
+           town_id: city.id,
            name: content,
            money: 5,
            education: Enum.random([0, 1, 2, 3, 4]),
@@ -66,7 +66,7 @@ defmodule MayorGameWeb.CityLive do
   # event
   def handle_event("gib_money", _value, %{assigns: %{city: city}} = socket) do
     case City.update_details(city.detail, %{city_treasury: city.detail.city_treasury + 1000}) do
-      {:ok, _updated_info} ->
+      {:ok, _updated_town} ->
         IO.puts("money gabe")
 
       {:error, err} ->
@@ -186,7 +186,7 @@ defmodule MayorGameWeb.CityLive do
 
       updated_tax_rates = city.tax_rates |> Map.put(job_level, updated_value_constrained)
 
-      case City.update_info(city, %{tax_rates: updated_tax_rates}) do
+      case City.update_town(city, %{tax_rates: updated_tax_rates}) do
         {:ok, _updated_detail} ->
           IO.puts("tax rates updated")
 
@@ -214,7 +214,7 @@ defmodule MayorGameWeb.CityLive do
   # maybe i should make one just for "updating" — e.g. only pull details and citizens from DB
   defp update_city_by_title(%{assigns: %{title: title, world: world}} = socket) do
     city =
-      City.get_info_by_title!(title)
+      City.get_town_by_title!(title)
       |> preload_city_check()
 
     # take buildable list, put something in each one, buildable_status

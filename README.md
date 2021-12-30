@@ -24,8 +24,8 @@ Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 
 - `mayor_game` folder has the server stuff
   - `auth` has auth
-  - `city` has modules for city stuff — buildables, citizens, details, info(cities)
-    - `info.ex` has town info — it's the
+  - `city` has modules for city stuff — buildables, citizens, details, town(cities)
+    - `town.ex` has town town — it's the
     - `buildable.ex` has the multipliers for region-specific stuff
     - `city_calculator.ex` is how the city values are calculated each round
   - other files like city, repo are functions for DB calls / etc

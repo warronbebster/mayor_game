@@ -16,7 +16,7 @@ defmodule MayorGame.MixProject do
 
   # Configuration for the OTP application.
   #
-  # Type `mix help compile.app` for more information.
+  # Type `mix help compile.app` for more townrmation.
   def application do
     [
       mod: {MayorGame.Application, []},
@@ -55,7 +55,7 @@ defmodule MayorGame.MixProject do
   #
   #     $ mix setup
   #
-  # See the documentation for `Mix` for more info on aliases.
+  # See the documentation for `Mix` for more town on aliases.
   defp aliases do
     [
       setup: ["deps.get", "ecto.setup", "cmd npm install --prefix assets"],
