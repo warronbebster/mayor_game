@@ -5,7 +5,7 @@ defmodule MayorGame.City do
 
   import Ecto.Query, warn: false
   alias MayorGame.Repo
-  alias MayorGame.City.{Details, Info, Citizens, World, Buildable}
+  alias MayorGame.City.{Details, Town, Citizens, World, Buildable}
 
   @doc """
   Returns the list of cities.
@@ -13,11 +13,11 @@ defmodule MayorGame.City do
   ## Examples
 
       iex> list_cities()
-      [%Info{}, ...]
+      [%Town{}, ...]
 
   """
   def list_cities do
-    Repo.all(Info)
+    Repo.all(Town)
   end
 
   @doc """
@@ -26,7 +26,7 @@ defmodule MayorGame.City do
   ## Examples
 
       iex> list_cities()
-      [%Info{
+      [%Town{
         :citizens: [...],
         :user: %User{},
         :detail: %Detail{
@@ -36,60 +36,63 @@ defmodule MayorGame.City do
 
   """
   def list_cities_preload do
-    Repo.all(Info) |> Repo.preload([:citizens, :user, detail: Buildable.buildables_list()])
+    Repo.all(Town) |> Repo.preload([:citizens, :user, detail: Buildable.buildables_list()])
 
     # city |> MayorGame.Repo.preload([:citizens, :user, detail: Buildable.buildables_list()])
   end
 
   @doc """
-  Gets a single info.
+  Gets a single town.
 
-  Raises `Ecto.NoResultsError` if the Info does not exist.
+  Raises `Ecto.NoResultsError` if the Town does not exist.
 
   ## Examples
 
-      iex> get_info!(123)
-      %Info{}
+      iex> get_town!(123)
+      %Town{}
 
-      iex> get_info!(456)
+      iex> get_town!(456)
       ** (Ecto.NoResultsError)
 
   """
-  def get_info!(id), do: Repo.get!(Info, id)
+  def get_town!(id), do: Repo.get!(Town, id)
 
-  def get_info_by_title!(title), do: Repo.get_by!(Info, title: title)
+  def get_town_by_title!(title), do: Repo.get_by!(Town, title: title)
 
   @doc """
-  Creates a info. which is a city
+  Creates a town. which is a city
 
   ## Examples
 
-      iex> create_info(%{field: value})
-      {:ok, %Info{}}
+      iex> create_town(%{field: value})
+      {:ok, %Town{}}
 
-      iex> create_info(%{field: bad_value})
+      iex> create_town(%{field: bad_value})
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_info(attrs \\ %{}) do
-    # have to create a resourcemap from scratch when creating a new info cuz it's required
-    resourceMap = %{"resources" => Map.new(MayorGame.City.Info.resources(), fn x -> {x, 0} end)}
+  def create_town(attrs \\ %{}) do
+    # have to create a resourcemap from scratch when creating a new town cuz it's required
+    resourceMap = %{:resources => Map.new(MayorGame.City.Town.resources(), fn x -> {x, 0} end)}
 
-    %Info{}
-    |> Info.changeset(Map.merge(attrs, resourceMap))
+    # make sure keys are atoms, helps with input from phoenix forms
+    attrsWithAtomKeys = Map.new(attrs, fn {k, v} -> {String.to_existing_atom(k), v} end)
+
+    %Town{}
+    |> Town.changeset(Map.merge(attrsWithAtomKeys, resourceMap))
     |> Repo.insert()
   end
 
   # hmm. I should probably figure out a way to make this return the city, not the details.
   # currently this returns the %Details struct
   def create_city(attrs \\ %{}) do
-    case create_info(attrs) do
+    case create_town(attrs) do
       # if city built successfully, automatically build Details with it's id
       # update this so these fields are automatically generated
       {:ok, created_city} ->
         buildables = Map.new(Buildable.buildables_list(), fn buildable -> {buildable, []} end)
 
-        detail = Map.merge(buildables, %{city_treasury: 500, info_id: created_city.id})
+        detail = Map.merge(buildables, %{city_treasury: 500, town_id: created_city.id})
 
         # and create a detail in the DB, tied to this city
         case create_details(detail) do
@@ -107,37 +110,37 @@ defmodule MayorGame.City do
   end
 
   @doc """
-  Updates a info.
+  Updates a town.
 
   ## Examples
 
-      iex> update_info(info, %{field: new_value})
-      {:ok, %Info{}}
+      iex> update_town(town, %{field: new_value})
+      {:ok, %Town{}}
 
-      iex> update_info(info, %{field: bad_value})
+      iex> update_town(town, %{field: bad_value})
       {:error, %Ecto.Changeset{}}
 
   """
-  def update_info(%Info{} = info, attrs) do
-    info
-    |> Info.changeset(attrs)
+  def update_town(%Town{} = town, attrs) do
+    town
+    |> Town.changeset(attrs)
     |> Repo.update()
   end
 
   # might not need to type guard here because DB does it; but
   @doc """
-  updates log for a city. Expects the info(city) struct & a single string.
+  updates log for a city. Expects the town(city) struct & a single string.
 
   ## Examples
-      iex> update_log(info, "string to add to log")
-      {:ok, %Info{}}
+      iex> update_log(town, "string to add to log")
+      {:ok, %Town{}}
 
-      iex> update_info(info, bad_value)
+      iex> update_town(town, bad_value)
       {:error, %Ecto.Changeset{}}
   """
-  def update_log(%Info{} = info, log_item) do
+  def update_log(%Town{} = town, log_item) do
     # add new item to head of list
-    updated_log = [log_item | info.logs]
+    updated_log = [log_item | town.logs]
 
     # if list is longer than 50, remove last item
     limited_log =
@@ -147,38 +150,38 @@ defmodule MayorGame.City do
         updated_log
       end
 
-    info
-    |> Info.changeset(%{logs: limited_log})
+    town
+    |> Town.changeset(%{logs: limited_log})
     |> Repo.update()
   end
 
   @doc """
-  Deletes a info.
+  Deletes a town.
 
   ## Examples
 
-      iex> delete_info(info)
-      {:ok, %Info{}}
+      iex> delete_town(town)
+      {:ok, %Town{}}
 
-      iex> delete_info(info)
+      iex> delete_town(town)
       {:error, %Ecto.Changeset{}}
 
   """
-  def delete_info(%Info{} = info) do
-    Repo.delete(info)
+  def delete_town(%Town{} = town) do
+    Repo.delete(town)
   end
 
   @doc """
-  Returns an `%Ecto.Changeset{}` for tracking info changes.
+  Returns an `%Ecto.Changeset{}` for tracking town changes.
 
   ## Examples
 
-      iex> change_info(info)
-      %Ecto.Changeset{data: %Info{}}
+      iex> change_town(town)
+      %Ecto.Changeset{data: %Town{}}
 
   """
-  def change_info(%Info{} = info, attrs \\ %{}) do
-    Info.changeset(info, attrs)
+  def change_town(%Town{} = town, attrs \\ %{}) do
+    Town.changeset(town, attrs)
   end
 
   # ###############################################
@@ -199,7 +202,7 @@ defmodule MayorGame.City do
   end
 
   def list_citizens_preload do
-    Repo.all(Citizens) |> Repo.preload([:info])
+    Repo.all(Citizens) |> Repo.preload([:town])
   end
 
   @doc """
