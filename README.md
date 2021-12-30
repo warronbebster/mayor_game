@@ -1,6 +1,10 @@
 # MayorGame
 
-Make sure postgres is installed./
+This is a zero-sum MMO. You get a township, and build a town to attract citizens — build schools, roads, transit systems, etc. Citizens will move to the best town for them — so you have to be competitive. However, the whole ecosystem shares one atmosphere — if everyone pollutes, citizens become sicker and sicker, eventually die, and the game ends for everyone — you'll be presiding over ghost towns.
+
+## Running the game:
+
+Make sure postgres is installed.
 
 To start your Phoenix server:
 
@@ -12,10 +16,7 @@ or
 - Create and migrate your database with `mix ecto.setup`
 - Install Node.js dependencies with `npm install` inside the `assets` directory
 
-make sure Postgres is running
-
-then,
-Start Phoenix endpoint with `mix phx.server`
+make sure Postgres is running, then start the Phoenix endpoint with `mix phx.server`
 
 ### Most of the important code is in `lib`
 
@@ -30,7 +31,7 @@ Start Phoenix endpoint with `mix phx.server`
 
 Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 
-Ready to run in production? Please [check our deployment guides](https://hexdocs.pm/phoenix/deployment.html).
+Ready to run in production? [Check Phoenixt deployment guides](https://hexdocs.pm/phoenix/deployment.html).
 
 ## Learn more
 
