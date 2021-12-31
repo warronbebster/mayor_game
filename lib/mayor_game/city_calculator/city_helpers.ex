@@ -39,12 +39,13 @@ defmodule MayorGame.CityHelpers do
     money = calculate_money(city_preloaded |> Repo.preload([:detail]))
 
     # I think the following can all be calculated in the same function?
+    # get updated city from DB
     city_update = city_preloaded |> Repo.preload([:detail])
     # but jobs and stuff aren't
     total_housing = calculate_housing(city_update)
-    # returns a map of %{0 => #, 0 => #, etc}
+    # returns a map of %{0 => #, 1 => #, etc}
     total_jobs = calculate_jobs(city_update)
-    # returns a map of %{0 => #, 0 => #, etc}
+    # returns a map of %{0 => #, 1 => #, etc}
     total_education = calculate_education(city_update)
 
     # return this map:
@@ -307,7 +308,8 @@ defmodule MayorGame.CityHelpers do
   @doc """
   takes a %MayorGame.City.Town{} struct
 
-  resets all buildables in DB to default enabled
+  resets all buildables in DB to default enabled (e.g. working, not purchasable)
+  useful at the end/beginning of a cycle
   """
 
   def reset_buildables_to_enabled(%Town{} = city) do

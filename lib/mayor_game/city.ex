@@ -521,6 +521,23 @@ defmodule MayorGame.City do
     |> Repo.insert()
   end
 
+  @spec get_world!(integer) :: World.t()
+  @doc """
+  Gets a single World.
+
+  Raises `Ecto.NoResultsError` if the World does not exist.
+
+  ## Examples
+
+      iex> get_world!(123)
+      %World{}
+
+      iex> get_world!(456)
+      ** (Ecto.NoResultsError)
+
+  """
+  def get_world!(id), do: Repo.get!(World, id)
+
   @doc """
   update a World in the DB
   expects (%World struct, map of attributes to adjust)
