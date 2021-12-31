@@ -4,6 +4,7 @@
 defmodule MayorGame.City.Buildable do
   use Ecto.Schema
   import Ecto.Changeset
+  alias MayorGame.City.{BuildableMetadata, Details}
 
   @timestamps_opts [type: :utc_datetime]
 
@@ -17,9 +18,9 @@ defmodule MayorGame.City.Buildable do
           __meta__: Ecto.Schema.Metadata.t(),
           id: integer | nil,
           enabled: boolean,
-          reason: list,
-          details: map,
-          upgrades: list,
+          reason: list(String.t()),
+          details: Details.t(),
+          upgrades: list(map),
           inserted_at: DateTime.t() | nil,
           updated_at: DateTime.t() | nil
         }
@@ -47,8 +48,8 @@ defmodule MayorGame.City.Buildable do
   @doc """
   takes a %Buildable{} struct and returns the same struct with updates applied
   """
-  @spec upgradedStatMap(Buildable.t()) :: Buildable.t()
-  def upgradedStatMap(buildable) do
+  @spec upgraded_stat_map(Buildable.t()) :: Buildable.t()
+  def upgraded_stat_map(buildable) do
     IO.inspect(buildable)
 
     # first check if an upgrade is purchased (is the string in the :upgrades array)
@@ -68,7 +69,7 @@ defmodule MayorGame.City.Buildable do
   def buildables do
     %{
       housing: %{
-        single_family_homes: %{
+        single_family_homes: %BuildableMetadata{
           price: 20,
           fits: 2,
           daily_cost: 0,
@@ -91,7 +92,7 @@ defmodule MayorGame.City.Buildable do
           },
           purchasable_reason: "valid"
         },
-        multi_family_homes: %{
+        multi_family_homes: %BuildableMetadata{
           price: 60,
           fits: 6,
           daily_cost: 0,
@@ -100,7 +101,7 @@ defmodule MayorGame.City.Buildable do
           purchasable: true,
           purchasable_reason: "valid"
         },
-        homeless_shelter: %{
+        homeless_shelter: %BuildableMetadata{
           price: 60,
           fits: 20,
           daily_cost: 10,
@@ -109,7 +110,7 @@ defmodule MayorGame.City.Buildable do
           purchasable: true,
           purchasable_reason: "valid"
         },
-        apartments: %{
+        apartments: %BuildableMetadata{
           price: 60,
           fits: 20,
           daily_cost: 0,
@@ -118,7 +119,7 @@ defmodule MayorGame.City.Buildable do
           purchasable: true,
           purchasable_reason: "valid"
         },
-        micro_apartments: %{
+        micro_apartments: %BuildableMetadata{
           price: 80,
           fits: 20,
           daily_cost: 0,
@@ -127,7 +128,7 @@ defmodule MayorGame.City.Buildable do
           purchasable: true,
           purchasable_reason: "valid"
         },
-        high_rises: %{
+        high_rises: %BuildableMetadata{
           price: 200,
           fits: 100,
           daily_cost: 0,
@@ -138,7 +139,7 @@ defmodule MayorGame.City.Buildable do
         }
       },
       transit: %{
-        roads: %{
+        roads: %BuildableMetadata{
           price: 20,
           daily_cost: 0,
           jobs: 0,
@@ -148,7 +149,7 @@ defmodule MayorGame.City.Buildable do
           purchasable: true,
           purchasable_reason: "valid"
         },
-        highways: %{
+        highways: %BuildableMetadata{
           price: 40,
           daily_cost: 0,
           jobs: 0,
@@ -158,7 +159,7 @@ defmodule MayorGame.City.Buildable do
           purchasable: true,
           purchasable_reason: "valid"
         },
-        airports: %{
+        airports: %BuildableMetadata{
           price: 200,
           daily_cost: 10,
           jobs: 10,
@@ -169,7 +170,7 @@ defmodule MayorGame.City.Buildable do
           purchasable: true,
           purchasable_reason: "valid"
         },
-        bus_lines: %{
+        bus_lines: %BuildableMetadata{
           price: 70,
           daily_cost: 30,
           jobs: 10,
@@ -180,7 +181,7 @@ defmodule MayorGame.City.Buildable do
           purchasable: true,
           purchasable_reason: "valid"
         },
-        subway_lines: %{
+        subway_lines: %BuildableMetadata{
           price: 200,
           daily_cost: 40,
           jobs: 10,
@@ -191,7 +192,7 @@ defmodule MayorGame.City.Buildable do
           purchasable: true,
           purchasable_reason: "valid"
         },
-        bike_lanes: %{
+        bike_lanes: %BuildableMetadata{
           price: 60,
           daily_cost: 0,
           jobs: 0,
@@ -202,7 +203,7 @@ defmodule MayorGame.City.Buildable do
           purchasable: true,
           purchasable_reason: "valid"
         },
-        bikeshare_stations: %{
+        bikeshare_stations: %BuildableMetadata{
           price: 70,
           daily_cost: 0,
           jobs: 0,
@@ -215,7 +216,7 @@ defmodule MayorGame.City.Buildable do
         }
       },
       energy: %{
-        coal_plants: %{
+        coal_plants: %BuildableMetadata{
           price: 20,
           daily_cost: 10,
           jobs: 30,
@@ -228,7 +229,7 @@ defmodule MayorGame.City.Buildable do
           purchasable: true,
           purchasable_reason: "valid"
         },
-        wind_turbines: %{
+        wind_turbines: %BuildableMetadata{
           price: 100,
           daily_cost: 3,
           jobs: 10,
@@ -241,7 +242,7 @@ defmodule MayorGame.City.Buildable do
           purchasable: true,
           purchasable_reason: "valid"
         },
-        solar_plants: %{
+        solar_plants: %BuildableMetadata{
           price: 200,
           daily_cost: 3,
           jobs: 10,
@@ -254,7 +255,7 @@ defmodule MayorGame.City.Buildable do
           purchasable: true,
           purchasable_reason: "valid"
         },
-        nuclear_plants: %{
+        nuclear_plants: %BuildableMetadata{
           price: 2000,
           daily_cost: 50,
           jobs: 10,
@@ -267,7 +268,7 @@ defmodule MayorGame.City.Buildable do
           purchasable: true,
           purchasable_reason: "valid"
         },
-        dams: %{
+        dams: %BuildableMetadata{
           price: 1000,
           daily_cost: 50,
           jobs: 10,
@@ -282,7 +283,7 @@ defmodule MayorGame.City.Buildable do
         }
       },
       civic: %{
-        parks: %{
+        parks: %BuildableMetadata{
           price: 20,
           daily_cost: 5,
           area_required: 10,
@@ -290,7 +291,7 @@ defmodule MayorGame.City.Buildable do
           purchasable: true,
           purchasable_reason: "valid"
         },
-        libraries: %{
+        libraries: %BuildableMetadata{
           price: 20,
           daily_cost: 10,
           area_required: 1,
@@ -300,7 +301,7 @@ defmodule MayorGame.City.Buildable do
         }
       },
       education: %{
-        schools: %{
+        schools: %BuildableMetadata{
           price: 20,
           daily_cost: 10,
           jobs: 10,
@@ -312,7 +313,7 @@ defmodule MayorGame.City.Buildable do
           purchasable: true,
           purchasable_reason: "valid"
         },
-        middle_schools: %{
+        middle_schools: %BuildableMetadata{
           price: 20,
           daily_cost: 10,
           jobs: 5,
@@ -324,7 +325,7 @@ defmodule MayorGame.City.Buildable do
           purchasable: true,
           purchasable_reason: "valid"
         },
-        high_schools: %{
+        high_schools: %BuildableMetadata{
           price: 20,
           daily_cost: 10,
           jobs: 10,
@@ -336,7 +337,7 @@ defmodule MayorGame.City.Buildable do
           purchasable: true,
           purchasable_reason: "valid"
         },
-        universities: %{
+        universities: %BuildableMetadata{
           price: 20,
           daily_cost: 15,
           jobs: 10,
@@ -348,7 +349,7 @@ defmodule MayorGame.City.Buildable do
           purchasable: true,
           purchasable_reason: "valid"
         },
-        research_labs: %{
+        research_labs: %BuildableMetadata{
           price: 20,
           daily_cost: 15,
           jobs: 10,
@@ -362,7 +363,7 @@ defmodule MayorGame.City.Buildable do
         }
       },
       work: %{
-        retail_shops: %{
+        retail_shops: %BuildableMetadata{
           price: 20,
           daily_cost: 5,
           jobs: 5,
@@ -372,7 +373,7 @@ defmodule MayorGame.City.Buildable do
           purchasable: true,
           purchasable_reason: "valid"
         },
-        factories: %{
+        factories: %BuildableMetadata{
           price: 20,
           daily_cost: 5,
           jobs: 20,
@@ -382,7 +383,7 @@ defmodule MayorGame.City.Buildable do
           purchasable: true,
           purchasable_reason: "valid"
         },
-        office_buildings: %{
+        office_buildings: %BuildableMetadata{
           price: 20,
           daily_cost: 5,
           jobs: 20,
@@ -394,7 +395,7 @@ defmodule MayorGame.City.Buildable do
         }
       },
       entertainment: %{
-        theatres: %{
+        theatres: %BuildableMetadata{
           price: 20,
           daily_cost: 5,
           jobs: 10,
@@ -404,7 +405,7 @@ defmodule MayorGame.City.Buildable do
           purchasable: true,
           purchasable_reason: "valid"
         },
-        arenas: %{
+        arenas: %BuildableMetadata{
           price: 20,
           daily_cost: 5,
           jobs: 20,
@@ -416,7 +417,7 @@ defmodule MayorGame.City.Buildable do
         }
       },
       health: %{
-        hospitals: %{
+        hospitals: %BuildableMetadata{
           price: 40,
           daily_cost: 5,
           jobs: 30,
@@ -426,7 +427,7 @@ defmodule MayorGame.City.Buildable do
           purchasable: true,
           purchasable_reason: "valid"
         },
-        doctor_offices: %{
+        doctor_offices: %BuildableMetadata{
           price: 20,
           daily_cost: 5,
           jobs: 10,

@@ -80,7 +80,7 @@
             to operate</p>
           <% end %>
 
-          <%= if Map.has_key?(building_stats, :upgrades) do%>
+          <%= if building_stats.upgrades != nil do%>
             <div class="upgrades">
             Upgrades
               <%= for {upgrade_name, upgrade_details} <- Map.get(building_stats, :upgrades) do%>

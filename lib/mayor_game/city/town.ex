@@ -20,10 +20,10 @@ defmodule MayorGame.City.Town do
           region: String.t(),
           climate: String.t(),
           resources: map,
-          logs: list,
+          logs: list(String.t()),
           tax_rates: map,
           user: %MayorGame.Auth.User{},
-          citizens: list,
+          citizens: list(Citizens.t()),
           detail: Details.t()
         }
 

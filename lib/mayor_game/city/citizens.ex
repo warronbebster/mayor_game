@@ -15,12 +15,12 @@ defmodule MayorGame.City.Citizens do
           money: integer,
           name: String.t(),
           age: integer,
-          education: integer,
-          job: integer,
+          education: 1..5,
+          job: 1..5,
           has_car: boolean,
-          last_moved: integer,
+          last_moved: integer | nil,
           preferences: map,
-          town: map
+          town: MayorGame.City.Town.t()
         }
 
   schema "citizens" do

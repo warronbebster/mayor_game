@@ -252,36 +252,37 @@ defmodule MayorGameWeb.CityLive do
     end)
   end
 
-  # this takes a buildable, and builds status from database
+  # this takes a buildable metadata, and builds status from database
+  # TODO: Clean this shit upppp
   defp calculate_buildable_status(buildable, city, energy, area) do
     if city.detail.city_treasury > buildable.price do
       cond do
         # enough energy AND enough area
-        Map.has_key?(buildable, :energy_required) and
+
+        buildable.energy_required != nil and
           energy.available_energy >= buildable.energy_required &&
-            (Map.has_key?(buildable, :area_required) and
+            (buildable.area_required != nil and
                area.available_area >= buildable.area_required) ->
-          # %{buildable | purchasable: true) purchasable_reason: "valid")
           %{buildable | purchasable: true, purchasable_reason: "valid"}
 
         # not enough energy, enough area
-        Map.has_key?(buildable, :energy_required) and
+        buildable.energy_required != nil and
           energy.available_energy < buildable.energy_required &&
-            (Map.has_key?(buildable, :area_required) and
+            (buildable.area_required != nil and
                area.available_area >= buildable.area_required) ->
           %{buildable | purchasable: false, purchasable_reason: "not enough energy to build"}
 
         # enough energy, not enough area
-        Map.has_key?(buildable, :energy_required) and
+        buildable.energy_required != nil and
           energy.available_energy >= buildable.energy_required &&
-            (Map.has_key?(buildable, :area_required) and
+            (buildable.area_required != nil and
                area.available_area < buildable.area_required) ->
           %{buildable | purchasable: false, purchasable_reason: "not enough area to build"}
 
         # not enough energy AND not enough area
-        Map.has_key?(buildable, :energy_required) and
+        buildable.energy_required != nil and
           energy.available_energy < buildable.energy_required &&
-            (Map.has_key?(buildable, :area_required) and
+            (buildable.area_required != nil and
                area.available_area < buildable.area_required) ->
           %{
             buildable
@@ -290,31 +291,31 @@ defmodule MayorGameWeb.CityLive do
           }
 
         # no energy needed, enough area
-        !Map.has_key?(buildable, :energy_required) &&
-            (Map.has_key?(buildable, :area_required) and
+        buildable.energy_required == nil &&
+            (buildable.area_required != nil and
                area.available_area >= buildable.area_required) ->
           %{buildable | purchasable: true, purchasable_reason: "valid"}
 
         # no energy needed, not enough area
-        !Map.has_key?(buildable, :energy_required) &&
-            (Map.has_key?(buildable, :area_required) and
+        buildable.energy_required == nil &&
+            (buildable.area_required != nil and
                area.available_area < buildable.area_required) ->
           %{buildable | purchasable: false, purchasable_reason: "not enough area to build"}
 
         # no area needed, enough energy
-        !Map.has_key?(buildable, :area_required) &&
-            (Map.has_key?(buildable, :energy_required) and
+        buildable.area_required == nil &&
+            (buildable.energy_required != nil and
                energy.available_energy >= buildable.energy_required) ->
           %{buildable | purchasable: true, purchasable_reason: "valid"}
 
         # no area needed, not enough energy
-        !Map.has_key?(buildable, :area_required) &&
-            (Map.has_key?(buildable, :energy_required) and
+        buildable.area_required == nil &&
+            (buildable.energy_required != nil and
                energy.available_energy < buildable.energy_required) ->
           %{buildable | purchasable: false, purchasable_reason: "not enough energy to build"}
 
         # no area needed, no energy needed
-        !Map.has_key?(buildable, :area_required) and !Map.has_key?(buildable, :energy_required) ->
+        buildable.energy_required == nil and buildable.area_required == nil ->
           %{buildable | purchasable: true, purchasable_reason: "valid"}
 
         # catch-all

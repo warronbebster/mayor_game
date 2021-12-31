@@ -3,6 +3,8 @@ defmodule MayorGame.City do
   The City context.
   """
 
+  # THIS IS WHAT TALKS TO ECTO
+
   import Ecto.Query, warn: false
   alias MayorGame.Repo
   alias MayorGame.City.{Details, Town, Citizens, World, Buildable}

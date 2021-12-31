@@ -22,7 +22,7 @@ defmodule MayorGame.CityHelpers do
     city_preloaded = preload_city_check(city)
 
     if city_preloaded.id == 3 do
-      IO.inspect(city_preloaded.detail.single_family_homes)
+      # IO.inspect(city_preloaded.detail.single_family_homes)
     end
 
     # reset buildables status in database
@@ -265,6 +265,7 @@ defmodule MayorGame.CityHelpers do
             # also kill based on roads / random chance
             if citizen.age > 36500, do: kill_citizen(citizen, "old age")
 
+            # set a random pollution ceiling based on how many cities are in the ecosystem
             pollution_ceiling = :rand.uniform(cities_count * 10000) + 1000
 
             if world.pollution > pollution_ceiling do
@@ -273,7 +274,7 @@ defmodule MayorGame.CityHelpers do
                   to_string(world.pollution) <> " above ceiling: " <> to_string(pollution_ceiling)
               )
 
-              kill_citizen(citizen, "pollution")
+              kill_citizen(citizen, "pollution is too high")
             end
 
             # return this
@@ -361,7 +362,7 @@ defmodule MayorGame.CityHelpers do
                                                                  acc2 ->
             buildables = Map.get(city_preloaded.detail, building_type)
 
-            if Map.has_key?(building_options, :area_required) && length(buildables) > 0 do
+            if building_options.area_required != nil && length(buildables) > 0 do
               Enum.reduce(buildables, %{area_left: acc2.area_left}, fn building, acc3 ->
                 negative_area = acc3.area_left < building_options.area_required
 
@@ -466,7 +467,7 @@ defmodule MayorGame.CityHelpers do
                                                                      acc2 ->
             buildables = Map.get(city_preloaded.detail, building_type)
 
-            if Map.has_key?(building_options, :energy_required) && length(buildables) > 0 do
+            if building_options.energy_required != nil && length(buildables) > 0 do
               Enum.reduce(buildables, %{energy_left: acc2.energy_left}, fn building, acc3 ->
                 negative_energy = acc3.energy_left < building_options.energy_required
 
@@ -524,9 +525,10 @@ defmodule MayorGame.CityHelpers do
                                                                                    acc2 ->
             buildables = Map.get(city_preloaded.detail, building_type)
 
-            if Map.has_key?(building_options, :daily_cost) &&
+            # if Map.has_key?(building_options, :daily_cost) &&
+            if building_options.daily_cost != nil &&
                  length(buildables) > 0 &&
-                 building_options[:daily_cost] > 0 do
+                 building_options.daily_cost > 0 do
               Enum.reduce(
                 buildables,
                 %{money_left: acc2.money_left, cost: acc2.cost},

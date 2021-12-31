@@ -7,8 +7,6 @@ defmodule MayorGame.City.BuildableMetadata do
     :daily_cost,
     :area_required,
     :energy_required,
-    :upgrades,
-    :purchasable_reason,
     :jobs,
     :job_level,
     :education_level,
@@ -19,33 +17,32 @@ defmodule MayorGame.City.BuildableMetadata do
     :pollution,
     :region_energy_multipliers,
     :season_energy_multipliers,
+    :upgrades,
+    :purchasable_reason,
     purchasable: true
   ]
 
   @typedoc """
-      this makes a type for %BuildableMetadata{} that's callable with MayorGame.City.Buildable.t()
+      this makes a type for %BuildableMetadata{} that's callable with MayorGame.City.BuildableMetadata.t()
   """
   @type t :: %__MODULE__{
           price: integer | nil,
           fits: integer | nil,
           daily_cost: integer | nil,
-          area_required: nil,
-          energy_required: nil,
-          purchasable: true,
-          upgrades: map() | nil,
-          purchasable_reason: nil,
+          area_required: integer | nil,
+          energy_required: integer | nil,
+          jobs: integer | nil,
           job_level: 1..5,
-          sprawl: 10,
-          area: 10
+          education_level: 1..5,
+          capacity: integer | nil,
+          sprawl: integer | nil,
+          area: integer | nil,
+          energy: integer | nil,
+          pollution: integer | nil,
+          region_energy_multipliers: map | nil,
+          season_energy_multipliers: map | nil,
+          upgrades: map() | nil,
+          purchasable_reason: list(String.t()) | nil,
+          purchasable: boolean
         }
-
-  @doc """
-  Map of buildables with format %{
-    category: %{
-      buildable_name: %{
-        buildable_detail: int
-      }
-    }
-  }
-  """
 end

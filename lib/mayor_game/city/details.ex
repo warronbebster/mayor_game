@@ -5,7 +5,7 @@ defmodule MayorGame.City.Details do
 
   @timestamps_opts [type: :utc_datetime]
 
-  @derive {Inspect, except: [:town]}
+  # @derive {Inspect, except: [:town]}
 
   # todo: figure out how to generate AST for paramaterized types
   # @keys Buildable.buildables_list()
@@ -17,49 +17,49 @@ defmodule MayorGame.City.Details do
   @type t :: %__MODULE__{
           __meta__: Ecto.Schema.Metadata.t(),
           id: integer | nil,
-          town: map,
+          town: Town.t(),
           inserted_at: DateTime.t() | nil,
           updated_at: DateTime.t() | nil,
           # homes
-          single_family_homes: Buildable.t(),
-          multi_family_homes: Buildable.t(),
-          homeless_shelter: Buildable.t(),
-          apartments: Buildable.t(),
-          micro_apartments: Buildable.t(),
-          high_rises: Buildable.t(),
+          single_family_homes: list(Buildable.t()),
+          multi_family_homes: list(Buildable.t()),
+          homeless_shelter: list(Buildable.t()),
+          apartments: list(Buildable.t()),
+          micro_apartments: list(Buildable.t()),
+          high_rises: list(Buildable.t()),
           # transit
-          roads: Buildable.t(),
-          highways: Buildable.t(),
-          airports: Buildable.t(),
-          bus_lines: Buildable.t(),
-          subway_lines: Buildable.t(),
-          bike_lanes: Buildable.t(),
-          bikeshare_stations: Buildable.t(),
+          roads: list(Buildable.t()),
+          highways: list(Buildable.t()),
+          airports: list(Buildable.t()),
+          bus_lines: list(Buildable.t()),
+          subway_lines: list(Buildable.t()),
+          bike_lanes: list(Buildable.t()),
+          bikeshare_stations: list(Buildable.t()),
           # energy
-          coal_plants: Buildable.t(),
-          wind_turbines: Buildable.t(),
-          solar_plants: Buildable.t(),
-          nuclear_plants: Buildable.t(),
-          dams: Buildable.t(),
+          coal_plants: list(Buildable.t()),
+          wind_turbines: list(Buildable.t()),
+          solar_plants: list(Buildable.t()),
+          nuclear_plants: list(Buildable.t()),
+          dams: list(Buildable.t()),
           # civic
-          parks: Buildable.t(),
-          libraries: Buildable.t(),
+          parks: list(Buildable.t()),
+          libraries: list(Buildable.t()),
           # education
-          schools: Buildable.t(),
-          middle_schools: Buildable.t(),
-          high_schools: Buildable.t(),
-          universities: Buildable.t(),
-          research_labs: Buildable.t(),
+          schools: list(Buildable.t()),
+          middle_schools: list(Buildable.t()),
+          high_schools: list(Buildable.t()),
+          universities: list(Buildable.t()),
+          research_labs: list(Buildable.t()),
           # work
-          retail_shops: Buildable.t(),
-          factories: Buildable.t(),
-          office_buildings: Buildable.t(),
+          retail_shops: list(Buildable.t()),
+          factories: list(Buildable.t()),
+          office_buildings: list(Buildable.t()),
           # entertainment
-          theatres: Buildable.t(),
-          arenas: Buildable.t(),
+          theatres: list(Buildable.t()),
+          arenas: list(Buildable.t()),
           # health
-          hospitals: Buildable.t(),
-          doctor_offices: Buildable.t()
+          hospitals: list(Buildable.t()),
+          doctor_offices: list(Buildable.t())
         }
 
   schema "details" do
