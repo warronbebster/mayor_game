@@ -69,6 +69,10 @@
 # TIMESTAMPS:
 # http://www.creativedeletion.com/2019/06/17/utc-timestamps-in-ecto.html
 
+# PASSING FUNCTIONS:
+# https://stackoverflow.com/questions/22562192/how-do-you-pass-a-function-as-a-parameter-in-elixir
+# https://www.culttt.com/2016/05/09/functions-first-class-citizens-elixir
+
 
 # ——————————————————————————————————————————————————————————————
 # phx.gen.context in terminal to generate different contexts;

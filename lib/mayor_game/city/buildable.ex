@@ -10,7 +10,9 @@ defmodule MayorGame.City.Buildable do
   # ignore upgrades when printing?
   @derive {Jason.Encoder, except: [:upgrades]}
 
-  # uhhhh this makes a type for %Buildable that's callable with MayorGame.City.Buildable.t()
+  @typedoc """
+      uhhhh this makes a type for %Buildable{} that's callable with MayorGame.City.Buildable.t()
+  """
   @type t :: %__MODULE__{
           __meta__: Ecto.Schema.Metadata.t(),
           id: integer | nil,
@@ -260,7 +262,7 @@ defmodule MayorGame.City.Buildable do
           purchasable: true,
           purchasable_reason: "valid"
         },
-        dam: %{
+        dams: %{
           price: 1000,
           daily_cost: 50,
           jobs: 10,
