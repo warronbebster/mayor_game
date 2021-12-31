@@ -36,6 +36,7 @@ Auth.create_user(%{
     confirm_password: "password"
   })
 
+# create a city
 {:ok, %Town{id: madeTown_id}} =
   City.create_city(%{
     region: "mountain",

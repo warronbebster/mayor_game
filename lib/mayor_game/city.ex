@@ -74,10 +74,16 @@ defmodule MayorGame.City do
   def create_town(attrs \\ %{}) do
     # have to create a resourcemap from scratch when creating a new town cuz it's required
     # TODO: remove this when creating cities from token
-    resourceMap = %{:resources => Map.new(MayorGame.City.Town.resources(), fn x -> {x, 0} end)}
+    resourceMap = %{resources: Map.new(MayorGame.City.Town.resources(), fn x -> {x, 0} end)}
 
     # make sure keys are atoms, helps with input from phoenix forms
-    attrsWithAtomKeys = Map.new(attrs, fn {k, v} -> {String.to_existing_atom(k), v} end)
+    attrsWithAtomKeys =
+      Map.new(attrs, fn {k, v} ->
+        {
+          if(!is_atom(k), do: String.to_existing_atom(k), else: k),
+          v
+        }
+      end)
 
     %Town{}
     |> Town.changeset(Map.merge(attrsWithAtomKeys, resourceMap))

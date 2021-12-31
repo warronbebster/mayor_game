@@ -5,6 +5,8 @@ defmodule MayorGame.City.Buildable do
   use Ecto.Schema
   import Ecto.Changeset
 
+  @timestamps_opts [type: :utc_datetime]
+
   # ignore upgrades when printing?
   @derive {Jason.Encoder, except: [:upgrades]}
 
@@ -28,6 +30,8 @@ defmodule MayorGame.City.Buildable do
     # what are the upgrades the buildable currently possesses
     field :upgrades, {:array, :string}
     belongs_to :details, MayorGame.City.Details
+
+    timestamps()
 
     @doc false
     def changeset(buildable, attrs \\ %{}) do
