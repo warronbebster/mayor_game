@@ -1,6 +1,7 @@
 
-Details for a town contains a list of %Buildable{} structs
-[%Buildable{} ]
+Details for a town contains a list of %Buildable{} structs for each buildable type atom
+e.g.
+single_family_homes: [%Buildable{}, %Buildable{} ]
 
 This comes from the DB, as part of a %Buildable{}:
 {
@@ -42,3 +43,17 @@ single_family_homes: %{
 
 in the calculate functions, building_options are the above map associated with the buildable type
 so the goal is to transform the building_options map for each %Buildable{}
+
+pseudocode:
+
+for each %Buildable{} in Details.name_of_buildable
+
+check if there are upgrades
+
+
+if so, for each upgrade, grab the upgrade from the %BuildingMetadata
+and apply the :function from the upgrade onto the %BuildingMetadata
+
+return the %BuildingMetadata
+
+two places this needs to be done — one in city_helpers, and one in city_live to display to user
