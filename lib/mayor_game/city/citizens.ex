@@ -4,6 +4,25 @@ defmodule MayorGame.City.Citizens do
 
   @timestamps_opts [type: :utc_datetime]
 
+  @typedoc """
+      type for %Citizens{} that's callable with MayorGame.City.Buildable.t()
+  """
+  @type t :: %__MODULE__{
+          __meta__: Ecto.Schema.Metadata.t(),
+          id: integer | nil,
+          inserted_at: DateTime.t() | nil,
+          updated_at: DateTime.t() | nil,
+          money: integer,
+          name: String.t(),
+          age: integer,
+          education: integer,
+          job: integer,
+          has_car: boolean,
+          last_moved: integer,
+          preferences: map,
+          town: map
+        }
+
   schema "citizens" do
     field :money, :integer
     field :name, :string

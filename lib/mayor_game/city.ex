@@ -255,8 +255,6 @@ defmodule MayorGame.City do
         }
       end)
 
-    IO.inspect(random_preferences.preference_map)
-
     # Map.new(Citizens.decision_factors(), fn x ->
     #   {to_string(x), :rand.uniform() |> Float.round(2)}
     # end)

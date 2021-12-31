@@ -21,6 +21,10 @@ defmodule MayorGame.CityHelpers do
   def calculate_city_stats(%Town{} = city, %World{} = world) do
     city_preloaded = preload_city_check(city)
 
+    if city_preloaded.id == 3 do
+      IO.inspect(city_preloaded.detail.single_family_homes)
+    end
+
     # reset buildables status in database
     reset_buildables_to_enabled(city_preloaded)
 
@@ -84,10 +88,10 @@ defmodule MayorGame.CityHelpers do
     end
   end
 
-  def kill_citizen(%Citizens{} = citizen, reason) do
+  def kill_citizen(%Citizens{} = citizen, deathReason) do
     City.update_log(
       City.get_town!(citizen.town_id),
-      citizen.name <> " has died because of " <> reason <> ". RIP"
+      citizen.name <> " has died because of " <> deathReason <> ". RIP"
     )
 
     City.delete_citizens(citizen)
@@ -365,7 +369,22 @@ defmodule MayorGame.CityHelpers do
                   # update buildable in DB to enabled: false
                   City.update_buildable(city.detail, building_type, building.id, %{
                     enabled: false,
-                    reason: ["area"]
+                    reason:
+                      cond do
+                        Enum.empty?(building.reason) ->
+                          ["area"]
+
+                        Enum.member?(building.reason, "area") ->
+                          building.reason
+
+                        true ->
+                          ["area" | building.reason]
+                      end
+                  })
+                else
+                  City.update_buildable(city.detail, building_type, building.id, %{
+                    enabled: true,
+                    reason: []
                   })
                 end
 
@@ -454,11 +473,18 @@ defmodule MayorGame.CityHelpers do
                 if negative_energy do
                   City.update_buildable(city.detail, building_type, building.id, %{
                     enabled: false,
+                    # TODO: clean this shit up
                     reason:
-                      if(Enum.empty?(building.reason),
-                        do: ["energy"],
-                        else: ["energy" | building.reason]
-                      )
+                      cond do
+                        Enum.empty?(building.reason) ->
+                          ["energy"]
+
+                        Enum.member?(building.reason, "energy") ->
+                          building.reason
+
+                        true ->
+                          ["energy" | building.reason]
+                      end
                   })
                 end
 
@@ -512,10 +538,16 @@ defmodule MayorGame.CityHelpers do
                       enabled: false,
                       # if there's already a reason it's disabled
                       reason:
-                        if(Enum.empty?(building.reason),
-                          do: ["money"],
-                          else: ["money" | building.reason]
-                        )
+                        cond do
+                          Enum.empty?(building.reason) ->
+                            ["money"]
+
+                          Enum.member?(building.reason, "money") ->
+                            building.reason
+
+                          true ->
+                            ["money" | building.reason]
+                        end
                     })
                   end
 
@@ -551,7 +583,12 @@ defmodule MayorGame.CityHelpers do
         Buildable.buildables().housing,
         %{amount: 0},
         fn {building_type, building_options}, acc ->
+          # grab the actual buildables from the city
           buildables = Map.get(city_preloaded.detail, building_type)
+
+          unless buildables == [] do
+            # IO.inspect(buildables)
+          end
 
           if length(buildables) > 0 do
             Enum.reduce(
@@ -561,6 +598,7 @@ defmodule MayorGame.CityHelpers do
                 if !building.enabled do
                   %{amount: acc2.amount}
                 else
+                  # increment by the amount it fits
                   %{amount: acc2.amount + building_options.fits}
                 end
               end

@@ -73,8 +73,9 @@
             <div class="building_enabled"></div>
           <% else %>
             <div class="building_disabled"></div>
-            <p> Needs <%= for reason <- building.reason do%>
-            <%= reason %>
+            <p> Needs
+            <%= for reason <- building.reason do%>
+              <%= reason %>
             <% end %>
             to operate</p>
           <% end %>

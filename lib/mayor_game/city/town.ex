@@ -8,6 +8,25 @@ defmodule MayorGame.City.Town do
   # don't print these on inspect
   @derive {Inspect, except: [:logs, :citizens, :detail]}
 
+  @typedoc """
+      Type for %Town{} that's callable with MayorGame.City.Buildable.t()
+  """
+  @type t :: %__MODULE__{
+          __meta__: Ecto.Schema.Metadata.t(),
+          id: integer | nil,
+          inserted_at: DateTime.t() | nil,
+          updated_at: DateTime.t() | nil,
+          title: String.t(),
+          region: String.t(),
+          climate: String.t(),
+          resources: map,
+          logs: list,
+          tax_rates: map,
+          user: %MayorGame.Auth.User{},
+          citizens: list,
+          detail: Details.t()
+        }
+
   schema "cities" do
     field :title, :string
     field :region, :string

@@ -11,7 +11,7 @@ defmodule MayorGame.City.Buildable do
   @derive {Jason.Encoder, except: [:upgrades]}
 
   @typedoc """
-      uhhhh this makes a type for %Buildable{} that's callable with MayorGame.City.Buildable.t()
+      this makes a type for %Buildable{} that's callable with MayorGame.City.Buildable.t()
   """
   @type t :: %__MODULE__{
           __meta__: Ecto.Schema.Metadata.t(),
@@ -19,7 +19,9 @@ defmodule MayorGame.City.Buildable do
           enabled: boolean,
           reason: list,
           details: map,
-          upgrades: list
+          upgrades: list,
+          inserted_at: DateTime.t() | nil,
+          updated_at: DateTime.t() | nil
         }
 
   # schemas make elixir structs (in this case, %Buildable{})
@@ -42,6 +44,9 @@ defmodule MayorGame.City.Buildable do
     end
   end
 
+  @doc """
+  takes a %Buildable{} struct and returns the same struct with updates applied
+  """
   @spec upgradedStatMap(Buildable.t()) :: Buildable.t()
   def upgradedStatMap(buildable) do
     IO.inspect(buildable)
