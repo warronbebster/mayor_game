@@ -46,14 +46,14 @@ so the goal is to transform the building_options map for each %Buildable{}
 
 pseudocode:
 
-for each %Buildable{} in Details.name_of_buildable
+for each %Buildable{} in Details.name_of_buildable (this probably doesn't need to be part of the func)
 
-check if there are upgrades
+# check if there are upgrades
 
 
-if so, for each upgrade, grab the upgrade from the %BuildingMetadata
-and apply the :function from the upgrade onto the %BuildingMetadata
+# if so, for each upgrade, grab the upgrade from the %BuildingMetadata
+# and apply the :function from the upgrade onto the %BuildingMetadata
 
-return the %BuildingMetadata
+# return the %BuildingMetadata
 
 two places this needs to be done — one in city_helpers, and one in city_live to display to user
