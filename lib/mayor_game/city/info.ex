@@ -3,6 +3,8 @@ defmodule MayorGame.City.Town do
   import Ecto.Changeset
   alias MayorGame.City.{Citizens, Details}
 
+  @timestamps_opts [type: :utc_datetime]
+
   # don't print these on inspect
   @derive {Inspect, except: [:logs, :citizens, :detail]}
 

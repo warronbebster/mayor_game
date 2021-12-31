@@ -1,6 +1,8 @@
 defmodule MayorGame.Repo.Migrations.CreateCitizens do
   use Ecto.Migration
 
+  @timestamps_opts [type: :utc_datetime]
+
   def change do
     create table(:citizens) do
       add :name, :string, null: false

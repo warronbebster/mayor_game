@@ -3,6 +3,8 @@ defmodule MayorGame.Auth.User do
   use Pow.Ecto.Schema
   import Ecto.Changeset
 
+  @timestamps_opts [type: :utc_datetime]
+
   schema "auth_users" do
     pow_user_fields()
 

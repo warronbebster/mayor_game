@@ -73,6 +73,7 @@ defmodule MayorGame.City do
   """
   def create_town(attrs \\ %{}) do
     # have to create a resourcemap from scratch when creating a new town cuz it's required
+    # TODO: remove this when creating cities from token
     resourceMap = %{:resources => Map.new(MayorGame.City.Town.resources(), fn x -> {x, 0} end)}
 
     # make sure keys are atoms, helps with input from phoenix forms
@@ -423,6 +424,7 @@ defmodule MayorGame.City do
   def purchase_buildable(%Details{} = details, field_to_purchase, purchase_price) do
     detail_attrs = %{city_treasury: details.city_treasury - purchase_price}
 
+    # purchased buildings start enabled and with no upgrades
     buildable_attrs = %{enabled: true, reason: [], upgrades: []}
 
     uhhh =

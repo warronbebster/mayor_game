@@ -2,6 +2,8 @@ defmodule MayorGame.City.Citizens do
   use Ecto.Schema
   import Ecto.Changeset
 
+  @timestamps_opts [type: :utc_datetime]
+
   schema "citizens" do
     field :money, :integer
     field :name, :string

@@ -1,6 +1,8 @@
 defmodule MayorGame.Repo.Migrations.CreateAuthUsers do
   use Ecto.Migration
 
+  @timestamps_opts [type: :utc_datetime]
+
   def change do
     create table(:auth_users) do
       add :nickname, :string, null: false

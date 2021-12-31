@@ -2,6 +2,8 @@ defmodule MayorGame.City.World do
   use Ecto.Schema
   import Ecto.Changeset
 
+  @timestamps_opts [type: :utc_datetime]
+
   schema "world" do
     # probably can get rid of this and just rely on lastUpdated in the DB
     field :day, :integer

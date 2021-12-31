@@ -18,9 +18,8 @@ html {
 body {
   color: #ffffff;
   font-family: "Helvetica", "Arial", sans-serif;
-  font-size: 1em;
-  font-weight: 300;
-  line-height: 1.6;
+  font-size: 13px;
+  line-height: 1.5;
 }
 blockquote {
   border-left: 0.3rem solid #ffffff;
@@ -583,18 +582,4 @@ header nav ul {
 }
 header nav a {
   display: block;
-}
-
-@media (min-width: 40rem) {
-  /* Small devices (landscape phones, 576px and up) */
-  header section {
-    flex-direction: row;
-  }
-  header nav ul {
-    margin: 1rem;
-  }
-  .phx-logo {
-    flex-basis: 527px;
-    margin: 2rem 1rem;
-  }
 }

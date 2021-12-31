@@ -1,6 +1,8 @@
 defmodule MayorGame.Repo.Migrations.CreateDetails do
   use Ecto.Migration
 
+  @timestamps_opts [type: :utc_datetime]
+
   def change do
     create table(:details) do
       add :city_treasury, :integer, default: 500

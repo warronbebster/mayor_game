@@ -15,10 +15,11 @@
 # is this just as simple as changing has_many to has_one in user.ex?
 # 10000 possible cities, 2500 in each environment
 
-# add "fun" and "health" calculations to check for (like energy)
+# add "fun" and "health" calculations to check for for city (like energy)
 
 # add upgrading system for buildables (like a park can have a soccer field, etc) [x]
 # make city_calculator check the upgrades when calculating and make changes []
+# upgrades are per-buildable, so they can't effect things like price, etc, but only the output
 
 # utilities for
 
@@ -28,6 +29,7 @@
 # add grocery stores? farmers markets? farms?
 
 # figure out how to release prod version
+
 
 
 
@@ -61,6 +63,11 @@
 
 
 
+# TYPES:
+# https://elixirforum.com/t/struct-vs-type-t/32124
+
+# TIMESTAMPS:
+# http://www.creativedeletion.com/2019/06/17/utc-timestamps-in-ecto.html
 
 
 # ——————————————————————————————————————————————————————————————

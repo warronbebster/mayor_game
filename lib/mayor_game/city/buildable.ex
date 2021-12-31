@@ -5,12 +5,27 @@ defmodule MayorGame.City.Buildable do
   use Ecto.Schema
   import Ecto.Changeset
 
+  # ignore upgrades when printing?
   @derive {Jason.Encoder, except: [:upgrades]}
 
+  # uhhhh this makes a type for %Buildable that's callable with MayorGame.City.Buildable.t()
+  @type t :: %__MODULE__{
+          __meta__: Ecto.Schema.Metadata.t(),
+          id: integer | nil,
+          enabled: boolean,
+          reason: list,
+          details: map,
+          upgrades: list
+        }
+
+  # schemas make elixir structs (in this case, %Buildable{})
   schema "buildable" do
     # has an id built-in?
+    # is the buildable enabled
     field :enabled, :boolean
+    # what's the reason it's enabled or not
     field :reason, {:array, :string}
+    # what are the upgrades the buildable currently possesses
     field :upgrades, {:array, :string}
     belongs_to :details, MayorGame.City.Details
 
@@ -19,6 +34,15 @@ defmodule MayorGame.City.Buildable do
       buildable
       |> cast(attrs, [:enabled, :reason, :upgrades])
     end
+  end
+
+  @spec upgradedStatMap(Buildable.t()) :: Buildable.t()
+  def upgradedStatMap(buildable) do
+    IO.inspect(buildable)
+
+    # first check if an upgrade is purchased (is the string in the :upgrades array)
+    # then check what those upgrades touch
+    #
   end
 
   @doc """
@@ -41,8 +65,18 @@ defmodule MayorGame.City.Buildable do
           energy_required: 12,
           purchasable: true,
           upgrades: %{
-            upgrade_1: %{cost: 5, description: "hello", requirements: []},
-            upgrade_2: %{cost: 10, description: "i am an upgrade", requirements: [:upgrade_1]}
+            upgrade_1: %{
+              cost: 5,
+              description: "+1 fit",
+              requirements: [],
+              function: %{fits: &(&1 + 1)}
+            },
+            upgrade_2: %{
+              cost: 10,
+              description: "-5 Energy required ",
+              requirements: [:upgrade_1],
+              function: %{energy_required: &(&1 - 5)}
+            }
           },
           purchasable_reason: "valid"
         },
