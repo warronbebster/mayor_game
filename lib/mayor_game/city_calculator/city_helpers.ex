@@ -388,11 +388,6 @@ defmodule MayorGame.CityHelpers do
                           ["area" | building.reason]
                       end
                   })
-                else
-                  City.update_buildable(city.detail, building_type, building.id, %{
-                    enabled: true,
-                    reason: []
-                  })
                 end
 
                 %{area_left: acc3.area_left - building_options.area_required}
