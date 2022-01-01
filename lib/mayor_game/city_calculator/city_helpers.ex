@@ -35,7 +35,9 @@ defmodule MayorGame.CityHelpers do
           buildable_metadata = Map.get(Buildable.buildables_flat(), buildable_list_item)
 
           combined_array =
-            Enum.map(buildable_array, fn x -> CombinedBuildable.combine(x, buildable_metadata) end)
+            Enum.map(buildable_array, fn x ->
+              CombinedBuildable.combine_and_apply_upgrades(x, buildable_metadata)
+            end)
 
           %{details_struct_acc | buildable_list_item => combined_array}
         else
@@ -43,7 +45,7 @@ defmodule MayorGame.CityHelpers do
         end
       end)
 
-    IO.inspect(details_updated)
+    # IO.inspect(details_updated)
 
     if city_preloaded.id == 3 do
       # IO.inspect(city_preloaded.detail.single_family_homes)

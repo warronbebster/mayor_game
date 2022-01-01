@@ -22,4 +22,36 @@ defmodule MayorGame.City.CombinedBuildable do
       metadata: metadata
     }
   end
+
+  @spec combine_and_apply_upgrades(Buildable.t(), BuildableMetadata.t()) :: t()
+  @doc """
+      Takes a %Buildable{} and a %BuildableMetadata{} struct and returns %CombinedBuildable{} struct
+      But also applies the upgrades from %Buildable
+  """
+  def combine_and_apply_upgrades(buildable, metadata) do
+    IO.inspect(metadata)
+
+    upgraded_metadata =
+      if buildable.upgrades != [] do
+        Enum.reduce(buildable.upgrades, metadata, fn buildable_upgrade, metadata_acc ->
+          upgrade = Map.get(metadata_acc.upgrades, String.to_existing_atom(buildable_upgrade))
+          # reduce over function map — each update each key by the function
+          Enum.reduce(upgrade.function, metadata_acc, fn {key, function}, metadata_acc_2 ->
+            Map.update!(metadata_acc_2, key, function)
+          end)
+        end)
+      else
+        metadata
+      end
+
+    if upgraded_metadata != metadata do
+      IO.puts("UPGRADED:")
+      IO.inspect(upgraded_metadata)
+    end
+
+    %__MODULE__{
+      buildable: buildable,
+      metadata: metadata
+    }
+  end
 end
