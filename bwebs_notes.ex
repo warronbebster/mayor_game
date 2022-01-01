@@ -111,6 +111,9 @@ mix phx.gen.context City Details details \
 
 # so after running all these, they get migration files in /priv/repo/migrations
 
+# see routes
+mix phx.routes
+
 # run iex for the project
 iex -S mix phx.server
 

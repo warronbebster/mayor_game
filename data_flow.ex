@@ -50,7 +50,6 @@ for each %Buildable{} in Details.name_of_buildable (this probably doesn't need t
 
 # check if there are upgrades
 
-
 # if so, for each upgrade, grab the upgrade from the %BuildingMetadata
 # and apply the :function from the upgrade onto the %BuildingMetadata
 

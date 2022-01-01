@@ -1,6 +1,6 @@
 defmodule MayorGame.CityHelpers do
   alias MayorGame.{City, Repo}
-  alias MayorGame.City.{Citizens, Town, Buildable, World}
+  alias MayorGame.City.{Citizens, Town, Buildable, BuildableMetadata, CombinedBuildable, World}
 
   @doc """
     takes a %Town{} struct and %World{} struct
@@ -20,6 +20,30 @@ defmodule MayorGame.CityHelpers do
   """
   def calculate_city_stats(%Town{} = city, %World{} = world) do
     city_preloaded = preload_city_check(city)
+
+    # ayyy this is successfully combining the buildables
+    # next step is applying the upgrades
+    # and putting it in city_preloaded
+    details_updated =
+      Enum.reduce(Buildable.buildables_list(), city_preloaded.detail, fn buildable_list_item,
+                                                                         details_struct_acc ->
+        has_buildable = Enum.empty?(Map.get(details_struct_acc, buildable_list_item))
+
+        if Map.has_key?(details_struct_acc, buildable_list_item) && !has_buildable do
+          buildable_array = Map.get(details_struct_acc, buildable_list_item)
+
+          buildable_metadata = Map.get(Buildable.buildables_flat(), buildable_list_item)
+
+          combined_array =
+            Enum.map(buildable_array, fn x -> CombinedBuildable.combine(x, buildable_metadata) end)
+
+          %{details_struct_acc | buildable_list_item => combined_array}
+        else
+          details_struct_acc
+        end
+      end)
+
+    IO.inspect(details_updated)
 
     if city_preloaded.id == 3 do
       # IO.inspect(city_preloaded.detail.single_family_homes)
@@ -374,6 +398,8 @@ defmodule MayorGame.CityHelpers do
 
                 if negative_area do
                   # update buildable in DB to enabled: false
+                  # this touches DB: bad
+                  # this should just touch the %Buildable{} in the CombinedBuildable
                   City.update_buildable(city.detail, building_type, building.id, %{
                     enabled: false,
                     reason:

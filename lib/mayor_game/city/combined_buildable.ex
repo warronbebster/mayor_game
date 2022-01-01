@@ -13,6 +13,9 @@ defmodule MayorGame.City.CombinedBuildable do
         }
 
   @spec combine(Buildable.t(), BuildableMetadata.t()) :: t()
+  @doc """
+      Takes a %Buildable{} and a %BuildableMetadata{} struct and returns %CombinedBuildable{} struct
+  """
   def combine(buildable, metadata) do
     %__MODULE__{
       buildable: buildable,

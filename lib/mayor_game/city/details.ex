@@ -1,7 +1,7 @@
 defmodule MayorGame.City.Details do
   use Ecto.Schema
   import Ecto.Changeset
-  alias MayorGame.City.{Buildable, Town}
+  alias MayorGame.City.{Buildable, Town, CombinedBuildable}
 
   @timestamps_opts [type: :utc_datetime]
 
@@ -21,45 +21,45 @@ defmodule MayorGame.City.Details do
           inserted_at: DateTime.t() | nil,
           updated_at: DateTime.t() | nil,
           # homes
-          single_family_homes: list(Buildable.t()),
-          multi_family_homes: list(Buildable.t()),
-          homeless_shelter: list(Buildable.t()),
-          apartments: list(Buildable.t()),
-          micro_apartments: list(Buildable.t()),
-          high_rises: list(Buildable.t()),
+          single_family_homes: list(Buildable.t() | CombinedBuildable.t()),
+          multi_family_homes: list(Buildable.t() | CombinedBuildable.t()),
+          homeless_shelter: list(Buildable.t() | CombinedBuildable.t()),
+          apartments: list(Buildable.t() | CombinedBuildable.t()),
+          micro_apartments: list(Buildable.t() | CombinedBuildable.t()),
+          high_rises: list(Buildable.t() | CombinedBuildable.t()),
           # transit
-          roads: list(Buildable.t()),
-          highways: list(Buildable.t()),
-          airports: list(Buildable.t()),
-          bus_lines: list(Buildable.t()),
-          subway_lines: list(Buildable.t()),
-          bike_lanes: list(Buildable.t()),
-          bikeshare_stations: list(Buildable.t()),
+          roads: list(Buildable.t() | CombinedBuildable.t()),
+          highways: list(Buildable.t() | CombinedBuildable.t()),
+          airports: list(Buildable.t() | CombinedBuildable.t()),
+          bus_lines: list(Buildable.t() | CombinedBuildable.t()),
+          subway_lines: list(Buildable.t() | CombinedBuildable.t()),
+          bike_lanes: list(Buildable.t() | CombinedBuildable.t()),
+          bikeshare_stations: list(Buildable.t() | CombinedBuildable.t()),
           # energy
-          coal_plants: list(Buildable.t()),
-          wind_turbines: list(Buildable.t()),
-          solar_plants: list(Buildable.t()),
-          nuclear_plants: list(Buildable.t()),
-          dams: list(Buildable.t()),
+          coal_plants: list(Buildable.t() | CombinedBuildable.t()),
+          wind_turbines: list(Buildable.t() | CombinedBuildable.t()),
+          solar_plants: list(Buildable.t() | CombinedBuildable.t()),
+          nuclear_plants: list(Buildable.t() | CombinedBuildable.t()),
+          dams: list(Buildable.t() | CombinedBuildable.t()),
           # civic
-          parks: list(Buildable.t()),
-          libraries: list(Buildable.t()),
+          parks: list(Buildable.t() | CombinedBuildable.t()),
+          libraries: list(Buildable.t() | CombinedBuildable.t()),
           # education
-          schools: list(Buildable.t()),
-          middle_schools: list(Buildable.t()),
-          high_schools: list(Buildable.t()),
-          universities: list(Buildable.t()),
-          research_labs: list(Buildable.t()),
+          schools: list(Buildable.t() | CombinedBuildable.t()),
+          middle_schools: list(Buildable.t() | CombinedBuildable.t()),
+          high_schools: list(Buildable.t() | CombinedBuildable.t()),
+          universities: list(Buildable.t() | CombinedBuildable.t()),
+          research_labs: list(Buildable.t() | CombinedBuildable.t()),
           # work
-          retail_shops: list(Buildable.t()),
-          factories: list(Buildable.t()),
-          office_buildings: list(Buildable.t()),
+          retail_shops: list(Buildable.t() | CombinedBuildable.t()),
+          factories: list(Buildable.t() | CombinedBuildable.t()),
+          office_buildings: list(Buildable.t() | CombinedBuildable.t()),
           # entertainment
-          theatres: list(Buildable.t()),
-          arenas: list(Buildable.t()),
+          theatres: list(Buildable.t() | CombinedBuildable.t()),
+          arenas: list(Buildable.t() | CombinedBuildable.t()),
           # health
-          hospitals: list(Buildable.t()),
-          doctor_offices: list(Buildable.t())
+          hospitals: list(Buildable.t() | CombinedBuildable.t()),
+          doctor_offices: list(Buildable.t() | CombinedBuildable.t())
         }
 
   schema "details" do
