@@ -3,7 +3,7 @@ defmodule MayorGame.CityHelpers do
   alias MayorGame.City.{Citizens, Town, Buildable, World}
 
   @doc """
-    takes a %MayorGame.City.Town{} struct
+    takes a %Town{} struct and %World{} struct
     returns a map: %{
       city: city_update,
       jobs: total_jobs,
@@ -34,6 +34,8 @@ defmodule MayorGame.CityHelpers do
     # the energy and money ones seem not to check the enabled status of the buildings that generate
     # maybe they should?
     # if not these could probably all be combined
+    # honestly these should just return the whole city (and maybe a map), and pipe into each other — pass the city along
+    # that way we don't need city_update down the line
     area = calculate_area(city_preloaded)
     energy = calculate_energy(city_preloaded |> Repo.preload([:detail]), world)
     money = calculate_money(city_preloaded |> Repo.preload([:detail]))
@@ -329,14 +331,16 @@ defmodule MayorGame.CityHelpers do
     end
   end
 
+  @spec calculate_area(MayorGame.City.Town.t()) :: map
   @doc """
   takes a %MayorGame.City.Town{} struct
 
-  returns transit & area town in map %{sprawl: int, total_area: int, available_area: int}
+  returns map %{sprawl: int, total_area: int, available_area: int}
   """
   def calculate_area(%Town{} = city) do
     city_preloaded = preload_city_check(city)
 
+    # see how much area is in the town, based on the transit buildables
     preliminary_results =
       Enum.reduce(Buildable.buildables().transit, %{sprawl: 0, total_area: 0}, fn {transit_type,
                                                                                    transit_options},
@@ -733,17 +737,15 @@ defmodule MayorGame.CityHelpers do
     |> Enum.into(%{})
   end
 
-  def preload_city_check(%Town{} = city) do
-    if !Ecto.assoc_loaded?(city.detail) do
-      city |> MayorGame.Repo.preload([:citizens, :user, detail: Buildable.buildables_list()])
-
-      # MayorGame.Repo.preload(street: [city: [region: :country]])
+  @spec preload_city_check(Town.t()) :: Town.t()
+  @doc """
+      Take a %Town{}, return the %Town{} with citizens, user, detail preloaded
+  """
+  def preload_city_check(%Town{} = town) do
+    if !Ecto.assoc_loaded?(town.detail) do
+      town |> MayorGame.Repo.preload([:citizens, :user, detail: Buildable.buildables_list()])
     else
-      city
+      town
     end
-  end
-
-  def reload_city(%Town{} = city) do
-    city |> MayorGame.Repo.preload([:citizens, :user, detail: Buildable.buildables_list()])
   end
 end

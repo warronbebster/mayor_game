@@ -58,7 +58,7 @@
           <button disabled>build $<%= building_stats.price %></button> <%= building_stats.purchasable_reason%>
         <% end %>
 
-        <%= for {building_stat, value} <- building_stats do %>
+        <%= for {building_stat, value} <- Map.from_struct(building_stats) do %>
         <%# gotta avoid rendering stuff that's not HTMLsafe, like maps %>
           <%= if !String.contains?(Atom.to_string(building_stat), ["multipliers", "price", "purchasable", "upgrades"]) do %>
             <%= building_stat %>: <%=value%> |
