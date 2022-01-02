@@ -8,6 +8,8 @@
 
 # add tailwind
 
+# switch "detail" for "details" in town struct/DB
+
 # figure out job & education level indexing (start from 0 or 1?)
 
 # show citizen count on homepage & show which ones are urs

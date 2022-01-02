@@ -221,12 +221,13 @@ defmodule MayorGameWeb.CityLive do
       |> preload_city_check()
 
     # take buildable list, put something in each one, buildable_status
+    city_baked = %{city | detail: bake_details(city.detail)}
 
     # grab whole user struct
     user = Auth.get_user!(city.user_id)
 
     reset_buildables_to_enabled(city)
-    area = calculate_area(city)
+    area = calculate_area(city_baked)
     energy = calculate_energy(city |> Repo.preload([:detail]), world)
 
     buildables_with_status = calculate_buildables_statuses(city, energy, area)

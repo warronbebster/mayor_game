@@ -22,19 +22,14 @@ defmodule MayorGame.CityHelpers do
   def calculate_city_stats(%Town{} = city, %World{} = world) do
     city_preloaded = preload_city_check(city)
 
+    # reset buildables status in database
+    # this might end up being redundant because I can construct that status and not check it from the DB
+    reset_buildables_to_enabled(city_preloaded)
+
     # ayyy this is successfully combining the buildables
     # next step is applying the upgrades (done)
     # and putting it in city_preloaded
-    details_baked = bake_details(city_preloaded.detail)
-
-    # IO.inspect(details_combined)
-
-    if city_preloaded.id == 3 do
-      # IO.inspect(city_preloaded.detail.single_family_homes)
-    end
-
-    # reset buildables status in database
-    reset_buildables_to_enabled(city_preloaded)
+    city_baked = %{city_preloaded | detail: bake_details(city_preloaded.detail)}
 
     # TODO-CLEAN BELOW UP
     # these basically take a city and then calculate total resource
@@ -44,7 +39,7 @@ defmodule MayorGame.CityHelpers do
     # if not these could probably all be combined
     # honestly these should just return the whole city (and maybe a map), and pipe into each other — pass the city along
     # that way we don't need city_update down the line
-    area = calculate_area(city_preloaded)
+    area = calculate_area(city_baked)
     energy = calculate_energy(city_preloaded |> Repo.preload([:detail]), world)
     money = calculate_money(city_preloaded |> Repo.preload([:detail]))
 
@@ -342,75 +337,114 @@ defmodule MayorGame.CityHelpers do
   @spec calculate_area(MayorGame.City.Town.t()) :: map
   @doc """
   takes a %MayorGame.City.Town{} struct
-
-  returns map %{sprawl: int, total_area: int, available_area: int}
+  returns map %{sprawl: int, total_area: int, available_area: int, city: %Town{}}
   """
   def calculate_area(%Town{} = city) do
-    city_preloaded = preload_city_check(city)
+    # city_preloaded = preload_city_check(city)
 
     # see how much area is in the town, based on the transit buildables
     preliminary_results =
       Enum.reduce(Buildable.buildables().transit, %{sprawl: 0, total_area: 0}, fn {transit_type,
-                                                                                   transit_options},
+                                                                                   _transit_options},
                                                                                   acc ->
-        sprawl =
-          acc.sprawl +
-            transit_options.sprawl * length(Map.get(city_preloaded.detail, transit_type))
-
-        area =
-          acc.total_area +
-            transit_options.area * length(Map.get(city_preloaded.detail, transit_type))
-
-        %{sprawl: sprawl, total_area: area}
+        %{
+          sprawl: acc.sprawl + sum_detail_metadata(Map.get(city.detail, transit_type), :sprawl),
+          total_area:
+            acc.total_area +
+              sum_detail_metadata(Map.get(city.detail, transit_type), :area)
+        }
       end)
 
     # this really is only to calculate the disabled buildings; if you just wanted the totals, you could use the above
     area_results =
       Enum.reduce(
-        Buildable.buildables(),
-        %{area_left: preliminary_results.total_area},
-        fn category, acc ->
-          {_categoryName, buildings} = category
+        Buildable.buildables_flat(),
+        # accumulator:
+        %{available_area: preliminary_results.total_area, city: city},
+        fn {buildable_type, buildable_options}, acc ->
+          # get list of each type of buildables
+          buildable_list = Map.get(city.detail, buildable_type)
 
-          Enum.reduce(buildings, %{area_left: acc.area_left}, fn {building_type, building_options},
-                                                                 acc2 ->
-            buildables = Map.get(city_preloaded.detail, building_type)
+          if buildable_options.area_required != nil && length(buildable_list) > 0 do
+            # for each individual buildable in the list
+            buildable_list_results =
+              Enum.reduce(
+                buildable_list,
+                %{available_area: acc.available_area, buildable_list_updated_reasons: []},
+                fn individual_buildable, acc2 ->
+                  negative_area =
+                    acc2.available_area < individual_buildable.metadata.area_required
 
-            if building_options.area_required != nil && length(buildables) > 0 do
-              Enum.reduce(buildables, %{area_left: acc2.area_left}, fn building, acc3 ->
-                negative_area = acc3.area_left < building_options.area_required
+                  updated_buildable =
+                    if negative_area do
+                      # update buildable in DB to enabled: false
+                      # this touches DB: bad
+                      # this should just touch the %Buildable{} in the CombinedBuildable
+                      City.update_buildable(
+                        city.detail,
+                        buildable_type,
+                        individual_buildable.id,
+                        %{
+                          enabled: false,
+                          reason:
+                            cond do
+                              Enum.empty?(individual_buildable.reason) ->
+                                ["area"]
 
-                if negative_area do
-                  # update buildable in DB to enabled: false
-                  # this touches DB: bad
-                  # this should just touch the %Buildable{} in the CombinedBuildable
-                  City.update_buildable(city.detail, building_type, building.id, %{
-                    enabled: false,
-                    reason:
-                      cond do
-                        Enum.empty?(building.reason) ->
-                          ["area"]
+                              Enum.member?(individual_buildable.reason, "area") ->
+                                individual_buildable.reason
 
-                        Enum.member?(building.reason, "area") ->
-                          building.reason
+                              true ->
+                                ["area" | individual_buildable.reason]
+                            end
+                        }
+                      )
 
-                        true ->
-                          ["area" | building.reason]
-                      end
-                  })
+                      %{individual_buildable | reason: ["area"]}
+                    else
+                      individual_buildable
+                    end
+
+                  %{
+                    available_area:
+                      acc2.available_area - individual_buildable.metadata.area_required,
+                    buildable_list_updated_reasons:
+                      Enum.concat(acc2.buildable_list_updated_reasons, [updated_buildable])
+                    # TODO maybe: make this a | list combine and reverse whole list outside enum
+                  }
                 end
+              )
 
-                %{area_left: acc3.area_left - building_options.area_required}
-              end)
-            else
-              acc2
-            end
-          end)
+            # if there have been updates
+            city_update =
+              if buildable_list_results.buildable_list_updated_reasons !=
+                   Map.get(city.detail, buildable_type) do
+                put_in(
+                  city,
+                  [:detail, buildable_type],
+                  buildable_list_results.buildable_list_updated_reasons
+                )
+              else
+                city
+              end
+
+            %{
+              available_area: buildable_list_results.available_area,
+              city: city_update
+              # TODO maybe: make this a | list combine and reverse whole list outside enum
+            }
+
+            # return area_left and city down here
+          else
+            # if there are no buildables of that type or they don't require area
+            acc
+          end
         end
       )
 
-    preliminary_results
-    |> Map.put_new(:available_area, area_results.area_left)
+    # return city down here as well
+
+    Map.merge(preliminary_results, area_results)
   end
 
   @doc """
@@ -599,10 +633,6 @@ defmodule MayorGame.CityHelpers do
           # grab the actual buildables from the city
           buildables = Map.get(city_preloaded.detail, building_type)
 
-          unless buildables == [] do
-            # IO.inspect(buildables)
-          end
-
           if length(buildables) > 0 do
             Enum.reduce(
               buildables,
@@ -779,5 +809,25 @@ defmodule MayorGame.CityHelpers do
         details_struct_acc
       end
     end)
+  end
+
+  # @spec sum_detail_metadata(list(BuildableMetadata.t()), atom) :: integer | float
+  @doc """
+      takes a list of CombinedBuildables (usually held by details) and returns the sum of the metadata
+  """
+  def sum_detail_metadata(baked_buildable_list, metadata_to_sum) do
+    unless Enum.empty?(baked_buildable_list) do
+      Enum.reduce(baked_buildable_list, 0, fn x, acc ->
+        metadata_value = Map.get(x.metadata, metadata_to_sum)
+
+        unless metadata_value == nil do
+          metadata_value + acc
+        else
+          acc
+        end
+      end)
+    else
+      0
+    end
   end
 end

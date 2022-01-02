@@ -46,7 +46,8 @@ defmodule MayorGame.MixProject do
       {:gettext, "~> 0.11"},
       {:jason, "~> 1.0"},
       {:pow, "~> 1.0.21"},
-      {:plug_cowboy, "~> 2.0"}
+      {:plug_cowboy, "~> 2.0"},
+      {:accessible, "~> 0.3.0"}
     ]
   end
 

@@ -2,6 +2,7 @@ defmodule MayorGame.City.Details do
   use Ecto.Schema
   import Ecto.Changeset
   alias MayorGame.City.{Buildable, Town, CombinedBuildable}
+  use Accessible
 
   @timestamps_opts [type: :utc_datetime]
 

@@ -20,6 +20,7 @@ defmodule MayorGame.City.Town do
   use Ecto.Schema
   import Ecto.Changeset
   alias MayorGame.City.{Citizens, Details}
+  use Accessible
 
   @timestamps_opts [type: :utc_datetime]
 

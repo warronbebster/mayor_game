@@ -29,8 +29,6 @@ defmodule MayorGame.City.CombinedBuildable do
       But also applies the upgrades from %Buildable
   """
   def combine_and_apply_upgrades(buildable, metadata) do
-    IO.inspect(metadata)
-
     upgraded_metadata =
       if buildable.upgrades != [] do
         Enum.reduce(buildable.upgrades, metadata, fn buildable_upgrade, metadata_acc ->
@@ -43,11 +41,6 @@ defmodule MayorGame.City.CombinedBuildable do
       else
         metadata
       end
-
-    if upgraded_metadata != metadata do
-      IO.puts("UPGRADED:")
-      IO.inspect(upgraded_metadata)
-    end
 
     %__MODULE__{
       buildable: buildable,
