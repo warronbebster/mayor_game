@@ -1,9 +1,10 @@
 defmodule MayorGame.CityHelpers do
   alias MayorGame.{City, Repo}
-  alias MayorGame.City.{Citizens, Town, Buildable, BuildableMetadata, CombinedBuildable, World}
+  alias MayorGame.City.{Citizens, Town, Buildable, Details, CombinedBuildable, World}
 
   @doc """
     takes a %Town{} struct and %World{} struct
+
     returns a map: %{
       city: city_update,
       jobs: total_jobs,
@@ -22,30 +23,11 @@ defmodule MayorGame.CityHelpers do
     city_preloaded = preload_city_check(city)
 
     # ayyy this is successfully combining the buildables
-    # next step is applying the upgrades
+    # next step is applying the upgrades (done)
     # and putting it in city_preloaded
-    details_updated =
-      Enum.reduce(Buildable.buildables_list(), city_preloaded.detail, fn buildable_list_item,
-                                                                         details_struct_acc ->
-        has_buildable = Enum.empty?(Map.get(details_struct_acc, buildable_list_item))
+    details_baked = bake_details(city_preloaded.detail)
 
-        if Map.has_key?(details_struct_acc, buildable_list_item) && !has_buildable do
-          buildable_array = Map.get(details_struct_acc, buildable_list_item)
-
-          buildable_metadata = Map.get(Buildable.buildables_flat(), buildable_list_item)
-
-          combined_array =
-            Enum.map(buildable_array, fn x ->
-              CombinedBuildable.combine_and_apply_upgrades(x, buildable_metadata)
-            end)
-
-          %{details_struct_acc | buildable_list_item => combined_array}
-        else
-          details_struct_acc
-        end
-      end)
-
-    # IO.inspect(details_updated)
+    # IO.inspect(details_combined)
 
     if city_preloaded.id == 3 do
       # IO.inspect(city_preloaded.detail.single_family_homes)
@@ -770,5 +752,32 @@ defmodule MayorGame.CityHelpers do
     else
       town
     end
+  end
+
+  @spec preload_city_check(Details.t()) :: Details.t()
+  @doc """
+      Takes a %Details{} struct
+
+      returns the %Details{} with each buildable listing %CombinedBuildable{}s instead of raw %Buildable{}s
+  """
+  def bake_details(%Details{} = detail) do
+    Enum.reduce(Buildable.buildables_list(), detail, fn buildable_list_item, details_struct_acc ->
+      has_buildable = Enum.empty?(Map.get(details_struct_acc, buildable_list_item))
+
+      if Map.has_key?(details_struct_acc, buildable_list_item) && !has_buildable do
+        buildable_array = Map.get(details_struct_acc, buildable_list_item)
+
+        buildable_metadata = Map.get(Buildable.buildables_flat(), buildable_list_item)
+
+        combined_array =
+          Enum.map(buildable_array, fn x ->
+            CombinedBuildable.combine_and_apply_upgrades(x, buildable_metadata)
+          end)
+
+        %{details_struct_acc | buildable_list_item => combined_array}
+      else
+        details_struct_acc
+      end
+    end)
   end
 end

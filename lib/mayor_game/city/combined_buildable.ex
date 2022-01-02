@@ -51,7 +51,7 @@ defmodule MayorGame.City.CombinedBuildable do
 
     %__MODULE__{
       buildable: buildable,
-      metadata: metadata
+      metadata: upgraded_metadata
     }
   end
 end

@@ -1,4 +1,22 @@
 defmodule MayorGame.City.Town do
+  @moduledoc """
+      A %Town{} is the highest-level representation of a "town" in-game
+      It contains:
+      __meta__: Ecto.Schema.Metadata.t(),
+      id: integer | nil,
+      inserted_at: DateTime.t() | nil,
+      updated_at: DateTime.t() | nil,
+      title: String.t(),
+      region: String.t(),
+      climate: String.t(),
+      resources: map,
+      logs: list(String.t()),
+      tax_rates: map,
+      user: %MayorGame.Auth.User{},
+      citizens: list(Citizens.t()),
+      detail: Details.t()
+  """
+
   use Ecto.Schema
   import Ecto.Changeset
   alias MayorGame.City.{Citizens, Details}
