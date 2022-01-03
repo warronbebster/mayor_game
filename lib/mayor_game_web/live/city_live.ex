@@ -220,71 +220,73 @@ defmodule MayorGameWeb.CityLive do
       City.get_town_by_title!(title)
       |> preload_city_check()
 
-    # take buildable list, put something in each one, buildable_status
-    city_baked = %{city | detail: bake_details(city.detail)}
-
     # grab whole user struct
     user = Auth.get_user!(city.user_id)
 
     reset_buildables_to_enabled(city)
-    area = calculate_area(city_baked)
-    energy = calculate_energy(city |> Repo.preload([:detail]), world)
 
-    buildables_with_status = calculate_buildables_statuses(city, energy, area)
+    # take buildable list, put something in each one, buildable_status
+    city_baked_details = %{city | detail: bake_details(city.detail)}
+
+    city_updated =
+      city_baked_details
+      |> calculate_area()
+      |> calculate_energy(world)
+      |> calculate_money()
+
+    # have to have this separate from the actual city because the city might not have some buildables, but they're still purchasable
+    buildables_with_status = calculate_buildables_statuses(city_updated)
 
     socket
     |> assign(:buildables, buildables_with_status)
     |> assign(:user_id, user.id)
     |> assign(:username, user.nickname)
-    |> assign(:city, city)
-    |> assign(:energy, energy)
-    |> assign(:area, area)
+    |> assign(:city, city_updated)
   end
 
   # this takes the generic buildables map and builds the status (enabled, etc) for each buildable
-  defp calculate_buildables_statuses(city, energy, area) do
-    Buildable.buildables()
-    |> Enum.map(fn {category, buildables} ->
+  defp calculate_buildables_statuses(city) do
+    Enum.map(Buildable.buildables(), fn {category, buildables} ->
       {category,
        buildables
        |> Enum.map(fn {buildable_key, buildable_stats} ->
-         {buildable_key, calculate_buildable_status(buildable_stats, city, energy, area)}
+         {buildable_key, Map.from_struct(calculate_buildable_status(buildable_stats, city))}
        end)}
     end)
   end
 
   # this takes a buildable metadata, and builds status from database
   # TODO: Clean this shit upppp
-  defp calculate_buildable_status(buildable, city, energy, area) do
-    if city.detail.city_treasury > buildable.price do
+  defp calculate_buildable_status(buildable, city_with_stats) do
+    if city_with_stats.detail.city_treasury > buildable.price do
       cond do
         # enough energy AND enough area
 
         buildable.energy_required != nil and
-          energy.available_energy >= buildable.energy_required &&
+          city_with_stats.available_energy >= buildable.energy_required &&
             (buildable.area_required != nil and
-               area.available_area >= buildable.area_required) ->
+               city_with_stats.available_area >= buildable.area_required) ->
           %{buildable | purchasable: true, purchasable_reason: "valid"}
 
         # not enough energy, enough area
         buildable.energy_required != nil and
-          energy.available_energy < buildable.energy_required &&
+          city_with_stats.available_energy < buildable.energy_required &&
             (buildable.area_required != nil and
-               area.available_area >= buildable.area_required) ->
+               city_with_stats.available_area >= buildable.area_required) ->
           %{buildable | purchasable: false, purchasable_reason: "not enough energy to build"}
 
         # enough energy, not enough area
         buildable.energy_required != nil and
-          energy.available_energy >= buildable.energy_required &&
+          city_with_stats.available_energy >= buildable.energy_required &&
             (buildable.area_required != nil and
-               area.available_area < buildable.area_required) ->
+               city_with_stats.available_area < buildable.area_required) ->
           %{buildable | purchasable: false, purchasable_reason: "not enough area to build"}
 
         # not enough energy AND not enough area
         buildable.energy_required != nil and
-          energy.available_energy < buildable.energy_required &&
+          city_with_stats.available_energy < buildable.energy_required &&
             (buildable.area_required != nil and
-               area.available_area < buildable.area_required) ->
+               city_with_stats.available_area < buildable.area_required) ->
           %{
             buildable
             | purchasable: false,
@@ -294,25 +296,25 @@ defmodule MayorGameWeb.CityLive do
         # no energy needed, enough area
         buildable.energy_required == nil &&
             (buildable.area_required != nil and
-               area.available_area >= buildable.area_required) ->
+               city_with_stats.available_area >= buildable.area_required) ->
           %{buildable | purchasable: true, purchasable_reason: "valid"}
 
         # no energy needed, not enough area
         buildable.energy_required == nil &&
             (buildable.area_required != nil and
-               area.available_area < buildable.area_required) ->
+               city_with_stats.available_area < buildable.area_required) ->
           %{buildable | purchasable: false, purchasable_reason: "not enough area to build"}
 
         # no area needed, enough energy
         buildable.area_required == nil &&
             (buildable.energy_required != nil and
-               energy.available_energy >= buildable.energy_required) ->
+               city_with_stats.available_energy >= buildable.energy_required) ->
           %{buildable | purchasable: true, purchasable_reason: "valid"}
 
         # no area needed, not enough energy
         buildable.area_required == nil &&
             (buildable.energy_required != nil and
-               energy.available_energy < buildable.energy_required) ->
+               city_with_stats.available_energy < buildable.energy_required) ->
           %{buildable | purchasable: false, purchasable_reason: "not enough energy to build"}
 
         # no area needed, no energy needed
@@ -328,6 +330,8 @@ defmodule MayorGameWeb.CityLive do
     end
   end
 
+  # POW
+  # AUTH
   # POW AUTH STUFF DOWN HERE BAYBEE
 
   defp assign_auth(socket, session) do

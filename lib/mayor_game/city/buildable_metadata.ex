@@ -1,5 +1,7 @@
 # updating structs
 defmodule MayorGame.City.BuildableMetadata do
+  use Accessible
+
   # defaults to nil for keys without values
   defstruct [
     :price,

@@ -23,11 +23,11 @@
   <br/>
   <b>city money:</b> <%= @city.detail.city_treasury %>
   <br/>
-  <b>total energy generated:</b> <%= @energy.total_energy %>
-  <b>available energy on grid:</b> <%= @energy.available_energy %>
+  <b>total energy generated:</b> <%= @city.total_energy %>
+  <b>available energy on grid:</b> <%= @city.available_energy %>
   <br/>
-  <b>total development area:</b> <%= @area.total_area %>
-  <b>available development area:</b> <%= @area.available_area %>
+  <b>total development area:</b> <%= @city.total_area %>
+  <b>available development area:</b> <%= @city.available_area %>
   <br/>
   <b>taxes:</b>
   <br/>
@@ -45,6 +45,7 @@
   <%= for {category, buildings} <- @buildables do %>
     <b><%= category %></b>
     <br/>
+    <%# for each type of buildable in a category %>
     <%= for {building_type, building_stats} <- buildings do %>
 
       <%= length(Map.get(@city.detail, building_type)) %>
@@ -58,7 +59,7 @@
           <button disabled>build $<%= building_stats.price %></button> <%= building_stats.purchasable_reason%>
         <% end %>
 
-        <%= for {building_stat, value} <- Map.from_struct(building_stats) do %>
+        <%= for {building_stat, value} <- building_stats do %>
         <%# gotta avoid rendering stuff that's not HTMLsafe, like maps %>
           <%= if !String.contains?(Atom.to_string(building_stat), ["multipliers", "price", "purchasable", "upgrades"]) do %>
             <%= building_stat %>: <%=value%> |
@@ -67,14 +68,15 @@
 
       <% end %>
 
+      <%# here we actually render the buildings the %Town{} actually has %>
       <%= for building <- Map.get(@city.detail, building_type) do%>
-        <div class="building"> <%= building.id %>
-          <%= if building.enabled do%>
+        <div class="building"> <%= building.buildable.id %>
+          <%= if building.buildable.enabled do%>
             <div class="building_enabled"></div>
           <% else %>
             <div class="building_disabled"></div>
             <p> Needs
-            <%= for reason <- building.reason do%>
+            <%= for reason <- building.buildable.reason do%>
               <%= reason %>
             <% end %>
             to operate</p>
@@ -89,16 +91,16 @@
                   <p class="upgrade_description"><%= upgrade_details.description %></p>
 
                   <%# if buildable has upgrade already %>
-                  <%= if Enum.member?(building.upgrades, to_string(upgrade_name)) do%>
+                  <%= if Enum.member?(building.buildable.upgrades, to_string(upgrade_name)) do%>
                     purchased
                   <% else %>
                     <%= if @is_user_mayor do %>
                       <%= if @city.detail.city_treasury >= upgrade_details.cost do %>
-                        <%= if Enum.all?(upgrade_details.requirements, fn upgrade -> to_string(upgrade) in building.upgrades end) do %>
+                        <%= if Enum.all?(upgrade_details.requirements, fn upgrade -> to_string(upgrade) in building.buildable.upgrades end) do %>
                           <button phx-click="buy_upgrade"
                           phx-throttle="100"
                           phx-value-building="<%= building_type %>"
-                          phx-value-buildable_id="<%= building.id %>"
+                          phx-value-buildable_id="<%= building.buildable.id %>"
                           phx-value-upgrade_cost="<%= upgrade_details.cost %>"
                           phx-value-upgrade="<%= upgrade_name %>">
                             purchase: $<%= upgrade_details.cost %>
@@ -122,7 +124,7 @@
           <% end %>
 
           <%= if @is_user_mayor do %>
-            <button phx-click="demolish_building" phx-throttle="100" phx-value-building="<%= building_type %>" phx-value-buildable_id="<%= building.id %>">demolish</button>
+            <button phx-click="demolish_building" phx-throttle="100" phx-value-building="<%= building_type %>" phx-value-buildable_id="<%= building.buildable.id %>">demolish</button>
           <% end %>
 
         </div>

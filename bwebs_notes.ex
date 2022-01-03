@@ -3,8 +3,10 @@
 # TODO:
 
 # add upgrading system for buildables (like a park can have a soccer field, etc) [x]
-# make city_calculator check the upgrades when calculating and make changes []
+# make city_calculator check the upgrades when calculating and make changes [x]
 # upgrades are per-buildable, so they can't effect things like price, etc, but only the output
+
+# see if city_live and show.html can display just based on a baked city
 
 # add tailwind
 

@@ -62,6 +62,14 @@ defmodule MayorGame.City.Town do
     has_one :detail, Details
 
     timestamps()
+
+    # # additional fields
+    # field :total_energy, :integer
+    # field :available_energy, :integer
+    # field :total_area, :integer
+    # field :available_area, :integer
+    # field :available_money, :integer
+    # field :cost, :integer
   end
 
   def regions do

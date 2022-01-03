@@ -40,13 +40,12 @@ defmodule MayorGame.CityCalculator do
     leftovers =
       Enum.reduce(cities, %{cities_w_room: [], citizens_looking: [], new_pollution: 0}, fn city,
                                                                                            acc ->
-        # result here is %{jobs: #, housing: #, tax: #, money: #, citizens_looking: []}
-        city_stats = CityHelpers.calculate_city_stats(city, world)
+        # result here is a %Town{} with stats calculated
+        city_with_stats = CityHelpers.calculate_city_stats(city, world)
 
         city_calc =
           CityHelpers.calculate_stats_based_on_citizens(
-            city.citizens,
-            city_stats,
+            city_with_stats,
             world,
             cities_count
           )
@@ -55,9 +54,9 @@ defmodule MayorGame.CityCalculator do
         # that way I can use the same function later?
 
         updated_city_treasury =
-          if city_calc.money.available_money + city_calc.tax < 0,
+          if city_calc.available_money + city_calc.tax < 0,
             do: 0,
-            else: city_calc.money.available_money + city_calc.tax
+            else: city_calc.available_money + city_calc.tax
 
         # check here for if tax_income - money is less than zero
         case City.update_details(city.detail, %{city_treasury: updated_city_treasury}) do
@@ -65,7 +64,7 @@ defmodule MayorGame.CityCalculator do
             City.update_log(
               city,
               "tax income: " <>
-                to_string(city_calc.tax) <> " operating cost: " <> to_string(city_calc.money.cost)
+                to_string(city_calc.tax) <> " operating cost: " <> to_string(city_calc.cost)
             )
 
           {:error, err} ->
@@ -82,7 +81,7 @@ defmodule MayorGame.CityCalculator do
               else: acc.cities_w_room
             ),
           citizens_looking: city_calc.citizens_looking ++ acc.citizens_looking,
-          new_pollution: city_stats.pollution + acc.new_pollution
+          new_pollution: city_calc.pollution + acc.new_pollution
         }
       end)
 

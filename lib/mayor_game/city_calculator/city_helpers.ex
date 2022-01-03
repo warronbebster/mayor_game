@@ -1,59 +1,12 @@
 defmodule MayorGame.CityHelpers do
-  alias MayorGame.{City, Repo}
+  alias MayorGame.City
   alias MayorGame.City.{Citizens, Town, Buildable, Details, CombinedBuildable, World}
 
   @doc """
     takes a %Town{} struct and %World{} struct
 
-    returns a map: %{
-      city: city_update,
-      jobs: total_jobs,
-      education: total_education,
-      tax: 0,
-      housing: total_housing,
-      money: money,
-      area: area.total_area,
-      sprawl: area.sprawl,
-      energy: energy.total_energy,
-      pollution: energy.pollution,
-      citizens_looking: []
-    }
-  """
-  def calculate_city_stats(%Town{} = city, %World{} = world) do
-    city_preloaded = preload_city_check(city)
-
-    # reset buildables status in database
-    # this might end up being redundant because I can construct that status and not check it from the DB
-    reset_buildables_to_enabled(city_preloaded)
-
-    # ayyy this is successfully combining the buildables
-    # next step is applying the upgrades (done)
-    # and putting it in city_preloaded
-    city_baked = %{city_preloaded | detail: bake_details(city_preloaded.detail)}
-
-    # TODO-CLEAN BELOW UP
-    # these basically take a city and then calculate total resource
-    # and then also available resource
-    # the energy and money ones seem not to check the enabled status of the buildings that generate
-    # maybe they should?
-    # if not these could probably all be combined
-    # honestly these should just return the whole city (and maybe a map), and pipe into each other — pass the city along
-    # that way we don't need city_update down the line
-    area = calculate_area(city_baked)
-    energy = calculate_energy(city_preloaded |> Repo.preload([:detail]), world)
-    money = calculate_money(city_preloaded |> Repo.preload([:detail]))
-
-    # I think the following can all be calculated in the same function?
-    # get updated city from DB
-    city_update = city_preloaded |> Repo.preload([:detail])
-    # but jobs and stuff aren't
-    total_housing = calculate_housing(city_update)
-    # returns a map of %{0 => #, 1 => #, etc}
-    total_jobs = calculate_jobs(city_update)
-    # returns a map of %{0 => #, 1 => #, etc}
-    total_education = calculate_education(city_update)
-
-    # return this map:
+    returns a map:
+    ```
     %{
       city: city_update,
       jobs: total_jobs,
@@ -67,6 +20,48 @@ defmodule MayorGame.CityHelpers do
       pollution: energy.pollution,
       citizens_looking: []
     }
+    ```
+  """
+  def calculate_city_stats(%Town{} = city, %World{} = world) do
+    city_preloaded = preload_city_check(city)
+
+    # reset buildables status in database
+    # this might end up being redundant because I can construct that status and not check it from the DB
+    reset_buildables_to_enabled(city_preloaded)
+
+    # ayyy this is successfully combining the buildables
+    # next step is applying the upgrades (done)
+    # and putting it in city_preloaded
+    city_baked_details = %{city_preloaded | detail: bake_details(city_preloaded.detail)}
+
+    # TODO-CLEAN BELOW UP
+    # these basically take a city and then calculate total resource
+    # and then also available resource
+    # the energy and money ones seem not to check the enabled status of the buildings that generate
+    # maybe they should?
+    # if not these could probably all be combined
+    city_updated =
+      city_baked_details
+      |> calculate_area()
+      |> calculate_energy(world)
+      |> calculate_money()
+
+    # I think the following can all be calculated in the same function?
+    total_housing = calculate_housing(city_updated)
+    # returns a map of %{0 => #, 1 => #, etc}
+    total_jobs = calculate_jobs(city_updated)
+    # returns a map of %{0 => #, 1 => #, etc}
+    total_education = calculate_education(city_updated)
+
+    # return city
+
+    Map.merge(city_updated, %{
+      jobs: total_jobs,
+      education: total_education,
+      tax: 0,
+      housing: total_housing,
+      citizens_looking: []
+    })
   end
 
   @doc """
@@ -186,22 +181,25 @@ defmodule MayorGame.CityHelpers do
   end
 
   @doc """
-    takes a list of citizens from a city, and a city_stats map:
-    %{
-      jobs: total_jobs,
-      tax: 0,
-      housing: total_housing,
-      money: #,
-      citizens_looking: []
-    }
-    result here is %{jobs: #, housing: #, tax: #, money: #, citizens_looking: []}
+    takes a city_with_stats map, %World, and count of cities in ecosystem
+
+    result here is a city with additional fields:
+    ```
+    jobs: integer,
+    housing: integer,
+    tax: integer,
+    money: integer,
+    citizens_looking: []}
+    ```
+
+
   """
-  def calculate_stats_based_on_citizens(citizens, city_stats, world, cities_count) do
-    if List.first(citizens) != nil do
+  def calculate_stats_based_on_citizens(city_with_stats, world, cities_count) do
+    unless Enum.empty?(city_with_stats.citizens) do
       results =
         Enum.reduce(
-          citizens,
-          city_stats,
+          city_with_stats.citizens,
+          city_with_stats,
           fn citizen, acc ->
             City.update_citizens(citizen, %{age: citizen.age + 1})
 
@@ -283,30 +281,24 @@ defmodule MayorGame.CityHelpers do
               kill_citizen(citizen, "pollution is too high")
             end
 
-            # return this
-            %{
-              city: acc.city,
-              jobs: updated_jobs,
-              education: updated_education,
-              tax:
-                round(
-                  (1 + best_possible_job) * 100 * acc.city.tax_rates[to_string(citizen.education)]
-                ) +
-                  acc.tax,
-              housing: acc.housing - 1,
-              money: acc.money,
-              area: acc.area,
-              sprawl: acc.sprawl,
-              energy: acc.energy,
-              pollution: acc.pollution,
-              citizens_looking: citizens_looking
-            }
+            # return city
+            acc
+            |> Map.put(:housing, acc.housing - 1)
+            |> Map.put(:jobs, updated_jobs)
+            |> Map.put(:education, updated_education)
+            |> Map.put(:citizens_looking, citizens_looking)
+            |> Map.put(
+              :tax,
+              round((1 + best_possible_job) * 100 * acc.tax_rates[to_string(citizen.education)]) +
+                acc.tax
+            )
           end
         )
 
       results
     else
-      city_stats
+      # if city has no citizens
+      city_with_stats
     end
   end
 
@@ -320,12 +312,12 @@ defmodule MayorGame.CityHelpers do
   def reset_buildables_to_enabled(%Town{} = city) do
     city_preloaded = preload_city_check(city)
 
-    for building_type <- Buildable.buildables_list() do
-      buildables = Map.get(city_preloaded.detail, building_type)
+    for buildable_type <- Buildable.buildables_list() do
+      buildables = Map.get(city_preloaded.detail, buildable_type)
 
       if length(buildables) > 0 do
         for building <- buildables do
-          City.update_buildable(city.detail, building_type, building.id, %{
+          City.update_buildable(city.detail, buildable_type, building.id, %{
             enabled: true,
             reason: []
           })
@@ -337,7 +329,11 @@ defmodule MayorGame.CityHelpers do
   @spec calculate_area(MayorGame.City.Town.t()) :: map
   @doc """
   takes a %MayorGame.City.Town{} struct
-  returns map %{sprawl: int, total_area: int, available_area: int, city: %Town{}}
+
+  returns %Town{} struct with additional fields:
+  sprawl: int,
+  total_area: int,
+  available_area: int
   """
   def calculate_area(%Town{} = city) do
     # city_preloaded = preload_city_check(city)
@@ -383,24 +379,24 @@ defmodule MayorGame.CityHelpers do
                       City.update_buildable(
                         city.detail,
                         buildable_type,
-                        individual_buildable.id,
+                        individual_buildable.buildable.id,
                         %{
                           enabled: false,
                           reason:
                             cond do
-                              Enum.empty?(individual_buildable.reason) ->
+                              Enum.empty?(individual_buildable.buildable.reason) ->
                                 ["area"]
 
-                              Enum.member?(individual_buildable.reason, "area") ->
-                                individual_buildable.reason
+                              Enum.member?(individual_buildable.buildable.reason, "area") ->
+                                individual_buildable.buildable.reason
 
                               true ->
-                                ["area" | individual_buildable.reason]
+                                ["area" | individual_buildable.buildable.reason]
                             end
                         }
                       )
 
-                      %{individual_buildable | reason: ["area"]}
+                      put_in(individual_buildable, [:buildable, :reason], ["area"])
                     else
                       individual_buildable
                     end
@@ -419,7 +415,7 @@ defmodule MayorGame.CityHelpers do
             city_update =
               if buildable_list_results.buildable_list_updated_reasons !=
                    Map.get(city.detail, buildable_type) do
-                put_in(
+                Map.put(
                   city,
                   [:detail, buildable_type],
                   buildable_list_results.buildable_list_updated_reasons
@@ -433,8 +429,6 @@ defmodule MayorGame.CityHelpers do
               city: city_update
               # TODO maybe: make this a | list combine and reverse whole list outside enum
             }
-
-            # return area_left and city down here
           else
             # if there are no buildables of that type or they don't require area
             acc
@@ -442,19 +436,23 @@ defmodule MayorGame.CityHelpers do
         end
       )
 
-    # return city down here as well
+    results_map = Map.merge(preliminary_results, %{available_area: area_results.available_area})
 
-    Map.merge(preliminary_results, area_results)
+    # return city
+    Map.merge(area_results.city, results_map)
   end
 
+  @spec calculate_energy(map, World.t()) :: map
   @doc """
   takes a %MayorGame.City.Town{} struct
 
-  returns energy town in map %{total_energy: int, available_energy: int, pollution: int}
-  total_energy is all energy generated, available_energy is after accounting for usage
+  returns %Town{} struct with additional fields added:
+  pollution: int,
+  total_energy: int,
+  available_energy: int
   """
-  def calculate_energy(%MayorGame.City.Town{} = city, world) do
-    city_preloaded = preload_city_check(city)
+  def calculate_energy(%Town{} = city, world) do
+    # city_preloaded = preload_city_check(city)
 
     # for each building in the energy category
     preliminary_results =
@@ -466,12 +464,9 @@ defmodule MayorGame.CityHelpers do
           region_energy_multiplier =
             if Map.has_key?(
                  energy_options.region_energy_multipliers,
-                 String.to_existing_atom(city_preloaded.region)
+                 String.to_existing_atom(city.region)
                ),
-               do:
-                 energy_options.region_energy_multipliers[
-                   String.to_existing_atom(city_preloaded.region)
-                 ],
+               do: energy_options.region_energy_multipliers[String.to_existing_atom(city.region)],
                else: 1
 
           season =
@@ -489,11 +484,11 @@ defmodule MayorGame.CityHelpers do
 
           pollution =
             acc.pollution +
-              energy_options.pollution * length(Map.get(city_preloaded.detail, energy_type))
+              sum_detail_metadata(Map.get(city.detail, energy_type), :pollution)
 
           energy =
             acc.total_energy +
-              energy_options.energy * length(Map.get(city_preloaded.detail, energy_type)) *
+              sum_detail_metadata(Map.get(city.detail, energy_type), :energy) *
                 region_energy_multiplier * season_energy_multiplier
 
           %{total_energy: round(energy), pollution: pollution}
@@ -502,119 +497,203 @@ defmodule MayorGame.CityHelpers do
 
     energy_results =
       Enum.reduce(
-        Buildable.buildables(),
-        %{energy_left: preliminary_results.total_energy},
-        fn category, acc ->
-          {_categoryName, buildings} = category
+        Buildable.buildables_flat(),
+        %{available_energy: preliminary_results.total_energy, city: city},
+        fn {buildable_type, buildable_options}, acc ->
+          # get list of each type of buildables
+          buildable_list = Map.get(city.detail, buildable_type)
 
-          Enum.reduce(buildings, %{energy_left: acc.energy_left}, fn {building_type,
-                                                                      building_options},
-                                                                     acc2 ->
-            buildables = Map.get(city_preloaded.detail, building_type)
+          if buildable_options.energy_required != nil && length(buildable_list) > 0 do
+            # for each individual buildable in the list
+            buildable_list_results =
+              Enum.reduce(
+                buildable_list,
+                %{available_energy: acc.available_energy, buildable_list_updated_reasons: []},
+                fn individual_buildable, acc2 ->
+                  negative_energy =
+                    acc2.available_energy < individual_buildable.metadata.energy_required
 
-            if building_options.energy_required != nil && length(buildables) > 0 do
-              Enum.reduce(buildables, %{energy_left: acc2.energy_left}, fn building, acc3 ->
-                negative_energy = acc3.energy_left < building_options.energy_required
+                  updated_buildable =
+                    if negative_energy do
+                      City.update_buildable(
+                        city.detail,
+                        buildable_type,
+                        individual_buildable.buildable.id,
+                        %{
+                          enabled: false,
+                          # TODO: clean this shit up
+                          reason:
+                            cond do
+                              Enum.empty?(individual_buildable.buildable.reason) ->
+                                ["energy"]
 
-                if negative_energy do
-                  City.update_buildable(city.detail, building_type, building.id, %{
-                    enabled: false,
-                    # TODO: clean this shit up
-                    reason:
-                      cond do
-                        Enum.empty?(building.reason) ->
-                          ["energy"]
+                              Enum.member?(individual_buildable.buildable.reason, "energy") ->
+                                individual_buildable.buildable.reason
 
-                        Enum.member?(building.reason, "energy") ->
-                          building.reason
+                              true ->
+                                ["energy" | individual_buildable.buildable.reason]
+                            end
+                        }
+                      )
 
-                        true ->
-                          ["energy" | building.reason]
-                      end
-                  })
+                      put_in(individual_buildable, [:buildable, :reason], [
+                        "energy" | individual_buildable.buildable.reason
+                      ])
+                    else
+                      individual_buildable
+                    end
+
+                  %{
+                    available_energy:
+                      acc2.available_energy - individual_buildable.metadata.energy_required,
+                    buildable_list_updated_reasons:
+                      Enum.concat(acc2.buildable_list_updated_reasons, [updated_buildable])
+                    # TODO maybe: make this a | list combine and reverse whole list outside enum
+                  }
                 end
+              )
 
-                %{energy_left: acc3.energy_left - building_options.energy_required}
-              end)
-            else
-              acc2
-            end
-          end)
+            # if there have been updates
+            city_update =
+              if buildable_list_results.buildable_list_updated_reasons !=
+                   Map.get(city.detail, buildable_type) do
+                Map.put(
+                  city,
+                  [:detail, buildable_type],
+                  buildable_list_results.buildable_list_updated_reasons
+                )
+              else
+                city
+              end
+
+            %{
+              available_energy: buildable_list_results.available_energy,
+              city: city_update
+            }
+          else
+            # if there are no buildables of that type or they don't require energy
+            acc
+          end
         end
       )
 
-    preliminary_results
-    |> Map.put_new(:available_energy, energy_results.energy_left)
+    results_map =
+      Map.merge(preliminary_results, %{available_energy: energy_results.available_energy})
+
+    # return city
+    Map.merge(energy_results.city, results_map)
   end
 
+  @spec calculate_money(map) :: map
   @doc """
   takes a %MayorGame.City.Town{} struct
 
-  returns building cost town in map %{available_money: int, cost: int}
+  returns %Town{} struct with additional fields added:
+  cost: int,
+  available_money: int,
   """
   def calculate_money(%Town{} = city) do
-    city_preloaded = preload_city_check(city)
+    # city_preloaded = preload_city_check(city)
 
     # how much money the city currently has
     preliminary_results = city.detail.city_treasury
 
-    cost_results =
+    money_results =
       Enum.reduce(
-        Buildable.buildables(),
-        %{money_left: preliminary_results, cost: 0},
-        fn category, acc ->
-          {_categoryName, buildings} = category
+        Buildable.buildables_flat(),
+        %{available_money: preliminary_results, cost: 0, city: city},
+        fn {buildable_type, buildable_options}, acc ->
+          # get list of each type of buildables
+          buildables_list = Map.get(city.detail, buildable_type)
 
-          Enum.reduce(buildings, %{money_left: acc.money_left, cost: acc.cost}, fn {building_type,
-                                                                                    building_options},
-                                                                                   acc2 ->
-            buildables = Map.get(city_preloaded.detail, building_type)
-
-            # if Map.has_key?(building_options, :daily_cost) &&
-            if building_options.daily_cost != nil &&
-                 length(buildables) > 0 &&
-                 building_options.daily_cost > 0 do
+          # if Map.has_key?(buildable_options, :daily_cost) &&
+          if buildable_options.daily_cost != nil &&
+               length(buildables_list) > 0 &&
+               buildable_options.daily_cost > 0 do
+            buildable_list_results =
               Enum.reduce(
-                buildables,
-                %{money_left: acc2.money_left, cost: acc2.cost},
-                fn building, acc3 ->
-                  negative_money = acc3.money_left < building_options.daily_cost
+                buildables_list,
+                %{
+                  available_money: acc.available_money,
+                  cost: acc.cost,
+                  buildable_list_updated_reasons: []
+                },
+                fn individual_buildable, acc3 ->
+                  negative_money = acc3.available_money < individual_buildable.metadata.daily_cost
 
-                  if negative_money do
-                    City.update_buildable(city.detail, building_type, building.id, %{
-                      enabled: false,
-                      # if there's already a reason it's disabled
-                      reason:
-                        cond do
-                          Enum.empty?(building.reason) ->
-                            ["money"]
+                  updated_buildable =
+                    if negative_money do
+                      City.update_buildable(
+                        city.detail,
+                        buildable_type,
+                        individual_buildable.buildable.id,
+                        %{
+                          enabled: false,
+                          # if there's already a reason it's disabled
+                          reason:
+                            cond do
+                              Enum.empty?(individual_buildable.buildable.reason) ->
+                                ["money"]
 
-                          Enum.member?(building.reason, "money") ->
-                            building.reason
+                              Enum.member?(individual_buildable.reason, "money") ->
+                                individual_buildable.buildable.reason
 
-                          true ->
-                            ["money" | building.reason]
-                        end
-                    })
-                  end
+                              true ->
+                                ["money" | individual_buildable.buildable.reason]
+                            end
+                        }
+                      )
+
+                      put_in(individual_buildable, [:buildable, :reason], [
+                        "money" | individual_buildable.buildable.reason
+                      ])
+                    else
+                      individual_buildable
+                    end
 
                   %{
-                    money_left: acc3.money_left - building_options.daily_cost,
-                    cost: acc3.cost + building_options.daily_cost
+                    available_money:
+                      acc3.available_money - individual_buildable.metadata.daily_cost,
+                    cost: acc3.cost + individual_buildable.metadata.daily_cost,
+                    buildable_list_updated_reasons:
+                      Enum.concat(acc3.buildable_list_updated_reasons, [updated_buildable])
+                    # TODO maybe: make this a | list combine and reverse whole list outside enum
                   }
                 end
               )
-            else
-              acc2
-            end
-          end)
+
+            # if there have been updates
+            city_update =
+              if buildable_list_results.buildable_list_updated_reasons !=
+                   Map.get(city.detail, buildable_type) do
+                Map.put(
+                  city,
+                  [:detail, buildable_type],
+                  buildable_list_results.buildable_list_updated_reasons
+                )
+              else
+                city
+              end
+
+            %{
+              available_money: buildable_list_results.available_money,
+              cost: buildable_list_results.cost,
+              city: city_update
+            }
+          else
+            # if there are no buildables of that type or they don't require energy
+            acc
+          end
         end
       )
 
-    %{
-      available_money: cost_results.money_left,
-      cost: cost_results.cost
+    results_map = %{
+      available_money: money_results.available_money,
+      cost: money_results.cost
     }
+
+    # return city
+    Map.merge(money_results.city, results_map)
   end
 
   @doc """
@@ -623,26 +702,26 @@ defmodule MayorGame.CityHelpers do
   returns energy town in map %{amount: int}
   """
   def calculate_housing(%Town{} = city) do
-    city_preloaded = preload_city_check(city)
+    # city_preloaded = preload_city_check(city)
 
     results =
       Enum.reduce(
         Buildable.buildables().housing,
         %{amount: 0},
-        fn {building_type, building_options}, acc ->
+        fn {buildable_type, _buildable_options}, acc ->
           # grab the actual buildables from the city
-          buildables = Map.get(city_preloaded.detail, building_type)
+          buildables = Map.get(city.detail, buildable_type)
 
           if length(buildables) > 0 do
             Enum.reduce(
               buildables,
               %{amount: acc.amount},
               fn building, acc2 ->
-                if !building.enabled do
+                if !building.buildable.enabled do
                   %{amount: acc2.amount}
                 else
                   # increment by the amount it fits
-                  %{amount: acc2.amount + building_options.fits}
+                  %{amount: acc2.amount + building.metadata.fits}
                 end
               end
             )
@@ -661,7 +740,7 @@ defmodule MayorGame.CityHelpers do
   returns map of available jobs by level: %{0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0}
   """
   def calculate_jobs(%Town{} = city) do
-    city_preloaded = preload_city_check(city)
+    # city_preloaded = preload_city_check(city)
     empty_jobs_map = %{0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0}
 
     results =
@@ -678,19 +757,19 @@ defmodule MayorGame.CityHelpers do
                   Enum.reduce(
                     buildings,
                     %{job_amount: 0},
-                    fn {building_type, building_options}, acc2 ->
-                      if building_options.job_level == job_level do
-                        buildables = Map.get(city_preloaded.detail, building_type)
+                    fn {buildable_type, buildable_options}, acc2 ->
+                      if buildable_options.job_level == job_level do
+                        buildables = Map.get(city.detail, buildable_type)
 
                         if length(buildables) > 0 do
                           Enum.reduce(
                             buildables,
                             %{job_amount: acc2.job_amount},
                             fn building, acc3 ->
-                              if !building.enabled do
+                              if !building.buildable.enabled do
                                 %{job_amount: acc3.job_amount}
                               else
-                                %{job_amount: acc3.job_amount + building_options.jobs}
+                                %{job_amount: acc3.job_amount + building.metadata.jobs}
                               end
                             end
                           )
@@ -725,36 +804,27 @@ defmodule MayorGame.CityHelpers do
   returns map of available education by level: %{0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0}
   """
   def calculate_education(%Town{} = city) do
-    city_preloaded = preload_city_check(city)
+    # city_preloaded = preload_city_check(city)
     empty_education_map = %{0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0}
 
-    # results =
-    #   Enum.reduce(
-    #     Buildable.buildables(),
-    #     %{education_map: empty_education_map},
-    #     fn category, acc ->
-    #       {categoryName, buildings} = category
-
-    # if categoryName == :education do
-    # education_map_results =
     Enum.map(empty_education_map, fn {education_level, capacity} ->
       results =
         Enum.reduce(
           Buildable.buildables().education,
           %{education_amount: 0},
-          fn {building_type, building_options}, acc2 ->
-            if building_options.education_level == education_level do
-              buildables = Map.get(city_preloaded.detail, building_type)
+          fn {buildable_type, buildable_options}, acc2 ->
+            if buildable_options.education_level == education_level do
+              buildables = Map.get(city.detail, buildable_type)
 
               if length(buildables) > 0 do
                 Enum.reduce(
                   buildables,
                   %{education_amount: acc2.education_amount},
                   fn building, acc3 ->
-                    if !building.enabled do
+                    if !building.buildable.enabled do
                       %{education_amount: acc3.education_amount}
                     else
-                      %{education_amount: acc3.education_amount + building_options.capacity}
+                      %{education_amount: acc3.education_amount + building.metadata.capacity}
                     end
                   end
                 )
@@ -828,6 +898,136 @@ defmodule MayorGame.CityHelpers do
       end)
     else
       0
+    end
+  end
+
+  @doc """
+   take a city, update the buildables inside's  purchasable status
+  """
+  def bake_city_purchasables(city_with_stats) do
+    # Enum.map(Buildable.buildables_flat(), fn b_metadata_raw ->
+    #   b_metadata_raw
+    #    |> Enum.map(fn {buildable_key, buildable_stats} ->
+    #      {buildable_key, Map.from_struct(calculate_buildable_status(buildable_stats, city))}
+    #    end)}
+    # end)
+
+    detail_results =
+      Enum.reduce(Buildable.buildables_list(), city_with_stats.detail, fn b_type,
+                                                                          details_struct_acc ->
+        # get a list of the buildables
+        buildables_array = Map.get(details_struct_acc, b_type)
+        # does the details have any of the b_type?
+        # d_has_buildable = !Enum.empty?(buildables_array)
+
+        # if Map.has_key?(details_struct_acc, buildable_list_item) && d_has_buildable do
+        # b_metadata_baked = Map.get(city_with_stats.detail, b_type)
+
+        # bake array of each type of buildable
+        baked_array =
+          Enum.map(buildables_array, fn combined_buildable ->
+            bake_purchasable_status(combined_buildable, city_with_stats)
+          end)
+
+        %{details_struct_acc | b_type => baked_array}
+
+        # else
+        # details_struct_acc
+        # end
+      end)
+
+    %{city_with_stats | detail: detail_results}
+  end
+
+  # TODO: clean this shit up
+  def bake_purchasable_status(buildable, city_with_stats) do
+    if city_with_stats.detail.city_treasury > buildable.metadata.price do
+      cond do
+        # enough energy AND enough area
+
+        buildable.metadata.energy_required != nil and
+          city_with_stats.available_energy >= buildable.metadata.energy_required &&
+            (buildable.metadata.area_required != nil and
+               city_with_stats.available_area >= buildable.metadata.area_required) ->
+          buildable
+          |> put_in([:metadata, :purchasable], true)
+          |> put_in([:metadata, :purchasable_reason], "valid")
+
+        # not enough energy, enough area
+        buildable.metadata.energy_required != nil and
+          city_with_stats.available_energy < buildable.metadata.energy_required &&
+            (buildable.metadata.area_required != nil and
+               city_with_stats.available_area >= buildable.metadata.area_required) ->
+          buildable
+          |> put_in([:metadata, :purchasable], false)
+          |> put_in([:metadata, :purchasable_reason], "not enough energy to build")
+
+        # enough energy, not enough area
+        buildable.metadata.energy_required != nil and
+          city_with_stats.available_energy >= buildable.metadata.energy_required &&
+            (buildable.metadata.area_required != nil and
+               city_with_stats.available_area < buildable.metadata.area_required) ->
+          buildable
+          |> put_in([:metadata, :purchasable], false)
+          |> put_in([:metadata, :purchasable_reason], "not enough area to build")
+
+        # not enough energy AND not enough area
+        buildable.metadata.energy_required != nil and
+          city_with_stats.available_energy < buildable.metadata.energy_required &&
+            (buildable.metadata.area_required != nil and
+               city_with_stats.available_area < buildable.metadata.area_required) ->
+          buildable
+          |> put_in([:metadata, :purchasable], false)
+          |> put_in([:metadata, :purchasable_reason], "not enough area or energy to build")
+
+        # no energy needed, enough area
+        buildable.metadata.energy_required == nil &&
+            (buildable.metadata.area_required != nil and
+               city_with_stats.available_area >= buildable.metadata.area_required) ->
+          buildable
+          |> put_in([:metadata, :purchasable], true)
+          |> put_in([:metadata, :purchasable_reason], "valid")
+
+        # no energy needed, not enough area
+        buildable.metadata.energy_required == nil &&
+            (buildable.metadata.area_required != nil and
+               city_with_stats.available_area < buildable.metadata.area_required) ->
+          buildable
+          |> put_in([:metadata, :purchasable], false)
+          |> put_in([:metadata, :purchasable_reason], "not enough area to build")
+
+        # no area needed, enough energy
+        buildable.metadata.area_required == nil &&
+            (buildable.metadata.energy_required != nil and
+               city_with_stats.available_energy >= buildable.metadata.energy_required) ->
+          buildable
+          |> put_in([:metadata, :purchasable], true)
+          |> put_in([:metadata, :purchasable_reason], "valid")
+
+        # no area needed, not enough energy
+        buildable.metadata.area_required == nil &&
+            (buildable.metadata.energy_required != nil and
+               city_with_stats.available_energy < buildable.metadata.energy_required) ->
+          buildable
+          |> put_in([:metadata, :purchasable], false)
+          |> put_in([:metadata, :purchasable_reason], "not enough energy to build")
+
+        # no area needed, no energy needed
+        buildable.metadata.energy_required == nil and buildable.metadata.area_required == nil ->
+          buildable
+          |> put_in([:metadata, :purchasable], true)
+          |> put_in([:metadata, :purchasable_reason], "valid")
+
+        # catch-all
+        true ->
+          buildable
+          |> put_in([:metadata, :purchasable], true)
+          |> put_in([:metadata, :purchasable_reason], "valid")
+      end
+    else
+      buildable
+      |> put_in([:metadata, :purchasable], false)
+      |> put_in([:metadata, :purchasable_reason], "not enough money to build")
     end
   end
 end

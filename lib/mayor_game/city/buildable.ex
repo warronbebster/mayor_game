@@ -5,6 +5,7 @@ defmodule MayorGame.City.Buildable do
   use Ecto.Schema
   import Ecto.Changeset
   alias MayorGame.City.{BuildableMetadata, Details}
+  use Accessible
 
   @timestamps_opts [type: :utc_datetime]
 
@@ -804,11 +805,8 @@ defmodule MayorGame.City.Buildable do
   generates and returns a list [] of buildables in atom form
   """
   def buildables_list do
-    Enum.reduce(buildables(), [], fn {_categoryName, buildings}, acc ->
-      Enum.reduce(buildings, [], fn {building_type, _building_options}, acc2 ->
-        [building_type | acc2]
-      end) ++
-        acc
+    Enum.reduce(buildables_flat(), [], fn {building_type, _building_options}, acc2 ->
+      [building_type | acc2]
     end)
   end
 
