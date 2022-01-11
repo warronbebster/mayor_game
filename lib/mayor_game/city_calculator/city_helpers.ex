@@ -635,7 +635,7 @@ defmodule MayorGame.CityHelpers do
                               Enum.empty?(individual_buildable.buildable.reason) ->
                                 ["money"]
 
-                              Enum.member?(individual_buildable.reason, "money") ->
+                              Enum.member?(individual_buildable.buildable.reason, "money") ->
                                 individual_buildable.buildable.reason
 
                               true ->
