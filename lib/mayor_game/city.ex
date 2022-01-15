@@ -19,7 +19,7 @@ defmodule MayorGame.City do
 
   """
   def list_cities do
-    Repo.all(Town)
+    Repo.all(Town) |> Repo.preload([:citizens, :user])
   end
 
   @doc """

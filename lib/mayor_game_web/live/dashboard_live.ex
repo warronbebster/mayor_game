@@ -15,6 +15,7 @@ defmodule MayorGameWeb.DashboardLive do
     DashboardView.render("show.html", assigns)
   end
 
+  # if user is logged in:
   def mount(_params, %{"current_user" => current_user}, socket) do
     {:ok,
      socket

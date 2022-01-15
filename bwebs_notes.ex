@@ -1,10 +1,8 @@
 # society simulator 2021
 
 # TODO:
-
-# add upgrading system for buildables (like a park can have a soccer field, etc) [x]
-# make city_calculator check the upgrades when calculating and make changes [x]
-# upgrades are per-buildable, so they can't effect things like price, etc, but only the output
+# fix bug when citizen is killed by pollution
+# this might be that i end up trying to kill the same citizen multiple times in the same "check cycle"
 
 # see if city_live and show.html can display just based on a baked city
 
@@ -14,8 +12,6 @@
 
 # figure out job & education level indexing (start from 0 or 1?)
 
-# show citizen count on homepage & show which ones are urs
-
 # way to remove pollution with certain buildings
 
 # pollution listeners
@@ -23,7 +19,7 @@
 # maybe add global limits for amount of cities… artificial scarcity?
 # one per email, in that case? no redos, baybeee
 # is this just as simple as changing has_many to has_one in user.ex?
-# 10000 possible cities, 2500 in each environment
+# 1000 possible cities?
 
 # add "fun" and "health" calculations to check for for city (like energy, area, money)
 

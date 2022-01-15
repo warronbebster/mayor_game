@@ -270,7 +270,7 @@ defmodule MayorGame.CityHelpers do
             if citizen.age > 36500, do: kill_citizen(citizen, "old age")
 
             # set a random pollution ceiling based on how many cities are in the ecosystem
-            pollution_ceiling = :rand.uniform(cities_count * 10000) + 1000
+            pollution_ceiling = :rand.uniform(cities_count * 100_000) + 1000
 
             if world.pollution > pollution_ceiling do
               IO.puts(
