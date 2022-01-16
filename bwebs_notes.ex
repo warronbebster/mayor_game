@@ -4,8 +4,6 @@
 # fix bug when citizen is killed by pollution
 # this might be that i end up trying to kill the same citizen multiple times in the same "check cycle"
 
-# see if city_live and show.html can display just based on a baked city
-
 # add tailwind
 
 # switch "detail" for "details" in town struct/DB
@@ -13,8 +11,6 @@
 # figure out job & education level indexing (start from 0 or 1?)
 
 # way to remove pollution with certain buildings
-
-# pollution listeners
 
 # maybe add global limits for amount of cities… artificial scarcity?
 # one per email, in that case? no redos, baybeee
