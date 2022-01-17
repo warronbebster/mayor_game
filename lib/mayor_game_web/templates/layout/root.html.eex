@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="<%= Routes.static_path(@conn, "/assets/app.css") %>"/>
     <script defer type="text/javascript" src="<%= Routes.static_path(@conn, "/assets/app.js") %>"></script>
   </head>
-  <body>
+  <body class="bg-black text-white p-1">
     <header>
       <section class="container">
         <nav role="navigation">

@@ -34,7 +34,7 @@
   <%= for {job_level, rate} <- @city.tax_rates do %>
     level: <%= job_level %> rate:
     <%= if @is_user_mayor do %>
-      <input class="tax_input number_input" step="0.01" phx-blur="update_tax_rates" type="number" min="0" max="1" value={rate} phx-value-job_level={job_level}>
+      <input class="bg-black border border-white" step="0.01" phx-blur="update_tax_rates" type="number" min="0" max="1" value={rate} phx-value-job_level={job_level}>
     <% else %>
       <%= rate %>
     <% end %>
@@ -56,7 +56,7 @@
         <%= if building_stats.purchasable do %>
           <button phx-click="purchase_building" phx-throttle="100" phx-value-building={building_type} phx-value-category={category} >build $<%= building_stats.price %></button>
         <% else %>
-          <button disabled>build $<%= building_stats.price %></button> <%= building_stats.purchasable_reason%>
+          <button disabled class="text-gray-500">build $<%= building_stats.price %></button> <%= building_stats.purchasable_reason%>
         <% end %>
 
         <%= for {building_stat, value} <- building_stats do %>
@@ -148,7 +148,7 @@
 
 <.form let={f} url="#" for={:message} phx_submit={"add_citizen"} >
 
-  <%= label f, :content %>
+  <%= label f, "add citizen" %>
   <%= text_input f, :content %>
   <%= submit "Send" %>
 </.form>

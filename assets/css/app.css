@@ -1,5 +1,14 @@
 /* This file is for your main application css. */
-@import "./phoenix.css";
+
+@tailwind base;
+
+@tailwind components;
+
+@tailwind utilities;
+
+a {
+  color: #00eeee;
+}
 
 /* Alerts and form errors */
 .alert {
@@ -79,11 +88,17 @@
   padding: 2px;
 }
 
-.upgrade_description {
-  font-size: 12px;
-}
-
-.number_input {
+button,
+input[type="button"],
+input[type="text"],
+input[type="reset"],
+input[type="submit"] {
+  border: 0.1rem solid #606c76;
+  background: transparent;
+  border-radius: 0.4rem;
+  cursor: pointer;
   display: inline-block;
-  width: 4rem;
+  padding: 0.2rem;
+  text-decoration: none;
+  white-space: nowrap;
 }

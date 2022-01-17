@@ -1,0 +1,5 @@
+{
+    "scripts": {
+    "deploy": "NODE_ENV=production tailwindcss --postcss --minify --input=css/app.css --output=../priv/static/assets/app.css"
+  }
+}
