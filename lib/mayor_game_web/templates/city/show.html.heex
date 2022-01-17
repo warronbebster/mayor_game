@@ -34,7 +34,7 @@
   <%= for {job_level, rate} <- @city.tax_rates do %>
     level: <%= job_level %> rate:
     <%= if @is_user_mayor do %>
-      <input class="tax_input number_input" step="0.01" phx-blur="update_tax_rates" type="number" min="0" max="1" value="<%= rate %>" phx-value-job_level="<%= job_level %>">
+      <input class="tax_input number_input" step="0.01" phx-blur="update_tax_rates" type="number" min="0" max="1" value={rate} phx-value-job_level={job_level}>
     <% else %>
       <%= rate %>
     <% end %>
@@ -54,7 +54,7 @@
       <%= if @is_user_mayor do %>
 
         <%= if building_stats.purchasable do %>
-          <button phx-click="purchase_building" phx-throttle="100" phx-value-building="<%= building_type %>" phx-value-category="<%= category %>" >build $<%= building_stats.price %></button>
+          <button phx-click="purchase_building" phx-throttle="100" phx-value-building={building_type} phx-value-category={category} >build $<%= building_stats.price %></button>
         <% else %>
           <button disabled>build $<%= building_stats.price %></button> <%= building_stats.purchasable_reason%>
         <% end %>
@@ -99,10 +99,10 @@
                         <%= if Enum.all?(upgrade_details.requirements, fn upgrade -> to_string(upgrade) in building.buildable.upgrades end) do %>
                           <button phx-click="buy_upgrade"
                           phx-throttle="100"
-                          phx-value-building="<%= building_type %>"
-                          phx-value-buildable_id="<%= building.buildable.id %>"
-                          phx-value-upgrade_cost="<%= upgrade_details.cost %>"
-                          phx-value-upgrade="<%= upgrade_name %>">
+                          phx-value-building={building_type}
+                          phx-value-buildable_id={building.buildable.id}
+                          phx-value-upgrade_cost={upgrade_details.cost}
+                          phx-value-upgrade={upgrade_name}>
                             purchase: $<%= upgrade_details.cost %>
                           </button>
                         <% else %>
@@ -124,7 +124,7 @@
           <% end %>
 
           <%= if @is_user_mayor do %>
-            <button phx-click="demolish_building" phx-throttle="100" phx-value-building="<%= building_type %>" phx-value-buildable_id="<%= building.buildable.id %>">demolish</button>
+            <button phx-click="demolish_building" phx-throttle="100" phx-value-building={building_type} phx-value-buildable_id={building.buildable.id}>demolish</button>
           <% end %>
 
         </div>
@@ -146,11 +146,12 @@
 
 </div>
 
-<%= f = form_for :message, "#", [phx_submit: "add_citizen"] %>
+<.form let={f} url="#" for={:message} phx_submit={"add_citizen"} >
+
   <%= label f, :content %>
   <%= text_input f, :content %>
   <%= submit "Send" %>
-</form>
+</.form>
 
 <div>
   <b><%= length(@city.citizens) %> citizens:</b>
@@ -170,7 +171,8 @@
   <br/>
 
   <%= for log_item <- @city.logs do %>
-      <%= log_item %></b>
+      <b><%= log_item %></b>
     <br/>
   <% end %>
 </div>
+

@@ -50,6 +50,11 @@ defmodule MayorGame.CityCalculator do
             cities_count
           )
 
+        if city_calc.id == 4 do
+          # city_updated should have energy fields, etc
+          IO.inspect(city_calc.available_energy)
+        end
+
         # should i loop through citizens here, instead of in calculate_city_stats?
         # that way I can use the same function later?
 
