@@ -9,10 +9,13 @@
     <link rel="stylesheet" href="<%= Routes.static_path(@conn, "/assets/app.css") %>"/>
     <script defer type="text/javascript" src="<%= Routes.static_path(@conn, "/assets/app.js") %>"></script>
   </head>
-  <body class="bg-black text-white p-1">
+  <body class="bg-black text-white p-4 text-sm">
     <header>
-      <section class="container">
+      <section>
         <nav role="navigation">
+          <a href="<%= Routes.static_path(@conn, "/") %>">
+            root
+          </a>
           <ul>
             <%= if Pow.Plug.current_user(@conn) do %>
               <li><%= link "Profile", to: Routes.pow_registration_path(@conn, :edit) %></li>
@@ -26,9 +29,6 @@
             <% end %>
           </ul>
         </nav>
-        <a href="<%= Routes.static_path(@conn, "/") %>">
-          root
-        </a>
       </section>
     </header>
     <main role="main" class="container">

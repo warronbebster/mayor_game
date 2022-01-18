@@ -50,11 +50,6 @@ defmodule MayorGame.CityCalculator do
             cities_count
           )
 
-        if city_calc.id == 4 do
-          # city_updated should have energy fields, etc
-          IO.inspect(city_calc.available_energy)
-        end
-
         # should i loop through citizens here, instead of in calculate_city_stats?
         # that way I can use the same function later?
 
@@ -82,6 +77,8 @@ defmodule MayorGame.CityCalculator do
         %{
           cities_w_room:
             if(city_calc.housing > 0 && are_there_jobs,
+              # here it's taking a big amalgamated city object and putting the original %Town{} struct in it
+              # could clean this up
               do: [Map.put(city_calc, :city, city) | acc.cities_w_room],
               else: acc.cities_w_room
             ),
