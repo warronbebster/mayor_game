@@ -4,11 +4,12 @@
 # fix bug when citizen is killed by pollution
 # this might be that i end up trying to kill the same citizen multiple times in the same "check cycle"
 
-# add tailwind
+# remove or clarify "ID number" rendering on buildable on website, because it looks like a count
 
 # switch "detail" for "details" in town struct/DB
 
 # figure out job & education level indexing (start from 0 or 1?)
+# jobs are 0 to 6, assume edu is as well
 
 # way to remove pollution with certain buildings
 

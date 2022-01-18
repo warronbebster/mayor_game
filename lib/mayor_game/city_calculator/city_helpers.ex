@@ -69,7 +69,7 @@ defmodule MayorGame.CityHelpers do
   """
   def move_citizen(
         %Citizens{} = citizen,
-        %Town{} = city_to_move_to,
+        %{} = city_to_move_to,
         day_moved
       ) do
     prev_city = City.get_town!(citizen.town_id)
@@ -165,8 +165,8 @@ defmodule MayorGame.CityHelpers do
           score =
             city_calc.city.tax_rates[to_string(results.job_level)] *
               citizen.preferences["tax_rates"] +
-              city_calc.pollution / city_calc.energy * citizen.preferences["pollution"] +
-              city_calc.sprawl / city_calc.area * citizen.preferences["sprawl"]
+              city_calc.pollution / city_calc.total_energy * citizen.preferences["pollution"] +
+              city_calc.sprawl / city_calc.total_area * citizen.preferences["sprawl"]
 
           Map.put_new(city_calc, :desirability_score, score)
         end)
@@ -270,7 +270,7 @@ defmodule MayorGame.CityHelpers do
             if citizen.age > 36500, do: kill_citizen(citizen, "old age")
 
             # set a random pollution ceiling based on how many cities are in the ecosystem
-            pollution_ceiling = :rand.uniform(cities_count * 100_000) + 1000
+            pollution_ceiling = :rand.uniform(cities_count * 1000) * 1000
 
             if world.pollution > pollution_ceiling do
               IO.puts(
@@ -581,7 +581,7 @@ defmodule MayorGame.CityHelpers do
       Map.merge(preliminary_results, %{available_energy: energy_results.available_energy})
 
     # return city
-    Map.merge(energy_results.city, results_map)
+    Map.merge(Map.from_struct(energy_results.city), results_map)
   end
 
   @spec calculate_money(map) :: map
@@ -592,7 +592,7 @@ defmodule MayorGame.CityHelpers do
   cost: int,
   available_money: int,
   """
-  def calculate_money(%Town{} = city) do
+  def calculate_money(%{} = city) do
     # city_preloaded = preload_city_check(city)
 
     # how much money the city currently has
@@ -701,7 +701,7 @@ defmodule MayorGame.CityHelpers do
 
   returns energy town in map %{amount: int}
   """
-  def calculate_housing(%Town{} = city) do
+  def calculate_housing(%{} = city) do
     # city_preloaded = preload_city_check(city)
 
     results =
@@ -739,7 +739,7 @@ defmodule MayorGame.CityHelpers do
 
   returns map of available jobs by level: %{0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0}
   """
-  def calculate_jobs(%Town{} = city) do
+  def calculate_jobs(%{} = city) do
     # city_preloaded = preload_city_check(city)
     empty_jobs_map = %{0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0}
 
@@ -803,7 +803,7 @@ defmodule MayorGame.CityHelpers do
 
   returns map of available education by level: %{0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0}
   """
-  def calculate_education(%Town{} = city) do
+  def calculate_education(%{} = city) do
     # city_preloaded = preload_city_check(city)
     empty_education_map = %{0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0}
 

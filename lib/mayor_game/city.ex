@@ -136,6 +136,24 @@ defmodule MayorGame.City do
     |> Repo.update()
   end
 
+  @doc """
+  Updates a town by ID, not by struct
+
+  ## Examples
+
+      iex> update_town_by_id(3, %{field: new_value})
+      {:ok, %Town{}}
+
+      iex> update_town_by_id(town, %{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def update_town_by_id(townId, attrs) do
+    get_town!(townId)
+    |> Town.changeset(attrs)
+    |> Repo.update()
+  end
+
   # might not need to type guard here because DB does it; but
   @doc """
   updates log for a city. Expects the town(city) struct & a single string.

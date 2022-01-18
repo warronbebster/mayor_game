@@ -77,6 +77,8 @@ defmodule MayorGame.CityCalculator do
         %{
           cities_w_room:
             if(city_calc.housing > 0 && are_there_jobs,
+              # here it's taking a big amalgamated city object and putting the original %Town{} struct in it
+              # could clean this up
               do: [Map.put(city_calc, :city, city) | acc.cities_w_room],
               else: acc.cities_w_room
             ),

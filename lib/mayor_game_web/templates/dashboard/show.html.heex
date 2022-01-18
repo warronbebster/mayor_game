@@ -19,24 +19,27 @@
     <h2>Create City</h2>
 
     <%# On form submit, the create_city event is being emitted %>
-    <%=f = form_for @city_changeset, "#", [phx_submit: :create_city] %>
+    <.form let={f} for={@city_changeset} phx_submit={"create_city"} >
 
-    <%= if @city_changeset.action do %>
-      <div class="alert alert-danger"> uh oh, something's up! <%= @city_changeset.action %> </div>
-    <% end %>
 
-    <%= text_input f, :title, required: true, placeholder: "Title" %>
-    <%= error_tag f, :title %>
 
-    <%= select f, :region, @regions, required: true, prompt: "Select a region" %>
-    <%= error_tag f, :region %>
 
-    <%= select f, :climate, @climates, required: true, prompt: "Select a climate" %>
-    <%= error_tag f, :climate %>
-    <br/>
+      <%= if @city_changeset.action do %>
+        <div class="alert alert-danger"> uh oh, something's up! <%= @city_changeset.action %> </div>
+      <% end %>
 
-    <%= submit "Create city" %>
+      <%= text_input f, :title, required: true, placeholder: "Title" %>
+      <%= error_tag f, :title %>
 
-    </form>
+      <%= select f, :region, @regions, required: true, prompt: "Select a region" %>
+      <%= error_tag f, :region %>
+
+      <%= select f, :climate, @climates, required: true, prompt: "Select a climate" %>
+      <%= error_tag f, :climate %>
+      <br/>
+
+      <%= submit "Create city" %>
+
+      </.form>
   </article>
 <% end %>

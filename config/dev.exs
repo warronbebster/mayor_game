@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 # Configure your database
 
@@ -26,7 +26,16 @@ config :mayor_game, MayorGameWeb.Endpoint,
   code_reloader: true,
   check_origin: false,
   watchers: [
-    yarn: ["run", "watch", cd: Path.expand("../assets", __DIR__)]
+    # Start the esbuild watcher by calling Esbuild.install_and_run(:default, args)
+    esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]},
+    npx: [
+      "tailwindcss",
+      "--input=css/app.css",
+      "--output=../priv/static/assets/app.css",
+      "--postcss",
+      "--watch",
+      cd: Path.expand("../assets", __DIR__)
+    ]
   ]
 
 # ## SSL Support

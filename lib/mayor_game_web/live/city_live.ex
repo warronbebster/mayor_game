@@ -189,7 +189,7 @@ defmodule MayorGameWeb.CityLive do
 
       updated_tax_rates = city.tax_rates |> Map.put(job_level, updated_value_constrained)
 
-      case City.update_town(city, %{tax_rates: updated_tax_rates}) do
+      case City.update_town_by_id(city.id, %{tax_rates: updated_tax_rates}) do
         {:ok, _updated_detail} ->
           IO.puts("tax rates updated")
 
