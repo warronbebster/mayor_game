@@ -79,7 +79,8 @@ defmodule MayorGame.City.Buildable do
         wind_turbines: buildables_flat.wind_turbines,
         solar_plants: buildables_flat.solar_plants,
         nuclear_plants: buildables_flat.nuclear_plants,
-        dams: buildables_flat.dams
+        dams: buildables_flat.dams,
+        carbon_capture_plants: buildables_flat.carbon_capture_plants
       },
       civic: %{
         parks: buildables_flat.parks,
@@ -315,6 +316,19 @@ defmodule MayorGame.City.Buildable do
         area_required: 10,
         region_energy_multipliers: %{mountain: 1.5},
         season_energy_multipliers: %{winter: 0.7, spring: 1.3},
+        purchasable: true,
+        purchasable_reason: "valid"
+      },
+      carbon_capture_plants: %BuildableMetadata{
+        price: 2000,
+        daily_cost: 50,
+        jobs: 10,
+        job_level: 2,
+        energy: 0,
+        pollution: -20,
+        area_required: 10,
+        region_energy_multipliers: %{},
+        season_energy_multipliers: %{},
         purchasable: true,
         purchasable_reason: "valid"
       },

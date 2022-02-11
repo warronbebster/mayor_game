@@ -15,7 +15,7 @@ randomString = :crypto.strong_rand_bytes(4) |> Base.encode64() |> binary_part(0,
 cityName = String.replace(randomString, "/", "a") <> "ville"
 
 alias MayorGame.Auth.User
-alias MayorGame.City.{Town, Citizens, World}
+alias MayorGame.City.{Town, Citizens}
 alias MayorGame.{Auth, City}
 
 # {:ok, %World{}} = City.create_world(%{day: 0, pollution: 0})

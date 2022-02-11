@@ -9,9 +9,10 @@ defmodule MayorGame.CityCalculator do
     # which triggers init function in module
     # world = MayorGame.City.get_world!(1)
 
-    # do check here if world exists already
-    if City.get_world!(initial_val) == Ecto.NoResultsError do
-      City.create_world(%{day: 0, pollution: 0})
+    # check here if world exists already
+    case City.get_world(initial_val) do
+      %City.World{} -> IO.puts("world exists already!")
+      nil -> City.create_world(%{day: 0, pollution: 0})
     end
 
     # this calls init function
@@ -42,7 +43,9 @@ defmodule MayorGame.CityCalculator do
       "day: " <>
         to_string(world.day) <>
         " | cities: " <>
-        to_string(cities_count) <> " | —————————————————————————————————————————————"
+        to_string(cities_count) <>
+        " | pollution: " <>
+        to_string(world.pollution) <> " | —————————————————————————————————————————————"
     )
 
     # result is map %{cities_w_room: [], citizens_looking: []}

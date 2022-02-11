@@ -11,8 +11,6 @@
 # figure out job & education level indexing (start from 0 or 1?)
 # jobs are 0 to 6, assume edu is as well
 
-# way to remove pollution with certain buildings
-
 # maybe add global limits for amount of cities… artificial scarcity?
 # one per email, in that case? no redos, baybeee
 # is this just as simple as changing has_many to has_one in user.ex?

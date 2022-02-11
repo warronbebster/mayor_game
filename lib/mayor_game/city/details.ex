@@ -42,6 +42,7 @@ defmodule MayorGame.City.Details do
           solar_plants: list(Buildable.t() | CombinedBuildable.t()),
           nuclear_plants: list(Buildable.t() | CombinedBuildable.t()),
           dams: list(Buildable.t() | CombinedBuildable.t()),
+          carbon_capture_plants: list(Buildable.t() | CombinedBuildable.t()),
           # civic
           parks: list(Buildable.t() | CombinedBuildable.t()),
           libraries: list(Buildable.t() | CombinedBuildable.t()),
