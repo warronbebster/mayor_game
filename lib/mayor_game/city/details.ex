@@ -24,7 +24,7 @@ defmodule MayorGame.City.Details do
           # homes
           single_family_homes: list(Buildable.t() | CombinedBuildable.t()),
           multi_family_homes: list(Buildable.t() | CombinedBuildable.t()),
-          homeless_shelter: list(Buildable.t() | CombinedBuildable.t()),
+          homeless_shelters: list(Buildable.t() | CombinedBuildable.t()),
           apartments: list(Buildable.t() | CombinedBuildable.t()),
           micro_apartments: list(Buildable.t() | CombinedBuildable.t()),
           high_rises: list(Buildable.t() | CombinedBuildable.t()),

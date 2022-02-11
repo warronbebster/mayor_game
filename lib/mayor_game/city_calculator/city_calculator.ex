@@ -3,23 +3,34 @@ defmodule MayorGame.CityCalculator do
   alias MayorGame.{City, CityHelpers}
   # alias MayorGame.City.Details
 
-  def start_link(_initial_val) do
+  def start_link(initial_val) do
+    IO.puts('start_link')
     # starts link based on this file
     # which triggers init function in module
-    world = MayorGame.City.get_world!(1)
+    # world = MayorGame.City.get_world!(1)
 
-    GenServer.start_link(__MODULE__, world)
+    # do check here if world exists already
+    if City.get_world!(initial_val) == Ecto.NoResultsError do
+      City.create_world(%{day: 0, pollution: 0})
+    end
+
+    # this calls init function
+    GenServer.start_link(__MODULE__, initial_val)
   end
 
   def init(initial_world) do
-    # initial_val is 0 here, set in application.ex then started with start_link
+    IO.puts('init')
+    # initial_val is 1 here, set in application.ex then started with start_link
+
+    game_world = City.get_world!(initial_world)
+    IO.inspect(game_world)
 
     # send message :tax to self process after 5000ms
     # calls `handle_info` function
     Process.send_after(self(), :tax, 5000)
 
     # returns ok tuple when u start
-    {:ok, initial_world}
+    {:ok, game_world}
   end
 
   # when :tax is sent

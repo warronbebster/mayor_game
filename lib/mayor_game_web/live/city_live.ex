@@ -79,7 +79,7 @@ defmodule MayorGameWeb.CityLive do
 
   def handle_event(
         "purchase_building",
-        %{"building" => building_to_buy, "category" => building_category},
+        %{"building" => building_to_buy},
         %{assigns: %{city: city}} = socket
       ) do
     # check if user is mayor here?
