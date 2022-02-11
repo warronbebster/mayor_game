@@ -85,11 +85,9 @@ defmodule MayorGameWeb.CityLive do
     # check if user is mayor here?
 
     building_to_buy_atom = String.to_existing_atom(building_to_buy)
-    building_category_atom = String.to_existing_atom(building_category)
 
     # get price — don't want to set price on front-end for cheating reasons
-    purchase_price =
-      get_in(Buildable.buildables(), [building_category_atom, building_to_buy_atom, :price])
+    purchase_price = get_in(Buildable.buildables_flat(), [building_to_buy_atom, :price])
 
     # check for upgrade requirements?
 
