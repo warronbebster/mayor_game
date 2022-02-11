@@ -2,7 +2,7 @@
 
 # TODO:
 # fix bug when citizen is killed by pollution
-# this might be that i end up trying to kill the same citizen multiple times in the same "check cycle"
+# I suspect that this is because I end up trying to kill the same citizen multiple times in the same "check cycle"
 
 # remove or clarify "ID number" rendering on buildable on website, because it looks like a count
 

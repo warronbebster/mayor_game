@@ -18,7 +18,9 @@ alias MayorGame.Auth.User
 alias MayorGame.City.{Town, Citizens, World}
 alias MayorGame.{Auth, City}
 
-{:ok, %World{}} = City.create_world(%{day: 0, pollution: 0})
+# {:ok, %World{}} = City.create_world(%{day: 0, pollution: 0})
+
+IO.puts('seeding!')
 
 Auth.create_user(%{
   nickname: "bwebs",
