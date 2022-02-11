@@ -139,11 +139,18 @@ defmodule MayorGame.CityCalculator do
       end)
     end
 
+    updated_pollution =
+      if world.pollution + leftovers.new_pollution < 0 do
+        0
+      else
+        world.pollution + leftovers.new_pollution
+      end
+
     # update World in DB
     {:ok, updated_world} =
       City.update_world(world, %{
         day: world.day + 1,
-        pollution: world.pollution + leftovers.new_pollution
+        pollution: updated_pollution
       })
 
     # SEND RESULTS TO CLIENTS
