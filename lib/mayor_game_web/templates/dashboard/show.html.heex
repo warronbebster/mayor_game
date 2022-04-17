@@ -14,7 +14,7 @@
   <% end %>
 </article>
 
-<%= if assigns[:current_user] do %>
+<%= if assigns[:current_user] && assigns[:current_user].town == nil do %>
   <article class="column">
     <h2>Create City</h2>
 

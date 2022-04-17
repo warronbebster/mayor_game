@@ -2,18 +2,20 @@
 
 # TODO:
 # fix bug when citizen is killed by pollution
-# I suspect that this is because I end up trying to kill the same citizen multiple times in the same "check cycle"
+# I su0spect that this is because I end up trying to kill the same citizen multiple times in the same "check cycle"
 
-# remove or clarify "ID number" rendering on buildable on website, because it looks like a count
+# front-end cleanup
+
+# remove or clarify "ID number" rendering on individual buildables on website, because it looks like a count
 
 # switch "detail" for "details" in town struct/DB
 
 # figure out job & education level indexing (start from 0 or 1?)
 # jobs are 0 to 6, assume edu is as well
 
+# get rid of "refill my money" if ur not me
+
 # maybe add global limits for amount of cities… artificial scarcity?
-# one per email, in that case? no redos, baybeee
-# is this just as simple as changing has_many to has_one in user.ex?
 # 1000 possible cities?
 
 # add "fun" and "health" calculations to check for for city (like energy, area, money)

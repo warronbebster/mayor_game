@@ -17,9 +17,11 @@ defmodule MayorGameWeb.DashboardLive do
 
   # if user is logged in:
   def mount(_params, %{"current_user" => current_user}, socket) do
+    IO.inspect(current_user |> MayorGame.Repo.preload(:town))
+
     {:ok,
      socket
-     |> assign(current_user: current_user)
+     |> assign(current_user: current_user |> MayorGame.Repo.preload(:town))
      |> assign(regions: Town.regions())
      |> assign(climates: Town.climates())
      |> assign_new_city_changeset()

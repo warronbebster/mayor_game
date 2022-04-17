@@ -21,7 +21,7 @@ defmodule MayorGame.Repo.Migrations.CreateCities do
     end
 
     # ok here in Cities i'm making an index with user_id… do I need to do this in the others?
-    create index(:cities, [:user_id])
+    create unique_index(:cities, [:user_id])
     # make city names unique
     create unique_index(:cities, [:title])
   end

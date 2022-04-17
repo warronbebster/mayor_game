@@ -89,9 +89,11 @@ a {
 }
 
 button,
+select,
 input[type="button"],
 input[type="text"],
 input[type="reset"],
+input[type="password"],
 input[type="submit"] {
   border: 0.1rem solid #606c76;
   background: transparent;
