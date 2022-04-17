@@ -4,9 +4,7 @@
 # fix bug when citizen is killed by pollution
 # I su0spect that this is because I end up trying to kill the same citizen multiple times in the same "check cycle"
 
-# switch "detail" for "details" in town struct/DB
-
-# route you to city when you create it
+# route you to city url when you create it
 
 # figure out job & education level indexing (start from 0 or 1?)
 # jobs are 0 to 6, assume edu is as well

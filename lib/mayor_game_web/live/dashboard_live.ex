@@ -67,13 +67,14 @@ defmodule MayorGameWeb.DashboardLive do
     case City.create_city(city_form) do
       # if city built successfully
       {:ok, _} ->
-        # return assign to update cities in socket assigns
         {:noreply,
-         assign(
-           socket,
-           :cities,
-           City.list_cities()
-           #  Repo.preload(current_user, :town, force: true)
+         push_redirect(
+           assign(
+             socket,
+             :cities,
+             City.list_cities()
+           ),
+           to: "/city/" <> city_form["title"]
          )}
 
       # {:error, err} ->
