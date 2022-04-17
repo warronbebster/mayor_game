@@ -14,7 +14,7 @@ defmodule MayorGame.City.Town do
       tax_rates: map,
       user: %MayorGame.Auth.User{},
       citizens: list(Citizens.t()),
-      detail: Details.t()
+      details: Details.t()
   """
 
   use Ecto.Schema
@@ -25,7 +25,7 @@ defmodule MayorGame.City.Town do
   @timestamps_opts [type: :utc_datetime]
 
   # don't print these on inspect
-  @derive {Inspect, except: [:logs, :citizens, :detail]}
+  @derive {Inspect, except: [:logs, :citizens, :details]}
 
   @typedoc """
       Type for %Town{} that's callable with MayorGame.City.Buildable.t()
@@ -43,7 +43,7 @@ defmodule MayorGame.City.Town do
           tax_rates: map,
           user: %MayorGame.Auth.User{},
           citizens: list(Citizens.t()),
-          detail: Details.t()
+          details: Details.t()
         }
 
   schema "cities" do
@@ -59,7 +59,7 @@ defmodule MayorGame.City.Town do
     # outline relationship between city and citizens
     # this has to be passed as a list []
     has_many :citizens, Citizens
-    has_one :detail, Details
+    has_one :details, Details
 
     timestamps()
 

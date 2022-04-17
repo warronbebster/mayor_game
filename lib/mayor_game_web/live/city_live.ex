@@ -65,7 +65,7 @@ defmodule MayorGameWeb.CityLive do
 
   # event
   def handle_event("gib_money", _value, %{assigns: %{city: city}} = socket) do
-    case City.update_details(city.detail, %{city_treasury: city.detail.city_treasury + 1000}) do
+    case City.update_details(city.details, %{city_treasury: city.details.city_treasury + 1000}) do
       {:ok, _updated_town} ->
         IO.puts("money gabe")
 
@@ -91,8 +91,8 @@ defmodule MayorGameWeb.CityLive do
 
     # check for upgrade requirements?
 
-    case City.purchase_buildable(city.detail, building_to_buy_atom, purchase_price) do
-      {:ok, _updated_detail} ->
+    case City.purchase_buildable(city.details, building_to_buy_atom, purchase_price) do
+      {:ok, _updated_details} ->
         IO.puts("purchase success")
 
       {:error, err} ->
@@ -110,8 +110,8 @@ defmodule MayorGameWeb.CityLive do
       ) do
     # check if user is mayor here?
 
-    case City.demolish_buildable(city.detail, building_to_demolish, buildable_id) do
-      {:ok, _updated_detail} ->
+    case City.demolish_buildable(city.details, building_to_demolish, buildable_id) do
+      {:ok, _updated_details} ->
         IO.puts("demolition success")
 
       {:error, err} ->
@@ -141,21 +141,21 @@ defmodule MayorGameWeb.CityLive do
         else: String.to_existing_atom(buildable_to_upgrade)
 
     buildable_to_upgrade =
-      Repo.get_by!(Ecto.assoc(city.detail, buildable_to_upgrade_atom), id: buildable_id)
+      Repo.get_by!(Ecto.assoc(city.details, buildable_to_upgrade_atom), id: buildable_id)
 
     # TODO: remove console prints
     IO.inspect(buildable_to_upgrade)
 
-    case City.update_buildable(city.detail, buildable_to_upgrade_atom, buildable_id, %{
+    case City.update_buildable(city.details, buildable_to_upgrade_atom, buildable_id, %{
            # updates the upgrades map in the specific buildable
            upgrades: [to_string(upgrade_name) | buildable_to_upgrade.upgrades]
          }) do
-      {:ok, _updated_detail} ->
+      {:ok, _updated_details} ->
         IO.puts("buildable upgraded successfully")
 
         # then charges from the treasury
-        City.update_details(city.detail, %{
-          city_treasury: city.detail.city_treasury - String.to_integer(upgrade_cost)
+        City.update_details(city.details, %{
+          city_treasury: city.details.city_treasury - String.to_integer(upgrade_cost)
         })
 
       {:error, err} ->
@@ -188,7 +188,7 @@ defmodule MayorGameWeb.CityLive do
       updated_tax_rates = city.tax_rates |> Map.put(job_level, updated_value_constrained)
 
       case City.update_town_by_id(city.id, %{tax_rates: updated_tax_rates}) do
-        {:ok, _updated_detail} ->
+        {:ok, _updated_details} ->
           IO.puts("tax rates updated")
 
         {:error, err} ->
@@ -224,7 +224,7 @@ defmodule MayorGameWeb.CityLive do
     reset_buildables_to_enabled(city)
 
     # take buildable list, put something in each one, buildable_status
-    city_baked_details = %{city | detail: bake_details(city.detail)}
+    city_baked_details = %{city | details: bake_details(city.details)}
 
     city_updated =
       city_baked_details
@@ -256,7 +256,7 @@ defmodule MayorGameWeb.CityLive do
   # this takes a buildable metadata, and builds status from database
   # TODO: Clean this shit upppp
   defp calculate_buildable_status(buildable, city_with_stats) do
-    if city_with_stats.detail.city_treasury > buildable.price do
+    if city_with_stats.details.city_treasury > buildable.price do
       cond do
         # enough energy AND enough area
 

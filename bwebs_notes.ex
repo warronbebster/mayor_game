@@ -4,19 +4,12 @@
 # fix bug when citizen is killed by pollution
 # I su0spect that this is because I end up trying to kill the same citizen multiple times in the same "check cycle"
 
-# front-end cleanup
-
-# remove or clarify "ID number" rendering on individual buildables on website, because it looks like a count
-
 # switch "detail" for "details" in town struct/DB
+
+# route you to city when you create it
 
 # figure out job & education level indexing (start from 0 or 1?)
 # jobs are 0 to 6, assume edu is as well
-
-# get rid of "refill my money" if ur not me
-
-# maybe add global limits for amount of cities… artificial scarcity?
-# 1000 possible cities?
 
 # add "fun" and "health" calculations to check for for city (like energy, area, money)
 
@@ -25,7 +18,15 @@
 # add hospitals, doctor offices and other health impacts stats (factory work? parks?)
 # add grocery stores? farmers markets? farms?
 
+
+# get rid of "refill my money" if ur not me
+# remove or clarify "ID number" rendering on individual buildables on website, because it looks like a count
+# front-end cleanup
+
 # figure out how to release prod version
+
+# maybe add global limits for amount of cities… artificial scarcity?
+# 1000 possible cities?
 
 
 
@@ -147,4 +148,4 @@ maybe that makes sense in this case? but idk
 Repo.all(MayorGame.City.Citizens) |> Repo.preload([:town])
 
 # get stuff from a struct with the key atom:
-Map.get(city.detail, building_type)
+Map.get(city.details, building_type)

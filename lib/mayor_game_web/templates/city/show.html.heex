@@ -21,7 +21,7 @@
 
 
   <br/>
-  <b>city money:</b> <%= @city.detail.city_treasury %>
+  <b>city money:</b> <%= @city.details.city_treasury %>
   <br/>
   <b>total energy generated:</b> <%= @city.total_energy %>
   <b>available energy on grid:</b> <%= @city.available_energy %>
@@ -50,7 +50,7 @@
       <%# for each type of buildable in a category %>
       <%= for {building_type, building_stats} <- buildings do %>
 
-        <%= length(Map.get(@city.detail, building_type)) %>
+        <%= length(Map.get(@city.details, building_type)) %>
         <%= building_type %>
 
         <%= if @is_user_mayor do %>
@@ -71,7 +71,7 @@
         <% end %>
 
         <%# here we actually render the buildings the %Town{} actually has %>
-        <%= for building <- Map.get(@city.detail, building_type) do%>
+        <%= for building <- Map.get(@city.details, building_type) do%>
           <div class="border rounded border-gray-500 inline-block p-2"> 
             <%= building.buildable.id %>
             <%= if building.buildable.enabled do%>
@@ -98,7 +98,7 @@
                       purchased
                     <% else %>
                       <%= if @is_user_mayor do %>
-                        <%= if @city.detail.city_treasury >= upgrade_details.cost do %>
+                        <%= if @city.details.city_treasury >= upgrade_details.cost do %>
                           <%= if Enum.all?(upgrade_details.requirements, fn upgrade -> to_string(upgrade) in building.buildable.upgrades end) do %>
                             <button phx-click="buy_upgrade"
                             phx-throttle="100"

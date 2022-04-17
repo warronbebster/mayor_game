@@ -23,7 +23,7 @@ defmodule MayorGame.City do
   end
 
   @doc """
-  Returns the list of cities with preloads on the cities: preloads :citizens, :user, :detail
+  Returns the list of cities with preloads on the cities: preloads :citizens, :user, :details
 
   ## Examples
 
@@ -31,16 +31,16 @@ defmodule MayorGame.City do
       [%Town{
         :citizens: [...],
         :user: %User{},
-        :detail: %Detail{
+        :details: %details{
 
         }
       }, ...]
 
   """
   def list_cities_preload do
-    Repo.all(Town) |> Repo.preload([:citizens, :user, detail: Buildable.buildables_list()])
+    Repo.all(Town) |> Repo.preload([:citizens, :user, details: Buildable.buildables_list()])
 
-    # city |> MayorGame.Repo.preload([:citizens, :user, detail: Buildable.buildables_list()])
+    # city |> MayorGame.Repo.preload([:citizens, :user, details: Buildable.buildables_list()])
   end
 
   @doc """
@@ -101,10 +101,10 @@ defmodule MayorGame.City do
       {:ok, created_city} ->
         buildables = Map.new(Buildable.buildables_list(), fn buildable -> {buildable, []} end)
 
-        detail = Map.merge(buildables, %{city_treasury: 500, town_id: created_city.id})
+        details = Map.merge(buildables, %{city_treasury: 500, town_id: created_city.id})
 
         # and create a detail in the DB, tied to this city
-        case create_details(detail) do
+        case create_details(details) do
           {:ok, _} ->
             # return the city created
             {:ok, created_city}
