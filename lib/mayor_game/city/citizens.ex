@@ -56,6 +56,8 @@ defmodule MayorGame.City.Citizens do
     [
       :tax_rates,
       :sprawl,
+      :fun,
+      :health,
       :pollution
     ]
   end

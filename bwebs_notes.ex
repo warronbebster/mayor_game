@@ -2,9 +2,7 @@
 
 # TODO:
 # fix bug when citizen is killed by pollution
-# I su0spect that this is because I end up trying to kill the same citizen multiple times in the same "check cycle"
-
-# route you to city url when you create it
+# I suspect that this is because I end up trying to kill the same citizen multiple times in the same "check cycle"
 
 # figure out job & education level indexing (start from 0 or 1?)
 # jobs are 0 to 6, assume edu is as well
@@ -13,18 +11,22 @@
 
 # implement regional differences (check region in generation functions) (done for energy, should do for health & fun)
 
-# add hospitals, doctor offices and other health impacts stats (factory work? parks?)
 # add grocery stores? farmers markets? farms?
+# add upgrades for different buildables
+
+# citizens dying because of "no housing" might be because they "start looking"
+# add random chance to generate new citizens (this exists)
 
 
-# get rid of "refill my money" if ur not me
+# FIRST RELEASE
+# get rid of "refill my money"
+# get rid of "add citizen"
 # remove or clarify "ID number" rendering on individual buildables on website, because it looks like a count
 # front-end cleanup
-
+# reorder so it's in order area, energy, housing, everything else
 # figure out how to release prod version
 
-# maybe add global limits for amount of cities… artificial scarcity?
-# 1000 possible cities?
+
 
 
 
@@ -33,6 +35,9 @@
 # add general "policy" options that aren't buildings
 # (speed limits — increase sprawl, increase health)
 # (bike lanes?)
+
+# maybe add global limits for amount of cities… artificial scarcity?
+# 1000 possible cities?
 
 # error handling/routing for wrong urls — route back to home
 

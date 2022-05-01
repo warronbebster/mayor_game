@@ -52,56 +52,62 @@ defmodule MayorGame.CityCalculator do
     # FIRST ROUND CHECK
     # go through all cities
     leftovers =
-      Enum.reduce(cities, %{cities_w_room: [], citizens_looking: [], new_pollution: 0}, fn city,
-                                                                                           acc ->
-        # result here is a %Town{} with stats calculated
-        city_with_stats = CityHelpers.calculate_city_stats(city, world)
+      Enum.reduce(
+        cities,
+        %{cities_w_room: [], citizens_looking: [], new_world_pollution: 0},
+        fn city, acc ->
+          # result here is a %Town{} with stats calculated
+          city_with_stats = CityHelpers.calculate_city_stats(city, world)
 
-        city_calc =
-          CityHelpers.calculate_stats_based_on_citizens(
-            city_with_stats,
-            world,
-            cities_count
-          )
-
-        # should i loop through citizens here, instead of in calculate_city_stats?
-        # that way I can use the same function later?
-
-        updated_city_treasury =
-          if city_calc.available_money + city_calc.tax < 0,
-            do: 0,
-            else: city_calc.available_money + city_calc.tax
-
-        # check here for if tax_income - money is less than zero
-        case City.update_details(city.details, %{city_treasury: updated_city_treasury}) do
-          {:ok, _updated_details} ->
-            City.update_log(
-              city,
-              "tax income: " <>
-                to_string(city_calc.tax) <> " operating cost: " <> to_string(city_calc.cost)
+          city_calculated_values =
+            CityHelpers.calculate_stats_based_on_citizens(
+              city_with_stats,
+              world,
+              cities_count
             )
 
-          {:error, err} ->
-            IO.inspect(err)
+          # should i loop through citizens here, instead of in calculate_city_stats?
+          # that way I can use the same function later?
+
+          updated_city_treasury =
+            if city_calculated_values.available_money + city_calculated_values.tax < 0,
+              do: 0,
+              else: city_calculated_values.available_money + city_calculated_values.tax
+
+          # check here for if tax_income - money is less than zero
+          case City.update_details(city.details, %{city_treasury: updated_city_treasury}) do
+            {:ok, _updated_details} ->
+              City.update_log(
+                city,
+                "tax income: " <>
+                  to_string(city_calculated_values.tax) <>
+                  " operating cost: " <> to_string(city_calculated_values.cost)
+              )
+
+            {:error, err} ->
+              IO.inspect(err)
+          end
+
+          # if city has leftover jobs
+          are_there_jobs =
+            Enum.any?(city_calculated_values.jobs, fn {_level, number} -> number > 0 end)
+
+          %{
+            cities_w_room:
+              if(city_calculated_values.housing > 0 && are_there_jobs,
+                # here it's taking a big amalgamated city object and putting the original %Town{} struct in it
+                # could clean this up
+                do: [Map.put(city_calculated_values, :city, city) | acc.cities_w_room],
+                else: acc.cities_w_room
+              ),
+            citizens_looking: city_calculated_values.citizens_looking ++ acc.citizens_looking,
+            new_world_pollution: city_calculated_values.pollution + acc.new_world_pollution
+          }
         end
-
-        # if city has leftover jobs
-        are_there_jobs = Enum.any?(city_calc.jobs, fn {_level, number} -> number > 0 end)
-
-        %{
-          cities_w_room:
-            if(city_calc.housing > 0 && are_there_jobs,
-              # here it's taking a big amalgamated city object and putting the original %Town{} struct in it
-              # could clean this up
-              do: [Map.put(city_calc, :city, city) | acc.cities_w_room],
-              else: acc.cities_w_room
-            ),
-          citizens_looking: city_calc.citizens_looking ++ acc.citizens_looking,
-          new_pollution: city_calc.pollution + acc.new_pollution
-        }
-      end)
+      )
 
     # SECOND ROUND CHECK (move citizens to better city, etc) here
+
     # if there are cities with room at all:
     if List.first(leftovers.cities_w_room) != nil do
       # for each citizen
@@ -140,10 +146,10 @@ defmodule MayorGame.CityCalculator do
     end
 
     updated_pollution =
-      if world.pollution + leftovers.new_pollution < 0 do
+      if world.pollution + leftovers.new_world_pollution < 0 do
         0
       else
-        world.pollution + leftovers.new_pollution
+        world.pollution + leftovers.new_world_pollution
       end
 
     # update World in DB

@@ -52,6 +52,9 @@ defmodule MayorGame.CityHelpers do
     total_jobs = calculate_jobs(city_updated)
     # returns a map of %{0 => #, 1 => #, etc}
     total_education = calculate_education(city_updated)
+    # returns a total num of fun
+    total_fun = calculate_total_int(city_updated, :fun)
+    total_health = calculate_total_int(city_updated, :health)
 
     # return city
 
@@ -60,6 +63,8 @@ defmodule MayorGame.CityHelpers do
       education: total_education,
       tax: 0,
       housing: total_housing,
+      fun: total_fun,
+      health: total_health,
       citizens_looking: []
     })
   end
@@ -191,8 +196,6 @@ defmodule MayorGame.CityHelpers do
     money: integer,
     citizens_looking: []}
     ```
-
-
   """
   def calculate_stats_based_on_citizens(city_with_stats, world, cities_count) do
     unless Enum.empty?(city_with_stats.citizens) do
@@ -222,9 +225,15 @@ defmodule MayorGame.CityHelpers do
 
             # citizen will look if there is no housing, if there is no best possible job, or if gap > 1
             will_citizen_look =
-              best_possible_job < 0 ||
-                (job_gap > 1 && citizen.last_moved + 365 < world.day) ||
-                acc.housing < 1
+              acc.housing < 1 and
+                best_possible_job < 0 and
+                job_gap > 1 and
+                citizen.last_moved + 365 < world.day
+
+            will_citizen_look &&
+              IO.puts(
+                to_string(citizen.name) <> " will_citizen_look: " <> to_string(will_citizen_look)
+              )
 
             # add to citizens_looking array
             citizens_looking =
@@ -237,11 +246,10 @@ defmodule MayorGame.CityHelpers do
                 do: Map.update!(acc.jobs, best_possible_job, &(&1 - 1)),
                 else: acc.jobs
 
-            # once a year
-
+            # once a year, randomly update education?
             updated_education =
               if rem(world.day, 365) == 0 && acc.education[citizen.education + 1] > 0 do
-                IO.inspect(acc.education)
+                # IO.inspect(acc.education)
                 City.update_citizens(citizen, %{education: citizen.education + 1})
                 Map.update!(acc.education, citizen.education + 1, &(&1 - 1))
               else
@@ -253,7 +261,7 @@ defmodule MayorGame.CityHelpers do
             # or just give education automatically if university exists?
 
             # spawn new citizens if conditions are right
-            if citizen.age == 9125 && citizen.education > 1,
+            if citizen.age > 1000 && citizen.age < 2000 && :rand.uniform(10) == 5,
               do:
                 City.create_citizens(%{
                   money: 0,
@@ -699,7 +707,7 @@ defmodule MayorGame.CityHelpers do
   @doc """
   takes a %MayorGame.City.Town{} struct
 
-  returns energy town in map %{amount: int}
+  returns total housing for town in map %{amount: int}
   """
   def calculate_housing(%{} = city) do
     # city_preloaded = preload_city_check(city)
@@ -799,6 +807,27 @@ defmodule MayorGame.CityHelpers do
   end
 
   @doc """
+  takes a %MayorGame.City.Town{} struct and an atom that matches a buildable metadata category
+
+  returns int of total int of that category for the city
+  """
+  def calculate_total_int(%{} = city, metadata_category) do
+    Enum.reduce(
+      Buildable.buildables_flat(),
+      0,
+      fn {buildable_type, buildable_options}, acc ->
+        buildables = Map.get(city.details, buildable_type)
+
+        if length(buildables) > 0 do
+          acc + sum_details_metadata(buildables, metadata_category)
+        else
+          acc
+        end
+      end
+    )
+  end
+
+  @doc """
   takes a %MayorGame.City.Town{} struct
 
   returns map of available education by level: %{0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0}
@@ -854,7 +883,7 @@ defmodule MayorGame.CityHelpers do
     end
   end
 
-  @spec preload_city_check(Details.t()) :: Details.t()
+  @spec bake_details(Details.t()) :: Details.t()
   @doc """
       Takes a %Details{} struct
 
@@ -903,7 +932,7 @@ defmodule MayorGame.CityHelpers do
   end
 
   @doc """
-   take a city, update the buildables inside's  purchasable status
+   take a city, update the purchasable status of buildables inside
   """
   def bake_city_purchasables(city_with_stats) do
     # Enum.map(Buildable.buildables_flat(), fn b_metadata_raw ->

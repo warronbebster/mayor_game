@@ -63,7 +63,7 @@
 
           <%= for {building_stat, value} <- building_stats do %>
           <%# gotta avoid rendering stuff that's not HTMLsafe, like maps %>
-            <%= if !String.contains?(Atom.to_string(building_stat), ["multipliers", "price", "purchasable", "upgrades"]) do %>
+            <%= if !String.contains?(Atom.to_string(building_stat), ["multipliers", "price", "purchasable", "upgrades"]) && value != nil do %>
               <%= building_stat %>: <%=value%> |
             <% end %>
           <% end %>
