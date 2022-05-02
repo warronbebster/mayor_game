@@ -140,10 +140,7 @@ defmodule MayorGame.CityCalculator do
             # could update job count if we really knew which job level the citizen held
           end)
 
-        CityHelpers.kill_citizen(
-          citizen_too_old,
-          citizen_too_old.name <> " has died of old age. RIP"
-        )
+        CityHelpers.kill_citizen(citizen_too_old, "old age")
 
         updated_acc_city_list
       end)
@@ -166,10 +163,7 @@ defmodule MayorGame.CityCalculator do
             # could update job count if we really knew which job level the citizen held
           end)
 
-        CityHelpers.kill_citizen(
-          citizen_polluted,
-          citizen_polluted.name <> " has died of high pollution levels. RIP"
-        )
+        CityHelpers.kill_citizen(citizen_polluted, "high pollution levels")
 
         updated_acc_city_list
       end)
@@ -199,6 +193,12 @@ defmodule MayorGame.CityCalculator do
             has_car: false,
             last_moved: 0
           })
+
+          City.update_log(
+            City.get_town!(citizen_to_reproduce.town_id),
+            citizen_to_reproduce.name <>
+              " has had a child: " <> citizen_to_reproduce.name <> "kin"
+          )
 
           updated_acc_city_list
         end
@@ -254,10 +254,7 @@ defmodule MayorGame.CityCalculator do
           Map.update!(update, :available_housing, &(&1 - 1))
         end)
 
-      CityHelpers.kill_citizen(
-        citizen_out_of_room,
-        citizen_out_of_room.name <> " has died, no housing available. RIP"
-      )
+      CityHelpers.kill_citizen(citizen_out_of_room, "no housing available")
 
       updated_acc_city_list
     end)
