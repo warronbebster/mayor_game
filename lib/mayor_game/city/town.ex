@@ -51,6 +51,7 @@ defmodule MayorGame.City.Town do
     field :region, :string
     field :climate, :string
     field :resources, :map
+
     # this corresponds to an elixir list
     field :logs, {:array, :string}
     field :tax_rates, :map

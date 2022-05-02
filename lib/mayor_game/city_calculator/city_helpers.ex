@@ -65,7 +65,13 @@ defmodule MayorGame.CityHelpers do
       housing: total_housing,
       fun: total_fun,
       health: total_health,
-      citizens_looking: []
+      # the below are initialized as empty to be filled later
+      available_housing: total_housing,
+      citizens_looking: [],
+      citizens_out_of_room: [],
+      citizens_too_old: [],
+      citizens_polluted: [],
+      citizens_to_reproduce: []
     })
   end
 
@@ -115,8 +121,10 @@ defmodule MayorGame.CityHelpers do
   def find_cities_with_job(cities, level) do
     Enum.filter(cities, fn city_to_check ->
       is_number(city_to_check.jobs[level]) &&
-        city_to_check.jobs[level] > 0 &&
-        city_to_check.housing > 0
+        city_to_check.jobs[level] > 0
+
+      # &&
+      # city_to_check.housing > 0
     end)
   end
 
@@ -168,7 +176,7 @@ defmodule MayorGame.CityHelpers do
           # should probably do this when calculating it, not here
 
           score =
-            city_calc.city.tax_rates[to_string(results.job_level)] *
+            city_calc.tax_rates[to_string(results.job_level)] *
               citizen.preferences["tax_rates"] +
               city_calc.pollution / city_calc.total_energy * citizen.preferences["pollution"] +
               city_calc.sprawl / city_calc.total_area * citizen.preferences["sprawl"]
@@ -190,14 +198,22 @@ defmodule MayorGame.CityHelpers do
 
     result here is a city with additional fields:
     ```
-    jobs: integer,
+    jobs: map,
     housing: integer,
     tax: integer,
     money: integer,
-    citizens_looking: []}
+    citizens_looking: [],
+    citizens_out_of_room: [],
+    citizens_too_old: [],
+    citizens_polluted: [],
+    citizens_to_reproduce: []
+    }
     ```
   """
   def calculate_stats_based_on_citizens(city_with_stats, world, cities_count) do
+    # set a random pollution ceiling based on how many cities are in the ecosystem
+    pollution_ceiling = :rand.uniform(cities_count * 1000) * 1000
+
     unless Enum.empty?(city_with_stats.citizens) do
       results =
         Enum.reduce(
@@ -206,10 +222,10 @@ defmodule MayorGame.CityHelpers do
           fn citizen, acc ->
             City.update_citizens(citizen, %{age: citizen.age + 1})
 
-            # if there are NO jobs for citizen, returns -1.
+            # if there are NO jobs for citizen in this town, returns -1.
             best_possible_job =
               if citizen.education > 0 do
-                # [3,2,1,0]
+                # look through descending list starting with education level… [3,2,1,0] for example
                 levels = Enum.reverse(0..citizen.education)
 
                 Enum.reduce_while(levels, citizen.education, fn level_to_check, job_acc ->
@@ -221,80 +237,62 @@ defmodule MayorGame.CityHelpers do
                 if acc.jobs[0] > 0, do: 0, else: -1
               end
 
+            # if education level matches available job, this will be 0, otherwise > 1
             job_gap = citizen.education - best_possible_job
 
-            # citizen will look if there is no housing, if there is no best possible job, or if gap > 1
-            will_citizen_look =
-              acc.housing < 1 and
-                best_possible_job < 0 and
-                job_gap > 1 and
-                citizen.last_moved + 365 < world.day
-
-            will_citizen_look &&
-              IO.puts(
-                to_string(citizen.name) <> " will_citizen_look: " <> to_string(will_citizen_look)
-              )
-
-            # add to citizens_looking array
-            citizens_looking =
-              if will_citizen_look,
-                do: [citizen | acc.citizens_looking],
-                else: acc.citizens_looking
-
+            # if there is an available job, remove it from array
             updated_jobs =
-              if best_possible_job > -1,
+              if best_possible_job >= 0,
                 do: Map.update!(acc.jobs, best_possible_job, &(&1 - 1)),
                 else: acc.jobs
 
-            # once a year, randomly update education?
+            # citizen will look if there is a job gap
+            citizens_looking =
+              if job_gap > 0 and citizen.last_moved + 365 < world.day,
+                do: [citizen | acc.citizens_looking],
+                else: acc.citizens_looking
+
+            citizens_out_of_room =
+              if acc.available_housing < 1,
+                do: [citizen | acc.citizens_out_of_room],
+                else: acc.citizens_out_of_room
+
+            citizens_too_old =
+              if citizen.age > 36500,
+                do: [citizen | acc.citizens_too_old],
+                else: acc.citizens_too_old
+
+            citizens_polluted =
+              if world.pollution > pollution_ceiling and citizen.age <= 36500,
+                do: [citizen | acc.citizens_polluted],
+                else: acc.citizens_polluted
+
+            # spawn new citizens if conditions are right; age, random, housing exists
+            citizens_to_reproduce =
+              if citizen.age > 1000 and citizen.age < 2000 and :rand.uniform(10) == 5,
+                do: [citizen | acc.citizens_to_reproduce],
+                else: acc.citizens_to_reproduce
+
+            # once a year, update education of citizen if there is capacity
+            # e.g. if the edu institutions have capacity
             updated_education =
               if rem(world.day, 365) == 0 && acc.education[citizen.education + 1] > 0 do
-                # IO.inspect(acc.education)
                 City.update_citizens(citizen, %{education: citizen.education + 1})
                 Map.update!(acc.education, citizen.education + 1, &(&1 - 1))
               else
                 acc.education
               end
 
-            # function to spawn children
-            # function to look for education if have money
-            # or just give education automatically if university exists?
-
-            # spawn new citizens if conditions are right
-            if citizen.age > 1000 && citizen.age < 2000 && :rand.uniform(10) == 5,
-              do:
-                City.create_citizens(%{
-                  money: 0,
-                  name: "child",
-                  town_id: citizen.town_id,
-                  age: 0,
-                  education: 0,
-                  has_car: false,
-                  last_moved: 0
-                })
-
-            # kill citizen
-            # also kill based on roads / random chance
-            if citizen.age > 36500, do: kill_citizen(citizen, "old age")
-
-            # set a random pollution ceiling based on how many cities are in the ecosystem
-            pollution_ceiling = :rand.uniform(cities_count * 1000) * 1000
-
-            if world.pollution > pollution_ceiling do
-              IO.puts(
-                "pollution too high: " <>
-                  to_string(world.pollution) <> " above ceiling: " <> to_string(pollution_ceiling)
-              )
-
-              kill_citizen(citizen, "pollution is too high")
-            end
-
             # return city
             acc
-            |> Map.put(:housing, acc.housing - 1)
+            |> Map.put(:available_housing, acc.available_housing - 1)
             |> Map.put(:jobs, updated_jobs)
             |> Map.put(:education, updated_education)
             |> Map.put(:citizens_looking, citizens_looking)
+            |> Map.put(:citizens_out_of_room, citizens_out_of_room)
+            |> Map.put(:citizens_too_old, citizens_too_old)
+            |> Map.put(:citizens_polluted, citizens_polluted)
+            |> Map.put(:citizens_to_reproduce, citizens_to_reproduce)
             |> Map.put(
               :tax,
               round((1 + best_possible_job) * 100 * acc.tax_rates[to_string(citizen.education)]) +
@@ -830,7 +828,7 @@ defmodule MayorGame.CityHelpers do
   @doc """
   takes a %MayorGame.City.Town{} struct
 
-  returns map of available education by level: %{0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0}
+  returns map of available education slots by level: %{0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0}
   """
   def calculate_education(%{} = city) do
     # city_preloaded = preload_city_check(city)

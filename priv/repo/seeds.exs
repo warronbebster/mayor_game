@@ -60,5 +60,3 @@ Auth.create_user(%{
     has_car: false,
     last_moved: 0
   })
-
-# Ecto.build_assoc(user, :posts, %{header: "Clickbait header", body: "No real content"})

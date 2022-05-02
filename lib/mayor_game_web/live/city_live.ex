@@ -143,9 +143,6 @@ defmodule MayorGameWeb.CityLive do
     buildable_to_upgrade =
       Repo.get_by!(Ecto.assoc(city.details, buildable_to_upgrade_atom), id: buildable_id)
 
-    # TODO: remove console prints
-    IO.inspect(buildable_to_upgrade)
-
     case City.update_buildable(city.details, buildable_to_upgrade_atom, buildable_id, %{
            # updates the upgrades map in the specific buildable
            upgrades: [to_string(upgrade_name) | buildable_to_upgrade.upgrades]

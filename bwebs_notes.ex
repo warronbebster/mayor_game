@@ -1,21 +1,15 @@
 # society simulator 2021
 
 # TODO:
-# fix bug when citizen is killed by pollution
-# I suspect that this is because I end up trying to kill the same citizen multiple times in the same "check cycle"
 
 # figure out job & education level indexing (start from 0 or 1?)
 # jobs are 0 to 6, assume edu is as well
 
-# add "fun" and "health" calculations to check for for city (like energy, area, money)
-
 # implement regional differences (check region in generation functions) (done for energy, should do for health & fun)
 
-# add grocery stores? farmers markets? farms?
 # add upgrades for different buildables
 
-# citizens dying because of "no housing" might be because they "start looking"
-# add random chance to generate new citizens (this exists)
+# start cities with a certain amount of money
 
 
 # FIRST RELEASE
@@ -23,7 +17,7 @@
 # get rid of "add citizen"
 # remove or clarify "ID number" rendering on individual buildables on website, because it looks like a count
 # front-end cleanup
-# reorder so it's in order area, energy, housing, everything else
+# reorder front-end so it's in order area, energy, housing, everything else
 # figure out how to release prod version
 
 
@@ -32,6 +26,8 @@
 
 
 ### nice to have —————————————————————————————————————
+# add grocery stores? farmers markets? farms?
+
 # add general "policy" options that aren't buildings
 # (speed limits — increase sprawl, increase health)
 # (bike lanes?)
