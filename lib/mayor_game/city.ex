@@ -101,7 +101,7 @@ defmodule MayorGame.City do
       {:ok, created_city} ->
         buildables = Map.new(Buildable.buildables_list(), fn buildable -> {buildable, []} end)
 
-        details = Map.merge(buildables, %{city_treasury: 500, town_id: created_city.id})
+        details = Map.merge(buildables, %{city_treasury: 5000, town_id: created_city.id})
 
         # and create a detail in the DB, tied to this city
         case create_details(details) do
@@ -556,7 +556,7 @@ defmodule MayorGame.City do
   """
   def get_world!(id), do: Repo.get!(World, id)
 
-  @spec get_world(integer) :: World.t()
+  @spec get_world(integer) :: World.t() | nil
   @doc """
   Gets a single World.
 

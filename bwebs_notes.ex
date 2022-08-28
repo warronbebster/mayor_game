@@ -9,7 +9,9 @@
 
 # add upgrades for different buildables
 
-# start cities with a certain amount of money
+# figure out why server sometimes doesn't restart
+
+# maybe make it so pollution is random, I think it'll kill everyone rn
 
 
 # FIRST RELEASE
@@ -110,6 +112,9 @@ mix phx.gen.context City Details details \
 
 # see routes
 mix phx.routes
+
+# start the server project
+mix phx.server
 
 # run iex for the project
 iex -S mix phx.server

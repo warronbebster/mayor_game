@@ -4,7 +4,7 @@ defmodule MayorGame.CityCalculator do
   # alias MayorGame.City.Details
 
   def start_link(initial_val) do
-    IO.puts('start_link')
+    IO.puts('start_city_calculator_link')
     # starts link based on this file
     # which triggers init function in module
     # world = MayorGame.City.get_world!(1)
@@ -74,12 +74,12 @@ defmodule MayorGame.CityCalculator do
               cities_count
             )
 
-          if city.id == 2 do
-            IO.puts("available_housing: " <> to_string(city_calculated_values.available_housing))
-            IO.puts("total_housing: " <> to_string(city_calculated_values.housing))
-            # these jobs are available jobs
-            IO.inspect(city_calculated_values.jobs)
-          end
+          # if city.id == 2 do
+          #   IO.puts("available_housing: " <> to_string(city_calculated_values.available_housing))
+          #   IO.puts("total_housing: " <> to_string(city_calculated_values.housing))
+          #   # these jobs are available jobs
+          #   IO.inspect(city_calculated_values.jobs)
+          # end
 
           # should i loop through citizens here, instead of in calculate_city_stats?
           # that way I can use the same function later?

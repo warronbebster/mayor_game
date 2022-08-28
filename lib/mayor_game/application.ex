@@ -16,7 +16,7 @@ defmodule MayorGame.Application do
       # Start the Endpoint (http/https)
       MayorGameWeb.Endpoint,
 
-      # start mover process with initial value 15
+      # start cityCalculator process with initial value 1
       # oh this is how you can start multiple children
       # Start a worker by calling: MayorGame.CityCalculator.start_link(arg)
 

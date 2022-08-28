@@ -196,7 +196,7 @@ defmodule MayorGame.CityHelpers do
   @doc """
     takes a city_with_stats map, %World, and count of cities in ecosystem
 
-    result here is a city with additional fields:
+    result here is that city passed in, with additional arrays for citizen info
     ```
     jobs: map,
     housing: integer,
@@ -211,9 +211,6 @@ defmodule MayorGame.CityHelpers do
     ```
   """
   def calculate_stats_based_on_citizens(city_with_stats, world, cities_count) do
-    # set a random pollution ceiling based on how many cities are in the ecosystem
-    pollution_ceiling = :rand.uniform(cities_count * 1000) * 1000
-
     unless Enum.empty?(city_with_stats.citizens) do
       results =
         Enum.reduce(
@@ -221,6 +218,9 @@ defmodule MayorGame.CityHelpers do
           city_with_stats,
           fn citizen, acc ->
             City.update_citizens(citizen, %{age: citizen.age + 1})
+
+            # set a random pollution ceiling based on how many cities are in the ecosystem
+            pollution_ceiling = :rand.uniform(cities_count * 1000) * 1000
 
             # if there are NO jobs for citizen in this town, returns -1.
             best_possible_job =
@@ -813,7 +813,7 @@ defmodule MayorGame.CityHelpers do
     Enum.reduce(
       Buildable.buildables_flat(),
       0,
-      fn {buildable_type, buildable_options}, acc ->
+      fn {buildable_type, _buildable_options}, acc ->
         buildables = Map.get(city.details, buildable_type)
 
         if length(buildables) > 0 do

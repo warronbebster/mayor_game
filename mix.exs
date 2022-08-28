@@ -17,6 +17,7 @@ defmodule MayorGame.MixProject do
   # Configuration for the OTP application.
   #
   # Type `mix help compile.app` for more information.
+  # mod here specifies a module to invoke when the application is started
   def application do
     [
       mod: {MayorGame.Application, []},

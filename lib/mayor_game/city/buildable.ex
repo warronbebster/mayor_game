@@ -58,53 +58,53 @@ defmodule MayorGame.City.Buildable do
   def buildables do
     %{
       housing: %{
-        single_family_homes: buildables_flat.single_family_homes,
-        multi_family_homes: buildables_flat.multi_family_homes,
-        homeless_shelters: buildables_flat.homeless_shelters,
-        apartments: buildables_flat.apartments,
-        micro_apartments: buildables_flat.micro_apartments,
-        high_rises: buildables_flat.high_rises
+        single_family_homes: buildables_flat().single_family_homes,
+        multi_family_homes: buildables_flat().multi_family_homes,
+        homeless_shelters: buildables_flat().homeless_shelters,
+        apartments: buildables_flat().apartments,
+        micro_apartments: buildables_flat().micro_apartments,
+        high_rises: buildables_flat().high_rises
       },
       transit: %{
-        roads: buildables_flat.roads,
-        highways: buildables_flat.highways,
-        airports: buildables_flat.airports,
-        bus_lines: buildables_flat.bus_lines,
-        subway_lines: buildables_flat.subway_lines,
-        bike_lanes: buildables_flat.bike_lanes,
-        bikeshare_stations: buildables_flat.bikeshare_stations
+        roads: buildables_flat().roads,
+        highways: buildables_flat().highways,
+        airports: buildables_flat().airports,
+        bus_lines: buildables_flat().bus_lines,
+        subway_lines: buildables_flat().subway_lines,
+        bike_lanes: buildables_flat().bike_lanes,
+        bikeshare_stations: buildables_flat().bikeshare_stations
       },
       energy: %{
-        coal_plants: buildables_flat.coal_plants,
-        wind_turbines: buildables_flat.wind_turbines,
-        solar_plants: buildables_flat.solar_plants,
-        nuclear_plants: buildables_flat.nuclear_plants,
-        dams: buildables_flat.dams,
-        carbon_capture_plants: buildables_flat.carbon_capture_plants
+        coal_plants: buildables_flat().coal_plants,
+        wind_turbines: buildables_flat().wind_turbines,
+        solar_plants: buildables_flat().solar_plants,
+        nuclear_plants: buildables_flat().nuclear_plants,
+        dams: buildables_flat().dams,
+        carbon_capture_plants: buildables_flat().carbon_capture_plants
       },
       civic: %{
-        parks: buildables_flat.parks,
-        libraries: buildables_flat.libraries
+        parks: buildables_flat().parks,
+        libraries: buildables_flat().libraries
       },
       education: %{
-        schools: buildables_flat.schools,
-        middle_schools: buildables_flat.middle_schools,
-        high_schools: buildables_flat.high_schools,
-        universities: buildables_flat.universities,
-        research_labs: buildables_flat.research_labs
+        schools: buildables_flat().schools,
+        middle_schools: buildables_flat().middle_schools,
+        high_schools: buildables_flat().high_schools,
+        universities: buildables_flat().universities,
+        research_labs: buildables_flat().research_labs
       },
       work: %{
-        retail_shops: buildables_flat.retail_shops,
-        factories: buildables_flat.factories,
-        office_buildings: buildables_flat.office_buildings
+        retail_shops: buildables_flat().retail_shops,
+        factories: buildables_flat().factories,
+        office_buildings: buildables_flat().office_buildings
       },
       entertainment: %{
-        theatres: buildables_flat.theatres,
-        arenas: buildables_flat.arenas
+        theatres: buildables_flat().theatres,
+        arenas: buildables_flat().arenas
       },
       health: %{
-        hospitals: buildables_flat.hospitals,
-        doctor_offices: buildables_flat.doctor_offices
+        hospitals: buildables_flat().hospitals,
+        doctor_offices: buildables_flat().doctor_offices
       }
     }
   end
