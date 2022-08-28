@@ -153,3 +153,7 @@ Repo.all(MayorGame.City.Citizens) |> Repo.preload([:town])
 
 # get stuff from a struct with the key atom:
 Map.get(city.details, building_type)
+
+
+root.html.eex goes on every page
+live.html.eex might wrap every live thingy?

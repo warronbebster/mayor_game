@@ -25,8 +25,8 @@ IO.puts('seeding!')
 Auth.create_user(%{
   nickname: "bwebs",
   email: "hi@test.com",
-  password: "barronbarron",
-  confirm_password: "barronbarron"
+  password: "password",
+  confirm_password: "password"
 })
 
 # create a user
