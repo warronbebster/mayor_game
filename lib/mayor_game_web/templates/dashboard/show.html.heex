@@ -5,7 +5,7 @@
       <%= link city.title,
               to: Routes.city_path(@socket, MayorGameWeb.CityLive, city.title) %>
               <%= Enum.count(city.citizens) %> citizens
-              <%= if (assigns[:current_user].nickname == city.user.nickname) do %>
+              <%= if assigns[:current_user] && assigns[:current_user].nickname == city.user.nickname do %>
                 your city
               <% end %>
     </div>
