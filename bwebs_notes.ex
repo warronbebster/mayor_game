@@ -5,6 +5,8 @@
 # figure out job & education level indexing (start from 0 or 1?)
 # jobs are 0 to 6, assume edu is as well
 
+# add exponential pricing to buildings
+
 # implement regional differences (check region in generation functions) (done for energy, should do for health & fun)
 
 # add upgrades for different buildables
@@ -12,6 +14,7 @@
 # figure out why server sometimes doesn't restart
 
 # maybe make it so pollution is random, I think it'll kill everyone rn
+# ok it doesn't kill everyone at the same time so that's good
 
 
 # FIRST RELEASE
@@ -29,6 +32,8 @@
 
 ### nice to have —————————————————————————————————————
 # add grocery stores? farmers markets? farms?
+
+# hide resources in codebase
 
 # add general "policy" options that aren't buildings
 # (speed limits — increase sprawl, increase health)
@@ -71,6 +76,8 @@
 # PASSING FUNCTIONS:
 # https://stackoverflow.com/questions/22562192/how-do-you-pass-a-function-as-a-parameter-in-elixir
 # https://www.culttt.com/2016/05/09/functions-first-class-citizens-elixir
+
+# The buildable comes from the server, I think, and then the metadata gets calculated on the fly?
 
 
 # ——————————————————————————————————————————————————————————————

@@ -1,5 +1,5 @@
 
-Details for a town contains a list of %Buildable{} structs for each buildable type atom
+the Details struct for a town contains a list of %Buildable{} structs for each buildable type atom
 e.g.
 single_family_homes: [%Buildable{}, %Buildable{} ]
 
@@ -15,7 +15,7 @@ This comes from the DB, as part of a %Buildable{}:
   updated_at: DateTime.t() | nil
 }
 
-This comes from buildables() in the Buildables module:
+# But then this metadata comes from buildables() in the Buildables module:
 
 single_family_homes: %{
   price: 20,

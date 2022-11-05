@@ -65,7 +65,7 @@ defmodule MayorGameWeb.CityLive do
 
   # event
   def handle_event("gib_money", _value, %{assigns: %{city: city}} = socket) do
-    case City.update_details(city.details, %{city_treasury: city.details.city_treasury + 1000}) do
+    case City.update_details(city.details, %{city_treasury: city.details.city_treasury + 10000}) do
       {:ok, _updated_town} ->
         IO.puts("money gabe")
 
@@ -86,8 +86,11 @@ defmodule MayorGameWeb.CityLive do
 
     building_to_buy_atom = String.to_existing_atom(building_to_buy)
 
-    # get price — don't want to set price on front-end for cheating reasons
-    purchase_price = get_in(Buildable.buildables_flat(), [building_to_buy_atom, :price])
+    # get exponential price — don't want to set price on front-end for cheating reasons
+    initial_purchase_price = get_in(Buildable.buildables_flat(), [building_to_buy_atom, :price])
+    num_of_buildings = length(city.details[building_to_buy_atom])
+    purchase_exponential = num_of_buildings * num_of_buildings
+    purchase_price = initial_purchase_price + purchase_exponential
 
     # check for upgrade requirements?
 
@@ -229,8 +232,14 @@ defmodule MayorGameWeb.CityLive do
       |> calculate_energy(world)
       |> calculate_money()
 
+    # ok, here the price is updated per each CombinedBuildable
+    # IO.inspect(city_updated.details.roads)
+
     # have to have this separate from the actual city because the city might not have some buildables, but they're still purchasable
     buildables_with_status = calculate_buildables_statuses(city_updated)
+
+    # somehow loses updated price here
+    # IO.inspect(buildables_with_status)
 
     socket
     |> assign(:buildables, buildables_with_status)
@@ -245,15 +254,24 @@ defmodule MayorGameWeb.CityLive do
       {category,
        buildables
        |> Enum.map(fn {buildable_key, buildable_stats} ->
-         {buildable_key, Map.from_struct(calculate_buildable_status(buildable_stats, city))}
+         {buildable_key,
+          Map.from_struct(
+            calculate_buildable_status(
+              buildable_stats,
+              city,
+              length(Map.get(city.details, buildable_key))
+            )
+          )}
        end)}
     end)
   end
 
   # this takes a buildable metadata, and builds status from database
   # TODO: Clean this shit upppp
-  defp calculate_buildable_status(buildable, city_with_stats) do
-    if city_with_stats.details.city_treasury > buildable.price do
+  defp calculate_buildable_status(buildable, city_with_stats, buildable_count) do
+    updated_price = buildable.price + buildable_count * buildable_count
+
+    if city_with_stats.details.city_treasury > updated_price do
       cond do
         # enough energy AND enough area
 
@@ -261,21 +279,31 @@ defmodule MayorGameWeb.CityLive do
           city_with_stats.available_energy >= buildable.energy_required &&
             (buildable.area_required != nil and
                city_with_stats.available_area >= buildable.area_required) ->
-          %{buildable | purchasable: true, purchasable_reason: "valid"}
+          %{buildable | purchasable: true, purchasable_reason: "valid", price: updated_price}
 
         # not enough energy, enough area
         buildable.energy_required != nil and
           city_with_stats.available_energy < buildable.energy_required &&
             (buildable.area_required != nil and
                city_with_stats.available_area >= buildable.area_required) ->
-          %{buildable | purchasable: false, purchasable_reason: "not enough energy to build"}
+          %{
+            buildable
+            | purchasable: false,
+              purchasable_reason: "not enough energy to build",
+              price: updated_price
+          }
 
         # enough energy, not enough area
         buildable.energy_required != nil and
           city_with_stats.available_energy >= buildable.energy_required &&
             (buildable.area_required != nil and
                city_with_stats.available_area < buildable.area_required) ->
-          %{buildable | purchasable: false, purchasable_reason: "not enough area to build"}
+          %{
+            buildable
+            | purchasable: false,
+              purchasable_reason: "not enough area to build",
+              price: updated_price
+          }
 
         # not enough energy AND not enough area
         buildable.energy_required != nil and
@@ -285,43 +313,59 @@ defmodule MayorGameWeb.CityLive do
           %{
             buildable
             | purchasable: false,
-              purchasable_reason: "not enough area or energy to build"
+              purchasable_reason: "not enough area or energy to build",
+              price: updated_price
           }
 
         # no energy needed, enough area
         buildable.energy_required == nil &&
             (buildable.area_required != nil and
                city_with_stats.available_area >= buildable.area_required) ->
-          %{buildable | purchasable: true, purchasable_reason: "valid"}
+          %{buildable | purchasable: true, purchasable_reason: "valid", price: updated_price}
 
         # no energy needed, not enough area
         buildable.energy_required == nil &&
             (buildable.area_required != nil and
                city_with_stats.available_area < buildable.area_required) ->
-          %{buildable | purchasable: false, purchasable_reason: "not enough area to build"}
+          %{
+            buildable
+            | purchasable: false,
+              purchasable_reason: "not enough area to build",
+              price: updated_price
+          }
 
         # no area needed, enough energy
         buildable.area_required == nil &&
             (buildable.energy_required != nil and
                city_with_stats.available_energy >= buildable.energy_required) ->
-          %{buildable | purchasable: true, purchasable_reason: "valid"}
+          %{buildable | purchasable: true, purchasable_reason: "valid", price: updated_price}
 
         # no area needed, not enough energy
         buildable.area_required == nil &&
             (buildable.energy_required != nil and
                city_with_stats.available_energy < buildable.energy_required) ->
-          %{buildable | purchasable: false, purchasable_reason: "not enough energy to build"}
+          %{
+            buildable
+            | purchasable: false,
+              purchasable_reason: "not enough energy to build",
+              price: updated_price
+          }
 
         # no area needed, no energy needed
         buildable.energy_required == nil and buildable.area_required == nil ->
-          %{buildable | purchasable: true, purchasable_reason: "valid"}
+          %{buildable | purchasable: true, purchasable_reason: "valid", price: updated_price}
 
         # catch-all
         true ->
-          %{buildable | purchasable: true, purchasable_reason: "valid"}
+          %{buildable | purchasable: true, purchasable_reason: "valid", price: updated_price}
       end
     else
-      %{buildable | purchasable: false, purchasable_reason: "not enough money"}
+      %{
+        buildable
+        | purchasable: false,
+          purchasable_reason: "not enough money",
+          price: updated_price
+      }
     end
   end
 
