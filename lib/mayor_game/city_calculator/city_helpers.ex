@@ -890,16 +890,23 @@ defmodule MayorGame.CityHelpers do
   def bake_details(%Details{} = details) do
     Enum.reduce(Buildable.buildables_list(), details, fn buildable_list_item,
                                                          details_struct_acc ->
+      buildable_count = length(Map.get(details_struct_acc, buildable_list_item))
       has_buildable = Enum.empty?(Map.get(details_struct_acc, buildable_list_item))
 
       if Map.has_key?(details_struct_acc, buildable_list_item) && !has_buildable do
         buildable_array = Map.get(details_struct_acc, buildable_list_item)
 
         buildable_metadata = Map.get(Buildable.buildables_flat(), buildable_list_item)
+        updated_price = buildable_metadata.price + buildable_count * buildable_count
+
+        buildable_metadata_price_updated = %MayorGame.City.BuildableMetadata{
+          buildable_metadata
+          | price: updated_price
+        }
 
         combined_array =
           Enum.map(buildable_array, fn x ->
-            CombinedBuildable.combine_and_apply_upgrades(x, buildable_metadata)
+            CombinedBuildable.combine_and_apply_upgrades(x, buildable_metadata_price_updated)
           end)
 
         %{details_struct_acc | buildable_list_item => combined_array}
@@ -933,13 +940,6 @@ defmodule MayorGame.CityHelpers do
    take a city, update the purchasable status of buildables inside
   """
   def bake_city_purchasables(city_with_stats) do
-    # Enum.map(Buildable.buildables_flat(), fn b_metadata_raw ->
-    #   b_metadata_raw
-    #    |> Enum.map(fn {buildable_key, buildable_stats} ->
-    #      {buildable_key, Map.from_struct(calculate_buildable_status(buildable_stats, city))}
-    #    end)}
-    # end)
-
     details_results =
       Enum.reduce(Buildable.buildables_list(), city_with_stats.details, fn b_type,
                                                                            details_struct_acc ->

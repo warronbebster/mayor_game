@@ -1,3 +1,5 @@
+# this is kinda like package.json lol
+
 defmodule MayorGame.MixProject do
   use Mix.Project
 

@@ -14,11 +14,6 @@
   <b>region:</b> <%= @city.region %>
   <b>climate:</b> <%= @city.climate %>
 
-  <%= for {resource, amount} <- @city.resources do %>
-    resource: <%= resource %> amount: <%= amount %>
-    <br/>
-  <% end %>
-
 
   <br/>
   <b>city money:</b> <%= @city.details.city_treasury %>
@@ -56,7 +51,7 @@
         <%= if @is_user_mayor do %>
 
           <%= if building_stats.purchasable do %>
-            <button phx-click="purchase_building" phx-throttle="100" phx-value-building={building_type} >build $<%= building_stats.price %></button>
+            <button phx-click="purchase_building" phx-throttle="100" phx-value-building={building_type} >build $<%= building_stats.price  %></button>
           <% else %>
             <button disabled class="text-gray-500">build $<%= building_stats.price %></button> <%= building_stats.purchasable_reason%>
           <% end %>
