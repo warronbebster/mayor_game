@@ -253,6 +253,7 @@ defmodule MayorGame.City.Buildable do
         sprawl: 0,
         area: 10,
         health: 1,
+        region_fun_multipliers: %{ocean: 1.3, mountain: 0.7},
         energy_required: 0,
         purchasable: true,
         purchasable_reason: "valid"

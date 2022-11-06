@@ -176,10 +176,11 @@ defmodule MayorGame.CityHelpers do
           # should probably do this when calculating it, not here
 
           score =
-            city_calc.tax_rates[to_string(results.job_level)] *
-              citizen.preferences["tax_rates"] +
+            city_calc.tax_rates[to_string(results.job_level)] * citizen.preferences["tax_rates"] +
               city_calc.pollution / city_calc.total_energy * citizen.preferences["pollution"] +
-              city_calc.sprawl / city_calc.total_area * citizen.preferences["sprawl"]
+              city_calc.sprawl / city_calc.total_area * citizen.preferences["sprawl"] +
+              citizen.preferences["fun"] * city_calc.fun +
+              citizen.preferences["health"] + city_calc.health
 
           Map.put_new(city_calc, :desirability_score, score)
         end)
@@ -813,11 +814,27 @@ defmodule MayorGame.CityHelpers do
     Enum.reduce(
       Buildable.buildables_flat(),
       0,
-      fn {buildable_type, _buildable_options}, acc ->
+      fn {buildable_type, buildable_options}, acc ->
+        multiplier_key =
+          String.to_existing_atom("region_" <> to_string(metadata_category) <> "_multipliers")
+
+        # if it's got the multipliers for this metadata category
+        region_multiplier =
+          if buildable_options[multiplier_key] !== nil do
+            if Map.has_key?(
+                 buildable_options[multiplier_key],
+                 String.to_existing_atom(city.region)
+               ),
+               do: buildable_options[multiplier_key][String.to_existing_atom(city.region)],
+               else: 1
+          else
+            1
+          end
+
         buildables = Map.get(city.details, buildable_type)
 
         if length(buildables) > 0 do
-          acc + sum_details_metadata(buildables, metadata_category)
+          acc + sum_details_metadata(buildables, metadata_category) * region_multiplier
         else
           acc
         end

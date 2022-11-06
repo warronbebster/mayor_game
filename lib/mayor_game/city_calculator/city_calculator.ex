@@ -74,13 +74,6 @@ defmodule MayorGame.CityCalculator do
               cities_count
             )
 
-          # if city.id == 2 do
-          #   IO.puts("available_housing: " <> to_string(city_calculated_values.available_housing))
-          #   IO.puts("total_housing: " <> to_string(city_calculated_values.housing))
-          #   # these jobs are available jobs
-          #   IO.inspect(city_calculated_values.jobs)
-          # end
-
           # should i loop through citizens here, instead of in calculate_city_stats?
           # that way I can use the same function later?
 

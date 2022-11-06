@@ -5,8 +5,6 @@
 # figure out job & education level indexing (start from 0 or 1?)
 # jobs are 0 to 6, assume edu is as well
 
-# add exponential pricing to buildings
-
 # implement regional differences (check region in generation functions) (done for energy, should do for health & fun)
 
 # add upgrades for different buildables

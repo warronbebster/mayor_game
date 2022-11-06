@@ -19,6 +19,8 @@ defmodule MayorGame.City.BuildableMetadata do
     :fun,
     :health,
     :pollution,
+    :region_health_multipliers,
+    :region_fun_multipliers,
     :region_energy_multipliers,
     :season_energy_multipliers,
     :upgrades,
