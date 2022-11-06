@@ -29,7 +29,7 @@
   <%= for {job_level, rate} <- @city.tax_rates do %>
     level: <%= job_level %> rate:
     <%= if @is_user_mayor do %>
-      <input class="bg-black border border-white" step="0.01" phx-blur="update_tax_rates" type="number" min="0" max="1" value={rate} phx-value-job_level={job_level}>
+      <input class="bg-black border active:bg-violet-700 border-white focus:ring-violet-300" step="0.01" phx-blur="update_tax_rates" type="number" min="0" max="1" value={rate} phx-value-job_level={job_level}>
     <% else %>
       <%= rate %>
     <% end %>
@@ -51,9 +51,9 @@
         <%= if @is_user_mayor do %>
 
           <%= if building_stats.purchasable do %>
-            <button phx-click="purchase_building" phx-throttle="100" phx-value-building={building_type} >build $<%= building_stats.price  %></button>
+            <button class="btn-building" phx-click="purchase_building" phx-throttle="100" phx-value-building={building_type} >build $<%= building_stats.price  %></button>
           <% else %>
-            <button disabled class="text-gray-500">build $<%= building_stats.price %></button> <%= building_stats.purchasable_reason%>
+            <button disabled class="btn-building text-gray-500">build $<%= building_stats.price %></button> <%= building_stats.purchasable_reason%>
           <% end %>
 
           <%= for {building_stat, value} <- building_stats do %>

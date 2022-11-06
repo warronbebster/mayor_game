@@ -6,8 +6,10 @@
 
 @tailwind utilities;
 
-a {
-  color: #00eeee;
+@layer components {
+  .btn-building {
+    @apply hover:bg-violet-600 active:bg-violet-700 focus:outline-none focus:ring focus:ring-violet-300 font-bold py-2 px-4 rounded;
+  }
 }
 
 /* Alerts and form errors */

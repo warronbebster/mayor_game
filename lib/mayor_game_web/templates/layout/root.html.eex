@@ -14,7 +14,7 @@
       <section>
         <nav role="navigation">
           <a href="<%= Routes.static_path(@conn, "/") %>">
-            root
+            Cities
           </a>
           <ul>
             <%= if Pow.Plug.current_user(@conn) do %>
