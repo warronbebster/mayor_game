@@ -186,6 +186,7 @@ defmodule MayorGame.City.Buildable do
         job_level: 0,
         sprawl: 10,
         area: 10,
+        health: -1,
         purchasable: true,
         purchasable_reason: "valid"
       },
@@ -196,6 +197,8 @@ defmodule MayorGame.City.Buildable do
         job_level: 0,
         sprawl: 20,
         area: 20,
+        health: -4,
+        region_health_multipliers: %{forest: 0.7, mountain: 0.7, forest: 0.9, lake: 0.7},
         purchasable: true,
         purchasable_reason: "valid"
       },
@@ -241,6 +244,14 @@ defmodule MayorGame.City.Buildable do
         sprawl: 0,
         area: 10,
         health: 2,
+        region_health_multipliers: %{
+          forest: 1.3,
+          mountain: 1.4,
+          lake: 1.1,
+          desert: 1.1,
+          ocean: 1.1
+        },
+        region_fun_multipliers: %{ocean: 1.5, mountain: 0.7, desert: 0.6},
         energy_required: 0,
         purchasable: true,
         purchasable_reason: "valid"
@@ -253,7 +264,8 @@ defmodule MayorGame.City.Buildable do
         sprawl: 0,
         area: 10,
         health: 1,
-        region_fun_multipliers: %{ocean: 1.3, mountain: 0.7},
+        region_health_multipliers: %{forest: 1.3, mountain: 1.4},
+        region_fun_multipliers: %{ocean: 1.5, mountain: 0.7, desert: 0.6},
         energy_required: 0,
         purchasable: true,
         purchasable_reason: "valid"
@@ -267,6 +279,13 @@ defmodule MayorGame.City.Buildable do
         pollution: 10,
         health: -10,
         area_required: 5,
+        region_health_multipliers: %{
+          forest: 0.7,
+          mountain: 0.5,
+          lake: 0.7,
+          desert: 0.7,
+          ocean: 0.7
+        },
         region_energy_multipliers: %{mountain: 1.3},
         season_energy_multipliers: %{},
         purchasable: true,
@@ -280,8 +299,9 @@ defmodule MayorGame.City.Buildable do
         energy: 600,
         pollution: 0,
         area_required: 5,
-        region_energy_multipliers: %{ocean: 1.3, desert: 1.1},
-        season_energy_multipliers: %{spring: 1.2},
+        region_health_multipliers: %{ocean: 1.2, desert: 1.2},
+        region_energy_multipliers: %{ocean: 1.3, desert: 1.5},
+        season_energy_multipliers: %{spring: 1.2, fall: 1.2},
         purchasable: true,
         purchasable_reason: "valid"
       },
@@ -305,7 +325,6 @@ defmodule MayorGame.City.Buildable do
         job_level: 3,
         energy: 5000,
         pollution: 0,
-        health: -2,
         area_required: 3,
         region_energy_multipliers: %{},
         season_energy_multipliers: %{},
@@ -332,6 +351,7 @@ defmodule MayorGame.City.Buildable do
         job_level: 2,
         energy: 0,
         pollution: -20,
+        health: 1,
         area_required: 10,
         region_energy_multipliers: %{},
         season_energy_multipliers: %{},
@@ -344,6 +364,14 @@ defmodule MayorGame.City.Buildable do
         area_required: 10,
         fun: 3,
         health: 5,
+        region_health_multipliers: %{
+          ocean: 1.1,
+          mountain: 1.4,
+          desert: 1.1,
+          forest: 1.3,
+          lake: 1.1
+        },
+        region_fun_multipliers: %{ocean: 1.5, mountain: 0.7, desert: 1.1, forest: 1.2, lake: 1.2},
         energy_required: 12,
         purchasable: true,
         purchasable_reason: "valid"
