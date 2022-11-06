@@ -43,6 +43,24 @@ to add new buildables:
 
 Ready to run in production? [Check Phoenix deployment guides](https://hexdocs.pm/phoenix/deployment.html).
 
+## Deployment
+
+The game can be deployed to fly.io via the auto-generated `Dockerfile`:
+
+```
+$ fly launch   # Opt-in to creating a Postgres database
+$ fly deploy
+$ fly open
+```
+
+To view production logs
+
+```
+$ fly logs
+```
+
+See: https://mayor.fly.dev
+
 ## Learn more
 
 - Official website: https://www.phoenixframework.org/
