@@ -47,18 +47,25 @@
 
   <div class="space-y-8">
     <%= for {category, buildings} <- @buildables do %>
-      <b><%= category %></b>
+      <h2 class="text-2xl"><%= category %></h2>
       <br />
       <%= for {building_type, building_stats} <- buildings do %>
-        <%= length(Map.get(@city.details, building_type)) %>
-        <div class="text-xl"><%= building_type %></div>
+        <div class="text-xl first-letter:uppercase">
+          <%= building_type %> <%= length(Map.get(@city.details, building_type)) %>
+        </div>
 
         <%= if @is_user_mayor do %>
-          <%= for {building_stat, value} <- building_stats do %>
-            <%= if !String.contains?(Atom.to_string(building_stat), ["multipliers", "price", "purchasable", "upgrades"]) && value != nil do %>
-              <%= building_stat %>: <%= value %> |
+          <section class="">
+            <%= for {building_stat, value} <- building_stats do %>
+              <%= if !String.contains?(Atom.to_string(building_stat), ["multipliers", "price", "purchasable", "upgrades"]) && value != nil do %>
+                <div class="flex items-center gap-1">
+                  <div class=""><%= building_stat %></div>
+                  <hr class="border-black flex-1" />
+                  <%= value %>
+                </div>
+              <% end %>
             <% end %>
-          <% end %>
+          </section>
 
           <%= if building_stats.purchasable do %>
             <button
@@ -73,7 +80,7 @@
             <button disabled class="btn-building text-gray-500">
               build $<%= building_stats.price %>
             </button>
-             <%= building_stats.purchasable_reason %>
+            <%= building_stats.purchasable_reason %>
           <% end %>
         <% end %>
 
@@ -148,7 +155,7 @@
             <% end %>
           </div>
         <% end %>
-        <br />
+        <hr class="border-black border-t-2 flex-1" />
       <% end %>
     <% end %>
   </div>
