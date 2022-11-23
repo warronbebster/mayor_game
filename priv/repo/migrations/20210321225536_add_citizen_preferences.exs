@@ -3,7 +3,6 @@ defmodule MayorGame.Repo.Migrations.AddCitizenPreferences do
 
   alias MayorGame.City.Citizens
 
-
   def change do
     random_preferences =
       Enum.reduce(Citizens.decision_factors(), %{preference_map: %{}, room_taken: 0}, fn x, acc ->

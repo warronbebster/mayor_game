@@ -8,8 +8,19 @@
 
 @layer components {
   .btn-building {
-    @apply hover:bg-violet-600 active:bg-violet-700 focus:outline-none focus:ring focus:ring-violet-300 font-bold py-2 px-4 rounded;
+    @apply font-bold py-2 px-4 rounded hover:bg-violet-600 active:bg-violet-700 focus:outline-none focus:ring focus:ring-violet-300;
   }
+}
+
+* {
+  font-family: "Courier New", monospace;
+}
+
+::selection {
+  background: #f59e0b; /* WebKit/Blink Browsers */
+}
+::-moz-selection {
+  background: #f59e0b; /* Gecko Browsers */
 }
 
 /* Alerts and form errors */

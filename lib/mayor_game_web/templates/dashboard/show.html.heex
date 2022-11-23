@@ -2,12 +2,13 @@
   <h2>Cities</h2>
   <%= for city <- @cities do %>
     <div>
-      <%= link city.title,
-              to: Routes.city_path(@socket, MayorGameWeb.CityLive, city.title) %>
-              <%= Enum.count(city.citizens) %> citizens
-              <%= if assigns[:current_user] && assigns[:current_user].nickname == city.user.nickname do %>
-                your city
-              <% end %>
+      <%= link(city.title,
+        to: Routes.city_path(@socket, MayorGameWeb.CityLive, city.title)
+      ) %>
+      <%= Enum.count(city.citizens) %> citizens
+      <%= if assigns[:current_user] && assigns[:current_user].nickname == city.user.nickname do %>
+        your city
+      <% end %>
     </div>
   <% end %>
 </article>
@@ -16,25 +17,22 @@
   <article class="column">
     <h2>Create City</h2>
 
-    <%# On form submit, the create_city event is being emitted %>
-    <.form let={f} for={@city_changeset} phx_submit={"create_city"} >
-
+    <.form let={f} for={@city_changeset} phx_submit="create_city">
       <%= if @city_changeset.action do %>
-        <div class="alert alert-danger"> uh oh, something's up! <%= @city_changeset.action %> </div>
+        <div class="alert alert-danger">uh oh, something's up! <%= @city_changeset.action %></div>
       <% end %>
 
-      <%= text_input f, :title, required: true, placeholder: "City name" %>
-      <%= error_tag f, :title %>
+      <%= text_input(f, :title, required: true, placeholder: "City name") %>
+      <%= error_tag(f, :title) %>
 
-      <%= select f, :region, @regions, required: true, prompt: "Select a region" %>
-      <%= error_tag f, :region %>
+      <%= select(f, :region, @regions, required: true, prompt: "Select a region") %>
+      <%= error_tag(f, :region) %>
 
-      <%= select f, :climate, @climates, required: true, prompt: "Select a climate" %>
-      <%= error_tag f, :climate %>
-      <br/>
+      <%= select(f, :climate, @climates, required: true, prompt: "Select a climate") %>
+      <%= error_tag(f, :climate) %>
+      <br />
 
-      <%= submit "Create city" %>
-
-      </.form>
+      <%= submit("Create city") %>
+    </.form>
   </article>
 <% end %>

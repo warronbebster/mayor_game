@@ -14,100 +14,115 @@
   <b>region:</b> <%= @city.region %>
   <b>climate:</b> <%= @city.climate %>
 
-
-  <br/>
+  <br />
   <b>city money:</b> <%= @city.details.city_treasury %>
-  <br/>
+  <br />
   <b>total energy generated:</b> <%= @city.total_energy %>
   <b>available energy on grid:</b> <%= @city.available_energy %>
-  <br/>
+  <br />
   <b>total area:</b> <%= @city.total_area %>
   <b>available area:</b> <%= @city.available_area %>
-  <br/>
+  <br />
   <b>taxes:</b>
-  <br/>
+  <br />
   <%= for {job_level, rate} <- @city.tax_rates do %>
     level: <%= job_level %> rate:
     <%= if @is_user_mayor do %>
-      <input class="bg-black border active:bg-violet-700 border-white focus:ring-violet-300" step="0.01" phx-blur="update_tax_rates" type="number" min="0" max="1" value={rate} phx-value-job_level={job_level}>
+      <input
+        class="bg-amber-100 border active:bg-violet-700 border-white focus:ring-violet-300"
+        step="0.01"
+        phx-blur="update_tax_rates"
+        type="number"
+        min="0"
+        max="1"
+        value={rate}
+        phx-value-job_level={job_level}
+      />
     <% else %>
       <%= rate %>
     <% end %>
-    <br/>
-    <% end %>
-  <br/>
+    <br />
+  <% end %>
+  <br />
 
   <div class="space-y-8">
     <%= for {category, buildings} <- @buildables do %>
-    
       <b><%= category %></b>
-      <br/>
-      <%# for each type of buildable in a category %>
+      <br />
       <%= for {building_type, building_stats} <- buildings do %>
-
         <%= length(Map.get(@city.details, building_type)) %>
-        <%= building_type %>
+        <div class="text-xl"><%= building_type %></div>
 
         <%= if @is_user_mayor do %>
-
-          <%= if building_stats.purchasable do %>
-            <button class="btn-building" phx-click="purchase_building" phx-throttle="100" phx-value-building={building_type} >build $<%= building_stats.price  %></button>
-          <% else %>
-            <button disabled class="btn-building text-gray-500">build $<%= building_stats.price %></button> <%= building_stats.purchasable_reason%>
-          <% end %>
-
           <%= for {building_stat, value} <- building_stats do %>
-          <%# gotta avoid rendering stuff that's not HTMLsafe, like maps %>
             <%= if !String.contains?(Atom.to_string(building_stat), ["multipliers", "price", "purchasable", "upgrades"]) && value != nil do %>
-              <%= building_stat %>: <%=value%> |
+              <%= building_stat %>: <%= value %> |
             <% end %>
           <% end %>
 
+          <%= if building_stats.purchasable do %>
+            <button
+              class="hover:bg-violet-600 active:bg-violet-700 focus:outline-none focus:ring focus:ring-violet-300 font-bold py-2 px-4 rounded"
+              phx-click="purchase_building"
+              phx-throttle="100"
+              phx-value-building={building_type}
+            >
+              build $<%= building_stats.price %>
+            </button>
+          <% else %>
+            <button disabled class="btn-building text-gray-500">
+              build $<%= building_stats.price %>
+            </button>
+             <%= building_stats.purchasable_reason %>
+          <% end %>
         <% end %>
 
-        <%# here we actually render the buildings the %Town{} actually has %>
-        <%= for building <- Map.get(@city.details, building_type) do%>
-          <div class="border rounded border-gray-500 inline-block p-2"> 
+        <%= for building <- Map.get(@city.details, building_type) do %>
+          <div class="border rounded border-gray-500 inline-block p-2">
             <%= building.buildable.id %>
-            <%= if building.buildable.enabled do%>
+            <%= if building.buildable.enabled do %>
               <div class="building_enabled"></div>
             <% else %>
               <div class="building_disabled"></div>
-              <p> Needs
-              <%= for reason <- building.buildable.reason do%>
-                <%= reason %>
-              <% end %>
-              to operate</p>
+              <p>
+                Needs
+                <%= for reason <- building.buildable.reason do %>
+                  <%= reason %>
+                <% end %>
+                to operate
+              </p>
             <% end %>
 
-            <%= if building_stats.upgrades != nil do%>
+            <%= if building_stats.upgrades != nil do %>
               <div class="upgrades">
-              Upgrades
-                <%= for {upgrade_name, upgrade_details} <- Map.get(building_stats, :upgrades) do%>
+                Upgrades
+                <%= for {upgrade_name, upgrade_details} <- Map.get(building_stats, :upgrades) do %>
                   <div class="upgrade">
                     <%= upgrade_name %>
                     <p class="upgrade_description"><%= upgrade_details.description %></p>
 
-                    <%# if buildable has upgrade already %>
-                    <%= if Enum.member?(building.buildable.upgrades, to_string(upgrade_name)) do%>
+                    <%= if Enum.member?(building.buildable.upgrades, to_string(upgrade_name)) do %>
                       purchased
                     <% else %>
                       <%= if @is_user_mayor do %>
                         <%= if @city.details.city_treasury >= upgrade_details.cost do %>
                           <%= if Enum.all?(upgrade_details.requirements, fn upgrade -> to_string(upgrade) in building.buildable.upgrades end) do %>
-                            <button phx-click="buy_upgrade"
-                            phx-throttle="100"
-                            phx-value-building={building_type}
-                            phx-value-buildable_id={building.buildable.id}
-                            phx-value-upgrade_cost={upgrade_details.cost}
-                            phx-value-upgrade={upgrade_name}>
+                            <button
+                              phx-click="buy_upgrade"
+                              phx-throttle="100"
+                              phx-value-building={building_type}
+                              phx-value-buildable_id={building.buildable.id}
+                              phx-value-upgrade_cost={upgrade_details.cost}
+                              phx-value-upgrade={upgrade_name}
+                            >
                               purchase: $<%= upgrade_details.cost %>
                             </button>
                           <% else %>
-                            <button disabled>requires
-                            <%= for req <- upgrade_details.requirements do %>
-                              <%= req %>
-                            <% end %>
+                            <button disabled>
+                              requires
+                              <%= for req <- upgrade_details.requirements do %>
+                                <%= req %>
+                              <% end %>
                             </button>
                           <% end %>
                         <% else %>
@@ -117,17 +132,23 @@
                     <% end %>
                   </div>
                 <% end %>
-
               </div>
             <% end %>
 
             <%= if @is_user_mayor do %>
-              <button phx-click="demolish_building" phx-throttle="100" phx-value-building={building_type} phx-value-buildable_id={building.buildable.id}>demolish</button>
+              <button
+                phx-click="demolish_building"
+                class="btn-building"
+                phx-throttle="100"
+                phx-value-building={building_type}
+                phx-value-buildable_id={building.buildable.id}
+              >
+                demolish
+              </button>
             <% end %>
-
           </div>
         <% end %>
-        <br/>
+        <br />
       <% end %>
     <% end %>
   </div>
@@ -136,20 +157,18 @@
     <button phx-click="gib_money">eyyyyy refill my money</button>
   <% end %>
 
-  <br/>
+  <br />
   <b>raw:</b> <%= @world.day %>
   <b>year:</b> <%= div(@world.day, 365) %>
   <b>day:</b> <%= rem(@world.day, 365) %>
   <b>pollution:</b> <%= @world.pollution %>
-  <br/>
-
+  <br />
 </div>
 
-<.form let={f} url="#" for={:message} phx_submit={"add_citizen"} >
-
-  <%= label f, "add citizen" %>
-  <%= text_input f, :content %>
-  <%= submit "Send" %>
+<.form let={f} url="#" for={:message} phx_submit="add_citizen">
+  <%= label(f, "add citizen") %>
+  <%= text_input(f, :content) %>
+  <%= submit("Send") %>
 </.form>
 
 <div>
@@ -157,21 +176,17 @@
   <%= for citizen <- Enum.sort(@city.citizens, &(&1.name < &2.name)) do %>
     <div>
       <b><%= citizen.name %></b>
-      money: <%= citizen.money %>
-      education: <%= citizen.education %>
-      age: <%= citizen.age %>
-      has_car: <%= citizen.has_car %>
-      <br/>
+      money: <%= citizen.money %> education: <%= citizen.education %> age: <%= citizen.age %> has_car: <%= citizen.has_car %>
+      <br />
     </div>
   <% end %>
 
-  <br/>
+  <br />
   <b>Log:</b>
-  <br/>
+  <br />
 
   <%= for log_item <- @city.logs do %>
-      <b><%= log_item %></b>
-    <br/>
+    <b><%= log_item %></b>
+    <br />
   <% end %>
 </div>
-
