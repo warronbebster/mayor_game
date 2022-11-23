@@ -198,7 +198,7 @@ defmodule MayorGame.City.Buildable do
         sprawl: 20,
         area: 20,
         health: -4,
-        region_health_multipliers: %{forest: 0.7, mountain: 0.7, forest: 0.9, lake: 0.7},
+        region_health_multipliers: %{forest: 0.7, mountain: 0.7, desert: 0.9, lake: 0.7},
         purchasable: true,
         purchasable_reason: "valid"
       },
