@@ -31,7 +31,7 @@
         </nav>
       </section>
     </header>
-    <main role="main" class="container">
+    <main role="main" >
       <%= @inner_content %>
     </main>
   </body>

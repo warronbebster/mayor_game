@@ -7,8 +7,8 @@
 @tailwind utilities;
 
 @layer components {
-  .btn-building {
-    @apply font-bold py-2 px-4 rounded hover:bg-violet-600 active:bg-violet-700 focus:outline-none focus:ring focus:ring-violet-300;
+  .btn {
+    @apply transition-colors hover:bg-amber-100 active:bg-amber-200 focus:outline-none focus:ring focus:ring-amber-600;
   }
 }
 

@@ -45,17 +45,17 @@
   <% end %>
   <br />
 
-  <div class="space-y-8">
+  <div class="space-y-2 relative">
     <%= for {category, buildings} <- @buildables do %>
       <h2 class="text-2xl"><%= category %></h2>
       <br />
       <%= for {building_type, building_stats} <- buildings do %>
-        <div class="text-xl first-letter:uppercase">
-          <%= building_type %> <%= length(Map.get(@city.details, building_type)) %>
-        </div>
+        <div class="relative">
+          <div class="text-xl first-letter:uppercase sticky bg-amber-50 top-0">
+            <%= building_type %> <%= length(Map.get(@city.details, building_type)) %>
+          </div>
 
-        <%= if @is_user_mayor do %>
-          <section class="">
+          <section class="mt-0">
             <%= for {building_stat, value} <- building_stats do %>
               <%= if !String.contains?(Atom.to_string(building_stat), ["multipliers", "price", "purchasable", "upgrades"]) && value != nil do %>
                 <div class="flex items-center gap-1">
@@ -67,73 +67,90 @@
             <% end %>
           </section>
 
-          <%= if building_stats.purchasable do %>
-            <button
-              class="hover:bg-violet-600 active:bg-violet-700 focus:outline-none focus:ring focus:ring-violet-300 font-bold py-2 px-4 rounded"
-              phx-click="purchase_building"
-              phx-throttle="100"
-              phx-value-building={building_type}
-            >
-              build $<%= building_stats.price %>
-            </button>
-          <% else %>
-            <button disabled class="btn-building text-gray-500">
-              build $<%= building_stats.price %>
-            </button>
-            <%= building_stats.purchasable_reason %>
-          <% end %>
-        <% end %>
-
-        <%= for building <- Map.get(@city.details, building_type) do %>
-          <div class="border rounded border-gray-500 inline-block p-2">
-            <%= building.buildable.id %>
-            <%= if building.buildable.enabled do %>
-              <div class="building_enabled"></div>
-            <% else %>
-              <div class="building_disabled"></div>
-              <p>
-                Needs
-                <%= for reason <- building.buildable.reason do %>
-                  <%= reason %>
+          <%= if building_stats.upgrades != nil do %>
+            <%= for {upgrade_name, upgrade_details} <- Map.get(building_stats, :upgrades) do %>
+              <div class="upgrade">
+                <div class="flex items-center gap-1">
+                  <span><%= upgrade_name %></span>
+                  <hr class="border-black flex-1" /> $<%= upgrade_details.cost %>
+                </div>
+                <p class="italic text-neutral-500"><%= upgrade_details.description %></p>
+                <%= if upgrade_details.requirements != nil do %>
+                  requires:
+                  <%= for req <- upgrade_details.requirements do %>
+                    <span><%= req %></span>
+                  <% end %>
                 <% end %>
-                to operate
-              </p>
+              </div>
             <% end %>
+          <% end %>
+          <!-- buildings -->
+          <section class="flex flex-wrap gap-2">
+            <%= for building <- Map.get(@city.details, building_type) do %>
+              <div class="border border-neutral-800 flex flex-col divide-y divide-neutral-800 ">
+                <div class="flex items-center gap-1">
+                  <%= if building.buildable.enabled do %>
+                    <div class="bg-green-500 w-3 h-3 rounded-full"></div>
+                    <p class="text-green-600 mr-auto">Operational</p>
+                  <% else %>
+                    <div class="bg-red-500 w-3 h-3 rounded-full"></div>
+                    <p class="text-red-600 mr-auto">
+                      Needs
+                      <%= for reason <- building.buildable.reason do %>
+                        <%= reason %>
+                      <% end %>
+                      to operate
+                    </p>
+                  <% end %>
 
-            <%= if building_stats.upgrades != nil do %>
-              <div class="upgrades">
-                Upgrades
-                <%= for {upgrade_name, upgrade_details} <- Map.get(building_stats, :upgrades) do %>
-                  <div class="upgrade">
-                    <%= upgrade_name %>
-                    <p class="upgrade_description"><%= upgrade_details.description %></p>
+                  <%= if @is_user_mayor do %>
+                    <button
+                      phx-click="demolish_building"
+                      class="border-y-0 border-r-0 border-l-[1px] rounded-none	 border-neutral-800 transition-colors hover:bg-amber-100"
+                      phx-throttle="100"
+                      phx-value-building={building_type}
+                      phx-value-buildable_id={building.buildable.id}
+                    >
+                      x
+                    </button>
+                  <% end %>
+                </div>
 
-                    <%= if Enum.member?(building.buildable.upgrades, to_string(upgrade_name)) do %>
-                      purchased
-                    <% else %>
-                      <%= if @is_user_mayor do %>
-                        <%= if @city.details.city_treasury >= upgrade_details.cost do %>
-                          <%= if Enum.all?(upgrade_details.requirements, fn upgrade -> to_string(upgrade) in building.buildable.upgrades end) do %>
-                            <button
-                              phx-click="buy_upgrade"
-                              phx-throttle="100"
-                              phx-value-building={building_type}
-                              phx-value-buildable_id={building.buildable.id}
-                              phx-value-upgrade_cost={upgrade_details.cost}
-                              phx-value-upgrade={upgrade_name}
-                            >
-                              purchase: $<%= upgrade_details.cost %>
-                            </button>
+                <%= if building_stats.upgrades != nil do %>
+                  <div class="flex divide-x divide-neutral-800">
+                    <%= for {upgrade_name, upgrade_details} <- Map.get(building_stats, :upgrades) do %>
+                      <%= if Enum.member?(building.buildable.upgrades, to_string(upgrade_name)) do %>
+                        <button disabled class="opacity-50 flex-grow basis-6/12">
+                          purchased
+                        </button>
+                      <% else %>
+                        <%= if @is_user_mayor do %>
+                          <%= if @city.details.city_treasury >= upgrade_details.cost do %>
+                            <%= if Enum.all?(upgrade_details.requirements, fn upgrade -> to_string(upgrade) in building.buildable.upgrades end) do %>
+                              <button
+                                class="btn flex-grow basis-6/12"
+                                phx-click="buy_upgrade"
+                                phx-throttle="100"
+                                phx-value-building={building_type}
+                                phx-value-buildable_id={building.buildable.id}
+                                phx-value-upgrade_cost={upgrade_details.cost}
+                                phx-value-upgrade={upgrade_name}
+                              >
+                                <%= upgrade_name %> $<%= upgrade_details.cost %>
+                              </button>
+                            <% else %>
+                              <button disabled class="opacity-50 flex-grow basis-6/12">
+                                requires
+                                <%= for req <- upgrade_details.requirements do %>
+                                  <%= req %>
+                                <% end %>
+                              </button>
+                            <% end %>
                           <% else %>
-                            <button disabled>
-                              requires
-                              <%= for req <- upgrade_details.requirements do %>
-                                <%= req %>
-                              <% end %>
+                            <button disabled class="text-opacity-50 flex-grow basis-6/12">
+                              <%= upgrade_name %> $<%= upgrade_details.cost %>
                             </button>
                           <% end %>
-                        <% else %>
-                          <button disabled>not enough money</button>
                         <% end %>
                       <% end %>
                     <% end %>
@@ -141,21 +158,27 @@
                 <% end %>
               </div>
             <% end %>
+          </section>
 
-            <%= if @is_user_mayor do %>
+          <%= if @is_user_mayor do %>
+            <%= if building_stats.purchasable do %>
               <button
-                phx-click="demolish_building"
-                class="btn-building"
+                class="btn"
+                phx-click="purchase_building"
                 phx-throttle="100"
                 phx-value-building={building_type}
-                phx-value-buildable_id={building.buildable.id}
               >
-                demolish
+                build $<%= building_stats.price %>
               </button>
+            <% else %>
+              <button disabled class="btn text-gray-500">
+                build $<%= building_stats.price %>
+              </button>
+              <%= building_stats.purchasable_reason %>
             <% end %>
-          </div>
-        <% end %>
-        <hr class="border-black border-t-2 flex-1" />
+          <% end %>
+          <hr class="border-black border-t-2 flex-1" />
+        </div>
       <% end %>
     <% end %>
   </div>
