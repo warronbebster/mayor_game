@@ -8,7 +8,7 @@
 
 @layer components {
   .btn {
-    @apply transition-colors hover:bg-amber-100 active:bg-amber-200 focus:outline-none focus:ring focus:ring-amber-600;
+    @apply transition-colors hover:bg-amber-100 active:bg-amber-200 focus:outline-none focus:bg-amber-100 focus:ring focus:ring-neutral-800;
   }
 }
 
@@ -64,41 +64,6 @@
 
 .phx-error * {
   pointer-events: none;
-}
-
-.building_enabled {
-  display: inline-block;
-  border-radius: 10px;
-  height: 10px;
-  width: 10px;
-  background-color: rgb(34, 194, 28);
-}
-
-.building_disabled {
-  display: inline-block;
-  border-radius: 10px;
-  height: 10px;
-  width: 10px;
-  background-color: rgb(179, 19, 19);
-}
-
-.building {
-  border-radius: 4px;
-  border: 1px solid #606c76;
-  display: inline-block;
-  padding: 2px;
-}
-
-.upgrades {
-  border: 1px solid #606c76;
-  display: inline-block;
-  padding: 2px;
-}
-
-.upgrade {
-  border: 1px solid #606c76;
-  display: inline-block;
-  padding: 2px;
 }
 
 button,
