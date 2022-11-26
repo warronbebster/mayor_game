@@ -380,6 +380,8 @@ defmodule MayorGame.City.Buildable do
         price: 20,
         daily_cost: 10,
         area_required: 1,
+        jobs: 4,
+        job_level: 2,
         energy_required: 200,
         purchasable: true,
         purchasable_reason: "valid"
