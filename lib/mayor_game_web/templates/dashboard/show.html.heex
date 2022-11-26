@@ -1,38 +1,64 @@
-<article class="column">
-  <h2>Cities</h2>
-  <%= for city <- @cities do %>
-    <div>
-      <%= link(city.title,
-        to: Routes.city_path(@socket, MayorGameWeb.CityLive, city.title)
-      ) %>
-      <%= Enum.count(city.citizens) %> citizens
-      <%= if assigns[:current_user] && assigns[:current_user].nickname == city.user.nickname do %>
-        your city
-      <% end %>
-    </div>
-  <% end %>
-</article>
+<div class="p-4">
+  <div class="flex flex-row items-center space-x-1 max-w-sm">
+    <span>Year</span>
+    <hr class="border-neutral-800 flex-1" />
+    <span><%= div(@world.day, 365) %></span>
+  </div>
+  <div class="flex flex-row items-center space-x-1 max-w-sm">
+    <span>Day</span>
+    <hr class="border-neutral-800 flex-1" />
+    <span><%= rem(@world.day, 365) %></span>
+  </div>
+  <div class="flex flex-row items-center space-x-1 max-w-sm pb-4">
+    <span>Global pollution</span>
+    <hr class="border-neutral-800 flex-1" />
+    <span><%= @world.pollution %></span>
+  </div>
 
-<%= if assigns[:current_user] && assigns[:current_user].town == nil do %>
-  <article class="column">
-    <h2>Create City</h2>
-
-    <.form let={f} for={@city_changeset} phx_submit="create_city">
-      <%= if @city_changeset.action do %>
-        <div class="alert alert-danger">uh oh, something's up! <%= @city_changeset.action %></div>
-      <% end %>
-
-      <%= text_input(f, :title, required: true, placeholder: "City name") %>
-      <%= error_tag(f, :title) %>
-
-      <%= select(f, :region, @regions, required: true, prompt: "Select a region") %>
-      <%= error_tag(f, :region) %>
-
-      <%= select(f, :climate, @climates, required: true, prompt: "Select a climate") %>
-      <%= error_tag(f, :climate) %>
-      <br />
-
-      <%= submit("Create city") %>
-    </.form>
+  <article class="pb-4">
+    <%= for city <- @cities do %>
+      <div class="flex flex-row items-center space-x-1 max-w-sm">
+        <span class="hover:underline">
+          <%= link(city.title,
+            to: Routes.city_path(@socket, MayorGameWeb.CityLive, city.title)
+          ) %>
+        </span>
+        <span class="opacity-50">
+          <%= if assigns[:current_user] && assigns[:current_user].nickname == city.user.nickname do %>
+            your city
+          <% end %>
+        </span>
+        <hr class="border-neutral-800 flex-1" />
+        <span><%= Enum.count(city.citizens) %> citizens</span>
+      </div>
+    <% end %>
   </article>
-<% end %>
+
+  <p class="max-w-sm">This is a multiplayer game about civilization collapse.</p>
+
+  <%= if assigns[:current_user] && assigns[:current_user].town == nil do %>
+    <article>
+      <h2>Create City</h2>
+
+      <.form let={f} for={@city_changeset} phx_submit="create_city">
+        <%= if @city_changeset.action do %>
+          <div class="alert alert-danger">
+            uh oh, something's up! <%= @city_changeset.action %>
+          </div>
+        <% end %>
+
+        <%= text_input(f, :title, required: true, placeholder: "City name") %>
+        <%= error_tag(f, :title) %>
+
+        <%= select(f, :region, @regions, required: true, prompt: "Select a region") %>
+        <%= error_tag(f, :region) %>
+
+        <%= select(f, :climate, @climates, required: true, prompt: "Select a climate") %>
+        <%= error_tag(f, :climate) %>
+        <br />
+
+        <%= submit("Create city") %>
+      </.form>
+    </article>
+  <% end %>
+</div>
