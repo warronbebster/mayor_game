@@ -87,7 +87,11 @@ defmodule MayorGame.CityCalculator do
             {:ok, _updated_details} ->
               City.update_log(
                 city,
-                "tax income: " <>
+                "year: " <>
+                  to_string(div(world.day, 365)) <>
+                  " day: " <>
+                  to_string(rem(world.day, 365)) <>
+                  " tax income: " <>
                   to_string(city_calculated_values.tax) <>
                   " operating cost: " <> to_string(city_calculated_values.cost)
               )
