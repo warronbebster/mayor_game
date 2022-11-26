@@ -19,43 +19,54 @@
       <button phx-click="gib_money">eyyyyy refill my money</button>
     <% end %>
 
-    <br />
-    <b>raw:</b> <%= @world.day %>
-    <b>year:</b> <%= div(@world.day, 365) %>
-    <b>day:</b> <%= rem(@world.day, 365) %>
-    <b>pollution:</b> <%= @world.pollution %>
-    <br />
+    <b>Year:</b> <%= div(@world.day, 365) %>
+    <b>Day:</b> <%= rem(@world.day, 365) %>
+    <b>Global pollution:</b> <%= @world.pollution %>
 
-    <br />
-    <b>city money:</b> <%= @city.details.city_treasury %>
-    <br />
-    <b>total energy produced:</b> <%= @city.total_energy %>
-    <b>unused energy:</b> <%= @city.available_energy %>
-    <br />
-    <b>total area:</b> <%= @city.total_area %>
-    <b>unused area:</b> <%= @city.available_area %>
-    <br />
+    <span class="text-green-600">
+      Money
+      <span class="text-green-800">
+        <%= @city.details.city_treasury %>
+      </span>
+    </span>
+
+    <span class="text-yellow-600">
+      Energy
+      <span class="text-yellow-800">
+        <%= @city.total_energy - @city.available_energy %>/<%= @city.total_energy %>
+      </span>
+    </span>
+
+    <span class="text-teal-600">
+      Area
+      <span class="text-teal-800">
+        <%= @city.total_area - @city.available_area %>/<%= @city.total_area %>
+      </span>
+    </span>
   </div>
-
-  <h2 class="text-2xl pt-4">Taxes</h2>
-  <br />
-  <%= for {job_level, rate} <- @city.tax_rates do %>
-    level: <%= job_level %> rate:
-    <%= if @is_user_mayor do %>
-      <input
-        class="btn bg-amber-100 border border-neutral-800"
-        step="0.01"
-        phx-blur="update_tax_rates"
-        type="number"
-        min="0"
-        max="1"
-        value={rate}
-        phx-value-job_level={job_level}
-      />
-    <% else %>
-      <%= rate %>
+  <!--Taxes-->
+  <h2 class="text-2xl pt-4">Tax rates</h2>
+  <div class="space-y-1">
+    <%= for {job_level, rate} <- @city.tax_rates do %>
+      <div>
+        Job level <%= job_level %>:
+        <%= if @is_user_mayor do %>
+          <input
+            class="btn bg-amber-100 border border-neutral-800"
+            step="0.01"
+            phx-blur="update_tax_rates"
+            type="number"
+            min="0"
+            max="1"
+            value={rate}
+            phx-value-job_level={job_level}
+          />
+        <% else %>
+          <%= rate %>
+        <% end %>
+      </div>
     <% end %>
-  <% end %>
+  </div>
   <!--All building details-->
   <section class="space-y-2 relative">
     <%= for {category, buildings} <- @buildables do %>
