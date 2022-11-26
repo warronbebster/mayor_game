@@ -47,7 +47,7 @@ defmodule MayorGameWeb.CityLive do
            town_id: city.id,
            name: content,
            money: 5,
-           education: Enum.random([0, 1, 2, 3, 4]),
+           education: 0,
            age: 0,
            has_car: false,
            last_moved: 0

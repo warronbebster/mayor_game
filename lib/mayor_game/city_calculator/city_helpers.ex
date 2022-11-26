@@ -277,8 +277,9 @@ defmodule MayorGame.CityHelpers do
             # once a year, update education of citizen if there is capacity
             # e.g. if the edu institutions have capacity
             updated_education =
-              if rem(world.day, 365) == 0 && acc.education[citizen.education + 1] > 0 do
-                City.update_citizens(citizen, %{education: citizen.education + 1})
+              if rem(world.day, 365) == 0 && citizen.education < 5 &&
+                   acc.education[citizen.education + 1] > 0 do
+                City.update_citizens(citizen, %{education: min(citizen.education + 1, 5)})
                 Map.update!(acc.education, citizen.education + 1, &(&1 - 1))
               else
                 acc.education
