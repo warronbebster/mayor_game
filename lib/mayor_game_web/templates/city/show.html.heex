@@ -162,9 +162,9 @@
                             purchased
                           </button>
                         <% else %>
-                          <%= if @is_user_mayor do %>
-                            <%= if @city.details.city_treasury >= upgrade_details.cost do %>
-                              <%= if Enum.all?(upgrade_details.requirements, fn upgrade -> to_string(upgrade) in building.buildable.upgrades end) do %>
+                          <%= if @city.details.city_treasury >= upgrade_details.cost do %>
+                            <%= if Enum.all?(upgrade_details.requirements, fn upgrade -> to_string(upgrade) in building.buildable.upgrades end) do %>
+                              <%= if @is_user_mayor do %>
                                 <button
                                   class="btn mx-auto basis-1/2 rounded-none border-neutral-800 border-y-0 border-l-0 border-r last:border-r-0 "
                                   phx-click="buy_upgrade"
@@ -178,13 +178,10 @@
                                 </button>
                               <% else %>
                                 <button
+                                  class="opacity-50 mx-auto basis-1/2 rounded-none border-neutral-800 border-y-0 border-l-0 border-r last:border-r-0 "
                                   disabled
-                                  class="opacity-50 mx-auto basis-1/2 rounded-none border-neutral-800 border-y-0 border-l-0 border-r last:border-r-0"
                                 >
-                                  requires
-                                  <%= for req <- upgrade_details.requirements do %>
-                                    <%= req %>
-                                  <% end %>
+                                  <%= upgrade_name %> $<%= upgrade_details.cost %>
                                 </button>
                               <% end %>
                             <% else %>
@@ -192,9 +189,19 @@
                                 disabled
                                 class="opacity-50 mx-auto basis-1/2 rounded-none border-neutral-800 border-y-0 border-l-0 border-r last:border-r-0"
                               >
-                                <%= upgrade_name %> $<%= upgrade_details.cost %>
+                                requires
+                                <%= for req <- upgrade_details.requirements do %>
+                                  <%= req %>
+                                <% end %>
                               </button>
                             <% end %>
+                          <% else %>
+                            <button
+                              disabled
+                              class="opacity-50 mx-auto basis-1/2 rounded-none border-neutral-800 border-y-0 border-l-0 border-r last:border-r-0"
+                            >
+                              <%= upgrade_name %> $<%= upgrade_details.cost %>
+                            </button>
                           <% end %>
                         <% end %>
                       <% end %>
@@ -236,7 +243,7 @@
       </div>
       <hr class="border-neutral-800 flex-1" />
     </div>
-    <%= if @current_user.id == 1 do %>
+    <%= if @current_user && @current_user.id == 1 do %>
       <.form let={f} url="#" for={:message} phx_submit="add_citizen">
         <%= label(f, "add citizen") %>
         <%= text_input(f, :content) %>
