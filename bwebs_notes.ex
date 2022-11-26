@@ -2,17 +2,13 @@
 
 # TODO:
 
-# figure out job & education level indexing (start from 0 or 1?)
-# jobs are 0 to 6, assume edu is as well
+# make it so if there are no citizens working, buildings aren't operational?
 
 # implement regional differences (check region in generation functions) (done for energy, should do for health & fun)
 
 # add upgrades for different buildables
 
 # figure out why server sometimes doesn't restart
-
-# maybe make it so pollution is random, I think it'll kill everyone rn
-# ok it doesn't kill everyone at the same time so that's good
 
 
 # FIRST RELEASE
