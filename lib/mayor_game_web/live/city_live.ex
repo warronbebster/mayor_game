@@ -2,7 +2,7 @@
 
 defmodule MayorGameWeb.CityLive do
   require Logger
-  use Phoenix.LiveView
+  use Phoenix.LiveView, container: {:div, class: "liveview-container"}
   use Phoenix.HTML
 
   alias MayorGame.{Auth, City, Repo}
