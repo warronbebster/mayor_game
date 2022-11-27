@@ -25,7 +25,7 @@ defmodule MayorGameWeb.Endpoint do
   plug Plug.Static,
     at: "/",
     from: :mayor_game,
-    gzip: true,
+    gzip: false,
     only: ~w(assets fonts images favicon.ico robots.txt)
 
   # Code reloading can be explicitly enabled under the
