@@ -14,6 +14,7 @@
 
 * {
   font-family: "Courier New", monospace;
+  box-sizing: border-box;
 }
 
 ::selection {
@@ -21,6 +22,12 @@
 }
 ::-moz-selection {
   background: #f59e0b; /* Gecko Browsers */
+}
+
+.liveview-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Alerts and form errors */
