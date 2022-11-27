@@ -1,7 +1,7 @@
-# this is kinda like package.json lol
-
 defmodule MayorGame.MixProject do
   use Mix.Project
+
+  # this is kinda like package.json lol
 
   def project do
     [
@@ -51,7 +51,8 @@ defmodule MayorGame.MixProject do
       {:pow, "~> 1.0.26"},
       {:plug_cowboy, "~> 2.5.2"},
       {:accessible, "~> 0.3.0"},
-      {:esbuild, "~> 0.2", runtime: Mix.env() == :dev}
+      {:esbuild, "~> 0.4", runtime: Mix.env() == :dev},
+      {:tailwind, "~> 0.1", runtime: Mix.env() == :dev}
     ]
   end
 
@@ -68,8 +69,9 @@ defmodule MayorGame.MixProject do
       "ecto.reset": ["ecto.drop", "ecto.setup"],
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
       "assets.deploy": [
-        "cmd --cd assets npm run deploy",
+        # "cmd --cd assets npm run deploy",
         "esbuild default --minify",
+        "tailwind default --minify",
         "phx.digest"
       ]
     ]
