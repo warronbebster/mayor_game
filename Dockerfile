@@ -35,8 +35,6 @@ RUN npm --version
 # prepare build dir
 WORKDIR /app
 
-RUN cd assets && npm install && npm run deploy
-
 # install hex + rebar
 RUN mix local.hex --force && \
     mix local.rebar --force
@@ -62,6 +60,7 @@ COPY priv priv
 # your Elixir templates, you will need to move the asset compilation
 # step down so that `lib` is available.
 COPY assets assets
+RUN cd assets && npm install && npm run deploy
 
 # compile assets
 RUN mix assets.deploy
