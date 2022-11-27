@@ -1,6 +1,8 @@
-<h1>Edit profile</h1>
+<div class="p-4">
+<h1 class="text-xl">Edit profile</h1>
 
 <%= form_for @changeset, @action, [as: :user], fn f -> %>
+<div class="flex flex-col space-y-2">
   <%= if @changeset.action do %>
     <div class="alert alert-danger">
       <p>Oops, something went wrong! Please check the errors below.</p>
@@ -27,7 +29,7 @@
   <%= password_input f, :password_confirmation %>
   <%= error_tag f, :password_confirmation %>
 
-  <div>
-    <%= submit "Update" %>
+  <%= submit "Update" %>
   </div>
 <% end %>
+<div>

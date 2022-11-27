@@ -10,9 +10,9 @@
     <script defer type="text/javascript" src="<%= Routes.static_path(@conn, "/assets/app.js") %>"></script>
   </head>
   <body class="text-sm bg-amber-50 h-screen flex flex-col">
-    <header class="border-b border-neutral-800 bg-amber-50 w-screen z-20 p-1 px-2">
+    <header class="border-b border-neutral-800 bg-amber-50 w-screen z-20 py-1 px-2">
         <nav role="navigation">
-          <ul class="flex flex-row space-x-3 ">
+          <ul class="flex flex-row space-x-3 items-center h-full">
             <li class="hover:underline mr-auto"><a href="<%= Routes.static_path(@conn, "/") %>">Cities</a></li>
 
             <%= if Pow.Plug.current_user(@conn) do %>
@@ -28,7 +28,7 @@
           </ul>
         </nav>
     </header>
-    <main role="main" class=" flex-grow overflow-y-scroll" >
+    <main role="main" class="flex-grow overflow-y-scroll" >
       <%= @inner_content %>
     </main>
   </body>

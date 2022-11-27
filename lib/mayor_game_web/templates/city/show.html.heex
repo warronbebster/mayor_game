@@ -7,43 +7,43 @@
 
   <b>is_user_mayor:</b> <%= @is_user_mayor %>
   -->
-<div class="m-4">
-  <div>
-    <h1>city title: <%= @city.title %></h1>
-    <b>Mayor name:</b> <%= @username %>
+<div class="top-0 p-1 px-2 z-20 bg-amber-50 border-b border-neutral-800 flex items-center space-x-3 w-screen overflow-x-scroll">
+  <h1 class="inline mr-auto">
+    <%= @city.title %> <span><%= @username %></span>
+  </h1>
 
-    <b>region:</b> <%= @city.region %>
-    <b>climate:</b> <%= @city.climate %>
+  <span>Year <%= div(@world.day, 365) %></span>
+  <span>Day <%= rem(@world.day, 365) %></span>
 
-    <%= if @is_user_mayor do %>
-      <button phx-click="gib_money">eyyyyy refill my money</button>
-    <% end %>
-
-    <b>Year:</b> <%= div(@world.day, 365) %>
-    <b>Day:</b> <%= rem(@world.day, 365) %>
-    <b>Global pollution:</b> <%= @world.pollution %>
-
-    <span class="text-green-600">
-      Money
-      <span class="text-green-800">
-        <%= @city.details.city_treasury %>
-      </span>
+  <span class="text-green-600">
+    Money
+    <span class="text-green-800">
+      <%= @city.details.city_treasury %>
     </span>
+  </span>
 
-    <span class="text-yellow-600">
-      Energy
-      <span class="text-yellow-800">
-        <%= @city.total_energy - @city.available_energy %>/<%= @city.total_energy %>
-      </span>
+  <span class="text-yellow-600">
+    Energy
+    <span class="text-yellow-800">
+      <%= @city.available_energy %>/<%= @city.total_energy %>
     </span>
+  </span>
 
-    <span class="text-teal-600">
-      Area
-      <span class="text-teal-800">
-        <%= @city.total_area - @city.available_area %>/<%= @city.total_area %>
-      </span>
+  <span class="text-teal-600">
+    Area
+    <span class="text-teal-800">
+      <%= @city.available_area %>/<%= @city.total_area %>
     </span>
-  </div>
+  </span>
+  <span class="text-purple-600">
+    Pollution <span class="text-purple-800"><%= @world.pollution %></span>
+  </span>
+  <%= if @current_user && @current_user.id == 1 do %>
+    <button class="btn text-xs p-0 border-none" phx-click="gib_money">refill $</button>
+  <% end %>
+</div>
+
+<div class="px-4 my-0 relative h-full overflow-y-scroll">
   <!--Taxes-->
   <h2 class="text-2xl pt-4">Tax rates</h2>
   <div class="space-y-1">
@@ -52,7 +52,7 @@
         Job level <%= job_level %>:
         <%= if @is_user_mayor do %>
           <input
-            class="btn bg-amber-100 border border-neutral-800"
+            class="btn bg-amber-50 p-[2px] border border-neutral-800"
             step="0.01"
             phx-blur="update_tax_rates"
             type="number"
