@@ -194,7 +194,7 @@ defmodule MayorGame.CityCalculator do
           City.update_log(
             City.get_town!(citizen_to_reproduce.town_id),
             citizen_to_reproduce.name <>
-              " has had a child: " <> citizen_to_reproduce.name <> "kin"
+              " had a child: " <> citizen_to_reproduce.name <> "kin"
           )
 
           updated_acc_city_list
