@@ -35,6 +35,8 @@ RUN npm --version
 # prepare build dir
 WORKDIR /app
 
+RUN cd assets && npm install && npm run deploy
+
 # install hex + rebar
 RUN mix local.hex --force && \
     mix local.rebar --force
