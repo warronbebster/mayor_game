@@ -1,6 +1,6 @@
-# fly.toml file generated for mayor on 2022-11-01T19:50:36-07:00
+# fly.toml file generated for mayorgame on 2022-11-27T19:12:05-05:00
 
-app = "mayor"
+app = "mayorgame"
 kill_signal = "SIGTERM"
 kill_timeout = 5
 processes = []
@@ -9,7 +9,7 @@ processes = []
   release_command = "/app/bin/migrate"
 
 [env]
-  PHX_HOST = "mayor.fly.dev"
+  PHX_HOST = "mayorgame.fly.dev"
   PORT = "8080"
 
 [experimental]
