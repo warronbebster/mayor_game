@@ -108,7 +108,7 @@ defmodule MayorGame.City.Town do
   end
 
   @doc false
-  def changeset(town, attrs) do
+  def changeset(%MayorGame.City.Town{} = town, attrs) do
     town
     # add a validation here to limit the types of regions
     |> cast(attrs, [:title, :region, :climate, :resources, :user_id, :logs, :tax_rates])

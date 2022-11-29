@@ -1,0 +1,33 @@
+<div class="p-4">
+  <article>
+    <h2>Create City</h2>
+
+    <.form let={f} for={@city_changeset} phx_submit="create_city" phx_change="validate">
+      <%= if @city_changeset.action do %>
+        <div class="alert alert-danger">
+          uh oh, something's up! <%= @city_changeset.action %>
+        </div>
+      <% end %>
+
+      <%= text_input(f, :title,
+        required: true,
+        placeholder: "City name"
+      ) %>
+      <%= error_tag(f, :title) %>
+
+      <%= select(f, :region, @regions,
+        required: true,
+        prompt: "Select a region"
+      ) %>
+      <%= error_tag(f, :region) %>
+
+      <%= select(f, :climate, @climates,
+        required: true,
+        prompt: "Select a climate"
+      ) %>
+      <%= error_tag(f, :climate) %>
+
+      <%= submit("Create city") %>
+    </.form>
+  </article>
+</div>

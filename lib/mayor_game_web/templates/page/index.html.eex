@@ -3,6 +3,9 @@
   <%= live_render(@conn,
                   MayorGameWeb.DashboardLive,
                   session: %{"current_user" => @current_user}) %>
+<%= live_render(@conn,
+                  MayorGameWeb.CityCreationForm,
+                  session: %{"current_user" => @current_user}) %>
 <% else %>
  <%= live_render(@conn,
                   MayorGameWeb.DashboardLive) %>
