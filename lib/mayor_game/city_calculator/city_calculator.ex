@@ -87,11 +87,7 @@ defmodule MayorGame.CityCalculator do
             {:ok, _updated_details} ->
               City.update_log(
                 city,
-                "year: " <>
-                  to_string(div(world.day, 365)) <>
-                  " day: " <>
-                  to_string(rem(world.day, 365)) <>
-                  " tax income: " <>
+                " tax income: " <>
                   to_string(city_calculated_values.tax) <>
                   " operating cost: " <> to_string(city_calculated_values.cost)
               )
@@ -116,10 +112,10 @@ defmodule MayorGame.CityCalculator do
 
     # CHECK —————
     # FIRST CITIZEN CHECK: AGE DEATHS
-    Enum.each(leftovers.citizens_too_old, fn citizen ->
-      CityHelpers.kill_citizen(citizen, citizen.name <> " has died of old age. RIP")
-      # add 1 to available_housing for citizen's city
-    end)
+    # Enum.each(leftovers.citizens_too_old, fn citizen ->
+    #   CityHelpers.kill_citizen(citizen, citizen.name <> " has died of old age. RIP")
+    #   # add 1 to available_housing for citizen's city
+    # end)
 
     cities_after_aging_deaths =
       Enum.reduce(leftovers.citizens_too_old, leftovers.all_cities, fn citizen_too_old,
@@ -137,7 +133,10 @@ defmodule MayorGame.CityCalculator do
             # could update job count if we really knew which job level the citizen held
           end)
 
-        CityHelpers.kill_citizen(citizen_too_old, "old age")
+        CityHelpers.kill_citizen(
+          citizen_too_old,
+          citizen_too_old.name <> " has died of old age. RIP"
+        )
 
         updated_acc_city_list
       end)
@@ -183,7 +182,7 @@ defmodule MayorGame.CityCalculator do
 
           City.create_citizens(%{
             money: 0,
-            name: citizen_to_reproduce.name <> "kin",
+            name: to_string(citizen_to_reproduce.id + 1),
             town_id: citizen_to_reproduce.town_id,
             age: 0,
             education: 0,

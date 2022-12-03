@@ -22,8 +22,7 @@ defmodule MayorGameWeb.CityCreationForm do
      |> assign(current_user: current_user)
      |> assign(regions: Town.regions())
      |> assign(climates: Town.climates())
-     |> assign_new_city_changeset()
-     |> assign(form_params: %{"climate" => "", "region" => "", "title" => "d"})}
+     |> assign_new_city_changeset()}
   end
 
   # Create a city based on the payload that comes from the form (matched as `city_form`).

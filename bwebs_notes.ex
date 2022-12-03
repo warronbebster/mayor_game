@@ -14,10 +14,10 @@
 # FIRST RELEASE
 # get rid of "refill my money"
 # get rid of "add citizen"
-# remove or clarify "ID number" rendering on individual buildables on website, because it looks like a count
-# front-end cleanup
 # reorder front-end so it's in order area, energy, housing, everything else
-# figure out how to release prod version
+# write better description
+# add more upgrades
+# balance prices
 
 
 

@@ -253,7 +253,7 @@
     <% end %>
     <%= for citizen <- Enum.sort(@city.citizens, &(&1.name < &2.name)) do %>
       <div>
-        <%= citizen.name %> education: <%= citizen.education %> age: <%= citizen.age %>
+        <%= to_string(citizen.id) %> education: <%= citizen.education %> age: <%= citizen.age %>
         <!-- has_car: <%= citizen.has_car %>
           money: <%= citizen.money %> -->
       </div>

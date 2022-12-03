@@ -88,12 +88,12 @@ defmodule MayorGame.CityHelpers do
     if prev_city.id != city_to_move_to.id do
       City.update_log(
         prev_city,
-        citizen.name <> " moved to " <> city_to_move_to.title
+        to_string(citizen.id) <> " moved to " <> city_to_move_to.title
       )
 
       City.update_log(
         city_to_move_to,
-        citizen.name <> " just moved here from " <> prev_city.title
+        to_string(citizen.id) <> " just moved here from " <> prev_city.title
       )
 
       City.update_citizens(citizen, %{town_id: city_to_move_to.id, last_moved: day_moved})
@@ -103,7 +103,7 @@ defmodule MayorGame.CityHelpers do
   def kill_citizen(%Citizens{} = citizen, deathReason) do
     City.update_log(
       City.get_town!(citizen.town_id),
-      citizen.name <> " has died because of " <> deathReason <> ". RIP"
+      to_string(citizen.id) <> " has died because of " <> deathReason <> ". RIP"
     )
 
     City.delete_citizens(citizen)
@@ -218,6 +218,7 @@ defmodule MayorGame.CityHelpers do
           city_with_stats.citizens,
           city_with_stats,
           fn citizen, acc ->
+            # see if I can just do this all at once instead of a DB write per loop
             City.update_citizens(citizen, %{age: citizen.age + 1})
 
             # set a random pollution ceiling based on how many cities are in the ecosystem
@@ -276,6 +277,9 @@ defmodule MayorGame.CityHelpers do
 
             # once a year, update education of citizen if there is capacity
             # e.g. if the edu institutions have capacity
+            # TODO: check here if there is a job of that level available?
+            # otherwise citizens might just keep levelling up
+            # oh i guess this is fine, they'll go to a lower job and start looking
             updated_education =
               if rem(world.day, 365) == 0 && citizen.education < 5 &&
                    acc.education[citizen.education + 1] > 0 do
@@ -286,6 +290,7 @@ defmodule MayorGame.CityHelpers do
               end
 
             # return city
+
             acc
             |> Map.put(:available_housing, acc.available_housing - 1)
             |> Map.put(:jobs, updated_jobs)
@@ -305,7 +310,7 @@ defmodule MayorGame.CityHelpers do
 
       results
     else
-      # if city has no citizens
+      # if city has no citizens, just return
       city_with_stats
     end
   end
@@ -614,7 +619,6 @@ defmodule MayorGame.CityHelpers do
           # get list of each type of buildables
           buildables_list = Map.get(city.details, buildable_type)
 
-          # if Map.has_key?(buildable_options, :daily_cost) &&
           if buildable_options.daily_cost != nil &&
                length(buildables_list) > 0 &&
                buildable_options.daily_cost > 0 do
@@ -751,11 +755,18 @@ defmodule MayorGame.CityHelpers do
     # city_preloaded = preload_city_check(city)
     empty_jobs_map = %{0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0}
 
+    # pseudocode
+    # so I have the list of citizens here
+    IO.inspect(city.citizens)
+    # for each buildable, for each number in its job_amount, check if there is a citizen available
+    # wither have to start from the higher levels, or go per citizen
+
     results =
       Enum.reduce(
         Buildable.buildables(),
         %{jobs_map: empty_jobs_map},
         fn category, acc ->
+          # pattern match to pull info out
           {categoryName, buildings} = category
 
           if categoryName != :housing && categoryName != :civic do
@@ -767,17 +778,19 @@ defmodule MayorGame.CityHelpers do
                     %{job_amount: 0},
                     fn {buildable_type, buildable_options}, acc2 ->
                       if buildable_options.job_level == job_level do
-                        buildables = Map.get(city.details, buildable_type)
+                        buildables_list = Map.get(city.details, buildable_type)
 
-                        if length(buildables) > 0 do
+                        if length(buildables_list) > 0 do
                           Enum.reduce(
-                            buildables,
+                            buildables_list,
                             %{job_amount: acc2.job_amount},
-                            fn building, acc3 ->
-                              if !building.buildable.enabled do
+                            fn individual_buildable, acc3 ->
+                              if !individual_buildable.buildable.enabled do
                                 %{job_amount: acc3.job_amount}
                               else
-                                %{job_amount: acc3.job_amount + building.metadata.jobs}
+                                %{
+                                  job_amount: acc3.job_amount + individual_buildable.metadata.jobs
+                                }
                               end
                             end
                           )
@@ -1015,7 +1028,7 @@ defmodule MayorGame.CityHelpers do
                city_with_stats.available_area < buildable.metadata.area_required) ->
           buildable
           |> put_in([:metadata, :purchasable], false)
-          |> put_in([:metadata, :purchasable_reason], "not enough area to build")
+          |> put_in([:metadata, :purchasable_reason], "not enough area")
 
         # not enough energy AND not enough area
         buildable.metadata.energy_required != nil and
@@ -1024,7 +1037,7 @@ defmodule MayorGame.CityHelpers do
                city_with_stats.available_area < buildable.metadata.area_required) ->
           buildable
           |> put_in([:metadata, :purchasable], false)
-          |> put_in([:metadata, :purchasable_reason], "not enough area or energy to build")
+          |> put_in([:metadata, :purchasable_reason], "not enough area or energy")
 
         # no energy needed, enough area
         buildable.metadata.energy_required == nil &&
@@ -1040,7 +1053,7 @@ defmodule MayorGame.CityHelpers do
                city_with_stats.available_area < buildable.metadata.area_required) ->
           buildable
           |> put_in([:metadata, :purchasable], false)
-          |> put_in([:metadata, :purchasable_reason], "not enough area to build")
+          |> put_in([:metadata, :purchasable_reason], "not enough area")
 
         # no area needed, enough energy
         buildable.metadata.area_required == nil &&
@@ -1056,7 +1069,7 @@ defmodule MayorGame.CityHelpers do
                city_with_stats.available_energy < buildable.metadata.energy_required) ->
           buildable
           |> put_in([:metadata, :purchasable], false)
-          |> put_in([:metadata, :purchasable_reason], "not enough energy to build")
+          |> put_in([:metadata, :purchasable_reason], "not enough energy")
 
         # no area needed, no energy needed
         buildable.metadata.energy_required == nil and buildable.metadata.area_required == nil ->
@@ -1073,7 +1086,7 @@ defmodule MayorGame.CityHelpers do
     else
       buildable
       |> put_in([:metadata, :purchasable], false)
-      |> put_in([:metadata, :purchasable_reason], "not enough money to build")
+      |> put_in([:metadata, :purchasable_reason], "not enough money")
     end
   end
 end
