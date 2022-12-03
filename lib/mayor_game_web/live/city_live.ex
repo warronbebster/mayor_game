@@ -237,6 +237,7 @@ defmodule MayorGameWeb.CityLive do
 
     # have to have this separate from the actual city because the city might not have some buildables, but they're still purchasable
     buildables_with_status = calculate_buildables_statuses(city_updated)
+    # IO.inspect(buildables_with_status)
 
     # somehow loses updated price here
     # IO.inspect(buildables_with_status)
@@ -250,7 +251,7 @@ defmodule MayorGameWeb.CityLive do
 
   # this takes the generic buildables map and builds the status (enabled, etc) for each buildable
   defp calculate_buildables_statuses(city) do
-    Enum.map(Buildable.buildables(), fn {category, buildables} ->
+    Enum.map(Buildable.buildables_kw_list(), fn {category, buildables} ->
       {category,
        buildables
        |> Enum.map(fn {buildable_key, buildable_stats} ->
@@ -266,7 +267,7 @@ defmodule MayorGameWeb.CityLive do
     end)
   end
 
-  # this takes a buildable metadata, and builds status from database
+  # this takes a buildable metadata, and builds purchasable status from database
   # TODO: Clean this shit upppp
   defp calculate_buildable_status(buildable, city_with_stats, buildable_count) do
     updated_price = buildable.price + buildable_count * buildable_count
