@@ -58,6 +58,7 @@ defmodule MayorGame.City.Buildable do
   def buildables do
     %{
       housing: %{
+        huts: buildables_flat().huts,
         single_family_homes: buildables_flat().single_family_homes,
         multi_family_homes: buildables_flat().multi_family_homes,
         homeless_shelters: buildables_flat().homeless_shelters,
@@ -74,14 +75,14 @@ defmodule MayorGame.City.Buildable do
         bike_lanes: buildables_flat().bike_lanes,
         bikeshare_stations: buildables_flat().bikeshare_stations
       },
-      energy: %{
+      energy: [
         coal_plants: buildables_flat().coal_plants,
         wind_turbines: buildables_flat().wind_turbines,
         solar_plants: buildables_flat().solar_plants,
         nuclear_plants: buildables_flat().nuclear_plants,
         dams: buildables_flat().dams,
         carbon_capture_plants: buildables_flat().carbon_capture_plants
-      },
+      ],
       civic: %{
         parks: buildables_flat().parks,
         libraries: buildables_flat().libraries
@@ -120,15 +121,16 @@ defmodule MayorGame.City.Buildable do
         bike_lanes: buildables_flat().bike_lanes,
         bikeshare_stations: buildables_flat().bikeshare_stations
       },
-      energy: %{
+      energy: [
         coal_plants: buildables_flat().coal_plants,
         wind_turbines: buildables_flat().wind_turbines,
         solar_plants: buildables_flat().solar_plants,
         nuclear_plants: buildables_flat().nuclear_plants,
         dams: buildables_flat().dams,
         carbon_capture_plants: buildables_flat().carbon_capture_plants
-      },
+      ],
       housing: %{
+        huts: buildables_flat().huts,
         single_family_homes: buildables_flat().single_family_homes,
         multi_family_homes: buildables_flat().multi_family_homes,
         homeless_shelters: buildables_flat().homeless_shelters,
@@ -165,6 +167,15 @@ defmodule MayorGame.City.Buildable do
 
   def buildables_flat do
     %{
+      huts: %BuildableMetadata{
+        price: 0,
+        fits: 1,
+        daily_cost: 0,
+        area_required: 1,
+        energy_required: 0,
+        purchasable: true,
+        purchasable_reason: "valid"
+      },
       single_family_homes: %BuildableMetadata{
         price: 20,
         fits: 2,

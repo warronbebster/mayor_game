@@ -12,12 +12,17 @@
 
 
 # FIRST RELEASE
-# get rid of "refill my money"
-# get rid of "add citizen"
-# reorder front-end so it's in order area, energy, housing, everything else
+
 # write better description
 # add more upgrades
 # balance prices
+# reset prod DB
+
+#done
+# get buildings not operating if there's no citizens to work there
+  # for each citizen, go through
+# fix arbitrary order for displaying buildables on webpage — seems like maybe it's pulling by last_updated?
+# ^ok maybe fixed this
 
 
 

@@ -214,6 +214,7 @@ defmodule MayorGameWeb.CityLive do
   # function to update city
   # maybe i should make one just for "updating" — e.g. only pull details and citizens from DB
   defp update_city_by_title(%{assigns: %{title: title, world: world}} = socket) do
+    # this shouuuuld be fresh…
     city =
       City.get_town_by_title!(title)
       |> preload_city_check()
@@ -221,16 +222,23 @@ defmodule MayorGameWeb.CityLive do
     # grab whole user struct
     user = Auth.get_user!(city.user_id)
 
-    reset_buildables_to_enabled(city)
+    # this might be causing some funky overwrites
+    city_reset = reset_buildables_to_enabled(city)
 
-    # take buildable list, put something in each one, buildable_status
-    city_baked_details = %{city | details: bake_details(city.details)}
+    # IO.inspect(city.details, label: "city details")
+    # IO.inspect(city_reset.details, label: "reset city details")
+
+    # take buildable list, put purchasable status in each one, buildable_status
+    city_baked_details = %{city_reset | details: bake_details(city_reset.details)}
 
     city_updated =
       city_baked_details
-      |> calculate_area()
-      |> calculate_energy(world)
       |> calculate_money()
+      |> calculate_area()
+      |> calculate_jobs2()
+      |> calculate_energy(world)
+
+    # IO.inspect(city_updated.details, label: "city_updated details")
 
     # ok, here the price is updated per each CombinedBuildable
     # IO.inspect(city_updated.details.roads)
@@ -240,7 +248,10 @@ defmodule MayorGameWeb.CityLive do
     # IO.inspect(buildables_with_status)
 
     # somehow loses updated price here
-    # IO.inspect(buildables_with_status)
+    if city_updated.id == 2 do
+      # IO.inspect(city_updated.details.single_family_homes)
+      # ok so changing something re-orders this list
+    end
 
     socket
     |> assign(:buildables, buildables_with_status)

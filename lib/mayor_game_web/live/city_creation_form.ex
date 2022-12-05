@@ -19,7 +19,7 @@ defmodule MayorGameWeb.CityCreationForm do
   def mount(_params, %{"current_user" => current_user}, socket) do
     {:ok,
      socket
-     |> assign(current_user: current_user)
+     |> assign(current_user: current_user |> MayorGame.Repo.preload(:town))
      |> assign(regions: Town.regions())
      |> assign(climates: Town.climates())
      |> assign_new_city_changeset()}

@@ -27,12 +27,16 @@ defmodule MayorGame.CityHelpers do
 
     # reset buildables status in database
     # this might end up being redundant because I can construct that status and not check it from the DB
-    reset_buildables_to_enabled(city_preloaded)
+    city_reset = reset_buildables_to_enabled(city_preloaded)
+
+    if city.id == 2 do
+      # IO.inspect(city_reset)
+    end
 
     # ayyy this is successfully combining the buildables
     # next step is applying the upgrades (done)
     # and putting it in city_preloaded
-    city_baked_details = %{city_preloaded | details: bake_details(city_preloaded.details)}
+    city_baked_details = %{city_reset | details: bake_details(city_reset.details)}
 
     # TODO-CLEAN BELOW UP
     # these basically take a city and then calculate total resource
@@ -42,14 +46,27 @@ defmodule MayorGame.CityHelpers do
     # if not these could probably all be combined
     city_updated =
       city_baked_details
-      |> calculate_area()
-      |> calculate_energy(world)
       |> calculate_money()
+      |> calculate_area()
+      |> calculate_jobs2()
+      |> calculate_energy(world)
+
+    # ok, calculate_jobs2 nukes anything that requires a job, if there's no money airports, carbon capture, some others
+    # …but only if there's no money?
+    # yeah only if there's no money.
+
+    # IO.inspect("updated from city_helpers", label: city.title)
 
     # I think the following can all be calculated in the same function?
     total_housing = calculate_housing(city_updated)
     # returns a map of %{0 => #, 1 => #, etc}
-    total_jobs = calculate_jobs(city_updated)
+    total_jobs = city_updated.jobs_map
+    IO.inspect(total_jobs)
+
+    # if city.id == 2 do
+    #   IO.inspect(test_result.jobs_map)
+    # end
+
     # returns a map of %{0 => #, 1 => #, etc}
     total_education = calculate_education(city_updated)
     # returns a total num of fun
@@ -325,21 +342,49 @@ defmodule MayorGame.CityHelpers do
   def reset_buildables_to_enabled(%Town{} = city) do
     city_preloaded = preload_city_check(city)
 
-    for buildable_type <- Buildable.buildables_list() do
-      buildables = Map.get(city_preloaded.details, buildable_type)
+    # if city_preloaded.id == 2 do
+    #   IO.inspect(city_preloaded.details)
+    # end
 
-      if length(buildables) > 0 do
-        for building <- buildables do
-          City.update_buildable(city.details, buildable_type, building.id, %{
-            enabled: true,
-            reason: []
-          })
+    # for buildable_type <- Buildable.buildables_list() do
+    #   buildables = Map.get(city_preloaded.details, buildable_type)
+
+    #   if length(buildables) > 0 do
+    #     for building <- buildables do
+    #       City.update_buildable(city.details, buildable_type, building.id, %{
+    #         enabled: true,
+    #         reason: []
+    #       })
+    #     end
+    #   end
+    # end
+
+    cleared_details =
+      Enum.reduce(
+        Buildable.buildables_list(),
+        city_preloaded.details,
+        fn buildable_type, acc ->
+          results =
+            Enum.map(acc[buildable_type], fn buildable ->
+              Map.put(buildable, :enabled, true)
+              |> Map.put(:reason, [])
+            end)
+
+          Map.put(acc, buildable_type, results)
         end
-      end
-    end
+      )
+
+    #   Enum.map(city_preloaded.details, fn {_name, buildable_list} ->
+    #     Enum.map(buildable_list, fn buildable ->
+    #       Map.put(buildable, :enabled, true)city
+    #       |> Map.put(:reason, [])
+    #     end)
+    #   end)
+
+    Map.put(city_preloaded, :details, cleared_details)
   end
 
-  @spec calculate_area(MayorGame.City.Town.t()) :: map
+  @spec calculate_area(map) :: map
   @doc """
   takes a %MayorGame.City.Town{} struct
 
@@ -348,7 +393,7 @@ defmodule MayorGame.CityHelpers do
   total_area: int,
   available_area: int
   """
-  def calculate_area(%Town{} = city) do
+  def calculate_area(%{} = city) do
     # city_preloaded = preload_city_check(city)
 
     # see how much area is in the town, based on the transit buildables
@@ -356,12 +401,36 @@ defmodule MayorGame.CityHelpers do
       Enum.reduce(Buildable.buildables().transit, %{sprawl: 0, total_area: 0}, fn {transit_type,
                                                                                    _transit_options},
                                                                                   acc ->
-        %{
-          sprawl: acc.sprawl + sum_details_metadata(Map.get(city.details, transit_type), :sprawl),
-          total_area:
-            acc.total_area +
-              sum_details_metadata(Map.get(city.details, transit_type), :area)
-        }
+        buildables_list = Map.get(city.details, transit_type)
+
+        # buildable_list_results =
+        Enum.reduce(
+          buildables_list,
+          %{
+            sprawl: acc.sprawl,
+            total_area: acc.total_area
+          },
+          fn individual_buildable, acc2 ->
+            if !individual_buildable.buildable.enabled do
+              %{
+                sprawl: acc2.sprawl,
+                total_area: acc2.total_area
+              }
+            else
+              %{
+                sprawl: acc2.sprawl + individual_buildable.metadata.sprawl,
+                total_area: acc2.total_area + individual_buildable.metadata.area
+              }
+            end
+          end
+        )
+
+        # %{
+        #   sprawl: acc.sprawl + sum_details_metadata(Map.get(city.details, transit_type), :sprawl),
+        #   total_area:
+        #     acc.total_area +
+        #       sum_details_metadata(Map.get(city.details, transit_type), :area)
+        # }
       end)
 
     # this really is only to calculate the disabled buildings; if you just wanted the totals, you could use the above
@@ -374,7 +443,8 @@ defmodule MayorGame.CityHelpers do
           # get list of each type of buildables
           buildable_list = Map.get(city.details, buildable_type)
 
-          if buildable_options.area_required != nil && length(buildable_list) > 0 do
+          if buildable_options.area_required != nil && buildable_options.area_required != 0 &&
+               length(buildable_list) > 0 do
             # for each individual buildable in the list
             buildable_list_results =
               Enum.reduce(
@@ -389,27 +459,35 @@ defmodule MayorGame.CityHelpers do
                       # update buildable in DB to enabled: false
                       # this touches DB: bad
                       # this should just touch the %Buildable{} in the CombinedBuildable
-                      City.update_buildable(
-                        city.details,
+                      put_reason_in_buildable(
+                        acc.city,
                         buildable_type,
-                        individual_buildable.buildable.id,
-                        %{
-                          enabled: false,
-                          reason:
-                            cond do
-                              Enum.empty?(individual_buildable.buildable.reason) ->
-                                ["area"]
-
-                              Enum.member?(individual_buildable.buildable.reason, "area") ->
-                                individual_buildable.buildable.reason
-
-                              true ->
-                                ["area" | individual_buildable.buildable.reason]
-                            end
-                        }
+                        individual_buildable,
+                        "area"
                       )
 
-                      put_in(individual_buildable, [:buildable, :reason], ["area"])
+                      # City.update_buildable(
+                      #   city.details,
+                      #   buildable_type,
+                      #   individual_buildable.buildable.id,
+                      #   %{
+                      #     enabled: false,
+                      #     reason:
+                      #       cond do
+                      #         Enum.empty?(individual_buildable.buildable.reason) ->
+                      #           ["area"]
+
+                      #         Enum.member?(individual_buildable.buildable.reason, "area") ->
+                      #           individual_buildable.buildable.reason
+
+                      #         true ->
+                      #           ["area" | individual_buildable.buildable.reason]
+                      #       end
+                      #   }
+                      # )
+
+                      # put_in(individual_buildable, [:buildable, :reason], ["area"])
+                      # |> put_in([:buildable, :enabled], false)
                     else
                       individual_buildable
                     end
@@ -426,9 +504,9 @@ defmodule MayorGame.CityHelpers do
 
             # if there have been updates
             city_update =
-              if buildable_list_results.buildable_list_updated_reasons !=
+              if buildable_list_results.buildable_list_updated_reasons !==
                    Map.get(city.details, buildable_type) do
-                Map.put(
+                put_in(
                   city,
                   [:details, buildable_type],
                   buildable_list_results.buildable_list_updated_reasons
@@ -495,16 +573,34 @@ defmodule MayorGame.CityHelpers do
               do: energy_options.season_energy_multipliers[season],
               else: 1
 
-          pollution =
-            acc.pollution +
-              sum_details_metadata(Map.get(city.details, energy_type), :pollution)
+          buildables_list = Map.get(city.details, energy_type)
 
-          energy =
-            acc.total_energy +
-              sum_details_metadata(Map.get(city.details, energy_type), :energy) *
-                region_energy_multiplier * season_energy_multiplier
-
-          %{total_energy: round(energy), pollution: pollution}
+          # return this
+          Enum.reduce(
+            buildables_list,
+            %{
+              pollution: acc.pollution,
+              total_energy: acc.total_energy
+            },
+            fn individual_buildable, acc2 ->
+              if !individual_buildable.buildable.enabled do
+                %{
+                  pollution: acc2.pollution,
+                  total_energy: acc2.total_energy
+                }
+              else
+                %{
+                  pollution: acc2.pollution + individual_buildable.metadata.pollution,
+                  total_energy:
+                    acc2.total_energy +
+                      round(
+                        individual_buildable.metadata.energy *
+                          region_energy_multiplier * season_energy_multiplier
+                      )
+                }
+              end
+            end
+          )
         end
       )
 
@@ -523,35 +619,20 @@ defmodule MayorGame.CityHelpers do
                 buildable_list,
                 %{available_energy: acc.available_energy, buildable_list_updated_reasons: []},
                 fn individual_buildable, acc2 ->
+                  # ok, airports and carbon capture aren't even making it here
+                  # also universities, retail_shops
+
                   negative_energy =
                     acc2.available_energy < individual_buildable.metadata.energy_required
 
                   updated_buildable =
-                    if negative_energy do
-                      City.update_buildable(
-                        city.details,
+                    if negative_energy && individual_buildable.metadata.energy_required > 0 do
+                      put_reason_in_buildable(
+                        acc.city,
                         buildable_type,
-                        individual_buildable.buildable.id,
-                        %{
-                          enabled: false,
-                          # TODO: clean this shit up
-                          reason:
-                            cond do
-                              Enum.empty?(individual_buildable.buildable.reason) ->
-                                ["energy"]
-
-                              Enum.member?(individual_buildable.buildable.reason, "energy") ->
-                                individual_buildable.buildable.reason
-
-                              true ->
-                                ["energy" | individual_buildable.buildable.reason]
-                            end
-                        }
+                        individual_buildable,
+                        "energy"
                       )
-
-                      put_in(individual_buildable, [:buildable, :reason], [
-                        "energy" | individual_buildable.buildable.reason
-                      ])
                     else
                       individual_buildable
                     end
@@ -568,15 +649,15 @@ defmodule MayorGame.CityHelpers do
 
             # if there have been updates
             city_update =
-              if buildable_list_results.buildable_list_updated_reasons !=
+              if buildable_list_results.buildable_list_updated_reasons !==
                    Map.get(city.details, buildable_type) do
-                Map.put(
-                  city,
+                put_in(
+                  acc.city,
                   [:details, buildable_type],
                   buildable_list_results.buildable_list_updated_reasons
                 )
               else
-                city
+                acc.city
               end
 
             %{
@@ -617,14 +698,14 @@ defmodule MayorGame.CityHelpers do
         %{available_money: preliminary_results, cost: 0, city: city},
         fn {buildable_type, buildable_options}, acc ->
           # get list of each type of buildables
-          buildables_list = Map.get(city.details, buildable_type)
+          buildable_list = Map.get(city.details, buildable_type)
 
           if buildable_options.daily_cost != nil &&
-               length(buildables_list) > 0 &&
+               length(buildable_list) > 0 &&
                buildable_options.daily_cost > 0 do
             buildable_list_results =
               Enum.reduce(
-                buildables_list,
+                buildable_list,
                 %{
                   available_money: acc.available_money,
                   cost: acc.cost,
@@ -635,30 +716,12 @@ defmodule MayorGame.CityHelpers do
 
                   updated_buildable =
                     if negative_money do
-                      City.update_buildable(
-                        city.details,
+                      put_reason_in_buildable(
+                        acc.city,
                         buildable_type,
-                        individual_buildable.buildable.id,
-                        %{
-                          enabled: false,
-                          # if there's already a reason it's disabled
-                          reason:
-                            cond do
-                              Enum.empty?(individual_buildable.buildable.reason) ->
-                                ["money"]
-
-                              Enum.member?(individual_buildable.buildable.reason, "money") ->
-                                individual_buildable.buildable.reason
-
-                              true ->
-                                ["money" | individual_buildable.buildable.reason]
-                            end
-                        }
+                        individual_buildable,
+                        "money"
                       )
-
-                      put_in(individual_buildable, [:buildable, :reason], [
-                        "money" | individual_buildable.buildable.reason
-                      ])
                     else
                       individual_buildable
                     end
@@ -674,17 +737,19 @@ defmodule MayorGame.CityHelpers do
                 end
               )
 
+            # IO.inspect(buildable_list_results.buildable_list_updated_reasons)
+
             # if there have been updates
             city_update =
-              if buildable_list_results.buildable_list_updated_reasons !=
+              if buildable_list_results.buildable_list_updated_reasons !==
                    Map.get(city.details, buildable_type) do
-                Map.put(
-                  city,
+                put_in(
+                  acc.city,
                   [:details, buildable_type],
                   buildable_list_results.buildable_list_updated_reasons
                 )
               else
-                city
+                acc.city
               end
 
             %{
@@ -698,6 +763,8 @@ defmodule MayorGame.CityHelpers do
           end
         end
       )
+
+    # this is like the whole set of results, including the city
 
     results_map = %{
       available_money: money_results.available_money,
@@ -751,72 +818,421 @@ defmodule MayorGame.CityHelpers do
 
   returns map of available jobs by level: %{0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0}
   """
-  def calculate_jobs(%{} = city) do
+
+  # def calculate_jobs(%{} = city) do
+  #   # city_preloaded = preload_city_check(city)
+  #   empty_jobs_map = %{0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0}
+  #   # empty_jobs_list = [0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0]
+
+  #   # pseudocode
+  #   # so I have the list of citizens here
+  #   # for each buildable, for each number in its job_amount, check if there is a citizen available
+  #   # wither have to start from the higher levels, or go per citizen
+
+  #   # want to come out with:
+  #   # buildings enabled/disabled for reason "workers"
+  #   # jobs mao is kinda ok to duplicate i think
+
+  #   sorted_citizens = Enum.sort(city.citizens, &(&1.education > &2.education))
+
+  #   results =
+  #     Enum.reduce(
+  #       Buildable.buildables(),
+  #       %{jobs_map: empty_jobs_map, city: city, citizens: sorted_citizens},
+  #       fn category, acc ->
+  #         # pattern match to pull info out
+  #         {categoryName, buildings} = category
+
+  #         if categoryName != :housing && categoryName != :civic do
+  #           # ok, this could go in reverse order
+  #           # for each job level, 5 down to 0
+  #           job_map_results =
+  #             Enum.reduce(
+  #               Enum.reverse(0..5),
+  #               %{jobs_map: acc.jobs_map, city: acc.city, citizens: acc.citizens},
+  #               fn job_level, accj ->
+  #                 # buildings here is just generic metadata
+
+  #                 results =
+  #                   Enum.reduce(
+  #                     buildings,
+  #                     %{
+  #                       available_jobs: 0,
+  #                       buildable_list_updated_reasons: []
+  #                     },
+  #                     fn {buildable_type, buildable_options}, acc2 ->
+  #                       if buildable_options.job_level == job_level do
+  #                         buildables_list = Map.get(city.details, buildable_type)
+  #                         # this is the actual list of buildables
+
+  #                         if length(buildables_list) > 0 do
+  #                           Enum.reduce(
+  #                             buildables_list,
+  #                             %{
+  #                               available_jobs: acc2.available_jobs,
+  #                               buildable_list_updated_reasons:
+  #                                 acc2.buildable_list_updated_reasons,
+  #                               citizens: acc.citizens,
+  #                               citizens_w_job_gap: []
+  #                             },
+  #                             fn individual_buildable, acc3 ->
+  #                               if !individual_buildable.buildable.enabled do
+  #                                 # if disabled, nothing changes
+  #                                 # ok this works
+
+  #                                 %{
+  #                                   available_jobs: acc3.available_jobs,
+  #                                   buildable_list_updated_reasons:
+  #                                     acc3.buildable_list_updated_reasons,
+  #                                   citizens: acc3.citizens,
+  #                                   citizens_w_job_gap: acc3.citizens_w_job_gap
+  #                                 }
+  #                               else
+  #                                 # for number of individual_buildable.metadata.jobs
+
+  #                                 # also should do a check if there are 0 jobs?
+  #                                 # do I have a guarantee there's a job here?
+
+  #                                 # # if there's any citizens
+  #                                 # if acc3.citizens !== [] do
+
+  #                                 # else
+
+  #                                 # end
+
+  #                                 # for each individual job slot in the buildable
+  #                                 each_job_results =
+  #                                   Enum.reduce(
+  #                                     0..individual_buildable.metadata.jobs,
+  #                                     %{
+  #                                       buildable_jobs: 0,
+  #                                       enabled: true,
+  #                                       citizens: acc3.citizens,
+  #                                       citizens_w_job_gap: acc3.citizens_w_job_gap
+  #                                     },
+  #                                     fn _job_slot, acc4 ->
+  #                                       nil
+
+  #                                       if acc4.citizens !== [] do
+  #                                         [top_citizen | tail] = acc4.citizens
+
+  #                                         job_taken =
+  #                                           if top_citizen.education < job_level,
+  #                                             do: false,
+  #                                             else: true
+
+  #                                         job_gap_list =
+  #                                           if top_citizen.education > job_level do
+  #                                             [top_citizen | acc4.citizens_w_job_gap]
+  #                                           else
+  #                                             acc4.citizens_w_job_gap
+  #                                           end
+
+  #                                         jobs_available =
+  #                                           if job_taken,
+  #                                             do: acc4.buildable_jobs - 1,
+  #                                             else: acc4.buildable_jobs
+
+  #                                         # return
+  #                                         %{
+  #                                           buildable_jobs: jobs_available,
+  #                                           enabled: if(job_taken, do: true, else: false),
+  #                                           citizens:
+  #                                             if(job_taken, do: tail, else: acc4.citizens),
+  #                                           citizens_w_job_gap: job_gap_list
+  #                                         }
+  #                                       else
+  #                                         # if no citizens left, return
+  #                                         %{
+  #                                           buildable_jobs: acc4.buildable_jobs,
+  #                                           enabled: false,
+  #                                           citizens: acc4.citizens,
+  #                                           citizens_w_job_gap: acc4.citizens_w_job_gap
+  #                                         }
+  #                                       end
+  #                                     end
+  #                                   )
+
+  #                                 updated_buildable =
+  #                                   if !each_job_results.enabled do
+  #                                     put_reason_in_buildable(
+  #                                       city,
+  #                                       buildable_type,
+  #                                       individual_buildable,
+  #                                       "jobs"
+  #                                     )
+  #                                   else
+  #                                     individual_buildable
+  #                                   end
+
+  #                                 # check through citizens, ideally by education level
+  #                                 # if there's a fit, remove citizen from accumulator (or tag as "hired")
+  #                                 # if there's a job gap, mark citizen as "looking")
+  #                                 #
+  #                                 #
+
+  #                                 # here is where I think I would enable/disable that buildable
+  #                                 # for each job in job_amount, check if there's a citizen with that education
+  #                                 # gotta account for each citizen here and remove it
+
+  #                                 %{
+  #                                   job_amount: acc3.job_amount + each_job_results.buildable_jobs,
+  #                                   # should only add here
+  #                                   buildable_list_updated_reasons:
+  #                                     Enum.concat(acc3.buildable_list_updated_reasons, [
+  #                                       updated_buildable
+  #                                     ]),
+  #                                   citizens: each_job_results.citizens,
+  #                                   citizens_w_job_gap: each_job_results.citizens_w_job_gap
+  #                                 }
+  #                               end
+  #                             end
+  #                           )
+  #                         else
+  #                           acc2
+  #                         end
+  #                       else
+  #                         acc2
+  #                       end
+  #                     end
+  #                   )
+
+  #                 %{
+  #                   jobs_map: %{
+  #                     accj.jobs_map
+  #                     | job_level => accj.jobs_map[job_level] + results.job_amount
+  #                   },
+  #                   city: accj.city,
+  #                   citizens: accj.citizens
+  #                 }
+  #               end
+  #             )
+
+  #           # job_map_results returns this
+  #           %{
+  #             jobs_map: Enum.into(job_map_results.jobs_map, %{}),
+  #             city: acc.city,
+  #             citizens: acc.citizens
+  #           }
+  #         else
+  #           acc
+  #         end
+  #       end
+  #     )
+
+  #   # return the adjusted city
+  #   results.jobs_map
+  # end
+
+  @doc """
+  takes a %MayorGame.City.Town{} struct
+
+  returns map of available jobs by level: %{0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0}
+  """
+  def calculate_jobs2(%{} = city) do
     # city_preloaded = preload_city_check(city)
     empty_jobs_map = %{0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0}
+    # empty_jobs_list = [0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0]
 
     # pseudocode
     # so I have the list of citizens here
-    IO.inspect(city.citizens)
     # for each buildable, for each number in its job_amount, check if there is a citizen available
     # wither have to start from the higher levels, or go per citizen
 
+    # want to come out with:
+    # buildings enabled/disabled for reason "workers"
+    # jobs mao is kinda ok to duplicate i think
+
+    # ok, we have the buildabled going in here
+
+    sorted_citizens = Enum.sort(city.citizens, &(&1.education > &2.education))
+
+    sorted_buildables =
+      Enum.filter(Buildable.buildables_flat(), fn {_name, metadata} ->
+        metadata.job_level !== nil
+      end)
+      |> Enum.sort(&(elem(&1, 1).job_level > elem(&2, 1).job_level))
+
     results =
       Enum.reduce(
-        Buildable.buildables(),
-        %{jobs_map: empty_jobs_map},
-        fn category, acc ->
+        sorted_buildables,
+        %{jobs_map: empty_jobs_map, city: city, citizens: sorted_citizens, citizens_looking: []},
+        fn {buildable_type, buildable_options}, acc ->
           # pattern match to pull info out
-          {categoryName, buildings} = category
+          buildables_list = Map.get(acc.city.details, buildable_type)
+          job_level = buildable_options.job_level
 
-          if categoryName != :housing && categoryName != :civic do
-            job_map_results =
-              Enum.map(acc.jobs_map, fn {job_level, jobs} ->
-                results =
-                  Enum.reduce(
-                    buildings,
-                    %{job_amount: 0},
-                    fn {buildable_type, buildable_options}, acc2 ->
-                      if buildable_options.job_level == job_level do
-                        buildables_list = Map.get(city.details, buildable_type)
+          # ok, they come to here
 
-                        if length(buildables_list) > 0 do
-                          Enum.reduce(
-                            buildables_list,
-                            %{job_amount: acc2.job_amount},
-                            fn individual_buildable, acc3 ->
-                              if !individual_buildable.buildable.enabled do
-                                %{job_amount: acc3.job_amount}
-                              else
-                                %{
-                                  job_amount: acc3.job_amount + individual_buildable.metadata.jobs
-                                }
-                              end
+          # this is the actual list of buildables
+          buildable_list_results =
+            if length(buildables_list) > 0 do
+              Enum.reduce(
+                buildables_list,
+                %{
+                  total_jobs: 0,
+                  available_jobs: 0,
+                  buildable_list_updated_reasons: [],
+                  citizens: acc.citizens,
+                  citizens_w_job_gap: acc.citizens_looking
+                },
+                fn individual_buildable, acc3 ->
+                  if individual_buildable.buildable.enabled == false do
+                    # if disabled, nothing changes
+                    # IO.inspect(individual_buildable)
+                    # ok we have it here still
+                    # oooook maybe i need to add it back to the list here?
+                    %{
+                      acc3
+                      | buildable_list_updated_reasons:
+                          Enum.concat(acc3.buildable_list_updated_reasons, [
+                            individual_buildable
+                          ])
+                    }
+                  else
+                    each_job_results =
+                      if individual_buildable.metadata.jobs > 0 do
+                        Enum.reduce(
+                          0..(individual_buildable.metadata.jobs - 1),
+                          %{
+                            total_buildable_jobs: 0,
+                            available_buildable_jobs: 0,
+                            enabled: true,
+                            citizens: acc3.citizens,
+                            citizens_w_job_gap: acc3.citizens_w_job_gap
+                          },
+                          fn _job_slot, acc4 ->
+                            if acc4.citizens !== [] do
+                              [top_citizen | tail] = acc4.citizens
+
+                              job_taken =
+                                if top_citizen.education < job_level,
+                                  do: false,
+                                  else: true
+
+                              job_gap_list =
+                                if top_citizen.education > job_level do
+                                  [top_citizen | acc4.citizens_w_job_gap]
+                                else
+                                  acc4.citizens_w_job_gap
+                                end
+
+                              jobs_available =
+                                if job_taken,
+                                  do: acc4.available_buildable_jobs + 1,
+                                  else: acc4.available_buildable_jobs
+
+                              # return
+                              %{
+                                total_buildable_jobs: acc4.total_buildable_jobs + 1,
+                                available_buildable_jobs: jobs_available,
+                                enabled: if(job_taken, do: true, else: false),
+                                citizens: if(job_taken, do: tail, else: acc4.citizens),
+                                citizens_w_job_gap: job_gap_list
+                              }
+                            else
+                              # if no citizens left, return
+                              %{
+                                total_buildable_jobs: acc4.total_buildable_jobs + 1,
+                                available_buildable_jobs: acc4.available_buildable_jobs,
+                                enabled: false,
+                                citizens: acc4.citizens,
+                                citizens_w_job_gap: acc4.citizens_w_job_gap
+                              }
                             end
-                          )
-                        else
-                          acc2
-                        end
+                          end
+                        )
                       else
-                        acc2
+                        %{
+                          total_buildable_jobs: 0,
+                          available_buildable_jobs: 0,
+                          enabled: true,
+                          citizens: acc3.citizens,
+                          citizens_w_job_gap: acc3.citizens_w_job_gap
+                        }
                       end
-                    end
-                  )
 
-                {job_level, jobs + results.job_amount}
-              end)
+                    # HERE I NEED TO ACTUALLY ADD THIS TO THE INDIVIDUAL BUILDABLE
+                    updated_buildable =
+                      if !each_job_results.enabled do
+                        put_reason_in_buildable(
+                          acc.city,
+                          buildable_type,
+                          individual_buildable,
+                          "jobs"
+                        )
+                      else
+                        individual_buildable
+                      end
 
-            # return this
-            %{
-              jobs_map: Enum.into(job_map_results, %{})
-            }
-          else
-            acc
-          end
+                    %{
+                      total_jobs: acc3.total_jobs + each_job_results.total_buildable_jobs,
+                      available_jobs:
+                        acc3.available_jobs + each_job_results.available_buildable_jobs,
+                      # should only add here
+                      buildable_list_updated_reasons:
+                        Enum.concat(acc3.buildable_list_updated_reasons, [
+                          updated_buildable
+                        ]),
+                      citizens: each_job_results.citizens,
+                      citizens_w_job_gap: each_job_results.citizens_w_job_gap
+                    }
+                  end
+                end
+              )
+
+              # ^end of reduce on buildable_list
+            else
+              %{
+                total_jobs: 0,
+                available_jobs: 0,
+                buildable_list_updated_reasons: [],
+                citizens: acc.citizens,
+                citizens_w_job_gap: acc.citizens_looking
+              }
+            end
+
+          # if there have been updates
+
+          city_update =
+            if buildable_list_results.buildable_list_updated_reasons !==
+                 Map.get(acc.city.details, buildable_type) do
+              put_in(
+                acc.city,
+                [:details, buildable_type],
+                buildable_list_results.buildable_list_updated_reasons
+              )
+            else
+              acc.city
+            end
+
+          IO.inspect(buildable_list_results.total_jobs, label: to_string(job_level))
+
+          %{
+            jobs_map:
+              Map.put(
+                acc.jobs_map,
+                job_level,
+                acc.jobs_map[job_level] + buildable_list_results.total_jobs
+              ),
+            city: city_update,
+            citizens: buildable_list_results.citizens,
+            citizens_looking: buildable_list_results.citizens_w_job_gap
+          }
+
+          # job_map_results returns this
         end
       )
 
-    results.jobs_map
+    IO.inspect(results.jobs_map)
+
+    # return the adjusted city and other stuff
+    results_map = %{
+      jobs_map: results.jobs_map,
+      citizens_looking: results.citizens_looking
+    }
+
+    Map.merge(results.city, results_map)
   end
 
   @doc """
@@ -1088,5 +1504,33 @@ defmodule MayorGame.CityHelpers do
       |> put_in([:metadata, :purchasable], false)
       |> put_in([:metadata, :purchasable_reason], "not enough money")
     end
+  end
+
+  defp put_reason_in_buildable(city, buildable_type, individual_buildable, reason) do
+    City.update_buildable(
+      city.details,
+      buildable_type,
+      individual_buildable.buildable.id,
+      %{
+        enabled: false,
+        # if there's already a reason it's disabled
+        reason:
+          cond do
+            Enum.empty?(individual_buildable.buildable.reason) ->
+              [reason]
+
+            Enum.member?(individual_buildable.buildable.reason, reason) ->
+              individual_buildable.buildable.reason
+
+            true ->
+              [reason | individual_buildable.buildable.reason]
+          end
+      }
+    )
+
+    put_in(individual_buildable, [:buildable, :reason], [
+      reason | individual_buildable.buildable.reason
+    ])
+    |> put_in([:buildable, :enabled], false)
   end
 end

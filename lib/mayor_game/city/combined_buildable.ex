@@ -2,6 +2,7 @@
 defmodule MayorGame.City.CombinedBuildable do
   alias MayorGame.City.{Buildable, BuildableMetadata}
   # defaults to nil for keys without values
+  @derive {Inspect, except: [:metadata]}
   defstruct buildable: %Buildable{}, metadata: %BuildableMetadata{}
   use Accessible
 

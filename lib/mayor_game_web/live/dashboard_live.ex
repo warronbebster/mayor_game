@@ -6,7 +6,7 @@ defmodule MayorGameWeb.DashboardLive do
   # use Phoenix.HTML
 
   alias MayorGame.City
-  alias MayorGame.City.Town
+  # alias MayorGame.City.Town
   alias MayorGameWeb.DashboardView
   # alias MayorGame.Repo
   # alias Ecto.Changeset
