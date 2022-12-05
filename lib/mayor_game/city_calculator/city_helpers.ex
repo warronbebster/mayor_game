@@ -61,7 +61,6 @@ defmodule MayorGame.CityHelpers do
     total_housing = calculate_housing(city_updated)
     # returns a map of %{0 => #, 1 => #, etc}
     total_jobs = city_updated.jobs_map
-    IO.inspect(total_jobs)
 
     # if city.id == 2 do
     #   IO.inspect(test_result.jobs_map)
@@ -737,8 +736,6 @@ defmodule MayorGame.CityHelpers do
                 end
               )
 
-            # IO.inspect(buildable_list_results.buildable_list_updated_reasons)
-
             # if there have been updates
             city_update =
               if buildable_list_results.buildable_list_updated_reasons !==
@@ -1206,8 +1203,6 @@ defmodule MayorGame.CityHelpers do
               acc.city
             end
 
-          IO.inspect(buildable_list_results.total_jobs, label: to_string(job_level))
-
           %{
             jobs_map:
               Map.put(
@@ -1223,8 +1218,6 @@ defmodule MayorGame.CityHelpers do
           # job_map_results returns this
         end
       )
-
-    IO.inspect(results.jobs_map)
 
     # return the adjusted city and other stuff
     results_map = %{
