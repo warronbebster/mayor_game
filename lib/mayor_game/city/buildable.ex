@@ -346,7 +346,7 @@ defmodule MayorGame.City.Buildable do
       coal_plants: %BuildableMetadata{
         price: 20,
         daily_cost: 10,
-        jobs: 30,
+        jobs: 5,
         job_level: 0,
         energy: 3500,
         pollution: 10,
@@ -591,7 +591,7 @@ defmodule MayorGame.City.Buildable do
       hospitals: %BuildableMetadata{
         price: 600,
         daily_cost: 5,
-        jobs: 30,
+        jobs: 10,
         job_level: 2,
         health: 10,
         area_required: 20,

@@ -29,7 +29,10 @@
 
 
 ### nice to have —————————————————————————————————————
+# fix taxes so you can't get money from non active-jobs
 # show fun & health in top bar
+# add script to randomly add citizens sometimes
+# remove ID number from buildables
 # clean db writes out of buildable resets
 # consolidate job calculations
 

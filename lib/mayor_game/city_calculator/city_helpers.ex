@@ -69,7 +69,6 @@ defmodule MayorGame.CityHelpers do
     Map.merge(city_updated, %{
       jobs: total_jobs,
       education: total_education,
-      tax: 0,
       housing: total_housing,
       fun: total_fun,
       health: total_health,
@@ -156,6 +155,7 @@ defmodule MayorGame.CityHelpers do
     # pollution rating/health rating
     # then make decision
 
+    # results is a map cities_with_jobs and job_level
     results =
       if citizen.education > 0 do
         # [3,2,1,0]
@@ -176,17 +176,28 @@ defmodule MayorGame.CityHelpers do
           else: %{cities_with_jobs: cities_with_jobs, job_level: 0}
       end
 
+    # IO.inspect(results)
+
     if is_map(results) do
       scored_results =
         Enum.map(results.cities_with_jobs, fn city_calc ->
           # normalize pollution by dividing by energy
           # normalize sprawl by dividing by area
           # should probably do this when calculating it, not here
+          # IO.inspect(city_calc)
+
+          pollution_score =
+            if city_calc.total_energy <= 0,
+              do: 0,
+              else: city_calc.pollution / city_calc.total_energy
+
+          area_score =
+            if city_calc.total_area <= 0, do: 0, else: city_calc.sprawl / city_calc.total_area
 
           score =
             city_calc.tax_rates[to_string(results.job_level)] * citizen.preferences["tax_rates"] +
-              city_calc.pollution / city_calc.total_energy * citizen.preferences["pollution"] +
-              city_calc.sprawl / city_calc.total_area * citizen.preferences["sprawl"] +
+              pollution_score * citizen.preferences["pollution"] +
+              area_score * citizen.preferences["sprawl"] +
               citizen.preferences["fun"] * city_calc.fun +
               citizen.preferences["health"] + city_calc.health
 
@@ -308,11 +319,6 @@ defmodule MayorGame.CityHelpers do
             |> Map.put(:citizens_too_old, citizens_too_old)
             |> Map.put(:citizens_polluted, citizens_polluted)
             |> Map.put(:citizens_to_reproduce, citizens_to_reproduce)
-            |> Map.put(
-              :tax,
-              round((1 + best_possible_job) * 100 * acc.tax_rates[to_string(citizen.education)]) +
-                acc.tax
-            )
           end
         )
 
@@ -1045,7 +1051,13 @@ defmodule MayorGame.CityHelpers do
     results =
       Enum.reduce(
         sorted_buildables,
-        %{jobs_map: empty_jobs_map, city: city, citizens: sorted_citizens, citizens_looking: []},
+        %{
+          jobs_map: empty_jobs_map,
+          city: city,
+          tax: 0,
+          citizens: sorted_citizens,
+          citizens_looking: []
+        },
         fn {buildable_type, buildable_options}, acc ->
           # pattern match to pull info out
           buildables_list = Map.get(acc.city.details, buildable_type)
@@ -1053,7 +1065,7 @@ defmodule MayorGame.CityHelpers do
 
           # ok, they come to here
 
-          # this is the actual list of buildables
+          # this iterates through the actual list of buildables
           buildable_list_results =
             if length(buildables_list) > 0 do
               Enum.reduce(
@@ -1061,6 +1073,7 @@ defmodule MayorGame.CityHelpers do
                 %{
                   total_jobs: 0,
                   available_jobs: 0,
+                  tax: 0,
                   buildable_list_updated_reasons: [],
                   citizens: acc.citizens,
                   citizens_w_job_gap: acc.citizens_looking
@@ -1071,13 +1084,22 @@ defmodule MayorGame.CityHelpers do
                     # IO.inspect(individual_buildable)
                     # ok we have it here still
                     # oooook maybe i need to add it back to the list here?
-                    %{
-                      acc3
-                      | buildable_list_updated_reasons:
-                          Enum.concat(acc3.buildable_list_updated_reasons, [
-                            individual_buildable
-                          ])
-                    }
+                    # %{
+                    #   acc3
+                    #   | buildable_list_updated_reasons:
+                    #       Enum.concat(acc3.buildable_list_updated_reasons, [
+                    #         individual_buildable
+                    #       ])
+                    # }
+
+                    Map.put(
+                      acc3,
+                      :buildable_list_updated_reasons,
+                      Enum.concat(acc3.buildable_list_updated_reasons, [
+                        individual_buildable
+                      ])
+                    )
+                    |> Map.put(:tax, 0)
                   else
                     each_job_results =
                       if individual_buildable.metadata.jobs > 0 do
@@ -1087,6 +1109,7 @@ defmodule MayorGame.CityHelpers do
                             total_buildable_jobs: 0,
                             available_buildable_jobs: 0,
                             enabled: true,
+                            tax: acc3.tax,
                             citizens: acc3.citizens,
                             citizens_w_job_gap: acc3.citizens_w_job_gap
                           },
@@ -1111,11 +1134,25 @@ defmodule MayorGame.CityHelpers do
                                   do: acc4.available_buildable_jobs + 1,
                                   else: acc4.available_buildable_jobs
 
+                              tax =
+                                if job_taken,
+                                  do:
+                                    round(
+                                      (1 + job_level) * 100 *
+                                        city.tax_rates[to_string(top_citizen.education)] /
+                                        10
+                                    ),
+                                  else: 0
+
+                              # ok, tax is correct here
+                              IO.inspect(tax)
+
                               # return
                               %{
                                 total_buildable_jobs: acc4.total_buildable_jobs + 1,
                                 available_buildable_jobs: jobs_available,
                                 enabled: if(job_taken, do: true, else: false),
+                                tax: acc4.tax + tax,
                                 citizens: if(job_taken, do: tail, else: acc4.citizens),
                                 citizens_w_job_gap: job_gap_list
                               }
@@ -1124,6 +1161,7 @@ defmodule MayorGame.CityHelpers do
                               %{
                                 total_buildable_jobs: acc4.total_buildable_jobs + 1,
                                 available_buildable_jobs: acc4.available_buildable_jobs,
+                                tax: acc4.tax,
                                 enabled: false,
                                 citizens: acc4.citizens,
                                 citizens_w_job_gap: acc4.citizens_w_job_gap
@@ -1132,9 +1170,12 @@ defmodule MayorGame.CityHelpers do
                           end
                         )
                       else
+                        # IO.inspect(acc3, label: "acc3")
+
                         %{
                           total_buildable_jobs: 0,
                           available_buildable_jobs: 0,
+                          tax: 0,
                           enabled: true,
                           citizens: acc3.citizens,
                           citizens_w_job_gap: acc3.citizens_w_job_gap
@@ -1158,6 +1199,7 @@ defmodule MayorGame.CityHelpers do
                       total_jobs: acc3.total_jobs + each_job_results.total_buildable_jobs,
                       available_jobs:
                         acc3.available_jobs + each_job_results.available_buildable_jobs,
+                      tax: each_job_results.tax,
                       # should only add here
                       buildable_list_updated_reasons:
                         Enum.concat(acc3.buildable_list_updated_reasons, [
@@ -1175,6 +1217,7 @@ defmodule MayorGame.CityHelpers do
               %{
                 total_jobs: 0,
                 available_jobs: 0,
+                tax: 0,
                 buildable_list_updated_reasons: [],
                 citizens: acc.citizens,
                 citizens_w_job_gap: acc.citizens_looking
@@ -1195,6 +1238,10 @@ defmodule MayorGame.CityHelpers do
               acc.city
             end
 
+          if city.id == 2 do
+            IO.inspect(buildable_list_results.tax, label: "buildable_list_results")
+          end
+
           %{
             jobs_map:
               Map.put(
@@ -1202,6 +1249,7 @@ defmodule MayorGame.CityHelpers do
                 job_level,
                 acc.jobs_map[job_level] + buildable_list_results.total_jobs
               ),
+            tax: acc.tax + buildable_list_results.tax,
             city: city_update,
             citizens: buildable_list_results.citizens,
             citizens_looking: buildable_list_results.citizens_w_job_gap
@@ -1211,9 +1259,14 @@ defmodule MayorGame.CityHelpers do
         end
       )
 
+    if city.id == 2 do
+      IO.inspect(results.tax, label: "final tax result")
+    end
+
     # return the adjusted city and other stuff
     results_map = %{
       jobs_map: results.jobs_map,
+      tax: results.tax,
       citizens_looking: results.citizens_looking
     }
 

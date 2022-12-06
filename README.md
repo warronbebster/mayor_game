@@ -61,6 +61,15 @@ $ fly logs
 
 See: https://mayor.fly.dev
 
+to reset the prod DB — iex in and run `Ecto.Migrator.run(MyApp.Repo, :down, all: true)`, then redeploy
+
+To IEX in to prod:
+
+```
+fly ssh console
+app/bin/mayor_game remote
+```
+
 ## Learn more
 
 - Official website: https://www.phoenixframework.org/

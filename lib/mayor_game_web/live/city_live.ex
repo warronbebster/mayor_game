@@ -39,7 +39,8 @@ defmodule MayorGameWeb.CityLive do
   # this handles different events
   def handle_event(
         "add_citizen",
-        %{"message" => %{"content" => content}},
+        %{"name" => content},
+        # %{"message" => building_to_buy},
         # pull these variables out of the socket
         %{assigns: %{city: city}} = socket
       ) do
