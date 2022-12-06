@@ -238,7 +238,8 @@ defmodule MayorGame.CityHelpers do
             City.update_citizens(citizen, %{age: citizen.age + 1})
 
             # set a random pollution ceiling based on how many cities are in the ecosystem
-            pollution_ceiling = cities_count * 10000 + :rand.uniform(cities_count * 1000)
+            pollution_ceiling =
+              cities_count * 10000 + :math.pow(:rand.uniform(cities_count), cities_count)
 
             # if there are NO jobs for citizen in this town, returns -1.
             best_possible_job =
@@ -266,7 +267,7 @@ defmodule MayorGame.CityHelpers do
 
             # citizen will look if there is a job gap
             citizens_looking =
-              if job_gap > 0 and citizen.last_moved + 365 < world.day,
+              if job_gap > 0 and citizen.last_moved + 50 < world.day,
                 do: [citizen | acc.citizens_looking],
                 else: acc.citizens_looking
 

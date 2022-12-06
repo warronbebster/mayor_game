@@ -463,7 +463,7 @@ defmodule MayorGame.City.Buildable do
         price: 200,
         daily_cost: 10,
         jobs: 10,
-        job_level: 1,
+        job_level: 0,
         education_level: 1,
         capacity: 10,
         area_required: 5,
