@@ -227,7 +227,7 @@ defmodule MayorGame.CityCalculator do
           updated_acc_city_list =
             List.update_at(acc_city_list, indexx, fn update ->
               update
-              |> Map.update!(:housing, &(&1 - 1))
+              |> Map.update!(:available_housing, &(&1 - 1))
               |> update_in([:jobs, best_job.job_level], &(&1 - 1))
             end)
 

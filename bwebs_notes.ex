@@ -2,26 +2,15 @@
 
 # TODO:
 
-# make it so if there are no citizens working, buildings aren't operational?
 
 # implement regional differences (check region in generation functions) (done for energy, should do for health & fun)
-
-# add upgrades for different buildables
-
 # figure out why server sometimes doesn't restart
 
-
-# FIRST RELEASE
+# FIRST RELEASE DONE
 
 # add more upgrades
 # balance prices
-# reset/migrate prod DB
-
-#done
-# get buildings not operating if there's no citizens to work there
-  # for each citizen, go through
-# fix arbitrary order for displaying buildables on webpage — seems like maybe it's pulling by last_updated?
-# ^ok maybe fixed this
+# make it so they won't move to a city with no housing
 
 
 
@@ -30,9 +19,7 @@
 
 ### nice to have —————————————————————————————————————
 # fix taxes so you can't get money from non active-jobs
-# show fun & health in top bar
 # add script to randomly add citizens sometimes
-# remove ID number from buildables
 # clean db writes out of buildable resets
 # consolidate job calculations
 
