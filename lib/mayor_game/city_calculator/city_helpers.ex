@@ -29,10 +29,6 @@ defmodule MayorGame.CityHelpers do
     # this might end up being redundant because I can construct that status and not check it from the DB
     city_reset = reset_buildables_to_enabled(city_preloaded)
 
-    if city.id == 2 do
-      # IO.inspect(city_reset)
-    end
-
     # ayyy this is successfully combining the buildables
     # next step is applying the upgrades (done)
     # and putting it in city_preloaded
@@ -61,10 +57,6 @@ defmodule MayorGame.CityHelpers do
     total_housing = calculate_housing(city_updated)
     # returns a map of %{0 => #, 1 => #, etc}
     total_jobs = city_updated.jobs_map
-
-    # if city.id == 2 do
-    #   IO.inspect(test_result.jobs_map)
-    # end
 
     # returns a map of %{0 => #, 1 => #, etc}
     total_education = calculate_education(city_updated)

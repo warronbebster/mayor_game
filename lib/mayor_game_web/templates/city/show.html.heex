@@ -40,6 +40,18 @@
   <span class="text-purple-600">
     Pollution <span class="text-purple-800"><%= @world.pollution %></span>
   </span>
+  <span class="text-sky-600">
+    Fun
+    <span class="text-sky-800">
+      <%= @city.fun %>
+    </span>
+  </span>
+    <span class="text-fuchsia-600">
+    Health
+    <span class="text-fuchsia-800">
+      <%= @city.health %>
+    </span>
+  </span>
   <%= if @current_user && @current_user.id == 1 do %>
     <button class="btn text-xs p-0 border-none" phx-click="gib_money">refill $</button>
   <% end %>

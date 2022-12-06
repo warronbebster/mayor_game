@@ -1,6 +1,6 @@
 # fly.toml file generated for mayorgame on 2022-11-27T19:12:05-05:00
 
-app = "mayorgame"
+app = "mayor_game"
 kill_signal = "SIGTERM"
 kill_timeout = 5
 processes = []

@@ -253,11 +253,20 @@ defmodule MayorGameWeb.CityLive do
       # ok so changing something re-orders this list
     end
 
+    total_fun = calculate_total_int(city_updated, :fun)
+    total_health = calculate_total_int(city_updated, :health)
+
+    city_w_fun_health =
+      Map.merge(city_updated, %{
+        fun: round(total_fun),
+        health: round(total_health)
+      })
+
     socket
     |> assign(:buildables, buildables_with_status)
     |> assign(:user_id, user.id)
     |> assign(:username, user.nickname)
-    |> assign(:city, city_updated)
+    |> assign(:city, city_w_fun_health)
   end
 
   # this takes the generic buildables map and builds the status (enabled, etc) for each buildable

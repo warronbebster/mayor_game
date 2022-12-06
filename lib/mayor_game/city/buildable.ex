@@ -168,7 +168,7 @@ defmodule MayorGame.City.Buildable do
   def buildables_flat do
     %{
       huts: %BuildableMetadata{
-        price: 0,
+        price: 5,
         fits: 1,
         daily_cost: 0,
         area_required: 1,
@@ -184,13 +184,13 @@ defmodule MayorGame.City.Buildable do
         energy_required: 12,
         purchasable: true,
         upgrades: %{
-          upgrade_1: %{
+          more_room: %{
             cost: 5,
             description: "+1 fit",
             requirements: [],
             function: %{fits: &(&1 + 1)}
           },
-          upgrade_2: %{
+          solar_panels: %{
             cost: 10,
             description: "-5 Energy required ",
             requirements: [:upgrade_1],
@@ -329,6 +329,14 @@ defmodule MayorGame.City.Buildable do
         sprawl: 0,
         area: 10,
         health: 1,
+        upgrades: %{
+          more_stations: %{
+            cost: 5,
+            description: "+5 area",
+            requirements: [],
+            function: %{area: &(&1 + 5)}
+          }
+        },
         region_health_multipliers: %{forest: 1.3, mountain: 1.4},
         region_fun_multipliers: %{ocean: 1.5, mountain: 0.7, desert: 0.6},
         energy_required: 0,
@@ -442,7 +450,7 @@ defmodule MayorGame.City.Buildable do
         purchasable_reason: "valid"
       },
       libraries: %BuildableMetadata{
-        price: 20,
+        price: 200,
         daily_cost: 10,
         area_required: 1,
         jobs: 4,
@@ -452,19 +460,27 @@ defmodule MayorGame.City.Buildable do
         purchasable_reason: "valid"
       },
       schools: %BuildableMetadata{
-        price: 20,
+        price: 200,
         daily_cost: 10,
         jobs: 10,
         job_level: 1,
         education_level: 1,
         capacity: 10,
         area_required: 5,
-        energy_required: 800,
+        energy_required: 600,
+        upgrades: %{
+          extra_classroom: %{
+            cost: 5,
+            description: "+5 capacity",
+            requirements: [],
+            function: %{capacity: &(&1 + 5)}
+          }
+        },
         purchasable: true,
         purchasable_reason: "valid"
       },
       middle_schools: %BuildableMetadata{
-        price: 20,
+        price: 300,
         daily_cost: 10,
         jobs: 5,
         job_level: 1,
@@ -476,10 +492,10 @@ defmodule MayorGame.City.Buildable do
         purchasable_reason: "valid"
       },
       high_schools: %BuildableMetadata{
-        price: 20,
+        price: 400,
         daily_cost: 10,
         jobs: 10,
-        job_level: 1,
+        job_level: 2,
         education_level: 3,
         capacity: 10,
         area_required: 5,
@@ -488,10 +504,10 @@ defmodule MayorGame.City.Buildable do
         purchasable_reason: "valid"
       },
       universities: %BuildableMetadata{
-        price: 20,
+        price: 650,
         daily_cost: 15,
         jobs: 10,
-        job_level: 2,
+        job_level: 3,
         education_level: 4,
         capacity: 10,
         area_required: 10,
@@ -500,10 +516,10 @@ defmodule MayorGame.City.Buildable do
         purchasable_reason: "valid"
       },
       research_labs: %BuildableMetadata{
-        price: 20,
+        price: 900,
         daily_cost: 15,
         jobs: 10,
-        job_level: 3,
+        job_level: 4,
         education_level: 5,
         capacity: 5,
         area_required: 3,
@@ -512,7 +528,7 @@ defmodule MayorGame.City.Buildable do
         purchasable_reason: "valid"
       },
       retail_shops: %BuildableMetadata{
-        price: 20,
+        price: 200,
         daily_cost: 5,
         jobs: 5,
         job_level: 0,
@@ -522,18 +538,26 @@ defmodule MayorGame.City.Buildable do
         purchasable_reason: "valid"
       },
       factories: %BuildableMetadata{
-        price: 20,
+        price: 500,
         daily_cost: 5,
         jobs: 20,
         job_level: 0,
         area_required: 10,
         health: -3,
         energy_required: 1900,
+        upgrades: %{
+          solar_panel: %{
+            cost: 25,
+            description: "-500 energy_required",
+            requirements: [],
+            function: %{energy_required: &(&1 - 500)}
+          }
+        },
         purchasable: true,
         purchasable_reason: "valid"
       },
       office_buildings: %BuildableMetadata{
-        price: 20,
+        price: 400,
         daily_cost: 5,
         jobs: 20,
         job_level: 1,
@@ -543,7 +567,7 @@ defmodule MayorGame.City.Buildable do
         purchasable_reason: "valid"
       },
       theatres: %BuildableMetadata{
-        price: 20,
+        price: 300,
         daily_cost: 5,
         jobs: 10,
         job_level: 0,
@@ -554,7 +578,7 @@ defmodule MayorGame.City.Buildable do
         purchasable_reason: "valid"
       },
       arenas: %BuildableMetadata{
-        price: 20,
+        price: 600,
         daily_cost: 5,
         jobs: 20,
         job_level: 0,
@@ -565,7 +589,7 @@ defmodule MayorGame.City.Buildable do
         purchasable_reason: "valid"
       },
       hospitals: %BuildableMetadata{
-        price: 40,
+        price: 600,
         daily_cost: 5,
         jobs: 30,
         job_level: 2,
@@ -576,7 +600,7 @@ defmodule MayorGame.City.Buildable do
         purchasable_reason: "valid"
       },
       doctor_offices: %BuildableMetadata{
-        price: 20,
+        price: 300,
         daily_cost: 5,
         jobs: 10,
         job_level: 4,

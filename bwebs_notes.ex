@@ -13,10 +13,9 @@
 
 # FIRST RELEASE
 
-# write better description
 # add more upgrades
 # balance prices
-# reset prod DB
+# reset/migrate prod DB
 
 #done
 # get buildings not operating if there's no citizens to work there
@@ -30,6 +29,10 @@
 
 
 ### nice to have —————————————————————————————————————
+# show fun & health in top bar
+# clean db writes out of buildable resets
+# consolidate job calculations
+
 # add grocery stores? farmers markets? farms?
 
 # hide resources in codebase
