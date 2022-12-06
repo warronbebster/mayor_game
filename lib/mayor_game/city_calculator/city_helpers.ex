@@ -238,7 +238,7 @@ defmodule MayorGame.CityHelpers do
             City.update_citizens(citizen, %{age: citizen.age + 1})
 
             # set a random pollution ceiling based on how many cities are in the ecosystem
-            pollution_ceiling = :rand.uniform(cities_count * 1000) * 1000
+            pollution_ceiling = cities_count * 10000 + :rand.uniform(cities_count * 1000)
 
             # if there are NO jobs for citizen in this town, returns -1.
             best_possible_job =
