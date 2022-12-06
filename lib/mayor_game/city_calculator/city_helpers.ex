@@ -176,15 +176,12 @@ defmodule MayorGame.CityHelpers do
           else: %{cities_with_jobs: cities_with_jobs, job_level: 0}
       end
 
-    # IO.inspect(results)
-
     if is_map(results) do
       scored_results =
         Enum.map(results.cities_with_jobs, fn city_calc ->
           # normalize pollution by dividing by energy
           # normalize sprawl by dividing by area
           # should probably do this when calculating it, not here
-          # IO.inspect(city_calc)
 
           pollution_score =
             if city_calc.total_energy <= 0,
@@ -338,10 +335,6 @@ defmodule MayorGame.CityHelpers do
 
   def reset_buildables_to_enabled(%Town{} = city) do
     city_preloaded = preload_city_check(city)
-
-    # if city_preloaded.id == 2 do
-    #   IO.inspect(city_preloaded.details)
-    # end
 
     # for buildable_type <- Buildable.buildables_list() do
     #   buildables = Map.get(city_preloaded.details, buildable_type)
@@ -1081,7 +1074,6 @@ defmodule MayorGame.CityHelpers do
                 fn individual_buildable, acc3 ->
                   if individual_buildable.buildable.enabled == false do
                     # if disabled, nothing changes
-                    # IO.inspect(individual_buildable)
                     # ok we have it here still
                     # oooook maybe i need to add it back to the list here?
                     # %{
@@ -1144,9 +1136,6 @@ defmodule MayorGame.CityHelpers do
                                     ),
                                   else: 0
 
-                              # ok, tax is correct here
-                              IO.inspect(tax)
-
                               # return
                               %{
                                 total_buildable_jobs: acc4.total_buildable_jobs + 1,
@@ -1170,8 +1159,6 @@ defmodule MayorGame.CityHelpers do
                           end
                         )
                       else
-                        # IO.inspect(acc3, label: "acc3")
-
                         %{
                           total_buildable_jobs: 0,
                           available_buildable_jobs: 0,
@@ -1238,10 +1225,6 @@ defmodule MayorGame.CityHelpers do
               acc.city
             end
 
-          if city.id == 2 do
-            IO.inspect(buildable_list_results.tax, label: "buildable_list_results")
-          end
-
           %{
             jobs_map:
               Map.put(
@@ -1258,10 +1241,6 @@ defmodule MayorGame.CityHelpers do
           # job_map_results returns this
         end
       )
-
-    if city.id == 2 do
-      IO.inspect(results.tax, label: "final tax result")
-    end
 
     # return the adjusted city and other stuff
     results_map = %{
