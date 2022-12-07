@@ -8,6 +8,7 @@
 
 # FIRST RELEASE DONE
 
+# batch DB updates
 # add more upgrades
 # balance prices
 # show how many people are working in each buildable

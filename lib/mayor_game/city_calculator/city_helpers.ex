@@ -235,6 +235,7 @@ defmodule MayorGame.CityHelpers do
           city_with_stats,
           fn citizen, acc ->
             # see if I can just do this all at once instead of a DB write per loop
+            # probably can't because it's a unique value per citizen
             City.update_citizens(citizen, %{age: citizen.age + 1})
 
             # set a random pollution ceiling based on how many cities are in the ecosystem
@@ -1532,26 +1533,26 @@ defmodule MayorGame.CityHelpers do
   end
 
   defp put_reason_in_buildable(city, buildable_type, individual_buildable, reason) do
-    City.update_buildable(
-      city.details,
-      buildable_type,
-      individual_buildable.buildable.id,
-      %{
-        enabled: false,
-        # if there's already a reason it's disabled
-        reason:
-          cond do
-            Enum.empty?(individual_buildable.buildable.reason) ->
-              [reason]
+    # City.update_buildable(
+    #   city.details,
+    #   buildable_type,
+    #   individual_buildable.buildable.id,
+    #   %{
+    #     enabled: false,
+    #     # if there's already a reason it's disabled
+    #     reason:
+    #       cond do
+    #         Enum.empty?(individual_buildable.buildable.reason) ->
+    #           [reason]
 
-            Enum.member?(individual_buildable.buildable.reason, reason) ->
-              individual_buildable.buildable.reason
+    #         Enum.member?(individual_buildable.buildable.reason, reason) ->
+    #           individual_buildable.buildable.reason
 
-            true ->
-              [reason | individual_buildable.buildable.reason]
-          end
-      }
-    )
+    #         true ->
+    #           [reason | individual_buildable.buildable.reason]
+    #       end
+    #   }
+    # )
 
     put_in(individual_buildable, [:buildable, :reason], [
       reason | individual_buildable.buildable.reason

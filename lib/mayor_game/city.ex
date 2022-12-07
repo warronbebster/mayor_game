@@ -508,6 +508,7 @@ defmodule MayorGame.City do
         do: buildable_to_update,
         else: String.to_existing_atom(buildable_to_update)
 
+    # this causes some bugs
     buildable_to_change =
       Repo.get_by!(Ecto.assoc(details, buildable_to_update_atom), id: buildable_id)
 
