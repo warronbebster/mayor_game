@@ -90,7 +90,7 @@ defmodule MayorGameWeb.CityLive do
     # get exponential price — don't want to set price on front-end for cheating reasons
     initial_purchase_price = get_in(Buildable.buildables_flat(), [building_to_buy_atom, :price])
     num_of_buildings = length(city.details[building_to_buy_atom])
-    purchase_exponential = num_of_buildings * num_of_buildings
+    purchase_exponential = num_of_buildings * num_of_buildings * num_of_buildings
     purchase_price = initial_purchase_price + purchase_exponential
 
     # check for upgrade requirements?

@@ -14,6 +14,10 @@
 # show how many people are working in each buildable
 # don't charge daily_cost if building is disabled?
 # make upgrade prices ridiculous
+# rewrite move_citizen to not need a DB call to get the world
+# add some jobs that don't require energy
+# add way to reset
+# add way to give other cities money
 
 
 

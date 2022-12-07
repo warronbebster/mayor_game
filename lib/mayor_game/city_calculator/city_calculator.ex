@@ -213,6 +213,7 @@ defmodule MayorGame.CityCalculator do
 
         if not is_nil(best_job) do
           # move citizen to city
+
           CityHelpers.move_citizen(citizen, City.get_town!(best_job.best_city.id), world.day)
 
           # find where the city is in the list
