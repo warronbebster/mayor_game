@@ -240,7 +240,8 @@ defmodule MayorGame.CityHelpers do
 
             # set a random pollution ceiling based on how many cities are in the ecosystem
             pollution_ceiling =
-              cities_count * 100_000 + :math.pow(:rand.uniform(cities_count), cities_count)
+              cities_count * 50_000 +
+                :math.pow(:rand.uniform(cities_count), :rand.uniform(cities_count))
 
             # if there are NO jobs for citizen in this town, returns -1.
             best_possible_job =

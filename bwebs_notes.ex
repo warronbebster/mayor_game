@@ -12,6 +12,8 @@
 # add more upgrades
 # balance prices
 # show how many people are working in each buildable
+# don't charge daily_cost if building is disabled?
+# make upgrade prices ridiculous
 
 
 
