@@ -47,6 +47,10 @@ defmodule MayorGame.CityHelpers do
       |> calculate_jobs2()
       |> calculate_energy(world)
 
+    sorted_citizens = Enum.sort(city_updated.citizens, &(&1.education >= &2.education))
+
+    city_sorted_citz = %{city_updated | citizens: sorted_citizens}
+
     # ok, calculate_jobs2 nukes anything that requires a job, if there's no money airports, carbon capture, some others
     # …but only if there's no money?
     # yeah only if there's no money.
@@ -66,7 +70,7 @@ defmodule MayorGame.CityHelpers do
 
     # return city
 
-    Map.merge(city_updated, %{
+    Map.merge(city_sorted_citz, %{
       jobs: total_jobs,
       education: total_education,
       housing: total_housing,
@@ -268,7 +272,7 @@ defmodule MayorGame.CityHelpers do
 
             # citizen will look if there is a job gap
             citizens_looking =
-              if job_gap > 0 and citizen.last_moved + 20 < world.day,
+              if job_gap > 0 and citizen.last_moved + 100 < world.day,
                 do: [citizen | acc.citizens_looking],
                 else: acc.citizens_looking
 
@@ -1370,7 +1374,9 @@ defmodule MayorGame.CityHelpers do
         buildable_array = Map.get(details_struct_acc, buildable_list_item)
 
         buildable_metadata = Map.get(Buildable.buildables_flat(), buildable_list_item)
-        updated_price = buildable_metadata.price + buildable_count * buildable_count
+
+        updated_price =
+          buildable_metadata.price + buildable_count * buildable_count * buildable_count
 
         buildable_metadata_price_updated = %MayorGame.City.BuildableMetadata{
           buildable_metadata

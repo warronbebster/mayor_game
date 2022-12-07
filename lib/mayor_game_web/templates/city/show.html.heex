@@ -26,6 +26,9 @@
   
 
   <div class="flex flex-row space-x-3">
+  <span class="text-amber-600">
+    Housing<br/><span class="text-amber-800"><%= @city.housing %></span>
+  </span>
   <span>Citizens<br/><%= length(@city.citizens) %></span>
 
   <span class="text-green-600">
@@ -47,9 +50,7 @@
   <span class="text-teal-600">
     Area <br/><span class="text-teal-800"><%= @city.total_area - @city.available_area %>/<%= @city.total_area %></span>
   </span>
-  <span class="text-amber-600">
-    Housing<br/><span class="text-amber-800"><%= @city.housing %></span>
-  </span>
+
 
   <span class="text-sky-600">
     Fun<br/><span class="text-sky-800"><%= @city.fun %></span>
@@ -256,7 +257,9 @@
       <% end %>
     <% end %>
   </section>
+  <section class="flex flex-row flex-grow flex-wrap space-x-6 bg-red-200">
 
+<div class="flex-grow mr-auto">
   <div class="relative pt-4">
     <div class="flex items-center space-x-2 sticky top-0 bg-amber-50">
       <div class="text-xl ">
@@ -273,7 +276,9 @@
       </div>
     <% end %>
   </div>
+  </div>
 
+<div class="flex-grow">
   <div class="relative pt-4">
     <div class="flex items-center space-x-2 sticky top-0 bg-amber-50">
       <div class="text-xl ">
@@ -287,4 +292,6 @@
       <br />
     <% end %>
   </div>
+  </div>
+  </section>
 </div>
