@@ -267,7 +267,7 @@ defmodule MayorGame.CityHelpers do
 
             # citizen will look if there is a job gap
             citizens_looking =
-              if job_gap > 0 and citizen.last_moved + 50 < world.day,
+              if job_gap > 0 and citizen.last_moved + 20 < world.day,
                 do: [citizen | acc.citizens_looking],
                 else: acc.citizens_looking
 

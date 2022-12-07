@@ -193,7 +193,7 @@ defmodule MayorGame.City.Buildable do
           solar_panels: %{
             cost: 10,
             description: "-5 Energy required ",
-            requirements: [:upgrade_1],
+            requirements: [:more_room],
             function: %{energy_required: &(&1 - 5)}
           }
         },
