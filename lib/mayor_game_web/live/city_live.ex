@@ -66,7 +66,7 @@ defmodule MayorGameWeb.CityLive do
 
   # event
   def handle_event("gib_money", _value, %{assigns: %{city: city}} = socket) do
-    case City.update_details(city.details, %{city_treasury: city.details.city_treasury + 10000}) do
+    case City.update_details(city.details, %{city_treasury: city.details.city_treasury + 1000}) do
       {:ok, _updated_town} ->
         IO.puts("money gabe")
 
@@ -225,9 +225,6 @@ defmodule MayorGameWeb.CityLive do
 
     # this might be causing some funky overwrites
     city_reset = reset_buildables_to_enabled(city)
-
-    # IO.inspect(city.details, label: "city details")
-    # IO.inspect(city_reset.details, label: "reset city details")
 
     # take buildable list, put purchasable status in each one, buildable_status
     city_baked_details = %{city_reset | details: bake_details(city_reset.details)}

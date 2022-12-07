@@ -288,7 +288,7 @@ defmodule MayorGame.CityHelpers do
 
             # spawn new citizens if conditions are right; age, random, housing exists
             citizens_to_reproduce =
-              if citizen.age > 1000 and citizen.age < 2000 and :rand.uniform(20) == 5,
+              if citizen.age > 500 and citizen.age < 5000 and :rand.uniform(20) <= 5,
                 do: [citizen | acc.citizens_to_reproduce],
                 else: acc.citizens_to_reproduce
 

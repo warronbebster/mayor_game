@@ -10,7 +10,7 @@
 
 # add more upgrades
 # balance prices
-# make it so they won't move to a city with no housing
+
 
 
 
@@ -19,6 +19,10 @@
 
 ### nice to have —————————————————————————————————————
 # fix taxes so you can't get money from non active-jobs
+# ^ did I do this? I think so
+# just pass the whole city through
+
+#
 # add script to randomly add citizens sometimes
 # clean db writes out of buildable resets
 # consolidate job calculations
