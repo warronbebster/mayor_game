@@ -268,14 +268,14 @@ defmodule MayorGameWeb.CityLive do
       cond do
         # enough energy AND enough area
 
-        buildable.energy_required != nil and
+        (buildable.energy_required != nil || buildable.energy_required > 0) and
           city_with_stats.available_energy >= buildable.energy_required &&
             (buildable.area_required != nil and
                city_with_stats.available_area >= buildable.area_required) ->
           %{buildable | purchasable: true, purchasable_reason: "valid", price: updated_price}
 
         # not enough energy, enough area
-        buildable.energy_required != nil and
+        buildable.energy_required != nil && buildable.energy_required > 0 and
           city_with_stats.available_energy < buildable.energy_required &&
             (buildable.area_required != nil and
                city_with_stats.available_area >= buildable.area_required) ->
@@ -287,7 +287,7 @@ defmodule MayorGameWeb.CityLive do
           }
 
         # enough energy, not enough area
-        buildable.energy_required != nil and
+        buildable.energy_required != nil && buildable.energy_required > 0 and
           city_with_stats.available_energy >= buildable.energy_required &&
             (buildable.area_required != nil and
                city_with_stats.available_area < buildable.area_required) ->
@@ -299,7 +299,7 @@ defmodule MayorGameWeb.CityLive do
           }
 
         # not enough energy AND not enough area
-        buildable.energy_required != nil and
+        buildable.energy_required != nil && buildable.energy_required > 0 and
           city_with_stats.available_energy < buildable.energy_required &&
             (buildable.area_required != nil and
                city_with_stats.available_area < buildable.area_required) ->
@@ -311,13 +311,13 @@ defmodule MayorGameWeb.CityLive do
           }
 
         # no energy needed, enough area
-        buildable.energy_required == nil &&
+        buildable.energy_required != nil && buildable.energy_required > 0 &&
             (buildable.area_required != nil and
                city_with_stats.available_area >= buildable.area_required) ->
           %{buildable | purchasable: true, purchasable_reason: "valid", price: updated_price}
 
         # no energy needed, not enough area
-        buildable.energy_required == nil &&
+        buildable.energy_required != nil && buildable.energy_required > 0 &&
             (buildable.area_required != nil and
                city_with_stats.available_area < buildable.area_required) ->
           %{
@@ -329,13 +329,13 @@ defmodule MayorGameWeb.CityLive do
 
         # no area needed, enough energy
         buildable.area_required == nil &&
-            (buildable.energy_required != nil and
+            (buildable.energy_required != nil && buildable.energy_required > 0 and
                city_with_stats.available_energy >= buildable.energy_required) ->
           %{buildable | purchasable: true, purchasable_reason: "valid", price: updated_price}
 
         # no area needed, not enough energy
         buildable.area_required == nil &&
-            (buildable.energy_required != nil and
+            (buildable.energy_required != nil && buildable.energy_required > 0 and
                city_with_stats.available_energy < buildable.energy_required) ->
           %{
             buildable
@@ -345,7 +345,8 @@ defmodule MayorGameWeb.CityLive do
           }
 
         # no area needed, no energy needed
-        buildable.energy_required == nil and buildable.area_required == nil ->
+        (buildable.energy_required == nil || buildable.energy_required == 0) and
+            buildable.area_required == nil ->
           %{buildable | purchasable: true, purchasable_reason: "valid", price: updated_price}
 
         # catch-all
