@@ -268,7 +268,7 @@
       <hr class="border-neutral-800 flex-1" />
     </div>
 
-    <%= for citizen <- Enum.sort(@city.citizens, &(&1.name < &2.name)) do %>
+    <%= for citizen <- @city.citizens do %>
       <div>
         <%= to_string(citizen.id) %> education: <%= citizen.education %> age: <%= citizen.age %>
         <!-- has_car: <%= citizen.has_car %>

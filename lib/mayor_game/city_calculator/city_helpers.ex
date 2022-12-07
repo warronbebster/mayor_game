@@ -47,10 +47,6 @@ defmodule MayorGame.CityHelpers do
       |> calculate_jobs2()
       |> calculate_energy(world)
 
-    sorted_citizens = Enum.sort(city_updated.citizens, &(&1.education >= &2.education))
-
-    city_sorted_citz = %{city_updated | citizens: sorted_citizens}
-
     # ok, calculate_jobs2 nukes anything that requires a job, if there's no money airports, carbon capture, some others
     # …but only if there's no money?
     # yeah only if there's no money.
@@ -70,7 +66,7 @@ defmodule MayorGame.CityHelpers do
 
     # return city
 
-    Map.merge(city_sorted_citz, %{
+    Map.merge(city_updated, %{
       jobs: total_jobs,
       education: total_education,
       housing: total_housing,
@@ -303,7 +299,7 @@ defmodule MayorGame.CityHelpers do
             # otherwise citizens might just keep levelling up
             # oh i guess this is fine, they'll go to a lower job and start looking
             updated_education =
-              if rem(world.day, 365) == 0 && citizen.education < 5 &&
+              if citizen.education < 5 &&
                    acc.education[citizen.education + 1] > 0 do
                 City.update_citizens(citizen, %{education: min(citizen.education + 1, 5)})
 
@@ -1259,7 +1255,8 @@ defmodule MayorGame.CityHelpers do
     results_map = %{
       jobs_map: results.jobs_map,
       tax: results.tax,
-      citizens_looking: results.citizens_looking
+      citizens_looking: results.citizens_looking,
+      citizens: sorted_citizens
     }
 
     Map.merge(results.city, results_map)
