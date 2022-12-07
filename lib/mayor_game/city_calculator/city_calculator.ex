@@ -85,12 +85,7 @@ defmodule MayorGame.CityCalculator do
           # check here for if tax_income - money is less than zero
           case City.update_details(city.details, %{city_treasury: updated_city_treasury}) do
             {:ok, _updated_details} ->
-              City.update_log(
-                city,
-                " tax income: " <>
-                  to_string(city_calculated_values.tax) <>
-                  " operating cost: " <> to_string(city_calculated_values.cost)
-              )
+              nil
 
             {:error, err} ->
               IO.inspect(err)

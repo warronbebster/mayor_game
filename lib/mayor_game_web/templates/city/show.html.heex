@@ -18,11 +18,15 @@
 
   <span>Citizens:<%= length(@city.citizens) %></span>
 
-  <span class="text-green-600 space-x-1">
-    Daily Tax Income:<span class="text-green-800"><%=@city.tax %></span>
+  <span class="text-green-600">
+    Tax Income:<span class="text-green-800"><%=@city.tax %></span>
   </span>
 
-  <span class="text-green-600 space-x-1">
+  <span class="text-red-600">
+    Operating Cost:<span class="text-red-800"><%=@city.cost %></span>
+  </span>
+
+  <span class="text-green-600">
     Total Money:<span class="text-green-800"><%=@city.details.city_treasury %></span>
   </span>
 
