@@ -301,6 +301,13 @@ defmodule MayorGame.CityHelpers do
               if rem(world.day, 365) == 0 && citizen.education < 5 &&
                    acc.education[citizen.education + 1] > 0 do
                 City.update_citizens(citizen, %{education: min(citizen.education + 1, 5)})
+
+                City.update_log(
+                  city_with_stats,
+                  to_string(citizen.id) <>
+                    " graduated to level " <> to_string(min(citizen.education + 1, 5)) <> "!"
+                )
+
                 Map.update!(acc.education, citizen.education + 1, &(&1 - 1))
               else
                 acc.education
