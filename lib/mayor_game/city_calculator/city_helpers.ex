@@ -61,8 +61,8 @@ defmodule MayorGame.CityHelpers do
     # returns a map of %{0 => #, 1 => #, etc}
     total_education = calculate_education(city_updated)
     # returns a total num of fun
-    total_fun = calculate_total_int(city_updated, :fun)
-    total_health = calculate_total_int(city_updated, :health)
+    total_fun = round(calculate_total_int(city_updated, :fun))
+    total_health = round(calculate_total_int(city_updated, :health))
 
     # return city
 
@@ -303,7 +303,7 @@ defmodule MayorGame.CityHelpers do
                 City.update_citizens(citizen, %{education: min(citizen.education + 1, 5)})
 
                 City.update_log(
-                  city_with_stats,
+                  City.get_town!(citizen.town_id),
                   to_string(citizen.id) <>
                     " graduated to level " <> to_string(min(citizen.education + 1, 5)) <> "!"
                 )

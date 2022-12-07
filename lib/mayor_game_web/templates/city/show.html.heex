@@ -11,7 +11,12 @@
   <!-- HEADER -->
 <div class="top-0 p-1 px-2 z-20 bg-amber-50 border-b border-neutral-800 flex items-center space-x-3 w-screen overflow-x-scroll shrink-0">
   <h1 class="inline mr-auto">
-    <%= @city.title %>  <span><%= @username %></span>   <span>Year:<%= div(@world.day, 365) %></span>
+    <%= @city.title %>  
+    <span><%= @username %></span>   
+    <span>Year:<%= div(@world.day, 365) %></span>   
+    <span class="text-purple-600">
+      Pollution:<span class="text-purple-800"><%= @world.pollution %></span>
+    </span>
   <span>Day:<%= rem(@world.day, 365) %></span>
   </h1>
 
@@ -19,15 +24,15 @@
   <span>Citizens:<%= length(@city.citizens) %></span>
 
   <span class="text-green-600">
-    Tax Income:<span class="text-green-800"><%=@city.tax %>/day</span>
+    Tax Income:<span class="text-green-800">$<%=@city.tax %>/day</span>
   </span>
 
   <span class="text-red-600">
-    Operating Cost:<span class="text-red-800"><%=@city.cost %>/day</span>
+    Operating Cost:<span class="text-red-800">$<%=@city.cost %>/day</span>
   </span>
 
   <span class="text-green-600">
-    Total Money:<span class="text-green-800"><%=@city.details.city_treasury %></span>
+    Total Money:<span class="text-green-800">$<%=@city.details.city_treasury %></span>
   </span>
 
   <span class="text-yellow-600">
@@ -37,9 +42,10 @@
   <span class="text-teal-600">
     Area:<span class="text-teal-800"><%= @city.total_area - @city.available_area %>/<%= @city.total_area %></span>
   </span>
-  <span class="text-purple-600">
-    Pollution:<span class="text-purple-800"><%= @world.pollution %></span>
+  <span class="text-amber-600">
+    Housing:<span class="text-amber-800"><%= @city.housing %></span>
   </span>
+
   <span class="text-sky-600">
     Fun:<span class="text-sky-800"><%= @city.fun %></span>
   </span>
@@ -47,7 +53,8 @@
     Health:<span class="text-fuchsia-800"><%= @city.health %></span>
   </span>
   <%= if @current_user && @current_user.id == 1 do %>
-    <button class="btn text-xs p-0 border-none" phx-click="gib_money">refill $</button>
+    <button class="btn text-xs p-0 border-none" phx-click="gib_money" phx-throttle="100">+$</button>
+    <button class="btn text-xs p-0 border-none" phx-click="gib_money" phx-throttle="100" phx-value-name="name">+citizen</button>
   <% end %>
 </div>
 
@@ -251,17 +258,7 @@
       </div>
       <hr class="border-neutral-800 flex-1" />
     </div>
-    <%= if @current_user && @current_user.id == 1 do %>
 
-      <button
-                    class="btn"
-                    phx-click="add_citizen"
-                    phx-throttle="200"
-                    phx-value-name="name"
-                  >
-                  Add citizen
-                  </button>
-    <% end %>
     <%= for citizen <- Enum.sort(@city.citizens, &(&1.name < &2.name)) do %>
       <div>
         <%= to_string(citizen.id) %> education: <%= citizen.education %> age: <%= citizen.age %>

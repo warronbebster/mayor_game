@@ -223,18 +223,7 @@ defmodule MayorGameWeb.CityLive do
     # grab whole user struct
     user = Auth.get_user!(city.user_id)
 
-    # this might be causing some funky overwrites
-    city_reset = reset_buildables_to_enabled(city)
-
-    # take buildable list, put purchasable status in each one, buildable_status
-    city_baked_details = %{city_reset | details: bake_details(city_reset.details)}
-
-    city_updated =
-      city_baked_details
-      |> calculate_money()
-      |> calculate_area()
-      |> calculate_jobs2()
-      |> calculate_energy(world)
+    city_with_stats = MayorGame.CityHelpers.calculate_city_stats(city, world)
 
     # IO.inspect(city_updated.details, label: "city_updated details")
 
@@ -242,29 +231,14 @@ defmodule MayorGameWeb.CityLive do
     # IO.inspect(city_updated.details.roads)
 
     # have to have this separate from the actual city because the city might not have some buildables, but they're still purchasable
-    buildables_with_status = calculate_buildables_statuses(city_updated)
+    buildables_with_status = calculate_buildables_statuses(city_with_stats)
     # IO.inspect(buildables_with_status)
-
-    # somehow loses updated price here
-    if city_updated.id == 2 do
-      # IO.inspect(city_updated.details.single_family_homes)
-      # ok so changing something re-orders this list
-    end
-
-    total_fun = calculate_total_int(city_updated, :fun)
-    total_health = calculate_total_int(city_updated, :health)
-
-    city_w_fun_health =
-      Map.merge(city_updated, %{
-        fun: round(total_fun),
-        health: round(total_health)
-      })
 
     socket
     |> assign(:buildables, buildables_with_status)
     |> assign(:user_id, user.id)
     |> assign(:username, user.nickname)
-    |> assign(:city, city_w_fun_health)
+    |> assign(:city, city_with_stats)
   end
 
   # this takes the generic buildables map and builds the status (enabled, etc) for each buildable
