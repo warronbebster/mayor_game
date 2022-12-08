@@ -42,10 +42,10 @@ defmodule MayorGame.CityHelpers do
     # if not these could probably all be combined
     city_updated =
       city_baked_details
-      |> calculate_money()
       |> calculate_area()
       |> calculate_jobs2()
       |> calculate_energy(world)
+      |> calculate_money()
 
     # ok, calculate_jobs2 nukes anything that requires a job, if there's no money airports, carbon capture, some others
     # …but only if there's no money?
@@ -279,18 +279,18 @@ defmodule MayorGame.CityHelpers do
                 else: acc.citizens_out_of_room
 
             citizens_too_old =
-              if citizen.age > 36500,
+              if citizen.age > 5000,
                 do: [citizen | acc.citizens_too_old],
                 else: acc.citizens_too_old
 
             citizens_polluted =
-              if world.pollution > pollution_ceiling and citizen.age <= 36500,
+              if world.pollution > pollution_ceiling and citizen.age <= 5000,
                 do: [citizen | acc.citizens_polluted],
                 else: acc.citizens_polluted
 
             # spawn new citizens if conditions are right; age, random, housing exists
             citizens_to_reproduce =
-              if citizen.age > 500 and citizen.age < 5000 and :rand.uniform(20) == 5,
+              if citizen.age > 500 and citizen.age < 3000 and :rand.uniform(40) == 5,
                 do: [citizen | acc.citizens_to_reproduce],
                 else: acc.citizens_to_reproduce
 
@@ -715,7 +715,7 @@ defmodule MayorGame.CityHelpers do
                   negative_money = acc3.available_money < individual_buildable.metadata.daily_cost
 
                   updated_buildable =
-                    if negative_money do
+                    if negative_money && individual_buildable.buildable.enabled do
                       put_reason_in_buildable(
                         acc.city,
                         buildable_type,
@@ -726,10 +726,21 @@ defmodule MayorGame.CityHelpers do
                       individual_buildable
                     end
 
+                  updated_money =
+                    if(individual_buildable.buildable.enabled,
+                      do: acc3.available_money - individual_buildable.metadata.daily_cost,
+                      else: acc3.available_money
+                    )
+
+                  updated_cost =
+                    if(individual_buildable.buildable.enabled,
+                      do: acc3.cost + individual_buildable.metadata.daily_cost,
+                      else: acc3.cost
+                    )
+
                   %{
-                    available_money:
-                      acc3.available_money - individual_buildable.metadata.daily_cost,
-                    cost: acc3.cost + individual_buildable.metadata.daily_cost,
+                    available_money: updated_money,
+                    cost: updated_cost,
                     buildable_list_updated_reasons:
                       Enum.concat(acc3.buildable_list_updated_reasons, [updated_buildable])
                     # TODO maybe: make this a | list combine and reverse whole list outside enum
