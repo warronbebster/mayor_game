@@ -101,6 +101,9 @@ defmodule MayorGameWeb.CityLive do
 
       {:error, err} ->
         Logger.error(inspect(err))
+
+      nil ->
+        nil
     end
 
     # this is all ya gotta do to update, baybee

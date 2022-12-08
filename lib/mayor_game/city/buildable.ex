@@ -272,6 +272,7 @@ defmodule MayorGame.City.Buildable do
         daily_cost: 10,
         jobs: 10,
         job_level: 0,
+        pollution: 10,
         sprawl: 5,
         area: 10,
         health: -2,
