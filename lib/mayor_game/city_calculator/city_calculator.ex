@@ -74,6 +74,21 @@ defmodule MayorGame.CityCalculator do
               cities_count
             )
 
+          # if city_with_stats.id == 2 do
+          # IO.inspect(length(city_calculated_values.citizens_out_of_room),
+          #   label: "citizens_out_of_room " <> to_string(city.id)
+          # )
+
+          # IO.inspect(length(city_calculated_values.citizens_looking),
+          #   label: "citizens_looking " <> to_string(city.id)
+          # )
+
+          # IO.inspect(city_calculated_values.available_housing,
+          #   label: "housing " <> to_string(city.id)
+          # )
+
+          # end
+
           # should i loop through citizens here, instead of in calculate_city_stats?
           # that way I can use the same function later?
 
@@ -170,6 +185,7 @@ defmodule MayorGame.CityCalculator do
           indexx = Enum.find_index(acc_city_list, &(&1.id == citizen_to_reproduce.town_id))
 
           # make updated list, decrement housing
+          # this is how a city can end up with negative housing
           updated_acc_city_list =
             List.update_at(acc_city_list, indexx, fn update ->
               Map.update!(update, :available_housing, &(&1 - 1))
@@ -182,7 +198,7 @@ defmodule MayorGame.CityCalculator do
             age: 0,
             education: 0,
             has_car: false,
-            last_moved: 0
+            last_moved: world.day
           })
 
           City.update_log(
@@ -211,9 +227,12 @@ defmodule MayorGame.CityCalculator do
         # results are map %{best_city: %{city: city, jobs: #, housing: #, etc}, job_level: #}
         best_job = CityHelpers.find_best_job(cities_with_housing_and_jobs, citizen)
 
-        if not is_nil(best_job) do
+        if !is_nil(best_job) do
           # move citizen to city
 
+          # TODO: check last_moved date here
+          # although this could result in looking citizens staying in a city even though there's no housing
+          # may need to consolidate out of room and looking
           CityHelpers.move_citizen(citizen, City.get_town!(best_job.best_city.id), world.day)
 
           # find where the city is in the list
@@ -243,7 +262,7 @@ defmodule MayorGame.CityCalculator do
       # make updated list, decrement housing
       updated_acc_city_list =
         List.update_at(acc_city_list, indexx, fn update ->
-          Map.update!(update, :available_housing, &(&1 - 1))
+          Map.update!(update, :available_housing, &(&1 + 1))
         end)
 
       CityHelpers.kill_citizen(citizen_out_of_room, "no housing available")

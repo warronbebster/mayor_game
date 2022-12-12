@@ -265,7 +265,7 @@ defmodule MayorGameWeb.CityLive do
   # this takes a buildable metadata, and builds purchasable status from database
   # TODO: Clean this shit upppp
   defp calculate_buildable_status(buildable, city_with_stats, buildable_count) do
-    updated_price = round(:math.pow(buildable_count, 4))
+    updated_price = buildable.price + round(:math.pow(buildable_count, 4))
 
     if city_with_stats.details.city_treasury > updated_price do
       cond do
