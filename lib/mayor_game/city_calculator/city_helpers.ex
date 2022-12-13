@@ -236,6 +236,7 @@ defmodule MayorGame.CityHelpers do
           fn citizen, acc ->
             # see if I can just do this all at once instead of a DB write per loop
             # probably can't because it's a unique value per citizen
+            # TODO see if
             City.update_citizens(citizen, %{age: citizen.age + 1})
 
             # set a random pollution ceiling based on how many cities are in the ecosystem
@@ -290,9 +291,10 @@ defmodule MayorGame.CityHelpers do
 
             # spawn new citizens if conditions are right; age, random, housing exists
             citizens_to_reproduce =
-              if citizen.age > 500 and citizen.age < 3000 and :rand.uniform(40) == 5,
-                do: [citizen | acc.citizens_to_reproduce],
-                else: acc.citizens_to_reproduce
+              if citizen.age > 500 and citizen.age < 3000 and
+                   :rand.uniform(length(city_with_stats.citizens)) == 1,
+                 do: [citizen | acc.citizens_to_reproduce],
+                 else: acc.citizens_to_reproduce
 
             # once a year, update education of citizen if there is capacity
             # e.g. if the edu institutions have capacity
@@ -300,7 +302,7 @@ defmodule MayorGame.CityHelpers do
             # otherwise citizens might just keep levelling up
             # oh i guess this is fine, they'll go to a lower job and start looking
             updated_education =
-              if citizen.education < 5 &&
+              if rem(world.day, 365) == 0 && citizen.education < 5 &&
                    acc.education[citizen.education + 1] > 0 do
                 City.update_citizens(citizen, %{education: min(citizen.education + 1, 5)})
 
