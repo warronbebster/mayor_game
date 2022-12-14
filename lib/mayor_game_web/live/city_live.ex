@@ -89,9 +89,8 @@ defmodule MayorGameWeb.CityLive do
 
     # get exponential price — don't want to set price on front-end for cheating reasons
     initial_purchase_price = get_in(Buildable.buildables_flat(), [building_to_buy_atom, :price])
-    num_of_buildings = length(city.details[building_to_buy_atom])
-    purchase_exponential = num_of_buildings * num_of_buildings * num_of_buildings
-    purchase_price = initial_purchase_price + purchase_exponential
+    buildable_count = length(city.details[building_to_buy_atom])
+    purchase_price = initial_purchase_price * round(:math.pow(buildable_count, 2))
 
     # check for upgrade requirements?
 
@@ -265,7 +264,7 @@ defmodule MayorGameWeb.CityLive do
   # this takes a buildable metadata, and builds purchasable status from database
   # TODO: Clean this shit upppp
   defp calculate_buildable_status(buildable, city_with_stats, buildable_count) do
-    updated_price = buildable.price + round(:math.pow(buildable_count, 4))
+    updated_price = buildable.price * round(:math.pow(buildable_count, 2))
 
     if city_with_stats.details.city_treasury > updated_price do
       cond do

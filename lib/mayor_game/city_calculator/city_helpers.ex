@@ -1175,7 +1175,7 @@ defmodule MayorGame.CityHelpers do
 
         buildable_metadata = Map.get(Buildable.buildables_flat(), buildable_list_item)
 
-        updated_price = buildable_metadata.price + round(:math.pow(buildable_count, 4))
+        updated_price = buildable_metadata.price * round(:math.pow(buildable_count, 2))
 
         buildable_metadata_price_updated = %MayorGame.City.BuildableMetadata{
           buildable_metadata
