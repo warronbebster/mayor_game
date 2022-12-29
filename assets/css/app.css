@@ -10,6 +10,14 @@
   .btn {
     @apply transition-colors hover:bg-amber-100 active:bg-amber-200 focus:outline-none focus:bg-amber-100 focus:ring focus:ring-neutral-800;
   }
+
+  .tooltip {
+    @apply pointer-events-none group-hover:opacity-100 transition-opacity bg-amber-50 border border-neutral-800 z-10 p-2 absolute top-8 left-0 opacity-0;
+  }
+
+  .cell {
+    @apply relative inline-flex flex-row items-center space-x-1 border border-neutral-800/25 leading-none h-6 w-20 px-1;
+  }
 }
 
 * {

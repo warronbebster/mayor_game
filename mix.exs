@@ -52,7 +52,8 @@ defmodule MayorGame.MixProject do
       {:plug_cowboy, "~> 2.5.2"},
       {:accessible, "~> 0.3.0"},
       {:esbuild, "~> 0.4", runtime: Mix.env() == :dev},
-      {:tailwind, "~> 0.1", runtime: Mix.env() == :dev}
+      {:tailwind, "~> 0.1", runtime: Mix.env() == :dev},
+      {:random, "~> 0.2.4"}
     ]
   end
 

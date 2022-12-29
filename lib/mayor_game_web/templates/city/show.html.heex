@@ -1,80 +1,82 @@
-<!--
-  <b>mayor user_id:</b> <%= @user_id %>
-
-  <%= if @current_user do %>
-    <b>current user ID:</b> <%= @current_user.id %>
-  <% end %>
-  <%= @city.id %>
-
-  <b>is_user_mayor:</b> <%= @is_user_mayor %>
-  -->
-  <!-- HEADER -->
-<div class="top-0 p-1 px-2 z-20 bg-amber-50 border-b border-neutral-800 flex items-center space-x-3 w-screen overflow-x-scroll shrink-0">
+<div class="top-0 p-1 px-2 z-20 bg-amber-50 border-b border-neutral-800 flex space-x-3 w-screen overflow-x-scroll shrink-0">
   <div class="mr-auto flex flex-row space-x-3">
-  
     <h1>
-      <%= @city.title %>  <br/>
-      <span><%= @username %></span>  
+      <%= @city.title %> <br />
+      <span><%= @username %></span>
     </h1>
-      
-    <span>Year<br/><%= div(@world.day, 365) %></span>   
+
+    <span>Year<br /><%= div(@world.day, 365) %></span>
     <span class="text-purple-600">
-      Pollution<br/><span class="text-purple-800"><%= @world.pollution %></span>
+      Pollution<br /><span class="text-purple-800"><%= @world.pollution %></span>
     </span>
-    <span>Day<br/><%= rem(@world.day, 365) %></span>
+    <span>Day<br /><%= rem(@world.day, 365) %></span>
   </div>
-  
 
   <div class="flex flex-row space-x-3">
-  <span class="text-amber-600">
-    Housing<br/><span class="text-amber-800"><%= @city.housing %></span>
-  </span>
-  <span>Citizens<br/><%= length(@city.citizens) %></span>
+    <span class="text-amber-600">
+      Housing<br /><span class="text-amber-800"><%= @city.housing %></span>
+    </span>
+    <span>Citizens<br /><%= @total_citizens %></span>
 
-  <span class="text-green-600">
-    Tax Income<br/><span class="text-green-800">$<%=@city.tax %>/day</span>
-  </span>
+    <span class="text-green-600">
+      Tax Income<br /><span class="text-green-800">$<%= @city.tax %>/day</span>
+    </span>
 
-  <span class="text-red-600">
-    Operating Cost<br/><span class="text-red-800">$<%=@city.cost %>/day</span>
-  </span>
+    <span class="text-red-600">
+      Operating Cost<br /><span class="text-red-800">$<%= @city.cost %>/day</span>
+    </span>
 
-  <span class="text-green-600">
-    Total Money<br/><span class="text-green-800">$<%=@city.details.city_treasury %></span>
-  </span>
+    <span class="text-green-600">
+      Total Money<br /><span class="text-green-800">$<%= @city.details.city_treasury %></span>
+    </span>
 
-  <span class="text-yellow-600">
-    Energy<br/><span class="text-yellow-800"><%=@city.available_energy %>/<%= @city.total_energy %></span>
-  </span>
+    <span class="text-yellow-600">
+      Energy<br /><span class="text-yellow-800">
+        <%= @city.available_energy %>/<%= @city.total_energy %>
+      </span>
+    </span>
 
-  <span class="text-teal-600">
-    Area <br/><span class="text-teal-800"><%= @city.total_area - @city.available_area %>/<%= @city.total_area %></span>
-  </span>
+    <span class="text-teal-600">
+      Area
+      <br /><span class="text-teal-800">
+        <%= @city.total_area - @city.available_area %>/<%= @city.total_area %>
+      </span>
+    </span>
 
-
-  <span class="text-sky-600">
-    Fun<br/><span class="text-sky-800"><%= @city.fun %></span>
-  </span>
-  <span class="text-fuchsia-600">
-    Health<br/><span class="text-fuchsia-800"><%= @city.health %></span>
-  </span>
-  <%= if @current_user && @current_user.id == 1 do %>
-    <button class="btn text-xs p-0 border-none" phx-click="gib_money" phx-throttle="100">+$</button>
-    <button class="btn text-xs p-0 border-none" phx-click="add_citizen" phx-throttle="100" phx-value-name="name">+citizen</button>
-  <% end %>
+    <span class="text-sky-600">
+      Fun<br /><span class="text-sky-800"><%= @city.fun %></span>
+    </span>
+    <span class="text-fuchsia-600">
+      Health<br /><span class="text-fuchsia-800"><%= @city.health %></span>
+    </span>
+    <%= if @current_user && @current_user.id == 1 do %>
+      <button class="btn text-xs p-0 border-none" phx-click="gib_money" phx-throttle="100">
+        +$
+      </button>
+      <button
+        class="btn text-xs p-0 border-none"
+        phx-click="add_citizen"
+        phx-throttle="100"
+        phx-value-name="name"
+      >
+        +citizen
+      </button>
+    <% end %>
   </div>
 </div>
 
-<div class="px-4 my-0 relative h-full overflow-y-scroll">
+<div class="px-4 my-0 relative h-full overflow-y-scroll ">
   <!--Taxes-->
-  <h2 class="text-2xl pt-4">Tax rates</h2>
-  <div class="space-y-1">
+
+  <!--All building details-->
+  <h2 class="text-xl pt-2 pb-1">Tax rates per job level</h2>
+  <div class="flex flex-row flex-wrap gap-x-4 gap-y-2">
     <%= for {job_level, rate} <- @city.tax_rates do %>
-      <div>
-        Job level <%= job_level %>:
+      <div class="flex space-x-2 items-center">
+        <%= job_level %>:
         <%= if @is_user_mayor do %>
           <input
-            class="btn bg-amber-50 p-[2px] border border-neutral-800"
+            class="btn text-s bg-amber-50 p-[2px] border leading-none border-neutral-800/25"
             step="0.01"
             phx-blur="update_tax_rates"
             type="number"
@@ -89,28 +91,19 @@
       </div>
     <% end %>
   </div>
-  <!--All building details-->
-  <section class="space-y-2 relative">
-    <%= for {category, buildings} <- @buildables do %>
-      <h2 class="text-2xl pt-4 first-letter:uppercase"><%= category %></h2>
-      <%= for {building_type, building_stats} <- buildings do %>
-        <div class="relative space-y-2 pb-4">
-          <!-- building title -->
-          <div class="sticky z-30 top-0 bg-amber-50">
-            <div class="flex items-center space-x-2 ">
-              <div class="text-xl first-letter:uppercase">
-                <%= building_type %> <%= length(Map.get(@city.details, building_type)) %>
-              </div>
-              <hr class="border-neutral-800 flex-1" />
-            </div>
-          </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 place-items-start">
-            <!-- stats and upgrades -->
-            <div class="col-span-1 sm:col-span-4 md:col-span-3 xl:col-span-2 w-full">
-              <!-- stats -->
-              <!--<div class="mt-0 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 gap-y-1 ">-->
-              <div class="flex flex-col">
+  <%= for {category, buildings} <- @buildables do %>
+    <h2 class="text-xl pt-2 first-letter:uppercase"><%= category %></h2>
+    <div class="divide-y divide-neutral-800/10">
+      <%= for {building_type, building_stats} <- buildings do %>
+        <div class="flex flex-wrap items-center gap-2 py-1  ">
+          <div class="basis-full md:basis-80 flex flex-row items-center justify-between">
+            <!-- building title -->
+            <div class="group relative inline-block">
+              <h3 class="text-l first-letter:uppercase decoration-1	underline underline-offset-4 decoration-neutral-800/40 decoration-dotted	">
+                <%= building_type %>
+              </h3>
+              <div class="tooltip">
                 <%= for {building_stat, value} <- building_stats do %>
                   <%= if !String.contains?(Atom.to_string(building_stat), ["multipliers", "price", "purchasable", "upgrades"]) && value != nil do %>
                     <div class="flex items-center gap-1">
@@ -120,176 +113,138 @@
                     </div>
                   <% end %>
                 <% end %>
-                <!-- upgrades -->
-                <%= if building_stats.upgrades != nil do %>
-                  <%= for {upgrade_name, upgrade_details} <- Map.get(building_stats, :upgrades) do %>
-                    <div class="flex items-center gap-1">
-                      <span><%= upgrade_name %></span>
-                      <hr class="border-black flex-1" /> $<%= upgrade_details.cost %>
-                    </div>
-                    <p class="italic text-neutral-500"><%= upgrade_details.description %></p>
-                    <%= if upgrade_details.requirements != [] do %>
-                      <span>
-                        requires
-                        <%= for req <- upgrade_details.requirements do %>
-                          <%= req %>
-                        <% end %>
-                      </span>
-                    <% end %>
-                  <% end %>
-                <% end %>
               </div>
             </div>
-            <!-- buildings -->
-            <section class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2 col-span-1 sm:col-span-8 md:col-span-9 xl:col-span-10 w-full place-items-start">
-              <!-- <section class="flex flex-wrap gap-2"> -->
-              <%= for building <- Enum.sort(Map.get(@city.details, building_type), &(&1.buildable.id < &2.buildable.id)) do %>
-                <div class="border border-neutral-800 flex flex-col divide-y divide-neutral-800 flex-grow w-full shrink-0">
-                  <div class="flex items-center gap-1 pl-1">
-                    <%= if building.buildable.enabled do %>
-                      <div class="bg-green-500 w-3 h-3 rounded-full"></div>
-                      <p class="text-green-600 mr-auto">Operational </p>
-                    <% else %>
-                      <div class="bg-red-500 w-3 h-3 rounded-full"></div>
-                      <p class="text-red-600 mr-auto">
-                        Needs
-                        <%= for reason <- building.buildable.reason do %>
-                          <%= reason %>
-                        <% end %>
-                        to operate
-                      </p>
-                    <% end %>
-
-                    <%= if @is_user_mayor do %>
-                      <button
-                        phx-click="demolish_building"
-                        class="btn border-y-0 border-r-0 border-l rounded-none px-2 border-neutral-800"
-                        phx-throttle="300"
-                        phx-value-building={building_type}
-                        phx-value-buildable_id={building.buildable.id}
-                      >
-                        x
-                      </button>
-                    <% end %>
-                  </div>
-
-                  <%= if building_stats.upgrades != nil do %>
-                    <div class="flex ">
-                      <%= for {upgrade_name, upgrade_details} <- Map.get(building_stats, :upgrades) do %>
-                        <%= if Enum.member?(building.buildable.upgrades, to_string(upgrade_name)) do %>
-                          <button
-                            disabled
-                            class="opacity-50 mx-auto basis-1/2 rounded-none border-neutral-800 border-y-0 border-l-0 border-r last:border-r-0"
-                          >
-                            purchased
-                          </button>
-                        <% else %>
-                          <%= if @city.details.city_treasury >= upgrade_details.cost do %>
-                            <%= if Enum.all?(upgrade_details.requirements, fn upgrade -> to_string(upgrade) in building.buildable.upgrades end) do %>
-                              <%= if @is_user_mayor do %>
-                                <button
-                                  class="btn mx-auto basis-1/2 rounded-none border-neutral-800 border-y-0 border-l-0 border-r last:border-r-0 "
-                                  phx-click="buy_upgrade"
-                                  phx-throttle="200"
-                                  phx-value-building={building_type}
-                                  phx-value-buildable_id={building.buildable.id}
-                                  phx-value-upgrade_cost={upgrade_details.cost}
-                                  phx-value-upgrade={upgrade_name}
-                                >
-                                  <%= upgrade_name %> $<%= upgrade_details.cost %>
-                                </button>
-                              <% else %>
-                                <button
-                                  class="opacity-50 mx-auto basis-1/2 rounded-none border-neutral-800 border-y-0 border-l-0 border-r last:border-r-0 "
-                                  disabled
-                                >
-                                  <%= upgrade_name %> $<%= upgrade_details.cost %>
-                                </button>
-                              <% end %>
-                            <% else %>
-                              <button
-                                disabled
-                                class="opacity-50 mx-auto basis-1/2 rounded-none border-neutral-800 border-y-0 border-l-0 border-r last:border-r-0"
-                              >
-                                requires
-                                <%= for req <- upgrade_details.requirements do %>
-                                  <%= req %>
-                                <% end %>
-                              </button>
-                            <% end %>
-                          <% else %>
-                            <button
-                              disabled
-                              class="opacity-50 mx-auto basis-1/2 rounded-none border-neutral-800 border-y-0 border-l-0 border-r last:border-r-0"
-                            >
-                              <%= upgrade_name %> $<%= upgrade_details.cost %>
-                            </button>
-                          <% end %>
-                        <% end %>
-                      <% end %>
-                    </div>
-                  <% end %>
-                </div>
-              <% end %>
-              <!-- purchase button -->
+            <!-- build & delete buttons -->
+            <div class="flex flex-row ">
               <%= if @is_user_mayor do %>
                 <%= if building_stats.purchasable do %>
                   <button
-                    class="btn m-0 rounded-none border border-neutral-800 border-dashed w-full"
+                    class="btn m-0 rounded-none border border-neutral-800/25 leading-none h-6"
                     phx-click="purchase_building"
                     phx-throttle="200"
                     phx-value-building={building_type}
                   >
-                    Build $<%= building_stats.price %>
+                    $<%= building_stats.price %>
+                  </button>
+                <% else %>
+                  <div class="group relative inline-block">
+                    <button
+                      disabled
+                      class="opacity-50 rounded-none m-0 border border-neutral-800/25 leading-none h-6"
+                    >
+                      $<%= building_stats.price %>
+                    </button>
+                    <div class="tooltip w-28"><%= building_stats.purchasable_reason %></div>
+                  </div>
+                <% end %>
+                <%= if not Enum.empty?(Map.get(@operating_count, building_type)) do %>
+                  <button
+                    phx-click="demolish_building_2"
+                    class="btn m-0 rounded-none border border-l-0 border-neutral-800/25 leading-none h-6"
+                    phx-throttle="300"
+                    phx-value-building={building_type}
+                  >
+                    -1
                   </button>
                 <% else %>
                   <button
                     disabled
-                    class="opacity-50 rounded-none m-0 border border-neutral-800 border-dashed w-full"
+                    class="opacity-50 m-0 rounded-none border border-l-0 border-neutral-800/25 leading-none h-6"
                   >
-                    $<%= building_stats.price %> <%= building_stats.purchasable_reason %>
+                    -1
                   </button>
                 <% end %>
               <% end %>
-            </section>
+            </div>
           </div>
+          <!-- Enabled counts -->
+          <table class="flex-grow table-fixed border-collapse">
+            <tr>
+              <%= if Enum.empty?(Map.get(@operating_count, building_type)) do %>
+                <td class="cell text-neutral-800/50">0</td>
+              <% else %>
+                <%= for {operation_type, operation_count} <- Map.get(@operating_count, building_type) do %>
+                  <%= if operation_type == [] do %>
+                    <td class="group cell bg-green-100">
+                      <p class="text-green-700"><%= operation_count %></p>
+                      <div class="bg-green-600 w-2 h-2 rounded-full"></div>
+                      <div class="tooltip text-green-600">operational</div>
+                    </td>
+                  <% else %>
+                    <td class="group cell">
+                      <p class="text-neutral-800/50">0</p>
+                      <div class="bg-green-500 opacity-50 w-2 h-2 rounded-full"></div>
+                    </td>
+                    <td class="group cell border-l-0 bg-red-100">
+                      <p class="text-red-700"><%= operation_count %></p>
+                      <%= for operation_reason <- operation_type do %>
+                        <img
+                          src={"/images/#{operation_reason}.svg"}
+                          alt="requires {operation_reason} to operate"
+                          height="12"
+                          width="12"
+                        />
+                      <% end %>
+                      <div class="tooltip w-32 text-red-600">
+                        needs
+                        <%= if length(operation_type) > 1 do %>
+                          <%= for operation_reason <- operation_type do %>
+                            <%= operation_reason %>,
+                          <% end %>
+                        <% else %>
+                          <%= hd(operation_type) %>
+                        <% end %>
+                        to operate
+                      </div>
+                    </td>
+                  <% end %>
+                <% end %>
+              <% end %>
+            </tr>
+          </table>
         </div>
       <% end %>
-    <% end %>
-  </section>
+    </div>
+  <% end %>
   <section class="flex flex-row flex-grow flex-wrap space-x-6">
-
-<div class="flex-grow mr-auto">
-  <div class="relative pt-4">
-    <div class="flex items-center space-x-2 sticky top-0 bg-amber-50">
-      <div class="text-xl ">
-        Citizens <%= length(@city.citizens) %>
+    <div class="flex-grow mr-auto">
+      <div class="relative pt-4">
+        <div class="flex items-center space-x-2 sticky top-0 bg-amber-50">
+          <div class="text-xl ">
+            Citizens <%= @total_citizens %>
+          </div>
+          <hr class="border-neutral-800/25 flex-1" />
+        </div>
+        <%= if @citizens_by_edu == %{} do %>
+          <span>no citizens :( build housing for citizens to live in!</span>
+        <% else %>
+          <%= for {edu_level, count} <- @citizens_by_edu do %>
+            <span>
+              Edu level <%= to_string(edu_level) %>: <%= to_string(count) %> citizen<%= if count >
+                                                                                             0 do
+                "s"
+              end %>
+            </span>
+          <% end %>
+        <% end %>
       </div>
-      <hr class="border-neutral-800 flex-1" />
     </div>
 
-    <%= for citizen <- @city.citizens do %>
-      <div>
-        <%= to_string(citizen.id) %> education: <%= citizen.education %> age: <%= citizen.age %>
-      </div>
-    <% end %>
-  </div>
-  </div>
+    <div class="flex-grow">
+      <div class="relative pt-4">
+        <div class="flex items-center space-x-2 sticky top-0 bg-amber-50">
+          <div class="text-xl ">
+            Log
+          </div>
+          <hr class="border-neutral-800/25flex-1" />
+        </div>
 
-<div class="flex-grow">
-  <div class="relative pt-4">
-    <div class="flex items-center space-x-2 sticky top-0 bg-amber-50">
-      <div class="text-xl ">
-        Log
+        <%= for log_item <- @city.logs do %>
+          <%= log_item %>
+          <br />
+        <% end %>
       </div>
-      <hr class="border-neutral-800 flex-1" />
     </div>
-
-    <%= for log_item <- @city.logs do %>
-      <%= log_item %>
-      <br />
-    <% end %>
-  </div>
-  </div>
   </section>
 </div>

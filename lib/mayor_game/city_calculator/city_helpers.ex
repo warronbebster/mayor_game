@@ -240,9 +240,13 @@ defmodule MayorGame.CityHelpers do
             City.update_citizens(citizen, %{age: citizen.age + 1})
 
             # set a random pollution ceiling based on how many cities are in the ecosystem
+            # could try using :rand.normal here
+            # could also use total citizens here
+            Random.paretovariate(1)
+
             pollution_ceiling =
-              cities_count * 50_000 +
-                :math.pow(:rand.uniform(cities_count), :rand.uniform(cities_count))
+              cities_count * 100_000 +
+                100_000 * Random.gammavariate(7.5, 1)
 
             # if there are NO jobs for citizen in this town, returns -1.
             best_possible_job =
@@ -291,8 +295,8 @@ defmodule MayorGame.CityHelpers do
 
             # spawn new citizens if conditions are right; age, random, housing exists
             citizens_to_reproduce =
-              if citizen.age > 500 and citizen.age < 3000 and
-                   :rand.uniform(length(city_with_stats.citizens)) == 1,
+              if citizen.age > 500 and citizen.age < 2000 and
+                   :rand.uniform(length(city_with_stats.citizens) + 100) == 1,
                  do: [citizen | acc.citizens_to_reproduce],
                  else: acc.citizens_to_reproduce
 
@@ -988,7 +992,7 @@ defmodule MayorGame.CityHelpers do
                           acc.city,
                           buildable_type,
                           individual_buildable,
-                          "jobs"
+                          "workers"
                         )
                       else
                         individual_buildable
@@ -1175,7 +1179,7 @@ defmodule MayorGame.CityHelpers do
 
         buildable_metadata = Map.get(Buildable.buildables_flat(), buildable_list_item)
 
-        updated_price = buildable_metadata.price * round(:math.pow(buildable_count, 2))
+        updated_price = buildable_metadata.price * round(:math.pow(buildable_count, 2) + 1)
 
         buildable_metadata_price_updated = %MayorGame.City.BuildableMetadata{
           buildable_metadata

@@ -16,6 +16,8 @@
 
 # batch DB updates
 # citizens don't die or leave with 0 housing?
+# switch showing each
+
 # add more upgrades
 # balance prices
 # show how many people are working in each buildable

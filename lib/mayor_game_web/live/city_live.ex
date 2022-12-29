@@ -129,6 +129,28 @@ defmodule MayorGameWeb.CityLive do
   end
 
   def handle_event(
+        "demolish_building_2",
+        %{"building" => building_to_demolish},
+        %{assigns: %{city: city}} = socket
+      ) do
+    # check if user is mayor here?
+
+    buildable_to_id = hd(city.details[String.to_existing_atom(building_to_demolish)])
+    buildable_id = buildable_to_id.buildable.id
+
+    case City.demolish_buildable(city.details, building_to_demolish, buildable_id) do
+      {:ok, _updated_details} ->
+        IO.puts("demolition success")
+
+      {:error, err} ->
+        Logger.error(inspect(err))
+    end
+
+    # this is all ya gotta do to update, baybee
+    {:noreply, socket |> update_city_by_title()}
+  end
+
+  def handle_event(
         "buy_upgrade",
         %{
           "building" => buildable_to_upgrade,
@@ -233,14 +255,40 @@ defmodule MayorGameWeb.CityLive do
     # IO.inspect(city_updated.details.roads)
 
     # have to have this separate from the actual city because the city might not have some buildables, but they're still purchasable
+    # this status is for the whole category
     buildables_with_status = calculate_buildables_statuses(city_with_stats)
-    # IO.inspect(buildables_with_status)
+    # IO.inspect(city_with_stats.details.airports)
+
+    mapped_details =
+      Map.from_struct(city_with_stats.details) |> Map.take(Buildable.buildables_list())
+
+    operating_count =
+      Enum.map(mapped_details, fn {category, list} ->
+        {category, Enum.frequencies_by(list, fn x -> x.buildable.reason end)}
+      end)
+      |> Enum.into(%{})
+
+    citizen_edu_count = Enum.frequencies_by(city_with_stats.citizens, fn x -> x.education end)
+
+    city_without_citizens =
+      Map.drop(city_with_stats, [
+        :citizens,
+        :citizens_looking,
+        :citizens_to_reproduce,
+        :citizens_polluted,
+        :resources,
+        :citizens_looking,
+        :education
+      ])
 
     socket
     |> assign(:buildables, buildables_with_status)
     |> assign(:user_id, user.id)
     |> assign(:username, user.nickname)
-    |> assign(:city, city_with_stats)
+    |> assign(:city, city_without_citizens)
+    |> assign(:operating_count, operating_count)
+    |> assign(:citizens_by_edu, citizen_edu_count)
+    |> assign(:total_citizens, length(city_with_stats.citizens))
   end
 
   # this takes the generic buildables map and builds the status (enabled, etc) for each buildable
@@ -264,7 +312,7 @@ defmodule MayorGameWeb.CityLive do
   # this takes a buildable metadata, and builds purchasable status from database
   # TODO: Clean this shit upppp
   defp calculate_buildable_status(buildable, city_with_stats, buildable_count) do
-    updated_price = buildable.price * round(:math.pow(buildable_count, 2))
+    updated_price = buildable.price * round(:math.pow(buildable_count, 2) + 1)
 
     if city_with_stats.details.city_treasury > updated_price do
       cond do
