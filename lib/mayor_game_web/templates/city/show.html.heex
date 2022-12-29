@@ -31,14 +31,15 @@
     </span>
 
     <span class="text-yellow-600">
-      Energy<br /><span class="text-yellow-800">
+      Energy<br />
+      <span class="text-yellow-800">
         <%= @city.available_energy %>/<%= @city.total_energy %>
       </span>
     </span>
 
     <span class="text-teal-600">
-      Area
-      <br /><span class="text-teal-800">
+      Area <br />
+      <span class="text-teal-800">
         <%= @city.total_area - @city.available_area %>/<%= @city.total_area %>
       </span>
     </span>
@@ -96,7 +97,7 @@
     <h2 class="text-xl pt-2 first-letter:uppercase"><%= category %></h2>
     <div class="divide-y divide-neutral-800/10">
       <%= for {building_type, building_stats} <- buildings do %>
-        <div class="flex flex-wrap items-center gap-2 py-1  ">
+        <div class="flex flex-wrap items-center gap-2 py-0.5">
           <div class="basis-full md:basis-80 flex flex-row items-center justify-between">
             <!-- building title -->
             <div class="group relative inline-block">
@@ -159,7 +160,7 @@
             </div>
           </div>
           <!-- Enabled counts -->
-          <table class="flex-grow table-fixed border-collapse">
+          <table border="1" class=" table-fixed border-collapse">
             <tr>
               <%= if Enum.empty?(Map.get(@operating_count, building_type)) do %>
                 <td class="cell text-neutral-800/50">0</td>
@@ -167,35 +168,35 @@
                 <%= for {operation_type, operation_count} <- Map.get(@operating_count, building_type) do %>
                   <%= if operation_type == [] do %>
                     <td class="group cell bg-green-100">
-                      <p class="text-green-700"><%= operation_count %></p>
-                      <div class="bg-green-600 w-2 h-2 rounded-full"></div>
-                      <div class="tooltip text-green-600">operational</div>
+                      <div class="flex flex-row items-center gap-x-1">
+                        <p class="text-green-700"><%= operation_count %></p>
+                        <div class="bg-green-600 w-2 h-2 rounded-full"></div>
+                        <div class="tooltip text-green-600">operational</div>
+                      </div>
                     </td>
                   <% else %>
-                    <td class="group cell">
-                      <p class="text-neutral-800/50">0</p>
-                      <div class="bg-green-500 opacity-50 w-2 h-2 rounded-full"></div>
-                    </td>
-                    <td class="group cell border-l-0 bg-red-100">
-                      <p class="text-red-700"><%= operation_count %></p>
-                      <%= for operation_reason <- operation_type do %>
-                        <img
-                          src={"/images/#{operation_reason}.svg"}
-                          alt="requires {operation_reason} to operate"
-                          height="12"
-                          width="12"
-                        />
-                      <% end %>
-                      <div class="tooltip w-32 text-red-600">
-                        needs
-                        <%= if length(operation_type) > 1 do %>
-                          <%= for operation_reason <- operation_type do %>
-                            <%= operation_reason %>,
-                          <% end %>
-                        <% else %>
-                          <%= hd(operation_type) %>
+                    <td class="group cell bg-red-100">
+                      <div class="flex flex-row items-center gap-x-1">
+                        <p class="text-red-700"><%= operation_count %></p>
+                        <%= for operation_reason <- operation_type do %>
+                          <img
+                            src={"/images/#{operation_reason}.svg"}
+                            alt="requires {operation_reason} to operate"
+                            height="12"
+                            width="12"
+                          />
                         <% end %>
-                        to operate
+                        <div class="tooltip w-32 text-red-600">
+                          needs
+                          <%= if length(operation_type) > 1 do %>
+                            <%= for operation_reason <- operation_type do %>
+                              <%= operation_reason %>,
+                            <% end %>
+                          <% else %>
+                            <%= hd(operation_type) %>
+                          <% end %>
+                          to operate
+                        </div>
                       </div>
                     </td>
                   <% end %>

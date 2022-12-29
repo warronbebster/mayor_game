@@ -16,7 +16,7 @@
   }
 
   .cell {
-    @apply relative inline-flex flex-row items-center space-x-1 border border-neutral-800/25 leading-none h-6 w-20 px-1;
+    @apply relative border border-neutral-800/25 leading-none h-6 w-20 px-1;
   }
 }
 
