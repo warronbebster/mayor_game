@@ -245,8 +245,8 @@ defmodule MayorGame.CityHelpers do
             Random.paretovariate(1)
 
             pollution_ceiling =
-              cities_count * 100_000 +
-                100_000 * Random.gammavariate(7.5, 1)
+              cities_count * 1000_000 +
+                1000_000 * Random.gammavariate(7.5, 1)
 
             # if there are NO jobs for citizen in this town, returns -1.
             best_possible_job =
