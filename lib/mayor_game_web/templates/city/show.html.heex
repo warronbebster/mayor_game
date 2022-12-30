@@ -221,12 +221,12 @@
           <span>no citizens :( build housing for citizens to live in!</span>
         <% else %>
           <%= for {edu_level, count} <- @citizens_by_edu do %>
-            <span>
+            <div>
               Edu level <%= to_string(edu_level) %>: <%= to_string(count) %> citizen<%= if count >
                                                                                              0 do
                 "s"
               end %>
-            </span>
+            </div>
           <% end %>
         <% end %>
       </div>
