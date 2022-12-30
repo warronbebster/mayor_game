@@ -35,6 +35,13 @@ RUN mix local.hex --force && \
 # set build ENV
 ENV MIX_ENV="prod"
 
+# RUN --mount=type=secret,id=MAIL_SECRET \
+#   MAIL_SECRET="$(cat /run/secrets/MAIL_SECRET)"
+
+ARG MAIL_SECRET
+
+ENV MAIL_SECRET=$MAIL_SECRET
+
 # install mix dependencies
 COPY mix.exs mix.lock ./
 RUN mix deps.get --only $MIX_ENV
