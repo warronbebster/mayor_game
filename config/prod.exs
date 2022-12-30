@@ -1,5 +1,11 @@
 import Config
 
+mail_secret =
+  System.get_env("MAIL_SECRET") ||
+    raise """
+    environment variable MAIL_SECRET is missing.
+    """
+
 # For production, don't forget to configure the url host
 # to something meaningful, Phoenix uses this information
 # when generating URLs.

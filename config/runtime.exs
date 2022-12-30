@@ -59,6 +59,12 @@ if config_env() == :prod do
   host = System.get_env("PHX_HOST") || "https://fragile.city"
   port = String.to_integer(System.get_env("PORT") || "4000")
 
+  mail_secret =
+    System.get_env("MAIL_SECRET") ||
+      raise """
+      environment variable MAIL_SECRET is missing.
+      """
+
   config :mayor_game, MayorGameWeb.Endpoint,
     url: [host: host, port: 443],
     http: [
@@ -71,6 +77,11 @@ if config_env() == :prod do
     ],
     check_origin: :conn,
     secret_key_base: secret_key_base
+
+  config :mayor_game, MayorGameWeb.Pow.Mailer,
+    adapter: Swoosh.Adapters.Mailjet,
+    api_key: "71dfa3a267a5a221900658d68768d405",
+    secret: mail_secret
 
   # ## Configuring the mailer
   #
