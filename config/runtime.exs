@@ -1,7 +1,7 @@
 import Config
 
 # https://hexdocs.pm/phoenix/deployment.html
-# This stuff used to be set in prod.secret.exss
+# This stuff used to be set in prod.secret.exs
 
 # config/runtime.exs is executed for all environments, including
 # during releases. It is executed after compilation and before the
