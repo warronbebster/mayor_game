@@ -70,7 +70,7 @@
   <!--Taxes-->
 
   <!--All building details-->
-  <h2 class="text-xl pt-2 pb-1">Tax rates per job level</h2>
+  <h2 class="text-xl pt-2 pb-1">Tax rates per worker job level</h2>
   <div class="flex flex-row flex-wrap gap-x-4 gap-y-2">
     <%= for {job_level, rate} <- @city.tax_rates do %>
       <div class="flex space-x-2 items-center">
@@ -171,6 +171,9 @@
                       <div class="flex flex-row items-center gap-x-1">
                         <p class="text-green-700"><%= operation_count %></p>
                         <div class="bg-green-600 w-2 h-2 rounded-full"></div>
+                        <%= if building_stats.workers > 0 do %>
+                          hello
+                        <% end %>
                         <div class="tooltip text-green-600">operational</div>
                       </div>
                     </td>

@@ -133,13 +133,13 @@ defmodule MayorGame.CityCalculator do
         # find where the city is in the list
         indexx = Enum.find_index(acc_city_list, &(&1.id == citizen_too_old.town_id))
 
-        # make updated list, increment housing and jobs
+        # make updated list, increment housing and workers
         updated_acc_city_list =
           List.update_at(acc_city_list, indexx, fn update ->
             update
             |> Map.update!(:available_housing, &(&1 + 1))
 
-            # |> update_in([:jobs, best_job.job_level], &(&1 - 1))
+            # |> update_in([:workers, best_job.job_level], &(&1 - 1))
             # could update job count if we really knew which job level the citizen held
           end)
 
@@ -159,13 +159,13 @@ defmodule MayorGame.CityCalculator do
         # find where the city is in the list
         indexx = Enum.find_index(acc_city_list, &(&1.id == citizen_polluted.town_id))
 
-        # make updated list, increment housing and jobs
+        # make updated list, increment housing and workers
         updated_acc_city_list =
           List.update_at(acc_city_list, indexx, fn update ->
             update
             |> Map.update!(:available_housing, &(&1 + 1))
 
-            # |> update_in([:jobs, best_job.job_level], &(&1 - 1))
+            # |> update_in([:workers, best_job.job_level], &(&1 - 1))
             # could update job count if we really knew which job level the citizen held
           end)
 
@@ -212,20 +212,20 @@ defmodule MayorGame.CityCalculator do
       )
 
     # CHECK —————
-    # FOURTH CITIZEN CHECK: LOOKING FOR JOBS
+    # FOURTH CITIZEN CHECK: LOOKING FOR workers
 
     # if there are cities with room at all (if a city has room, this list won't be empty):
     cities_after_job_search =
       Enum.reduce(leftovers.citizens_looking, cities_after_reproduction, fn citizen,
                                                                             acc_city_list ->
-        cities_with_housing_and_jobs =
+        cities_with_housing_and_workers =
           Enum.filter(acc_city_list, fn city -> city.available_housing > 0 end)
           |> Enum.filter(fn city ->
-            Enum.any?(city.jobs, fn {_level, number} -> number > 0 end)
+            Enum.any?(city.workers, fn {_level, number} -> number > 0 end)
           end)
 
-        # results are map %{best_city: %{city: city, jobs: #, housing: #, etc}, job_level: #}
-        best_job = CityHelpers.find_best_job(cities_with_housing_and_jobs, citizen)
+        # results are map %{best_city: %{city: city, workers: #, housing: #, etc}, job_level: #}
+        best_job = CityHelpers.find_best_job(cities_with_housing_and_workers, citizen)
 
         if !is_nil(best_job) do
           # move citizen to city
@@ -238,12 +238,12 @@ defmodule MayorGame.CityCalculator do
           # find where the city is in the list
           indexx = Enum.find_index(acc_city_list, &(&1.id == best_job.best_city.id))
 
-          # make updated list, decrement housing and jobs
+          # make updated list, decrement housing and workers
           updated_acc_city_list =
             List.update_at(acc_city_list, indexx, fn update ->
               update
               |> Map.update!(:available_housing, &(&1 - 1))
-              |> update_in([:jobs, best_job.job_level], &(&1 - 1))
+              |> update_in([:workers, best_job.job_level], &(&1 - 1))
             end)
 
           updated_acc_city_list

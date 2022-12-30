@@ -247,7 +247,7 @@ defmodule MayorGame.City.Buildable do
       roads: %BuildableMetadata{
         price: 20,
         daily_cost: 0,
-        jobs: 0,
+        workers: 0,
         job_level: 0,
         sprawl: 10,
         pollution: 5,
@@ -259,7 +259,7 @@ defmodule MayorGame.City.Buildable do
       highways: %BuildableMetadata{
         price: 40,
         daily_cost: 0,
-        jobs: 0,
+        workers: 0,
         job_level: 0,
         sprawl: 20,
         area: 20,
@@ -271,7 +271,7 @@ defmodule MayorGame.City.Buildable do
       airports: %BuildableMetadata{
         price: 200,
         daily_cost: 10,
-        jobs: 10,
+        workers: 10,
         job_level: 0,
         pollution: 10,
         sprawl: 5,
@@ -284,7 +284,7 @@ defmodule MayorGame.City.Buildable do
       bus_lines: %BuildableMetadata{
         price: 70,
         daily_cost: 30,
-        jobs: 10,
+        workers: 10,
         job_level: 0,
         sprawl: 3,
         area: 50,
@@ -295,7 +295,7 @@ defmodule MayorGame.City.Buildable do
       subway_lines: %BuildableMetadata{
         price: 200,
         daily_cost: 40,
-        jobs: 10,
+        workers: 10,
         job_level: 0,
         sprawl: 1,
         area: 1000,
@@ -306,7 +306,7 @@ defmodule MayorGame.City.Buildable do
       bike_lanes: %BuildableMetadata{
         price: 60,
         daily_cost: 0,
-        jobs: 0,
+        workers: 0,
         job_level: 0,
         sprawl: 0,
         area: 10,
@@ -326,7 +326,7 @@ defmodule MayorGame.City.Buildable do
       bikeshare_stations: %BuildableMetadata{
         price: 70,
         daily_cost: 0,
-        jobs: 0,
+        workers: 0,
         job_level: 0,
         sprawl: 0,
         area: 10,
@@ -348,7 +348,7 @@ defmodule MayorGame.City.Buildable do
       coal_plants: %BuildableMetadata{
         price: 20,
         daily_cost: 10,
-        jobs: 5,
+        workers: 5,
         job_level: 0,
         energy: 2000,
         pollution: 20,
@@ -369,7 +369,7 @@ defmodule MayorGame.City.Buildable do
       wind_turbines: %BuildableMetadata{
         price: 100,
         daily_cost: 3,
-        jobs: 10,
+        workers: 10,
         job_level: 1,
         energy: 600,
         pollution: 5,
@@ -383,7 +383,7 @@ defmodule MayorGame.City.Buildable do
       solar_plants: %BuildableMetadata{
         price: 200,
         daily_cost: 3,
-        jobs: 10,
+        workers: 10,
         job_level: 2,
         energy: 500,
         pollution: 0,
@@ -396,7 +396,7 @@ defmodule MayorGame.City.Buildable do
       nuclear_plants: %BuildableMetadata{
         price: 2000,
         daily_cost: 50,
-        jobs: 10,
+        workers: 10,
         job_level: 3,
         energy: 5000,
         pollution: 0,
@@ -409,7 +409,7 @@ defmodule MayorGame.City.Buildable do
       dams: %BuildableMetadata{
         price: 1000,
         daily_cost: 50,
-        jobs: 10,
+        workers: 10,
         job_level: 2,
         energy: 2000,
         pollution: 3,
@@ -422,7 +422,7 @@ defmodule MayorGame.City.Buildable do
       carbon_capture_plants: %BuildableMetadata{
         price: 2000,
         daily_cost: 50,
-        jobs: 10,
+        workers: 10,
         job_level: 5,
         energy: 0,
         pollution: -10,
@@ -455,7 +455,7 @@ defmodule MayorGame.City.Buildable do
         price: 200,
         daily_cost: 10,
         area_required: 1,
-        jobs: 4,
+        workers: 4,
         job_level: 2,
         energy_required: 200,
         purchasable: true,
@@ -464,7 +464,7 @@ defmodule MayorGame.City.Buildable do
       schools: %BuildableMetadata{
         price: 200,
         daily_cost: 10,
-        jobs: 10,
+        workers: 10,
         job_level: 0,
         education_level: 1,
         capacity: 10,
@@ -484,7 +484,7 @@ defmodule MayorGame.City.Buildable do
       middle_schools: %BuildableMetadata{
         price: 300,
         daily_cost: 10,
-        jobs: 5,
+        workers: 5,
         job_level: 1,
         education_level: 2,
         capacity: 5,
@@ -496,7 +496,7 @@ defmodule MayorGame.City.Buildable do
       high_schools: %BuildableMetadata{
         price: 400,
         daily_cost: 10,
-        jobs: 10,
+        workers: 10,
         job_level: 2,
         education_level: 3,
         capacity: 10,
@@ -508,7 +508,7 @@ defmodule MayorGame.City.Buildable do
       universities: %BuildableMetadata{
         price: 650,
         daily_cost: 15,
-        jobs: 10,
+        workers: 10,
         job_level: 3,
         education_level: 4,
         capacity: 10,
@@ -520,7 +520,7 @@ defmodule MayorGame.City.Buildable do
       research_labs: %BuildableMetadata{
         price: 900,
         daily_cost: 15,
-        jobs: 10,
+        workers: 10,
         job_level: 4,
         education_level: 5,
         capacity: 5,
@@ -532,7 +532,7 @@ defmodule MayorGame.City.Buildable do
       retail_shops: %BuildableMetadata{
         price: 200,
         daily_cost: 5,
-        jobs: 5,
+        workers: 5,
         job_level: 0,
         area_required: 2,
         energy_required: 50,
@@ -542,7 +542,7 @@ defmodule MayorGame.City.Buildable do
       factories: %BuildableMetadata{
         price: 500,
         daily_cost: 5,
-        jobs: 20,
+        workers: 20,
         job_level: 0,
         area_required: 10,
         health: -3,
@@ -561,7 +561,7 @@ defmodule MayorGame.City.Buildable do
       office_buildings: %BuildableMetadata{
         price: 400,
         daily_cost: 5,
-        jobs: 20,
+        workers: 20,
         job_level: 1,
         area_required: 5,
         energy_required: 800,
@@ -571,7 +571,7 @@ defmodule MayorGame.City.Buildable do
       theatres: %BuildableMetadata{
         price: 300,
         daily_cost: 5,
-        jobs: 10,
+        workers: 10,
         job_level: 0,
         fun: 5,
         area_required: 5,
@@ -582,7 +582,7 @@ defmodule MayorGame.City.Buildable do
       arenas: %BuildableMetadata{
         price: 600,
         daily_cost: 5,
-        jobs: 20,
+        workers: 20,
         job_level: 0,
         fun: 10,
         area_required: 10,
@@ -593,7 +593,7 @@ defmodule MayorGame.City.Buildable do
       hospitals: %BuildableMetadata{
         price: 600,
         daily_cost: 5,
-        jobs: 10,
+        workers: 10,
         job_level: 2,
         health: 10,
         area_required: 20,
@@ -604,7 +604,7 @@ defmodule MayorGame.City.Buildable do
       doctor_offices: %BuildableMetadata{
         price: 300,
         daily_cost: 5,
-        jobs: 10,
+        workers: 10,
         job_level: 4,
         health: 15,
         area_required: 4,

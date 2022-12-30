@@ -24,7 +24,7 @@
 # don't charge daily_cost if building is disabled? (DONE)
 # make upgrade prices ridiculous
 # rewrite move_citizen to not need a DB call to get the world
-# add some jobs that don't require energy
+# add some workers that don't require energy
 # add way to reset
 # remove has_car and some other stuff from DB
 # transition buildables to integer?
@@ -37,7 +37,7 @@
 
 
 ### nice to have —————————————————————————————————————
-# fix taxes so you can't get money from non active-jobs
+# fix taxes so you can't get money from non active-workers
 # ^ did I do this? I think so
 # just pass the whole city through
 

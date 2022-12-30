@@ -30,6 +30,7 @@ defmodule MayorGameWeb.CityLive do
       # put the title and day in assigns
       |> assign(:title, title)
       |> assign(:world, world)
+      |> assign(:building_requirements, ["workers", "energy", "area", "money"])
       |> update_city_by_title()
       |> assign_auth(session)
       # run helper function to get the stuff from the DB for those things
