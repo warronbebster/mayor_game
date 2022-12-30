@@ -62,10 +62,10 @@ defmodule MayorGameWeb.CityLive do
         # pull these variables out of the socket
         %{assigns: %{city: city}} = socket
       ) do
+      
     if city.user.id == 1 do
       case City.create_citizens(%{
              town_id: city.id,
-             name: content,
              money: 5,
              education: 0,
              age: 0,
