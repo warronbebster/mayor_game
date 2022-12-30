@@ -24,6 +24,22 @@ defmodule MayorGameWeb.CityLive do
     MayorGameWeb.Endpoint.subscribe("cityPubSub")
     world = Repo.get!(MayorGame.City.World, 1)
 
+    explanations = %{
+      transit:
+        "Build transit to add area to your city. Area is required to build most other buildings.",
+      energy:
+        "Energy buildings produce energy when they're operational. Energy is required to operate most other buildings. You need citizens to operate most of the energy buildings.",
+      housing:
+        "Housing is required to retain citizens — otherwise, they'll die. Housing requires energy and area; if you run out of energy, you might run out of housing rather quickly!",
+      education:
+        "Education buildings will, once a year, move citizens up an education level. This allows them to work at buildings with higher job levels, and make more money (and you, too, through taxes!",
+      civic: "Civic buildings add other benefits citizens like — jobs, fun, etc.",
+      work: "Work buildings have lots of jobs to attract citizens to your city",
+      entertainment: "Entertainment buildings have jobs, and add other intangibles to your city.",
+      health:
+        "Health buildings increase the health of your citizens, and make them less likely to die"
+    }
+
     {
       :ok,
       socket
@@ -31,6 +47,7 @@ defmodule MayorGameWeb.CityLive do
       |> assign(:title, title)
       |> assign(:world, world)
       |> assign(:building_requirements, ["workers", "energy", "area", "money"])
+      |> assign(:category_explanations, explanations)
       |> update_city_by_title()
       |> assign_auth(session)
       # run helper function to get the stuff from the DB for those things
@@ -45,21 +62,23 @@ defmodule MayorGameWeb.CityLive do
         # pull these variables out of the socket
         %{assigns: %{city: city}} = socket
       ) do
-    case City.create_citizens(%{
-           town_id: city.id,
-           name: content,
-           money: 5,
-           education: 0,
-           age: 0,
-           has_car: false,
-           last_moved: 0
-         }) do
-      # pattern match to assign new_citizen to what's returned from City.create_citizens
-      {:ok, _updated_citizens} ->
-        IO.puts("updated 1 citizen")
+    if city.user.id == 1 do
+      case City.create_citizens(%{
+             town_id: city.id,
+             name: content,
+             money: 5,
+             education: 0,
+             age: 0,
+             has_car: false,
+             last_moved: 0
+           }) do
+        # pattern match to assign new_citizen to what's returned from City.create_citizens
+        {:ok, _updated_citizens} ->
+          IO.puts("updated 1 citizen")
 
-      {:error, err} ->
-        Logger.error(inspect(err))
+        {:error, err} ->
+          Logger.error(inspect(err))
+      end
     end
 
     {:noreply, socket |> update_city_by_title()}
@@ -67,12 +86,14 @@ defmodule MayorGameWeb.CityLive do
 
   # event
   def handle_event("gib_money", _value, %{assigns: %{city: city}} = socket) do
-    case City.update_details(city.details, %{city_treasury: city.details.city_treasury + 1000}) do
-      {:ok, _updated_town} ->
-        IO.puts("money gabe")
+    if city.user.id == 1 do
+      case City.update_details(city.details, %{city_treasury: city.details.city_treasury + 1000}) do
+        {:ok, _updated_town} ->
+          IO.puts("money gabe")
 
-      {:error, err} ->
-        Logger.error(inspect(err))
+        {:error, err} ->
+          Logger.error(inspect(err))
+      end
     end
 
     # this is all ya gotta do to update, baybee
