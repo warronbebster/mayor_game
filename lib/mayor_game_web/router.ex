@@ -3,6 +3,9 @@ defmodule MayorGameWeb.Router do
   # Pow route macros
   use Pow.Phoenix.Router
 
+  use Pow.Extension.Phoenix.Router,
+    extensions: [PowResetPassword, PowPersistentSession]
+
   # create pipeline for general browser
   pipeline :browser do
     plug :accepts, ["html"]
@@ -32,6 +35,7 @@ defmodule MayorGameWeb.Router do
     # honestly no idea what this is doing
     # maybe this is what's giving the @current_user in the conn to /?
     pow_routes()
+    pow_extension_routes()
   end
 
   scope "/", MayorGameWeb do

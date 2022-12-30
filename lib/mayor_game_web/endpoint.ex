@@ -58,7 +58,7 @@ defmodule MayorGameWeb.Endpoint do
     otp_app: :mayor_game,
     cache_store_backend: Pow.Store.Backend.MnesiaCache,
     # add session token length
-    session_ttl_renewal: :timer.minutes(3),
+    session_ttl_renewal: :timer.minutes(10),
     credentials_cache_store: {Pow.Store.CredentialsCache, ttl: :timer.minutes(30)}
 
   # make user sessions persistent with a cookie

@@ -1,6 +1,8 @@
 defmodule MayorGame.Auth.User do
   use Ecto.Schema
   use Pow.Ecto.Schema
+  use Pow.Extension.Ecto.Schema, extensions: [PowResetPassword, PowPersistentSession]
+
   import Ecto.Changeset
 
   @timestamps_opts [type: :utc_datetime]
@@ -18,9 +20,10 @@ defmodule MayorGame.Auth.User do
   end
 
   @doc false
-  def changeset(user, attrs) do
-    user
+  def changeset(user_or_changeset, attrs) do
+    user_or_changeset
     |> pow_changeset(attrs)
+    |> pow_extension_changeset(attrs)
     |> cast(attrs, [:nickname])
     |> validate_required([:nickname])
     |> validate_length(:nickname, min: 1, max: 20)

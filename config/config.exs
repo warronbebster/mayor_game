@@ -30,7 +30,15 @@ config :mayor_game, :pow,
   user: MayorGame.Auth.User,
   repo: MayorGame.Repo,
   web_module: MayorGameWeb,
-  extensions: PowPersistentSession
+  extensions: [PowPersistentSession, PowResetPassword],
+  controller_callbacks: Pow.Extension.Phoenix.ControllerCallbacks,
+  mailer_backend: MayorGameWeb.Pow.Mailer
+
+config :mayor_game, MayorGameWeb.Pow.Mailer,
+  adapter: Swoosh.Adapters.Mailjet,
+  # api_key: "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"
+  api_key: "71dfa3a267a5a221900658d68768d405",
+  secret: "9a5c8d20c0f1f141a91067190500b86b"
 
 # Configure esbuild (the version is required)
 config :esbuild,
