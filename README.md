@@ -1,4 +1,4 @@
-# MayorGame
+# [fragile.city](https://www.fragile.city/)
 
 This is a zero-sum MMO. You get a township, and build a town to attract citizens — build schools, roads, transit systems, etc. Citizens will move to the best town for them — so you have to be competitive. However, the whole ecosystem shares one atmosphere — if everyone pollutes while building their towns, citizens become sicker and sicker, eventually die, and the game ends for everyone — you'll be presiding over a ghost town.
 
@@ -19,6 +19,7 @@ or
 - Install dependencies with `mix deps.get`
 - Create and migrate your database with `mix ecto.setup`
 - Install Node.js dependencies with `npm install` inside the `assets` directory
+  - this might not be a thing anymore
 
 make sure Postgres is running, then start the Phoenix endpoint with `iex -S mix phx.server`
 
