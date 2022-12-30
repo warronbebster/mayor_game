@@ -40,7 +40,7 @@
     <span class="text-teal-600">
       Available Area <br />
       <span class="text-teal-800">
-        <%= @city.total_area - @city.available_area %>/<%= @city.total_area %>
+        <%= @city.available_area %>/<%= @city.total_area %>
       </span>
     </span>
 
@@ -94,7 +94,14 @@
   </div>
 
   <%= for {category, buildings} <- @buildables do %>
-    <h2 class="text-xl pt-2 first-letter:uppercase"><%= category %></h2>
+    <div class="group relative">
+      <h2 class="text-xl pt-2 first-letter:uppercase underline underline-offset-4 decoration-neutral-800/40 decoration-dotted	">
+        <%= category %>
+      </h2>
+      <div class="tooltip">
+        <%= @category_explanations[category] %>
+      </div>
+    </div>
     <div class="divide-y divide-neutral-800/10">
       <%= for {building_type, building_stats} <- buildings do %>
         <div class="flex flex-wrap items-center gap-2 py-0.5">
