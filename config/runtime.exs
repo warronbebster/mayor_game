@@ -56,7 +56,7 @@ if config_env() == :prod do
       You can generate one by calling: mix phx.gen.secret
       """
 
-  host = System.get_env("PHX_HOST") || "fragile.city"
+  host = System.get_env("PHX_HOST") || "https://fragile.city"
   port = String.to_integer(System.get_env("PORT") || "4000")
 
   config :mayor_game, MayorGameWeb.Endpoint,
@@ -69,7 +69,7 @@ if config_env() == :prod do
       ip: {0, 0, 0, 0, 0, 0, 0, 0},
       port: port
     ],
-    check_origin: ["https://fragile.city"],
+    check_origin: ["https://fragile.city", "https://www.fragile.city"],
     secret_key_base: secret_key_base
 
   # ## Configuring the mailer
