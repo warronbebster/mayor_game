@@ -279,7 +279,10 @@ defmodule MayorGame.City do
     #   {to_string(x), :rand.uniform() |> Float.round(2)}
     # end)
 
-    attrs_plus_preferences = Map.put(attrs, :preferences, random_preferences.preference_map)
+    # add new attribute if not set
+    attrs_plus_preferences = attrs
+      |> Map.put_new(:name, Faker.Person.name())
+      |> Map.put(:preferences, random_preferences.preference_map)
 
     %Citizens{}
     |> Citizens.changeset(attrs_plus_preferences)

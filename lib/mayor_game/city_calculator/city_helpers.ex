@@ -86,7 +86,7 @@ defmodule MayorGame.CityHelpers do
   converts %Citizen{} into a human readable string
   """
   def describe_citizen(%Citizens{} = citizen) do
-    "#{to_string(citizen.id)} (edu lvl #{citizen.education})"
+    "#{to_string(citizen.name)} (edu lvl #{citizen.education})"
   end
 
   @doc """

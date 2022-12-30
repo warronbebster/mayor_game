@@ -53,7 +53,6 @@ Auth.create_user(%{
 {:ok, %Citizens{}} =
   City.create_citizens(%{
     money: 50,
-    name: "citizen of " <> cityName,
     town_id: madeTown_id,
     age: 0,
     education: 0,

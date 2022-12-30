@@ -55,7 +55,8 @@ defmodule MayorGame.MixProject do
       {:tailwind, "~> 0.1", runtime: Mix.env() == :dev},
       {:random, "~> 0.2.4"},
       {:hackney, "~> 1.9"},
-      {:swoosh, "~> 1.9"}
+      {:swoosh, "~> 1.9"},
+      {:faker, "~> 0.17"}
     ]
   end
 
