@@ -193,7 +193,6 @@ defmodule MayorGame.CityCalculator do
 
           {:ok, child_citizen} = City.create_citizens(%{
             money: 0,
-            name: to_string(citizen_to_reproduce.id + 1),
             town_id: citizen_to_reproduce.town_id,
             age: 0,
             education: 0,

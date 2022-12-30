@@ -47,7 +47,6 @@ defmodule MayorGameWeb.CityLive do
       ) do
     case City.create_citizens(%{
            town_id: city.id,
-           name: content,
            money: 5,
            education: 0,
            age: 0,
