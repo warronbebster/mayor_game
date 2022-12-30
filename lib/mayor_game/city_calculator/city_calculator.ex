@@ -191,7 +191,7 @@ defmodule MayorGame.CityCalculator do
               Map.update!(update, :available_housing, &(&1 - 1))
             end)
 
-          City.create_citizens(%{
+          {:ok, child_citizen} = City.create_citizens(%{
             money: 0,
             name: to_string(citizen_to_reproduce.id + 1),
             town_id: citizen_to_reproduce.town_id,
@@ -203,8 +203,8 @@ defmodule MayorGame.CityCalculator do
 
           City.update_log(
             City.get_town!(citizen_to_reproduce.town_id),
-            to_string(citizen_to_reproduce.id) <>
-              " had a child: " <> to_string(citizen_to_reproduce.id + 1)
+            CityHelpers.describe_citizen(citizen_to_reproduce) <>
+              " had a child: " <> CityHelpers.describe_citizen(child_citizen)
           )
 
           updated_acc_city_list

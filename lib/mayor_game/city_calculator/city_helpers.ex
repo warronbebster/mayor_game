@@ -83,6 +83,13 @@ defmodule MayorGame.CityHelpers do
   end
 
   @doc """
+  converts %Citizen{} into a human readable string
+  """
+  def describe_citizen(%Citizens{} = citizen) do
+    "#{to_string(citizen.id)} (edu lvl #{citizen.education})"
+  end
+
+  @doc """
   moves a given %Citizen{} into a given %Town{}, also takes a `day_moved`
   """
   def move_citizen(
@@ -95,12 +102,12 @@ defmodule MayorGame.CityHelpers do
     if prev_city.id != city_to_move_to.id do
       City.update_log(
         prev_city,
-        to_string(citizen.id) <> " moved to " <> city_to_move_to.title
+        describe_citizen(citizen) <> " moved to " <> city_to_move_to.title
       )
 
       City.update_log(
         city_to_move_to,
-        to_string(citizen.id) <> " just moved here from " <> prev_city.title
+        describe_citizen(citizen) <> " just moved here from " <> prev_city.title
       )
 
       City.update_citizens(citizen, %{town_id: city_to_move_to.id, last_moved: day_moved})
@@ -110,7 +117,7 @@ defmodule MayorGame.CityHelpers do
   def kill_citizen(%Citizens{} = citizen, deathReason) do
     City.update_log(
       City.get_town!(citizen.town_id),
-      to_string(citizen.id) <> " has died because of " <> deathReason <> ". RIP"
+      describe_citizen(citizen) <> " has died because of " <> deathReason <> ". RIP"
     )
 
     City.delete_citizens(citizen)
@@ -312,7 +319,7 @@ defmodule MayorGame.CityHelpers do
 
                 City.update_log(
                   City.get_town!(citizen.town_id),
-                  to_string(citizen.id) <>
+                  describe_citizen(citizen) <>
                     " graduated to level " <> to_string(min(citizen.education + 1, 5)) <> "!"
                 )
 
