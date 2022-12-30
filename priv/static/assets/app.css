@@ -766,7 +766,7 @@ select {
 .cell {
   position: relative;
   height: 1.5rem;
-  width: 5rem;
+  width: 6rem;
   border-width: 1px;
   border-color: rgb(38 38 38 / 0.25);
   padding-left: 0.25rem;
@@ -835,10 +835,6 @@ select {
   height: 1.5rem;
 }
 
-.h-2 {
-  height: 0.5rem;
-}
-
 .h-screen {
   height: 100vh;
 }
@@ -851,16 +847,8 @@ select {
   width: 7rem;
 }
 
-.w-2 {
-  width: 0.5rem;
-}
-
 .w-32 {
   width: 8rem;
-}
-
-.w-full {
-  width: 100%;
 }
 
 .max-w-sm {
@@ -917,14 +905,6 @@ select {
 
 .gap-1 {
   gap: 0.25rem;
-}
-
-.gap-4 {
-  gap: 1rem;
-}
-
-.gap-8 {
-  gap: 2rem;
 }
 
 .gap-x-4 {
@@ -1002,10 +982,6 @@ select {
   border-radius: 0px;
 }
 
-.rounded-full {
-  border-radius: 9999px;
-}
-
 .border {
   border-width: 1px;
 }
@@ -1039,11 +1015,6 @@ select {
 .bg-green-100 {
   --tw-bg-opacity: 1;
   background-color: rgb(220 252 231 / var(--tw-bg-opacity));
-}
-
-.bg-green-600 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(22 163 74 / var(--tw-bg-opacity));
 }
 
 .bg-red-100 {

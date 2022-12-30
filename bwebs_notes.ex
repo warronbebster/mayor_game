@@ -21,7 +21,7 @@
 # add more upgrades
 # balance prices
 # show how many people are working in each buildable
-# don't charge daily_cost if building is disabled? (DONE)
+# don't charge money_required if building is disabled? (DONE)
 # make upgrade prices ridiculous
 # rewrite move_citizen to not need a DB call to get the world
 # add some workers that don't require energy

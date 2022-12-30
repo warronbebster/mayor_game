@@ -31,14 +31,14 @@
     </span>
 
     <span class="text-yellow-600">
-      Energy<br />
+      Available Energy<br />
       <span class="text-yellow-800">
         <%= @city.available_energy %>/<%= @city.total_energy %>
       </span>
     </span>
 
     <span class="text-teal-600">
-      Area <br />
+      Available Area <br />
       <span class="text-teal-800">
         <%= @city.total_area - @city.available_area %>/<%= @city.total_area %>
       </span>
@@ -166,29 +166,40 @@
                 <td class="cell text-neutral-800/50">0</td>
               <% else %>
                 <%= for {operation_type, operation_count} <- Map.get(@operating_count, building_type) do %>
-                  <%= if operation_type == [] do %>
-                    <td class="group cell bg-green-100">
-                      <div class="flex flex-row items-center gap-x-1">
-                        <p class="text-green-700"><%= operation_count %></p>
-                        <div class="bg-green-600 w-2 h-2 rounded-full"></div>
-                        <%= if building_stats.workers > 0 do %>
-                          hello
-                        <% end %>
-                        <div class="tooltip text-green-600">operational</div>
-                      </div>
-                    </td>
-                  <% else %>
-                    <td class="group cell bg-red-100">
-                      <div class="flex flex-row items-center gap-x-1">
-                        <p class="text-red-700"><%= operation_count %></p>
-                        <%= for operation_reason <- operation_type do %>
+                  <!-- if it's not operational-->
+                  <td class={
+                    "group cell #{if operation_type == [], do: 'bg-green-100', else: 'bg-red-100'} "
+                  }>
+                    <div class="flex flex-row items-center gap-x-1">
+                      <p class={
+                        "#{if operation_type == [], do: 'text-green-700', else: 'text-red-700'}"
+                      }>
+                        <%= operation_count %>
+                      </p>
+
+                      <%= for requirement <- @building_requirements do %>
+                        <%= if building_stats[String.to_existing_atom(requirement <> "_required")] != nil && building_stats[String.to_existing_atom(requirement <> "_required")] > 0 && !Enum.member?(operation_type, requirement) do %>
                           <img
-                            src={"/images/#{operation_reason}.svg"}
-                            alt="requires {operation_reason} to operate"
+                            src={"/images/#{requirement}-fulfilled.svg"}
+                            alt={"has enough #{requirement} to operate"}
                             height="12"
                             width="12"
                           />
+                        <% else %>
+                          <%= if Enum.member?(operation_type, requirement) do %>
+                            <img
+                              src={"/images/#{requirement}.svg"}
+                              alt={"requires #{requirement} to operate"}
+                              height="12"
+                              width="12"
+                            />
+                          <% end %>
                         <% end %>
+                      <% end %>
+
+                      <%= if operation_type == [] do %>
+                        <div class="tooltip text-green-600">operational</div>
+                      <% else %>
                         <div class="tooltip w-32 text-red-600">
                           needs
                           <%= if length(operation_type) > 1 do %>
@@ -200,9 +211,9 @@
                           <% end %>
                           to operate
                         </div>
-                      </div>
-                    </td>
-                  <% end %>
+                      <% end %>
+                    </div>
+                  </td>
                 <% end %>
               <% end %>
             </tr>

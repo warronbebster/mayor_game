@@ -706,9 +706,9 @@ defmodule MayorGame.CityHelpers do
           # get list of each type of buildables
           buildable_list = Map.get(city.details, buildable_type)
 
-          if buildable_options.daily_cost != nil &&
+          if buildable_options.money_required != nil &&
                length(buildable_list) > 0 &&
-               buildable_options.daily_cost > 0 do
+               buildable_options.money_required > 0 do
             buildable_list_results =
               Enum.reduce(
                 buildable_list,
@@ -718,7 +718,7 @@ defmodule MayorGame.CityHelpers do
                   buildable_list_updated_reasons: []
                 },
                 fn individual_buildable, acc3 ->
-                  negative_money = acc3.available_money < individual_buildable.metadata.daily_cost
+                  negative_money = acc3.available_money < individual_buildable.metadata.money_required
 
                   updated_buildable =
                     if negative_money && individual_buildable.buildable.enabled do
@@ -734,13 +734,13 @@ defmodule MayorGame.CityHelpers do
 
                   updated_money =
                     if(individual_buildable.buildable.enabled,
-                      do: acc3.available_money - individual_buildable.metadata.daily_cost,
+                      do: acc3.available_money - individual_buildable.metadata.money_required,
                       else: acc3.available_money
                     )
 
                   updated_cost =
                     if(individual_buildable.buildable.enabled,
-                      do: acc3.cost + individual_buildable.metadata.daily_cost,
+                      do: acc3.cost + individual_buildable.metadata.money_required,
                       else: acc3.cost
                     )
 
@@ -910,9 +910,9 @@ defmodule MayorGame.CityHelpers do
                     |> Map.put(:tax, 0)
                   else
                     each_job_results =
-                      if individual_buildable.metadata.workers > 0 do
+                      if individual_buildable.metadata.workers_required > 0 do
                         Enum.reduce(
-                          0..(individual_buildable.metadata.workers - 1),
+                          0..(individual_buildable.metadata.workers_required - 1),
                           %{
                             total_buildable_workers: 0,
                             available_buildable_workers: 0,

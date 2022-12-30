@@ -20,7 +20,7 @@ This comes from the DB, as part of a %Buildable{}:
 single_family_homes: %{
   price: 20,
   fits: 2,
-  daily_cost: 0,
+  money_required: 0,
   area_required: 1,
   energy_required: 12,
   purchasable: true,
