@@ -350,7 +350,7 @@ defmodule MayorGame.City.Buildable do
         daily_cost: 10,
         jobs: 5,
         job_level: 0,
-        energy: 3500,
+        energy: 2000,
         pollution: 20,
         health: -10,
         area_required: 5,
