@@ -16,7 +16,7 @@
   }
 
   .cell {
-    @apply relative border border-neutral-800/25 leading-none h-6 w-24 px-1;
+    @apply relative border border-neutral-800/25 leading-none h-6 w-28 px-1;
   }
 }
 

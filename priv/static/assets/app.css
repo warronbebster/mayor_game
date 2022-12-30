@@ -766,7 +766,7 @@ select {
 .cell {
   position: relative;
   height: 1.5rem;
-  width: 6rem;
+  width: 7rem;
   border-width: 1px;
   border-color: rgb(38 38 38 / 0.25);
   padding-left: 0.25rem;
@@ -1017,19 +1017,9 @@ select {
   background-color: rgb(220 252 231 / var(--tw-bg-opacity));
 }
 
-.bg-red-100 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(254 226 226 / var(--tw-bg-opacity));
-}
-
 .bg-red-50 {
   --tw-bg-opacity: 1;
   background-color: rgb(254 242 242 / var(--tw-bg-opacity));
-}
-
-.bg-green-50 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(240 253 244 / var(--tw-bg-opacity));
 }
 
 .p-1 {
