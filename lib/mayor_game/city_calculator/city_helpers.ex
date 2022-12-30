@@ -249,7 +249,6 @@ defmodule MayorGame.CityHelpers do
             # set a random pollution ceiling based on how many cities are in the ecosystem
             # could try using :rand.normal here
             # could also use total citizens here
-            Random.paretovariate(1)
 
             pollution_ceiling =
               cities_count * 1000_000 +
@@ -280,10 +279,13 @@ defmodule MayorGame.CityHelpers do
                 else: acc.workers
 
             # citizen will look if there is a job gap
+            # TODO: add citizens randomly look even if there's not a job gap
             citizens_looking =
-              if job_gap > 0 and citizen.last_moved + 100 < world.day,
-                do: [citizen | acc.citizens_looking],
-                else: acc.citizens_looking
+              if (job_gap > 0 or
+                    :rand.uniform() > city_with_stats.tax_rates[to_string(citizen.education)]) and
+                   citizen.last_moved + 100 < world.day,
+                 do: [citizen | acc.citizens_looking],
+                 else: acc.citizens_looking
 
             citizens_out_of_room =
               if acc.available_housing < 1,
@@ -725,7 +727,8 @@ defmodule MayorGame.CityHelpers do
                   buildable_list_updated_reasons: []
                 },
                 fn individual_buildable, acc3 ->
-                  negative_money = acc3.available_money < individual_buildable.metadata.money_required
+                  negative_money =
+                    acc3.available_money < individual_buildable.metadata.money_required
 
                   updated_buildable =
                     if negative_money && individual_buildable.buildable.enabled do

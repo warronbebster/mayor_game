@@ -747,6 +747,7 @@ select {
   top: 2rem;
   left: 0px;
   z-index: 10;
+  max-width: 24rem;
   border-width: 1px;
   --tw-border-opacity: 1;
   border-color: rgb(38 38 38 / var(--tw-border-opacity));
