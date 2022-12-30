@@ -31,6 +31,7 @@ defmodule MayorGameWeb.Pow.Mailer do
     |> subject(subject)
     |> html_body(html)
     |> text_body(text)
+    |> put_provider_option(:template_id, 4_465_570)
     |> put_provider_option(:template_error_deliver, true)
   end
 
