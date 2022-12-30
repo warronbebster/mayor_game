@@ -1,43 +1,45 @@
-<div class="p-4">
-  <div class="flex flex-row items-center space-x-1 max-w-sm">
-    <span>Year</span>
-    <hr class="border-neutral-800 flex-1" />
-    <span><%= div(@world.day, 365) %></span>
-  </div>
-  <div class="flex flex-row items-center space-x-1 max-w-sm">
-    <span>Day</span>
-    <hr class="border-neutral-800 flex-1" />
-    <span><%= rem(@world.day, 365) %></span>
-  </div>
-  <div class="flex flex-row items-center space-x-1 max-w-sm pb-4">
-    <span>Global pollution</span>
-    <hr class="border-neutral-800 flex-1" />
-    <span><%= @world.pollution %></span>
-  </div>
+<div class="p-4 flex flex-row flex-wrap gap-x-8 gap-y-4">
+  <section class="basis-full max-w-sm">
+    <div class="flex flex-row items-center space-x-1 max-w-sm">
+      <span>Year</span>
+      <hr class="border-neutral-800 flex-1" />
+      <span><%= div(@world.day, 365) %></span>
+    </div>
+    <div class="flex flex-row items-center space-x-1 max-w-sm">
+      <span>Day</span>
+      <hr class="border-neutral-800 flex-1" />
+      <span><%= rem(@world.day, 365) %></span>
+    </div>
+    <div class="flex flex-row items-center space-x-1 max-w-sm pb-4">
+      <span>Global pollution</span>
+      <hr class="border-neutral-800 flex-1" />
+      <span><%= @world.pollution %></span>
+    </div>
 
-  <article class="pb-4">
-    <%= for city <- @cities do %>
-      <div class="flex flex-row items-center space-x-1 max-w-sm">
-        <span class="hover:underline">
-          <%= link(city.title,
-            to: Routes.city_path(@socket, MayorGameWeb.CityLive, city.title)
-          ) %>
-        </span>
-        <span class="opacity-50">
-          <%= if assigns[:current_user] && assigns[:current_user].nickname == city.user.nickname do %>
-            your city
-          <% end %>
-        </span>
-        <hr class="border-neutral-800 flex-1" />
-        <span><%= Enum.count(city.citizens) %> citizens</span>
-      </div>
-    <% end %>
-  </article>
+    <article>
+      <%= for city <- @cities do %>
+        <div class="flex flex-row items-center space-x-1">
+          <span class="hover:underline">
+            <%= link(city.title,
+              to: Routes.city_path(@socket, MayorGameWeb.CityLive, city.title)
+            ) %>
+          </span>
+          <span class="opacity-50">
+            <%= if assigns[:current_user] && assigns[:current_user].nickname == city.user.nickname do %>
+              your city
+            <% end %>
+          </span>
+          <hr class="border-neutral-800 flex-1" />
+          <span><%= Enum.count(city.citizens) %> citizens</span>
+        </div>
+      <% end %>
+    </article>
+  </section>
 
   <div class="space-y-2">
-    <p class="max-w-sm">This is a multiplayer game about civil design & civilization collapse.</p>
+    <p class="max-w-sm">This is an MMO about urban design & civilization collapse.</p>
     <p class="max-w-sm">
-      Your job is to create a great city. A city that attracts citizens from the other cities, that others have created. Citizens are picky — some prefer low tax rates (which will leave you with less money), and some prefer higher-levelled jobs (which will be expensive to develop.)
+      Your job is to create a great city. A city that attracts citizens from other cities. Citizens are picky — some prefer low tax rates (which will leave you with less money), and some prefer higher-levelled jobs (which will be expensive to develop.)
     </p>
     <p class="max-w-sm">
       All cities are beholden to pollution. If there's enough pollution, citizens start dying. It's very expensive to remove pollution from the world. However, it's also expensive to build clean power sources.
