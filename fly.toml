@@ -9,7 +9,7 @@ processes = []
   release_command = "/app/bin/migrate"
 
 [env]
-  PHX_HOST = "mayorgame.fly.dev"
+  PHX_HOST = "fragile.city"
   PORT = "8080"
 
 [experimental]
