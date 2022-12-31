@@ -238,6 +238,7 @@ defmodule MayorGame.City.Buildable do
       high_rises: %BuildableMetadata{
         price: 200,
         fits: 100,
+        pollution: 10,
         money_required: 0,
         area_required: 2,
         energy_required: 150,

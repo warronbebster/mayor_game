@@ -61,7 +61,8 @@ defmodule MayorGameWeb.CityLive do
         # pull these variables out of the socket
         %{assigns: %{city: city}} = socket
       ) do
-    if user_id == "1" do
+    # IO.inspect(get_user(socket, session))
+    if socket.current_user.id == 1 do
       case City.create_citizens(%{
              town_id: city.id,
              money: 5,
@@ -88,7 +89,7 @@ defmodule MayorGameWeb.CityLive do
         %{"userid" => user_id},
         %{assigns: %{city: city}} = socket
       ) do
-    if user_id == "1" do
+    if socket.current_user.id == 1 do
       case City.update_details(city.details, %{city_treasury: city.details.city_treasury + 1000}) do
         {:ok, _updated_town} ->
           IO.puts("money gabe")
