@@ -143,10 +143,7 @@ defmodule MayorGame.CityCalculator do
             # could update job count if we really knew which job level the citizen held
           end)
 
-        CityHelpers.kill_citizen(
-          citizen_too_old,
-          citizen_too_old.name <> " has died of old age. RIP"
-        )
+        CityHelpers.kill_citizen(citizen_too_old, "old age")
 
         updated_acc_city_list
       end)
