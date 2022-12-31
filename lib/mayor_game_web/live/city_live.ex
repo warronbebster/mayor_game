@@ -62,7 +62,7 @@ defmodule MayorGameWeb.CityLive do
         # pull these variables out of the socket
         %{assigns: %{city: city}} = socket
       ) do
-      
+
     if city.user.id == 1 do
       case City.create_citizens(%{
              town_id: city.id,
@@ -467,7 +467,7 @@ defmodule MayorGameWeb.CityLive do
     with {:ok, token} <- Pow.Plug.verify_token(conn, salt, signed_token, config),
          # Use Pow.Store.Backend.EtsCache if you haven't configured Mnesia yet.
          {user, _metadata} <-
-           CredentialsCache.get([backend: Pow.Store.Backend.MnesiaCache], token) do
+           CredentialsCache.get([backend: Pow.Postgres.Store], token) do
       user
     else
       _any -> nil
