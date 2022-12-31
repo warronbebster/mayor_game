@@ -56,7 +56,8 @@ defmodule MayorGame.MixProject do
       {:random, "~> 0.2.4"},
       {:hackney, "~> 1.9"},
       {:swoosh, "~> 1.9"},
-      {:faker, "~> 0.17"}
+      {:faker, "~> 0.17"},
+      {:pow_postgres_store, "~> 1.0"}
     ]
   end
 

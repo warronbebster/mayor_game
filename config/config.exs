@@ -32,6 +32,10 @@ config :logger, :console,
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
+# https://github.com/ZennerIoT/pow_postgres_store
+config :pow, Pow.Postgres.Store,
+  repo: MayorGame.Repo
+
 config :mayor_game, :pow,
   user: MayorGame.Auth.User,
   repo: MayorGame.Repo,
