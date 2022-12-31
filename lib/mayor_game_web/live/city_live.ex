@@ -62,23 +62,20 @@ defmodule MayorGameWeb.CityLive do
         # pull these variables out of the socket
         %{assigns: %{city: city}} = socket
       ) do
-      
-    if city.user.id == 1 do
-      case City.create_citizens(%{
-             town_id: city.id,
-             money: 5,
-             education: 0,
-             age: 0,
-             has_car: false,
-             last_moved: 0
-           }) do
-        # pattern match to assign new_citizen to what's returned from City.create_citizens
-        {:ok, _updated_citizens} ->
-          IO.puts("updated 1 citizen")
+    case City.create_citizens(%{
+           town_id: city.id,
+           money: 5,
+           education: 0,
+           age: 0,
+           has_car: false,
+           last_moved: 0
+         }) do
+      # pattern match to assign new_citizen to what's returned from City.create_citizens
+      {:ok, _updated_citizens} ->
+        IO.puts("updated 1 citizen")
 
-        {:error, err} ->
-          Logger.error(inspect(err))
-      end
+      {:error, err} ->
+        Logger.error(inspect(err))
     end
 
     {:noreply, socket |> update_city_by_title()}
@@ -86,14 +83,12 @@ defmodule MayorGameWeb.CityLive do
 
   # event
   def handle_event("gib_money", _value, %{assigns: %{city: city}} = socket) do
-    if city.user.id == 1 do
-      case City.update_details(city.details, %{city_treasury: city.details.city_treasury + 1000}) do
-        {:ok, _updated_town} ->
-          IO.puts("money gabe")
+    case City.update_details(city.details, %{city_treasury: city.details.city_treasury + 1000}) do
+      {:ok, _updated_town} ->
+        IO.puts("money gabe")
 
-        {:error, err} ->
-          Logger.error(inspect(err))
-      end
+      {:error, err} ->
+        Logger.error(inspect(err))
     end
 
     # this is all ya gotta do to update, baybee
