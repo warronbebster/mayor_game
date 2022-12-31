@@ -57,38 +57,45 @@ defmodule MayorGameWeb.CityLive do
   # this handles different events
   def handle_event(
         "add_citizen",
-        %{"name" => content},
-        # %{"message" => building_to_buy},
+        %{"name" => content, "userid" => user_id},
         # pull these variables out of the socket
         %{assigns: %{city: city}} = socket
       ) do
-    case City.create_citizens(%{
-           town_id: city.id,
-           money: 5,
-           education: 0,
-           age: 0,
-           has_car: false,
-           last_moved: 0
-         }) do
-      # pattern match to assign new_citizen to what's returned from City.create_citizens
-      {:ok, _updated_citizens} ->
-        IO.puts("updated 1 citizen")
+    if user_id == "1" do
+      case City.create_citizens(%{
+             town_id: city.id,
+             money: 5,
+             education: 0,
+             age: 0,
+             has_car: false,
+             last_moved: 0
+           }) do
+        # pattern match to assign new_citizen to what's returned from City.create_citizens
+        {:ok, _updated_citizens} ->
+          IO.puts("updated 1 citizen")
 
-      {:error, err} ->
-        Logger.error(inspect(err))
+        {:error, err} ->
+          Logger.error(inspect(err))
+      end
     end
 
     {:noreply, socket |> update_city_by_title()}
   end
 
   # event
-  def handle_event("gib_money", _value, %{assigns: %{city: city}} = socket) do
-    case City.update_details(city.details, %{city_treasury: city.details.city_treasury + 1000}) do
-      {:ok, _updated_town} ->
-        IO.puts("money gabe")
+  def handle_event(
+        "gib_money",
+        %{"userid" => user_id},
+        %{assigns: %{city: city}} = socket
+      ) do
+    if user_id == "1" do
+      case City.update_details(city.details, %{city_treasury: city.details.city_treasury + 1000}) do
+        {:ok, _updated_town} ->
+          IO.puts("money gabe")
 
-      {:error, err} ->
-        Logger.error(inspect(err))
+        {:error, err} ->
+          Logger.error(inspect(err))
+      end
     end
 
     # this is all ya gotta do to update, baybee
