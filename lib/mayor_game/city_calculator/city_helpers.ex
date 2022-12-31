@@ -311,7 +311,6 @@ defmodule MayorGame.CityHelpers do
 
             # once a year, update education of citizen if there is capacity
             # e.g. if the edu institutions have capacity
-            # TODO: check here if there is a job of that level available?
             # otherwise citizens might just keep levelling up
             # oh i guess this is fine, they'll go to a lower job and start looking
             updated_education =
