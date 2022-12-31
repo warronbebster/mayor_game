@@ -469,7 +469,7 @@ defmodule MayorGameWeb.CityLive do
     with {:ok, token} <- Pow.Plug.verify_token(conn, salt, signed_token, config),
          # Use Pow.Store.Backend.EtsCache if you haven't configured Mnesia yet.
          {user, _metadata} <-
-           CredentialsCache.get([backend: Pow.Store.Backend.MnesiaCache], token) do
+           CredentialsCache.get([backend: Pow.Postgres.Store], token) do
       user
     else
       _any -> nil
