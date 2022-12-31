@@ -282,7 +282,7 @@ defmodule MayorGame.CityHelpers do
             # TODO: add citizens randomly look even if there's not a job gap
             citizens_looking =
               if (job_gap > 0 or
-                    :rand.uniform() > city_with_stats.tax_rates[to_string(citizen.education)]) and
+                    :rand.uniform() < city_with_stats.tax_rates[to_string(citizen.education)]) and
                    citizen.last_moved + 100 < world.day,
                  do: [citizen | acc.citizens_looking],
                  else: acc.citizens_looking
