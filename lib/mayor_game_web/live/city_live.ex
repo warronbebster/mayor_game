@@ -57,13 +57,11 @@ defmodule MayorGameWeb.CityLive do
   # this handles different events
   def handle_event(
         "add_citizen",
-        %{"name" => content},
-        # %{"message" => building_to_buy},
+        %{"name" => content, "userid" => user_id},
         # pull these variables out of the socket
         %{assigns: %{city: city}} = socket
       ) do
-
-    if city.user.id == 1 do
+    if user_id == "1" do
       case City.create_citizens(%{
              town_id: city.id,
              money: 5,
@@ -85,8 +83,12 @@ defmodule MayorGameWeb.CityLive do
   end
 
   # event
-  def handle_event("gib_money", _value, %{assigns: %{city: city}} = socket) do
-    if city.user.id == 1 do
+  def handle_event(
+        "gib_money",
+        %{"userid" => user_id},
+        %{assigns: %{city: city}} = socket
+      ) do
+    if user_id == "1" do
       case City.update_details(city.details, %{city_treasury: city.details.city_treasury + 1000}) do
         {:ok, _updated_town} ->
           IO.puts("money gabe")

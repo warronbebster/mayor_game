@@ -51,7 +51,12 @@
       Health<br /><span class="text-fuchsia-800"><%= @city.health %></span>
     </span>
     <%= if @current_user && @current_user.id == 1 do %>
-      <button class="btn text-xs p-0 border-none" phx-click="gib_money" phx-throttle="100">
+      <button
+        class="btn text-xs p-0 border-none"
+        phx-click="gib_money"
+        phx-value-userid={@current_user.id}
+        phx-throttle="100"
+      >
         +$
       </button>
       <button
@@ -59,6 +64,7 @@
         phx-click="add_citizen"
         phx-throttle="100"
         phx-value-name="name"
+        phx-value-userid={@current_user.id}
       >
         +citizen
       </button>
@@ -66,7 +72,7 @@
   </div>
 </div>
 
-<div class="px-4 my-0 relative h-full overflow-y-scroll ">
+<div class="px-4 my-0 flex flex-col relative h-full overflow-y-scroll ">
   <!--Taxes-->
 
   <!--All building details-->
@@ -94,11 +100,11 @@
   </div>
 
   <%= for {category, buildings} <- @buildables do %>
-    <div class="group relative">
+    <div class="group relative flex-shrink self-start">
       <h2 class="text-xl pt-2 first-letter:uppercase underline underline-offset-4 decoration-neutral-800/40 decoration-dotted	">
         <%= category %>
       </h2>
-      <div class="tooltip">
+      <div class="tooltip min-w-[240px]">
         <%= @category_explanations[category] %>
       </div>
     </div>

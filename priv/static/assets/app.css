@@ -852,12 +852,37 @@ select {
   width: 8rem;
 }
 
+.min-w-fit {
+  min-width: -moz-fit-content;
+  min-width: fit-content;
+}
+
+.min-w-\[60px\] {
+  min-width: 60px;
+}
+
+.min-w-\[120px\] {
+  min-width: 120px;
+}
+
+.min-w-\[180px\] {
+  min-width: 180px;
+}
+
+.min-w-\[240px\] {
+  min-width: 240px;
+}
+
 .max-w-sm {
   max-width: 24rem;
 }
 
 .flex-1 {
   flex: 1 1 0%;
+}
+
+.flex-shrink {
+  flex-shrink: 1;
 }
 
 .shrink-0 {
@@ -969,6 +994,10 @@ select {
 
 .divide-neutral-800\/10 > :not([hidden]) ~ :not([hidden]) {
   border-color: rgb(38 38 38 / 0.1);
+}
+
+.self-start {
+  align-self: flex-start;
 }
 
 .overflow-x-scroll {
