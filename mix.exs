@@ -23,7 +23,7 @@ defmodule MayorGame.MixProject do
   def application do
     [
       mod: {MayorGame.Application, []},
-      extra_applications: [:logger, :runtime_tools, :mnesia]
+      extra_applications: [:logger, :runtime_tools]
     ]
   end
 

@@ -22,8 +22,8 @@ defmodule MayorGame.Application do
 
       Supervisor.child_spec({MayorGame.CityCalculator, 1}, id: :city_calculator),
 
-      # mnesia cache for sessions?
-      Pow.Store.Backend.MnesiaCache
+      # clean up old records a la https://github.com/ZennerIoT/pow_postgres_store
+      {Pow.Postgres.Store.AutoDeleteExpired, [interval: :timer.hours(1)]}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

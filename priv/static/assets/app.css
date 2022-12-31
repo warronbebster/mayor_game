@@ -852,23 +852,6 @@ select {
   width: 8rem;
 }
 
-.min-w-fit {
-  min-width: -moz-fit-content;
-  min-width: fit-content;
-}
-
-.min-w-\[60px\] {
-  min-width: 60px;
-}
-
-.min-w-\[120px\] {
-  min-width: 120px;
-}
-
-.min-w-\[180px\] {
-  min-width: 180px;
-}
-
 .min-w-\[240px\] {
   min-width: 240px;
 }
