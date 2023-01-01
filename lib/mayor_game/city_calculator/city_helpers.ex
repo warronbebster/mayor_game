@@ -647,7 +647,7 @@ defmodule MayorGame.CityHelpers do
 
                   no_energy_required = individual_buildable.metadata.energy_required == nil
 
-                  negative_energy =
+                  not_enough_energy =
                     if no_energy_required do
                       false
                     else
@@ -655,7 +655,7 @@ defmodule MayorGame.CityHelpers do
                     end
 
                   updated_buildable =
-                    if negative_energy && individual_buildable.metadata.energy_required > 0 &&
+                    if not_enough_energy && individual_buildable.metadata.energy_required > 0 &&
                          !no_energy_required do
                       put_reason_in_buildable(
                         acc.city,
@@ -668,9 +668,13 @@ defmodule MayorGame.CityHelpers do
                     end
 
                   pollution =
-                    if(negative_energy || !individual_buildable.buildable.enabled,
+                    if(not_enough_energy || !individual_buildable.buildable.enabled,
                       do: 0,
-                      else: individual_buildable.metadata.pollution || 0
+                      else:
+                        if(no_energy_required,
+                          do: individual_buildable.metadata.pollution * length(city.citizens),
+                          else: individual_buildable.metadata.pollution || 0
+                        )
                     )
 
                   energy_required =
