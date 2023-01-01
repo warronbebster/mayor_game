@@ -675,10 +675,17 @@ defmodule MayorGame.CityHelpers do
                       do: 0,
                       else:
                         if(no_energy_required && individual_buildable.metadata.pollution != nil,
-                          do: individual_buildable.metadata.pollution * length(city.citizens),
+                          do:
+                            individual_buildable.metadata.pollution *
+                              if(individual_buildable.metadata.area != nil,
+                                do: length(city.citizens),
+                                else: 1
+                              ),
                           else: individual_buildable.metadata.pollution || 0
                         )
                     )
+
+                  IO.inspect(pollution, label: buildable_type)
 
                   energy_required =
                     if(no_energy_required,
@@ -720,6 +727,8 @@ defmodule MayorGame.CityHelpers do
           end
         end
       )
+
+    IO.inspect(energy_results.pollution)
 
     results_map =
       Map.merge(preliminary_results, %{
