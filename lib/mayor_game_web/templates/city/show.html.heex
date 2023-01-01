@@ -36,11 +36,11 @@
     <tr>
       <td class="text-purple-600 top_td">
         <img src="/images/pollution.svg" alt="total area" height="12" width="12" class="inline" />
-        Global Pollution
+        Global&nbsp;Pollution
       </td>
       <td class="text-purple-600 top_td">
         <img src="/images/pollution.svg" alt="total area" height="12" width="12" class="inline" />
-        City Pollution
+        City&nbsp;Pollution
       </td>
 
       <td class="top_td text-amber-600">
@@ -421,7 +421,7 @@
                       width="12"
                     />
                     <%= @operating_count[building_type][[]] *
-                      building_stats.workers_required %>|<%= building_stats.job_level %>
+                      building_stats.workers_required %>/<%= building_stats.job_level %>
                     <div class="pointer-events-none group-hover:opacity-100 transition-opacity bg-amber-50 border border-neutral-800 z-10 p-2 absolute top-8 right-0 opacity-0 max-w-sm ">
                       <%= @operating_count[building_type][[]] * building_stats.workers_required %> workers employed at level <%= building_stats.job_level %>
                     </div>
