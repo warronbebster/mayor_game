@@ -667,7 +667,7 @@ defmodule MayorGame.CityHelpers do
                     end
 
                   pollution =
-                    if(negative_energy,
+                    if(negative_energy || !individual_buildable.buildable.enabled,
                       do: 0,
                       else: individual_buildable.metadata.pollution || 0
                     )
