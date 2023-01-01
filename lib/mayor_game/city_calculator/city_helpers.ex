@@ -560,7 +560,6 @@ defmodule MayorGame.CityHelpers do
   def calculate_energy(%Town{} = city, world) do
     # city_preloaded = preload_city_check(city)
 
-    IO.inspect(Map.get(city.details, :huts))
     # for each building in the energy category
     preliminary_results =
       Enum.reduce(

@@ -7,7 +7,6 @@ defmodule MayorGame.CityCalculator do
     IO.puts('start_city_calculator_link')
     # starts link based on this file
     # which triggers init function in module
-    # world = MayorGame.City.get_world!(1)
 
     # check here if world exists already
     case City.get_world(initial_val) do
@@ -28,7 +27,7 @@ defmodule MayorGame.CityCalculator do
 
     # send message :tax to self process after 5000ms
     # calls `handle_info` function
-    Process.send_after(self(), :tax, 5000)
+    Process.send_after(self(), :tax, 10000)
 
     # returns ok tuple when u start
     {:ok, game_world}
@@ -39,13 +38,15 @@ defmodule MayorGame.CityCalculator do
     cities = City.list_cities_preload()
     cities_count = Enum.count(cities)
 
+    db_world = City.get_world!(1)
+
     IO.puts(
       "day: " <>
-        to_string(world.day) <>
+        to_string(db_world.day) <>
         " | cities: " <>
         to_string(cities_count) <>
         " | pollution: " <>
-        to_string(world.pollution) <> " | —————————————————————————————————————————————"
+        to_string(db_world.pollution) <> " | —————————————————————————————————————————————"
     )
 
     # result is map %{cities_w_room: [], citizens_looking: [], citizens_to_reproduce: [], etc}
@@ -65,12 +66,12 @@ defmodule MayorGame.CityCalculator do
         },
         fn city, acc ->
           # result here is a %Town{} with stats calculated
-          city_with_stats = CityHelpers.calculate_city_stats(city, world)
+          city_with_stats = CityHelpers.calculate_city_stats(city, db_world)
 
           city_calculated_values =
             CityHelpers.calculate_stats_based_on_citizens(
               city_with_stats,
-              world,
+              db_world,
               cities_count
             )
 
@@ -180,7 +181,7 @@ defmodule MayorGame.CityCalculator do
               age: 0,
               education: 0,
               has_car: false,
-              last_moved: world.day
+              last_moved: db_world.day
             })
 
           City.update_log(
@@ -215,7 +216,7 @@ defmodule MayorGame.CityCalculator do
           # TODO: check last_moved date here
           # although this could result in looking citizens staying in a city even though there's no housing
           # may need to consolidate out of room and looking
-          CityHelpers.move_citizen(citizen, City.get_town!(best_job.best_city.id), world.day)
+          CityHelpers.move_citizen(citizen, City.get_town!(best_job.best_city.id), db_world.day)
 
           # find where the city is in the list
           indexx = Enum.find_index(acc_city_list, &(&1.id == best_job.best_city.id))
@@ -253,16 +254,16 @@ defmodule MayorGame.CityCalculator do
     end)
 
     updated_pollution =
-      if world.pollution + leftovers.new_world_pollution < 0 do
+      if db_world.pollution + leftovers.new_world_pollution < 0 do
         0
       else
-        world.pollution + leftovers.new_world_pollution
+        db_world.pollution + leftovers.new_world_pollution
       end
 
-    # update World in DB
+    # update World in DB, pull updated_world var out of response
     {:ok, updated_world} =
-      City.update_world(world, %{
-        day: world.day + 1,
+      City.update_world(db_world, %{
+        day: db_world.day + 1,
         pollution: updated_pollution
       })
 
