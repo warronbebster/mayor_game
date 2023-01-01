@@ -380,6 +380,9 @@ defmodule MayorGame.CityHelpers do
         Buildable.buildables_list(),
         city_preloaded.details,
         fn buildable_type, acc ->
+          # IO.inspect(acc)
+
+          # why is this getting a nil?
           results =
             Enum.map(acc[buildable_type], fn buildable ->
               Map.put(buildable, :enabled, true)

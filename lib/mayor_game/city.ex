@@ -101,7 +101,8 @@ defmodule MayorGame.City do
       {:ok, created_city} ->
         buildables = Map.new(Buildable.buildables_list(), fn buildable -> {buildable, []} end)
 
-        details = Map.merge(buildables, %{city_treasury: 5000, town_id: created_city.id})
+        details =
+          Map.merge(buildables, %{city_treasury: 5000, town_id: created_city.id, pollution: 0})
 
         # and create a detail in the DB, tied to this city
         case create_details(details) do
