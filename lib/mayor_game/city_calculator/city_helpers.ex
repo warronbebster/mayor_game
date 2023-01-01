@@ -564,7 +564,7 @@ defmodule MayorGame.CityHelpers do
     preliminary_results =
       Enum.reduce(
         MayorGame.City.Buildable.buildables_flat(),
-        %{total_energy: 0, pollution: 0},
+        %{total_energy: 0},
         fn {energy_type, energy_options}, acc ->
           # region checking and multipliers
           region_energy_multiplier =
@@ -596,23 +596,15 @@ defmodule MayorGame.CityHelpers do
           Enum.reduce(
             buildables_list,
             %{
-              pollution: acc.pollution,
               total_energy: acc.total_energy
             },
             fn individual_buildable, acc2 ->
               if !individual_buildable.buildable.enabled do
                 %{
-                  pollution: acc2.pollution,
                   total_energy: acc2.total_energy
                 }
               else
                 %{
-                  pollution:
-                    acc2.pollution +
-                      if(individual_buildable.metadata.pollution != nil,
-                        do: individual_buildable.metadata.pollution,
-                        else: 0
-                      ),
                   total_energy:
                     acc2.total_energy +
                       if(individual_buildable.metadata.energy != nil,
@@ -633,26 +625,37 @@ defmodule MayorGame.CityHelpers do
     energy_results =
       Enum.reduce(
         Buildable.buildables_flat(),
-        %{available_energy: preliminary_results.total_energy, city: city},
+        %{available_energy: preliminary_results.total_energy, pollution: 0, city: city},
         fn {buildable_type, buildable_options}, acc ->
           # get list of each type of buildables
           buildable_list = Map.get(city.details, buildable_type)
 
-          if buildable_options.energy_required != nil && length(buildable_list) > 0 do
+          if length(buildable_list) > 0 do
             # for each individual buildable in the list
             buildable_list_results =
               Enum.reduce(
                 buildable_list,
-                %{available_energy: acc.available_energy, buildable_list_updated_reasons: []},
+                %{
+                  available_energy: acc.available_energy,
+                  pollution: acc.pollution,
+                  buildable_list_updated_reasons: []
+                },
                 fn individual_buildable, acc2 ->
                   # ok, airports and carbon capture aren't even making it here
                   # also universities, retail_shops
 
+                  no_energy_required = individual_buildable.metadata.energy_required == nil
+
                   negative_energy =
-                    acc2.available_energy < individual_buildable.metadata.energy_required
+                    if no_energy_required do
+                      false
+                    else
+                      acc2.available_energy < individual_buildable.metadata.energy_required
+                    end
 
                   updated_buildable =
-                    if negative_energy && individual_buildable.metadata.energy_required > 0 do
+                    if negative_energy && individual_buildable.metadata.energy_required > 0 &&
+                         !no_energy_required do
                       put_reason_in_buildable(
                         acc.city,
                         buildable_type,
@@ -663,9 +666,21 @@ defmodule MayorGame.CityHelpers do
                       individual_buildable
                     end
 
+                  pollution =
+                    if(negative_energy,
+                      do: 0,
+                      else: individual_buildable.metadata.pollution || 0
+                    )
+
+                  energy_required =
+                    if(no_energy_required,
+                      do: 0,
+                      else: individual_buildable.metadata.energy_required
+                    )
+
                   %{
-                    available_energy:
-                      acc2.available_energy - individual_buildable.metadata.energy_required,
+                    available_energy: acc2.available_energy - energy_required,
+                    pollution: acc2.pollution + pollution,
                     buildable_list_updated_reasons:
                       Enum.concat(acc2.buildable_list_updated_reasons, [updated_buildable])
                     # TODO maybe: make this a | list combine and reverse whole list outside enum
@@ -688,6 +703,7 @@ defmodule MayorGame.CityHelpers do
 
             %{
               available_energy: buildable_list_results.available_energy,
+              pollution: buildable_list_results.pollution,
               city: city_update
             }
           else
@@ -698,7 +714,10 @@ defmodule MayorGame.CityHelpers do
       )
 
     results_map =
-      Map.merge(preliminary_results, %{available_energy: energy_results.available_energy})
+      Map.merge(preliminary_results, %{
+        available_energy: energy_results.available_energy,
+        pollution: energy_results.pollution
+      })
 
     # return city
     Map.merge(Map.from_struct(energy_results.city), results_map)
