@@ -280,6 +280,7 @@ defmodule MayorGame.CityHelpers do
 
             # citizen will look if there is a job gap
             # TODO: add citizens randomly look even if there's not a job gap
+
             citizens_looking =
               if (job_gap > 0 or
                     :rand.uniform() < city_with_stats.tax_rates[to_string(citizen.education)]) and
@@ -912,7 +913,6 @@ defmodule MayorGame.CityHelpers do
           # pattern match to pull info out
           buildables_list = Map.get(acc.city.details, buildable_type)
           job_level = buildable_options.job_level
-          IO.inspect(buildable_type, label: to_string(job_level))
 
           # ok, they come to here
 
