@@ -276,9 +276,6 @@ defmodule MayorGameWeb.CityLive do
         true -> :fall
       end
 
-    cities = City.list_cities_preload()
-    cities_count = Enum.count(cities)
-
     # this shouuuuld be fresh…
     city =
       City.get_town_by_title!(title)

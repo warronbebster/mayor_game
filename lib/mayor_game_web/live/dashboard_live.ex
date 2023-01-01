@@ -78,13 +78,17 @@ defmodule MayorGameWeb.DashboardLive do
       Enum.map(cities, fn city ->
         city_preloaded = MayorGame.CityHelpers.preload_city_check(city)
 
-        city_baked_details = %{
-          city_preloaded
-          | details: MayorGame.CityHelpers.bake_details(city_preloaded.details)
-        }
+        # city_baked_details = %{
+        #   city_preloaded
+        #   | details: MayorGame.CityHelpers.bake_details(city_preloaded.details)
+        # }
 
-        city_baked_details
-        |> MayorGame.CityHelpers.calculate_energy(world)
+        # city_baked_details
+        # |> MayorGame.CityHelpers.calculate_area()
+        # |> MayorGame.CityHelpers.calculate_workers2()
+        # |> MayorGame.CityHelpers.calculate_energy(world)
+
+        MayorGame.CityHelpers.calculate_city_stats(city_preloaded, world)
       end)
 
     assign(socket, :cities, cities_w_pollution)
