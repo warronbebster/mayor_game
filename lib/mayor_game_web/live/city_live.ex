@@ -289,13 +289,6 @@ defmodule MayorGameWeb.CityLive do
 
     city_with_stats = MayorGame.CityHelpers.calculate_city_stats(city, world)
 
-    city_calculated_values =
-      MayorGame.CityHelpers.calculate_stats_based_on_citizens(
-        city_with_stats,
-        world,
-        cities_count
-      )
-
     # IO.inspect(city_updated.details, label: "city_updated details")
 
     # ok, here the price is updated per each CombinedBuildable
@@ -303,7 +296,7 @@ defmodule MayorGameWeb.CityLive do
 
     # have to have this separate from the actual city because the city might not have some buildables, but they're still purchasable
     # this status is for the whole category
-    buildables_with_status = calculate_buildables_statuses(city_calculated_values)
+    buildables_with_status = calculate_buildables_statuses(city_with_stats)
     # IO.inspect(city_with_stats.details.airports)
 
     mapped_details =
@@ -315,11 +308,10 @@ defmodule MayorGameWeb.CityLive do
       end)
       |> Enum.into(%{})
 
-    citizen_edu_count =
-      Enum.frequencies_by(city_calculated_values.citizens, fn x -> x.education end)
+    citizen_edu_count = Enum.frequencies_by(city_with_stats.citizens, fn x -> x.education end)
 
     city_without_citizens =
-      Map.drop(city_calculated_values, [
+      Map.drop(city_with_stats, [
         :citizens,
         :citizens_looking,
         :citizens_to_reproduce,

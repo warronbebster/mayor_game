@@ -94,7 +94,7 @@
 
       <td class="top_td">
         <span class="text-amber-800">
-          <%= @city.available_housing %>/<%= @city.housing %>
+          <%= @city.housing - @total_citizens %>/<%= @city.housing %>
         </span>
       </td>
       <td class="top_td">
@@ -155,13 +155,13 @@
 
   <!--All building details-->
   <h2 class="text-xl pt-2 pb-1">Job levels</h2>
-  <div class="flex flex-row flex-wrap gap-x-4 gap-y-2 leading-tight">
+  <div class="flex flex-row flex-wrap gap-x-8 gap-y-4 divide-solid leading-none">
     <%= for {job_level, rate} <- @city.tax_rates do %>
       <div class="flex flex-col gap-1">
-        <%= job_level %>
+        <span class="text-lg">Level <%= job_level %></span>
         <%= if @is_user_mayor do %>
-          <div class="flex flex-row gap-1 items-center">
-            tax rate:
+          <div class="flex flex-col gap-1">
+            tax rate
             <input
               class="btn text-s bg-amber-50 p-[2px] border leading-none border-neutral-800/25"
               step="0.01"
@@ -420,7 +420,8 @@
                       height="12"
                       width="12"
                     />
-                    <%= @operating_count[building_type][[]] * building_stats.workers_required %>
+                    <%= @operating_count[building_type][[]] *
+                      building_stats.workers_required %>|<%= building_stats.job_level %>
                     <div class="pointer-events-none group-hover:opacity-100 transition-opacity bg-amber-50 border border-neutral-800 z-10 p-2 absolute top-8 right-0 opacity-0 max-w-sm ">
                       <%= @operating_count[building_type][[]] * building_stats.workers_required %> workers employed at level <%= building_stats.job_level %>
                     </div>
