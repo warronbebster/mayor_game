@@ -674,7 +674,7 @@ defmodule MayorGame.CityHelpers do
                     if(not_enough_energy || !individual_buildable.buildable.enabled,
                       do: 0,
                       else:
-                        if(no_energy_required,
+                        if(no_energy_required && individual_buildable.metadata.pollution != nil,
                           do: individual_buildable.metadata.pollution * length(city.citizens),
                           else: individual_buildable.metadata.pollution || 0
                         )
