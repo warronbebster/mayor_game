@@ -74,24 +74,12 @@ defmodule MayorGameWeb.DashboardLive do
     cities = City.list_cities() |> Enum.sort(&(&1.id <= &2.id))
     world = MayorGame.Repo.get!(MayorGame.City.World, 1)
 
-    cities_w_pollution =
+    cities_preloaded =
       Enum.map(cities, fn city ->
         city_preloaded = MayorGame.CityHelpers.preload_city_check(city)
-
-        # city_baked_details = %{
-        #   city_preloaded
-        #   | details: MayorGame.CityHelpers.bake_details(city_preloaded.details)
-        # }
-
-        # city_baked_details
-        # |> MayorGame.CityHelpers.calculate_area()
-        # |> MayorGame.CityHelpers.calculate_workers2()
-        # |> MayorGame.CityHelpers.calculate_energy(world)
-
-        MayorGame.CityHelpers.calculate_city_stats(city_preloaded, world)
       end)
 
-    assign(socket, :cities, cities_w_pollution)
+    assign(socket, :cities, cities_preloaded)
     |> assign(:world, world)
   end
 end

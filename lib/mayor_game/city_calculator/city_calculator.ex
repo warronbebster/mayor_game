@@ -83,9 +83,14 @@ defmodule MayorGame.CityCalculator do
               do: 0,
               else: city_calculated_values.available_money + city_calculated_values.tax
 
+          IO.inspect(city_calculated_values.pollution, label: "pollution in city_calc")
           # check here for if tax_income - money is less than zero
-          case City.update_details(city.details, %{city_treasury: updated_city_treasury}) do
-            {:ok, _updated_details} ->
+          case City.update_details(city.details, %{
+                 city_treasury: updated_city_treasury,
+                 pollution: city_calculated_values.pollution
+               }) do
+            {:ok, updated_details} ->
+              IO.inspect(updated_details.pollution)
               nil
 
             {:error, err} ->

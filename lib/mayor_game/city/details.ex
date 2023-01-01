@@ -66,6 +66,7 @@ defmodule MayorGame.City.Details do
 
   schema "details" do
     field :city_treasury, :integer
+    field :pollution, :integer
 
     # add buildables to schema dynamically
     for buildable <- Buildable.buildables_list() do
@@ -83,7 +84,7 @@ defmodule MayorGame.City.Details do
 
   @doc false
   def changeset(details, attrs) do
-    detail_fields = [:city_treasury, :town_id]
+    detail_fields = [:city_treasury, :pollution, :town_id]
 
     details
     # this basically defines the has_manys users can change
