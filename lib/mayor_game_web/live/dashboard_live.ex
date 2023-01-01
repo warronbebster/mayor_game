@@ -76,8 +76,10 @@ defmodule MayorGameWeb.DashboardLive do
 
     cities_preloaded =
       Enum.map(cities, fn city ->
-        city_preloaded = MayorGame.CityHelpers.preload_city_check(city)
+        MayorGame.Repo.preload(city, :details)
       end)
+
+    # MayorGame.Repo.preload(city, details: [:pollution])
 
     assign(socket, :cities, cities_preloaded)
     |> assign(:world, world)
