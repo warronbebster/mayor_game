@@ -107,6 +107,50 @@ defmodule MayorGameWeb.CityLive do
   end
 
   def handle_event(
+        "reset_city",
+        %{"userid" => user_id},
+        %{assigns: %{city: city}} = socket
+      ) do
+    reset = Map.new(Buildable.buildables_list(), fn x -> {x, []} end)
+    IO.inspect(reset)
+    IO.inspect(city.details)
+
+    for building_type <- Buildable.buildables_list() do
+      if city.details[building_type] != [] do
+        for buildable <- city.details[building_type] do
+          case City.demolish_buildable(city.details, building_type, buildable.buildable.id) do
+            {:ok, _updated_details} ->
+              IO.puts("demolition success")
+
+            {:error, err} ->
+              Logger.error(inspect(err))
+          end
+        end
+      end
+    end
+
+    # case City.demolish_buildable(city.details, building_to_demolish, buildable_id) do
+    #   {:ok, _updated_details} ->
+    #     IO.puts("demolition success")
+
+    #   {:error, err} ->
+    #     Logger.error(inspect(err))
+    # end
+
+    case City.update_details(city.details, %{city_treasury: 5000}) do
+      {:ok, updated_town} ->
+        IO.inspect(updated_town.retail_shops)
+        IO.puts("city_reset")
+
+      {:error, err} ->
+        Logger.error(inspect(err))
+    end
+
+    # this is all ya gotta do to update, baybee
+    {:noreply, socket |> update_city_by_title()}
+  end
+
+  def handle_event(
         "purchase_building",
         %{"building" => building_to_buy},
         %{assigns: %{city: city}} = socket
@@ -137,24 +181,25 @@ defmodule MayorGameWeb.CityLive do
     {:noreply, socket |> update_city_by_title()}
   end
 
-  def handle_event(
-        "demolish_building",
-        %{"building" => building_to_demolish, "buildable_id" => buildable_id},
-        %{assigns: %{city: city}} = socket
-      ) do
-    # check if user is mayor here?
+  # def handle_event(
+  #       "demolish_building",
+  #       %{"building" => building_to_demolish, "buildable_id" => buildable_id},
+  #       %{assigns: %{city: city}} = socket
+  #     ) do
+  #   # check if user is mayor here?
+  #   buildable_to_demolish_atom = String.to_existing_atom(building_to_demolish)
 
-    case City.demolish_buildable(city.details, building_to_demolish, buildable_id) do
-      {:ok, _updated_details} ->
-        IO.puts("demolition success")
+  #   case City.demolish_buildable(city.details, buildable_to_demolish_atom, buildable_id) do
+  #     {:ok, _updated_details} ->
+  #       IO.puts("demolition success")
 
-      {:error, err} ->
-        Logger.error(inspect(err))
-    end
+  #     {:error, err} ->
+  #       Logger.error(inspect(err))
+  #   end
 
-    # this is all ya gotta do to update, baybee
-    {:noreply, socket |> update_city_by_title()}
-  end
+  #   # this is all ya gotta do to update, baybee
+  #   {:noreply, socket |> update_city_by_title()}
+  # end
 
   def handle_event(
         "demolish_building_2",
@@ -162,11 +207,12 @@ defmodule MayorGameWeb.CityLive do
         %{assigns: %{city: city}} = socket
       ) do
     # check if user is mayor here?
+    buildable_to_demolish_atom = String.to_existing_atom(building_to_demolish)
 
     buildable_to_id = hd(city.details[String.to_existing_atom(building_to_demolish)])
     buildable_id = buildable_to_id.buildable.id
 
-    case City.demolish_buildable(city.details, building_to_demolish, buildable_id) do
+    case City.demolish_buildable(city.details, buildable_to_demolish_atom, buildable_id) do
       {:ok, _updated_details} ->
         IO.puts("demolition success")
 

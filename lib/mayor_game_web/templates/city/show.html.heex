@@ -448,4 +448,14 @@
       </div>
     </div>
   </section>
+  <%= if @is_user_mayor do %>
+    <button
+      class="btn self-start my-8"
+      phx-click="reset_city"
+      phx-value-userid={@current_user.id}
+      phx-throttle="100"
+    >
+      Reset city
+    </button>
+  <% end %>
 </div>

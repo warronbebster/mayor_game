@@ -280,7 +280,8 @@ defmodule MayorGame.City do
     # end)
 
     # add new attribute if not set
-    attrs_plus_preferences = attrs
+    attrs_plus_preferences =
+      attrs
       |> Map.put_new(:name, Faker.Person.name())
       |> Map.put(:preferences, random_preferences.preference_map)
 
@@ -482,10 +483,8 @@ defmodule MayorGame.City do
 
   """
   def demolish_buildable(%Details{} = details, buildable_to_demolish, buildable_id) do
-    buildable_to_demolish_atom = String.to_existing_atom(buildable_to_demolish)
-
     buildable_to_delete =
-      Repo.get_by!(Ecto.assoc(details, buildable_to_demolish_atom), id: buildable_id)
+      Repo.get_by!(Ecto.assoc(details, buildable_to_demolish), id: buildable_id)
 
     Repo.delete(buildable_to_delete)
   end
