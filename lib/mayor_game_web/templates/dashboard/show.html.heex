@@ -45,16 +45,14 @@
               width="12"
               class="inline"
             />
-            <span class="text-violet-600"><%= city.details.pollution %></span> |
-            <span>
-              <img
-                src="/images/citizen.svg"
-                alt="pollution logo"
-                height="12"
-                width="12"
-                class="inline"
-              /> <%= Enum.count(city.citizens) %>
-            </span>
+            <span class="text-violet-600 w-12"><%= city.details.pollution %></span> |
+            <img
+              src="/images/citizen.svg"
+              alt="pollution logo"
+              height="12"
+              width="12"
+              class="inline"
+            /> <span class="w-12"><%= Enum.count(city.citizens) %></span>
             <%= if @current_user && @current_user.id == 1 do %>
               <button
                 class="btn text-xs p-0 border-none"
