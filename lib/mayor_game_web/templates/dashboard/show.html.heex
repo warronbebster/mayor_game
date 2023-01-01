@@ -53,7 +53,7 @@
               width="12"
               class="inline"
             /> <span class="w-12"><%= Enum.count(city.citizens) %></span>
-            <%= if @current_user && @current_user.id == 1 do %>
+            <%= if assigns[:current_user] && @current_user.id == 1 do %>
               <button
                 class="btn text-xs p-0 border-none"
                 phx-click="add_citizen"
