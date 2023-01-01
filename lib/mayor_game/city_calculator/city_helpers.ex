@@ -562,15 +562,16 @@ defmodule MayorGame.CityHelpers do
     # for each building in the energy category
     preliminary_results =
       Enum.reduce(
-        Buildable.buildables().energy,
+        Buildable.buildables_flat(),
         %{total_energy: 0, pollution: 0},
         fn {energy_type, energy_options}, acc ->
           # region checking and multipliers
           region_energy_multiplier =
-            if Map.has_key?(
-                 energy_options.region_energy_multipliers,
-                 String.to_existing_atom(city.region)
-               ),
+            if energy_options.region_energy_multipliers != nil &&
+                 Map.has_key?(
+                   energy_options.region_energy_multipliers,
+                   String.to_existing_atom(city.region)
+                 ),
                do: energy_options.region_energy_multipliers[String.to_existing_atom(city.region)],
                else: 1
 
@@ -583,9 +584,10 @@ defmodule MayorGame.CityHelpers do
             end
 
           season_energy_multiplier =
-            if Map.has_key?(energy_options.season_energy_multipliers, season),
-              do: energy_options.season_energy_multipliers[season],
-              else: 1
+            if energy_options.season_energy_multipliers != nil &&
+                 Map.has_key?(energy_options.season_energy_multipliers, season),
+               do: energy_options.season_energy_multipliers[season],
+               else: 1
 
           buildables_list = Map.get(city.details, energy_type)
 
@@ -604,12 +606,21 @@ defmodule MayorGame.CityHelpers do
                 }
               else
                 %{
-                  pollution: acc2.pollution + individual_buildable.metadata.pollution,
+                  pollution:
+                    acc2.pollution +
+                      if(individual_buildable.metadata.pollution != nil,
+                        do: individual_buildable.metadata.pollution,
+                        else: 0
+                      ),
                   total_energy:
                     acc2.total_energy +
-                      round(
-                        individual_buildable.metadata.energy *
-                          region_energy_multiplier * season_energy_multiplier
+                      if(individual_buildable.metadata.energy != nil,
+                        do:
+                          round(
+                            individual_buildable.metadata.energy *
+                              region_energy_multiplier * season_energy_multiplier
+                          ),
+                        else: 0
                       )
                 }
               end

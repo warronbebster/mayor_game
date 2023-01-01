@@ -421,7 +421,6 @@ defmodule MayorGame.City.Buildable do
         money_required: 50,
         workers_required: 10,
         job_level: 5,
-        energy: 0,
         pollution: -10,
         health: 1,
         area_required: 10,
