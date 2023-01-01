@@ -38,6 +38,36 @@ defmodule MayorGameWeb.DashboardLive do
     {:noreply, socket |> assign_cities()}
   end
 
+  # this handles different events
+  def handle_event(
+        "add_citizen",
+        %{"name" => content, "userid" => user_id, "city_id" => city_id},
+        # pull these variables out of the socket
+        assigns = socket
+      ) do
+    # IO.inspect(get_user(socket, session))
+
+    if socket.assigns.current_user.id == 1 do
+      case City.create_citizens(%{
+             town_id: city_id,
+             money: 5,
+             education: 0,
+             age: 0,
+             has_car: false,
+             last_moved: 0
+           }) do
+        # pattern match to assign new_citizen to what's returned from City.create_citizens
+        {:ok, _updated_citizens} ->
+          IO.puts("updated 1 citizen")
+
+        {:error, err} ->
+          Logger.error(inspect(err))
+      end
+    end
+
+    {:noreply, socket |> assign_cities()}
+  end
+
   # Assign all cities as the cities list. Maybe I should figure out a way to only show cities for that user.
   # at some point should sort by number of citizens
   defp assign_cities(socket) do
