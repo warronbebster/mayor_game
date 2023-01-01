@@ -18,6 +18,10 @@
   .cell {
     @apply relative border border-neutral-800/25 leading-none h-6 w-28 px-1;
   }
+
+  .top_td {
+    @apply align-bottom pr-2 max-w-full;
+  }
 }
 
 * {

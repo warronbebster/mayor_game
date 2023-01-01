@@ -246,9 +246,8 @@ defmodule MayorGame.City.Buildable do
         purchasable_reason: "valid"
       },
       roads: %BuildableMetadata{
-        price: 20,
+        price: 200,
         money_required: 0,
-        workers_required: 0,
         job_level: 0,
         sprawl: 10,
         pollution: 5,
@@ -258,9 +257,8 @@ defmodule MayorGame.City.Buildable do
         purchasable_reason: "valid"
       },
       highways: %BuildableMetadata{
-        price: 40,
+        price: 400,
         money_required: 0,
-        workers_required: 0,
         job_level: 0,
         sprawl: 20,
         area: 20,
@@ -294,7 +292,7 @@ defmodule MayorGame.City.Buildable do
         purchasable_reason: "valid"
       },
       subway_lines: %BuildableMetadata{
-        price: 200,
+        price: 2000,
         money_required: 40,
         workers_required: 10,
         job_level: 0,
@@ -307,7 +305,6 @@ defmodule MayorGame.City.Buildable do
       bike_lanes: %BuildableMetadata{
         price: 60,
         money_required: 0,
-        workers_required: 0,
         job_level: 0,
         sprawl: 0,
         area: 10,
@@ -327,7 +324,6 @@ defmodule MayorGame.City.Buildable do
       bikeshare_stations: %BuildableMetadata{
         price: 70,
         money_required: 0,
-        workers_required: 0,
         job_level: 0,
         sprawl: 0,
         area: 10,
@@ -347,7 +343,7 @@ defmodule MayorGame.City.Buildable do
         purchasable_reason: "valid"
       },
       coal_plants: %BuildableMetadata{
-        price: 20,
+        price: 500,
         money_required: 10,
         workers_required: 5,
         job_level: 0,
@@ -368,12 +364,12 @@ defmodule MayorGame.City.Buildable do
         purchasable_reason: "valid"
       },
       wind_turbines: %BuildableMetadata{
-        price: 100,
+        price: 1000,
         money_required: 3,
         workers_required: 10,
         job_level: 1,
         energy: 600,
-        pollution: 5,
+        pollution: 1,
         area_required: 5,
         region_health_multipliers: %{ocean: 1.2, desert: 1.2},
         region_energy_multipliers: %{ocean: 1.3, desert: 1.5},
@@ -382,7 +378,7 @@ defmodule MayorGame.City.Buildable do
         purchasable_reason: "valid"
       },
       solar_plants: %BuildableMetadata{
-        price: 200,
+        price: 2000,
         money_required: 3,
         workers_required: 10,
         job_level: 2,
@@ -395,7 +391,7 @@ defmodule MayorGame.City.Buildable do
         purchasable_reason: "valid"
       },
       nuclear_plants: %BuildableMetadata{
-        price: 2000,
+        price: 10000,
         money_required: 50,
         workers_required: 10,
         job_level: 3,
@@ -412,7 +408,7 @@ defmodule MayorGame.City.Buildable do
         money_required: 50,
         workers_required: 10,
         job_level: 2,
-        energy: 2000,
+        energy: 1000,
         pollution: 3,
         area_required: 10,
         region_energy_multipliers: %{mountain: 1.5},
@@ -421,7 +417,7 @@ defmodule MayorGame.City.Buildable do
         purchasable_reason: "valid"
       },
       carbon_capture_plants: %BuildableMetadata{
-        price: 2000,
+        price: 10000,
         money_required: 50,
         workers_required: 10,
         job_level: 5,

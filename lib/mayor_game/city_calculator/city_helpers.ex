@@ -56,7 +56,7 @@ defmodule MayorGame.CityHelpers do
     # I think the following can all be calculated in the same function?
     total_housing = calculate_housing(city_updated)
     # returns a map of %{0 => #, 1 => #, etc}
-    total_workers = city_updated.workers_map
+    total_workers = city_updated.jobs_map
 
     # returns a map of %{0 => #, 1 => #, etc}
     total_education = calculate_education(city_updated)
@@ -844,7 +844,7 @@ defmodule MayorGame.CityHelpers do
   """
   def calculate_workers2(%{} = city) do
     # city_preloaded = preload_city_check(city)
-    empty_workers_map = %{0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0}
+    empty_jobs_map = %{0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0}
     # empty_workers_list = [0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0]
 
     # pseudocode
@@ -870,7 +870,7 @@ defmodule MayorGame.CityHelpers do
       Enum.reduce(
         sorted_buildables,
         %{
-          workers_map: empty_workers_map,
+          jobs_map: empty_jobs_map,
           city: city,
           tax: 0,
           citizens: sorted_citizens,
@@ -919,7 +919,8 @@ defmodule MayorGame.CityHelpers do
                     |> Map.put(:tax, 0)
                   else
                     each_job_results =
-                      if individual_buildable.metadata.workers_required > 0 do
+                      if individual_buildable.metadata.workers_required != nil &&
+                           individual_buildable.metadata.workers_required > 0 do
                         Enum.reduce(
                           0..(individual_buildable.metadata.workers_required - 1),
                           %{
@@ -1052,11 +1053,11 @@ defmodule MayorGame.CityHelpers do
             end
 
           %{
-            workers_map:
+            jobs_map:
               Map.put(
-                acc.workers_map,
+                acc.jobs_map,
                 job_level,
-                acc.workers_map[job_level] + buildable_list_results.total_workers
+                acc.jobs_map[job_level] + buildable_list_results.total_workers
               ),
             tax: acc.tax + buildable_list_results.tax,
             city: city_update,
@@ -1070,7 +1071,7 @@ defmodule MayorGame.CityHelpers do
 
     # return the adjusted city and other stuff
     results_map = %{
-      workers_map: results.workers_map,
+      jobs_map: results.jobs_map,
       tax: results.tax,
       citizens_looking: results.citizens_looking,
       citizens: sorted_citizens

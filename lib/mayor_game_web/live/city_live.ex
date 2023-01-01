@@ -40,6 +40,8 @@ defmodule MayorGameWeb.CityLive do
         "Health buildings increase the health of your citizens, and make them less likely to die"
     }
 
+    production_categories = [:energy, :area, :housing]
+
     {
       :ok,
       socket
@@ -62,7 +64,8 @@ defmodule MayorGameWeb.CityLive do
         %{assigns: %{city: city}} = socket
       ) do
     # IO.inspect(get_user(socket, session))
-    if socket.current_user.id == 1 do
+
+    if socket.assigns.current_user.id == 1 do
       case City.create_citizens(%{
              town_id: city.id,
              money: 5,
@@ -89,7 +92,7 @@ defmodule MayorGameWeb.CityLive do
         %{"userid" => user_id},
         %{assigns: %{city: city}} = socket
       ) do
-    if socket.current_user.id == 1 do
+    if socket.assigns.current_user.id == 1 do
       case City.update_details(city.details, %{city_treasury: city.details.city_treasury + 1000}) do
         {:ok, _updated_town} ->
           IO.puts("money gabe")
@@ -235,7 +238,8 @@ defmodule MayorGameWeb.CityLive do
 
       # check if it's below 0 or above 1 or not a number
 
-      updated_tax_rates = city.tax_rates |> Map.put(job_level, updated_value_constrained)
+      updated_tax_rates =
+        city.tax_rates |> Map.put(job_level, updated_value_constrained) |> Map.drop(["6"])
 
       case City.update_town_by_id(city.id, %{tax_rates: updated_tax_rates}) do
         {:ok, _updated_details} ->
@@ -264,6 +268,17 @@ defmodule MayorGameWeb.CityLive do
   # function to update city
   # maybe i should make one just for "updating" — e.g. only pull details and citizens from DB
   defp update_city_by_title(%{assigns: %{title: title, world: world}} = socket) do
+    season =
+      cond do
+        rem(world.day, 365) < 91 -> :winter
+        rem(world.day, 365) < 182 -> :spring
+        rem(world.day, 365) < 273 -> :summer
+        true -> :fall
+      end
+
+    cities = City.list_cities_preload()
+    cities_count = Enum.count(cities)
+
     # this shouuuuld be fresh…
     city =
       City.get_town_by_title!(title)
@@ -274,6 +289,13 @@ defmodule MayorGameWeb.CityLive do
 
     city_with_stats = MayorGame.CityHelpers.calculate_city_stats(city, world)
 
+    city_calculated_values =
+      MayorGame.CityHelpers.calculate_stats_based_on_citizens(
+        city_with_stats,
+        world,
+        cities_count
+      )
+
     # IO.inspect(city_updated.details, label: "city_updated details")
 
     # ok, here the price is updated per each CombinedBuildable
@@ -281,7 +303,7 @@ defmodule MayorGameWeb.CityLive do
 
     # have to have this separate from the actual city because the city might not have some buildables, but they're still purchasable
     # this status is for the whole category
-    buildables_with_status = calculate_buildables_statuses(city_with_stats)
+    buildables_with_status = calculate_buildables_statuses(city_calculated_values)
     # IO.inspect(city_with_stats.details.airports)
 
     mapped_details =
@@ -293,10 +315,11 @@ defmodule MayorGameWeb.CityLive do
       end)
       |> Enum.into(%{})
 
-    citizen_edu_count = Enum.frequencies_by(city_with_stats.citizens, fn x -> x.education end)
+    citizen_edu_count =
+      Enum.frequencies_by(city_calculated_values.citizens, fn x -> x.education end)
 
     city_without_citizens =
-      Map.drop(city_with_stats, [
+      Map.drop(city_calculated_values, [
         :citizens,
         :citizens_looking,
         :citizens_to_reproduce,
@@ -307,6 +330,7 @@ defmodule MayorGameWeb.CityLive do
       ])
 
     socket
+    |> assign(:season, season)
     |> assign(:buildables, buildables_with_status)
     |> assign(:user_id, user.id)
     |> assign(:username, user.nickname)

@@ -1,55 +1,133 @@
-<div class="top-0 p-1 px-2 z-20 bg-amber-50 border-b border-neutral-800 flex space-x-3 w-screen overflow-x-scroll shrink-0">
-  <div class="mr-auto flex flex-row space-x-3">
-    <h1>
-      <%= @city.title %> <br />
-      <span><%= @username %></span>
-    </h1>
+<div class="top-0 p-1 px-2 z-20 bg-amber-50 border-b border-neutral-800 flex space-x-3 w-screen overflow-x-scroll shrink-0 leading-tight">
+  <table class="self-end mr-auto align-bottom">
+    <tr>
+      <td class="top_td"><%= @city.title %></td>
+      <td class="top_td">
+        Year
+      </td>
+      <td class="top_td">
+        Day
+      </td>
+      <td class="top_td">
+        Season
+      </td>
+      <td class="top_td">Citizens</td>
+    </tr>
+    <tr>
+      <td class="top_td">
+        <%= @username %>
+      </td>
+      <td class="top_td">
+        <%= div(@world.day, 365) %>
+      </td>
+      <td class="top_td">
+        <%= rem(@world.day, 365) %>
+      </td>
+      <td class="top_td">
+        <span class="first-letter:uppercase"><%= @season %></span>
+      </td>
+      <td class="top_td">
+        <%= @total_citizens %>
+      </td>
+    </tr>
+  </table>
 
-    <span>Year<br /><%= div(@world.day, 365) %></span>
-    <span class="text-purple-600">
-      Pollution<br /><span class="text-purple-800"><%= @world.pollution %></span>
-    </span>
-    <span>Day<br /><%= rem(@world.day, 365) %></span>
-  </div>
+  <table class="self-start mr-auto align-bottom flex-shrink">
+    <tr>
+      <td class="text-purple-600 top_td">
+        <img src="/images/pollution.svg" alt="total area" height="12" width="12" class="inline" />
+        Global Pollution
+      </td>
+      <td class="text-purple-600 top_td">
+        <img src="/images/pollution.svg" alt="total area" height="12" width="12" class="inline" />
+        City Pollution
+      </td>
+
+      <td class="top_td text-amber-600">
+        <img src="/images/housing.svg" alt="total area" height="12" width="12" class="inline" />
+        Housing
+      </td>
+      <td class="top_td text-green-600">
+        <img
+          src="/images/money-fulfilled.svg"
+          alt="total area"
+          height="12"
+          width="12"
+          class="inline"
+        /> Income
+      </td>
+      <td class="top_td text-red-600">
+        <img src="/images/money-off.svg" alt="total area" height="12" width="12" class="inline" />
+        Expenses
+      </td>
+      <td class="top_td text-green-600">
+        <img
+          src="/images/money-fulfilled.svg"
+          alt="total area"
+          height="12"
+          width="12"
+          class="inline"
+        /> Money
+      </td>
+      <td class="top_td text-yellow-600">
+        <img src="/images/energy.svg" alt="total energy" height="12" width="12" class="inline" />
+        Energy
+      </td>
+      <td class="top_td text-cyan-600">
+        <img src="/images/area.svg" alt="total energy" height="12" width="12" class="inline" />
+        Area
+      </td>
+      <td class="top_td">
+        Fun
+      </td>
+      <td class="top_td">
+        Health
+      </td>
+    </tr>
+    <tr>
+      <td class="top_td">
+        <span class="text-purple-800"><%= @world.pollution %></span>
+      </td>
+      <td class="top_td">
+        <span class="text-purple-800"><%= @city.pollution %></span>
+      </td>
+
+      <td class="top_td">
+        <span class="text-amber-800">
+          <%= @city.available_housing %>/<%= @city.housing %>
+        </span>
+      </td>
+      <td class="top_td">
+        <span class="text-green-800">
+          $<%= @city.tax %>/day
+        </span>
+      </td>
+      <td class="top_td">
+        <span class="text-red-800">$<%= @city.cost %>/day</span>
+      </td>
+      <td class="top_td">
+        <span class="text-green-800">$<%= @city.details.city_treasury %></span>
+      </td>
+      <td class="top_td">
+        <span class="text-yellow-800">
+          <%= @city.available_energy %>/<%= @city.total_energy %>
+        </span>
+      </td>
+      <td class="top_td">
+        <span class="text-cyan-800">
+          <%= @city.available_area %>/<%= @city.total_area %>
+        </span>
+      </td>
+      <td class="top_td">
+        <%= @city.fun %>
+      </td>
+      <td class="top_td">
+        <%= @city.health %>
+      </td>
+    </tr>
+  </table>
 
   <div class="flex flex-row space-x-3">
-    <span class="text-amber-600">
-      Housing<br /><span class="text-amber-800"><%= @city.housing %></span>
-    </span>
-    <span>Citizens<br /><%= @total_citizens %></span>
-
-    <span class="text-green-600">
-      Tax Income<br /><span class="text-green-800">$<%= @city.tax %>/day</span>
-    </span>
-
-    <span class="text-red-600">
-      Operating Cost<br /><span class="text-red-800">$<%= @city.cost %>/day</span>
-    </span>
-
-    <span class="text-green-600">
-      Total Money<br /><span class="text-green-800">$<%= @city.details.city_treasury %></span>
-    </span>
-
-    <span class="text-yellow-600">
-      Available Energy<br />
-      <span class="text-yellow-800">
-        <%= @city.available_energy %>/<%= @city.total_energy %>
-      </span>
-    </span>
-
-    <span class="text-teal-600">
-      Available Area <br />
-      <span class="text-teal-800">
-        <%= @city.available_area %>/<%= @city.total_area %>
-      </span>
-    </span>
-
-    <span class="text-sky-600">
-      Fun<br /><span class="text-sky-800"><%= @city.fun %></span>
-    </span>
-    <span class="text-fuchsia-600">
-      Health<br /><span class="text-fuchsia-800"><%= @city.health %></span>
-    </span>
     <%= if @current_user && @current_user.id == 1 do %>
       <button
         class="btn text-xs p-0 border-none"
@@ -76,25 +154,46 @@
   <!--Taxes-->
 
   <!--All building details-->
-  <h2 class="text-xl pt-2 pb-1">Tax rates per worker job level</h2>
-  <div class="flex flex-row flex-wrap gap-x-4 gap-y-2">
+  <h2 class="text-xl pt-2 pb-1">Job levels</h2>
+  <div class="flex flex-row flex-wrap gap-x-4 gap-y-2 leading-tight">
     <%= for {job_level, rate} <- @city.tax_rates do %>
-      <div class="flex space-x-2 items-center">
-        <%= job_level %>:
+      <div class="flex flex-col gap-1">
+        <%= job_level %>
         <%= if @is_user_mayor do %>
-          <input
-            class="btn text-s bg-amber-50 p-[2px] border leading-none border-neutral-800/25"
-            step="0.01"
-            phx-blur="update_tax_rates"
-            type="number"
-            min="0"
-            max="1"
-            value={rate}
-            phx-value-job_level={job_level}
-          />
+          <div class="flex flex-row gap-1 items-center">
+            tax rate:
+            <input
+              class="btn text-s bg-amber-50 p-[2px] border leading-none border-neutral-800/25"
+              step="0.01"
+              phx-blur="update_tax_rates"
+              type="number"
+              min="0"
+              max="1"
+              value={rate}
+              phx-value-job_level={job_level}
+            />
+          </div>
         <% else %>
           <%= rate %>
         <% end %>
+        <!--print citizen count at level-->
+        <div>
+          <%= if @citizens_by_edu[String.to_integer(job_level)] !== nil do %>
+            <%= to_string(@citizens_by_edu[String.to_integer(job_level)]) %>
+          <% else %>
+            0
+          <% end %>
+          citizens
+        </div>
+        <!--print job count at level-->
+        <div>
+          <%= if @city.jobs_map[String.to_integer(job_level)] !== nil do %>
+            <%= to_string(@city.jobs_map[String.to_integer(job_level)]) %>
+          <% else %>
+            0
+          <% end %>
+          total jobs
+        </div>
       </div>
     <% end %>
   </div>
@@ -172,92 +271,169 @@
               <% end %>
             </div>
           </div>
-          <!-- Enabled counts -->
-          <table border="1" class=" table-fixed border-collapse">
-            <tr>
-              <%= if Enum.empty?(Map.get(@operating_count, building_type)) do %>
-                <td class="cell text-neutral-800/50">0</td>
-              <% else %>
-                <%= for {operation_type, operation_count} <- Map.get(@operating_count, building_type) do %>
-                  <td class={
-                    "group cell #{if operation_type == [], do: 'bg-green-100', else: 'bg-red-50'}"
-                  }>
-                    <div class="flex flex-row items-center gap-x-1">
-                      <p class={
-                        "#{if operation_type == [], do: 'text-green-700', else: 'text-red-700'}"
-                      }>
-                        <%= operation_count %>
-                      </p>
+          <div class="flex flex-row flex-wrap gap-2 justify-between flex-grow">
+            <!-- Enabled counts -->
+            <table border="1" class=" table-fixed border-collapse">
+              <tr>
+                <!-- if no buildings -->
+                <%= if Enum.empty?(@operating_count[building_type]) do %>
+                  <td class="cell text-neutral-800/50">0</td>
+                <% else %>
+                  <%= for {operation_type, operation_count} <- @operating_count[building_type] do %>
+                    <td class={
+                      "group cell #{if operation_type == [], do: 'bg-green-100', else: 'bg-red-50'}"
+                    }>
+                      <div class="flex flex-row items-center gap-x-1">
+                        <p class={
+                          "#{if operation_type == [], do: 'text-green-700', else: 'text-red-700'}"
+                        }>
+                          <%= operation_count %>
+                        </p>
 
-                      <%= for requirement <- @building_requirements do %>
-                        <%= if building_stats[String.to_existing_atom(requirement <> "_required")] != nil && building_stats[String.to_existing_atom(requirement <> "_required")] > 0 && !Enum.member?(operation_type, requirement) do %>
-                          <img
-                            src={"/images/#{requirement}-fulfilled.svg"}
-                            alt={"has enough #{requirement} to operate"}
-                            height="12"
-                            width="12"
-                          />
-                        <% else %>
-                          <%= if Enum.member?(operation_type, requirement) do %>
+                        <%= for requirement <- @building_requirements do %>
+                          <%= if building_stats[String.to_existing_atom(requirement <> "_required")] != nil && building_stats[String.to_existing_atom(requirement <> "_required")] > 0 && !Enum.member?(operation_type, requirement) do %>
                             <img
-                              src={"/images/#{requirement}.svg"}
-                              alt={"requires #{requirement} to operate"}
+                              src={"/images/#{requirement}-fulfilled.svg"}
+                              alt={"has enough #{requirement} to operate"}
                               height="12"
                               width="12"
                             />
+                          <% else %>
+                            <%= if Enum.member?(operation_type, requirement) do %>
+                              <img
+                                src={"/images/#{requirement}-off.svg"}
+                                alt={"requires #{requirement} to operate"}
+                                height="12"
+                                width="12"
+                              />
+                            <% end %>
                           <% end %>
                         <% end %>
-                      <% end %>
 
-                      <%= if operation_type == [] do %>
-                        <div class="tooltip text-green-600">operational</div>
-                      <% else %>
-                        <div class="tooltip w-32 text-red-600">
-                          needs
-                          <%= if length(operation_type) > 1 do %>
-                            <%= for operation_reason <- operation_type do %>
-                              <%= operation_reason %>,
+                        <%= if operation_type == [] do %>
+                          <div class="tooltip text-green-600">operational</div>
+                        <% else %>
+                          <div class="tooltip w-32 text-red-600">
+                            needs
+                            <%= if length(operation_type) > 1 do %>
+                              <%= for operation_reason <- operation_type do %>
+                                <%= operation_reason %>,
+                              <% end %>
+                            <% else %>
+                              <%= hd(operation_type) %>
                             <% end %>
-                          <% else %>
-                            <%= hd(operation_type) %>
-                          <% end %>
-                          to operate
-                        </div>
-                      <% end %>
-                    </div>
-                  </td>
+                            to operate
+                          </div>
+                        <% end %>
+                      </div>
+                    </td>
+                  <% end %>
                 <% end %>
+              </tr>
+            </table>
+            <!-- for each operating building, multiply by energy, workers_required, area -->
+            <div class="flex flex-row gap-1 items-center">
+              <%= if Map.has_key?(@operating_count[building_type], []) do %>
+                <!-- area -->
+                <%= if building_stats.area != nil do %>
+                  <div class=" group relative flex flex-row items-center text-cyan-700 gap-1 w-20">
+                    <img src="/images/area.svg" alt="total area" height="12" width="12" />
+                    <%= @operating_count[building_type][[]] * building_stats.area %>
+                    <div class="pointer-events-none group-hover:opacity-100 transition-opacity bg-amber-50 border border-neutral-800 z-10 p-2 absolute top-8 right-0 opacity-0 max-w-sm ">
+                      <%= @operating_count[building_type][[]] * building_stats.area %> area generated
+                    </div>
+                  </div>
+                <% end %>
+                <!-- housing -->
+                <%= if building_stats.fits != nil do %>
+                  <div class=" group relative flex flex-row items-center text-amber-700 gap-1 w-20">
+                    <img src="/images/housing.svg" alt="total area" height="12" width="12" />
+                    <%= @operating_count[building_type][[]] * building_stats.fits %>
+                    <div class="pointer-events-none group-hover:opacity-100 transition-opacity bg-amber-50 border border-neutral-800 z-10 p-2 absolute top-8 right-0 opacity-0 max-w-sm ">
+                      <%= @operating_count[building_type][[]] * building_stats.fits %> housing provided
+                    </div>
+                  </div>
+                <% end %>
+                <!-- energy -->
+                <%= if building_stats.energy != nil do %>
+                  <div class="group relative flex flex-row items-center text-yellow-700 gap-1 w-20">
+                    <img src="/images/energy.svg" alt="total area" height="12" width="12" />
+                    <%= round(
+                      @operating_count[building_type][[]] * building_stats.energy *
+                        if(
+                          Map.has_key?(
+                            building_stats.region_energy_multipliers,
+                            String.to_existing_atom(@city.region)
+                          ),
+                          do:
+                            building_stats.region_energy_multipliers[
+                              String.to_existing_atom(@city.region)
+                            ],
+                          else: 1
+                        ) *
+                        if(
+                          Map.has_key?(building_stats.season_energy_multipliers, @season),
+                          do: building_stats.season_energy_multipliers[@season],
+                          else: 1
+                        )
+                    ) %>
+                    <div class="pointer-events-none group-hover:opacity-100 transition-opacity bg-amber-50 border border-neutral-800 z-10 p-2 absolute top-8 right-0 opacity-0 max-w-sm ">
+                      <%= round(
+                        @operating_count[building_type][[]] * building_stats.energy *
+                          if(
+                            Map.has_key?(
+                              building_stats.region_energy_multipliers,
+                              String.to_existing_atom(@city.region)
+                            ),
+                            do:
+                              building_stats.region_energy_multipliers[
+                                String.to_existing_atom(@city.region)
+                              ],
+                            else: 1
+                          ) *
+                          if(
+                            Map.has_key?(building_stats.season_energy_multipliers, @season),
+                            do: building_stats.season_energy_multipliers[@season],
+                            else: 1
+                          )
+                      ) %> energy generated
+                    </div>
+                  </div>
+                <% end %>
+                <!-- pollution -->
+                <div class="group relative flex flex-row items-center text-violet-700 gap-1 w-20">
+                  <%= if building_stats.pollution != nil do %>
+                    <img src="/images/pollution.svg" alt="total area" height="12" width="12" /> <%= @operating_count[
+                      building_type
+                    ][[]] * building_stats.pollution %>
+                    <div class="pointer-events-none group-hover:opacity-100 transition-opacity bg-amber-50 border border-neutral-800 z-10 p-2 absolute top-8 right-0 opacity-0 max-w-sm ">
+                      <%= @operating_count[building_type][[]] * building_stats.pollution %> pollution generated
+                    </div>
+                  <% end %>
+                </div>
+                <!-- workers -->
+                <div class=" group relative flex flex-row items-center text-green-700 gap-1 w-20">
+                  <%= if building_stats.workers_required != nil do %>
+                    <img
+                      src="/images/workers-fulfilled.svg"
+                      alt="total area"
+                      height="12"
+                      width="12"
+                    />
+                    <%= @operating_count[building_type][[]] * building_stats.workers_required %>
+                    <div class="pointer-events-none group-hover:opacity-100 transition-opacity bg-amber-50 border border-neutral-800 z-10 p-2 absolute top-8 right-0 opacity-0 max-w-sm ">
+                      <%= @operating_count[building_type][[]] * building_stats.workers_required %> workers employed at level <%= building_stats.job_level %>
+                    </div>
+                  <% end %>
+                </div>
               <% end %>
-            </tr>
-          </table>
+            </div>
+          </div>
         </div>
       <% end %>
     </div>
   <% end %>
   <section class="flex flex-row flex-grow flex-wrap space-x-6">
-    <div class="flex-grow mr-auto">
-      <div class="relative pt-4">
-        <div class="flex items-center space-x-2 sticky top-0 bg-amber-50">
-          <div class="text-xl ">
-            Citizens <%= @total_citizens %>
-          </div>
-          <hr class="border-neutral-800/25 flex-1" />
-        </div>
-        <%= if @citizens_by_edu == %{} do %>
-          <span>no citizens :( build housing for citizens to live in!</span>
-        <% else %>
-          <%= for {edu_level, count} <- @citizens_by_edu do %>
-            <div>
-              Edu level <%= to_string(edu_level) %>: <%= to_string(count) %> citizen<%= if count >
-                                                                                             0 do
-                "s"
-              end %>
-            </div>
-          <% end %>
-        <% end %>
-      </div>
-    </div>
-
     <div class="flex-grow">
       <div class="relative pt-4">
         <div class="flex items-center space-x-2 sticky top-0 bg-amber-50">

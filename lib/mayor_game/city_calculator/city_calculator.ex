@@ -74,21 +74,6 @@ defmodule MayorGame.CityCalculator do
               cities_count
             )
 
-          # if city_with_stats.id == 2 do
-          # IO.inspect(length(city_calculated_values.citizens_out_of_room),
-          #   label: "citizens_out_of_room " <> to_string(city.id)
-          # )
-
-          # IO.inspect(length(city_calculated_values.citizens_looking),
-          #   label: "citizens_looking " <> to_string(city.id)
-          # )
-
-          # IO.inspect(city_calculated_values.available_housing,
-          #   label: "housing " <> to_string(city.id)
-          # )
-
-          # end
-
           # should i loop through citizens here, instead of in calculate_city_stats?
           # that way I can use the same function later?
 
@@ -123,7 +108,7 @@ defmodule MayorGame.CityCalculator do
     # CHECK —————
     # FIRST CITIZEN CHECK: AGE DEATHS
     # Enum.each(leftovers.citizens_too_old, fn citizen ->
-    #   CityHelpers.kill_citizen(citizen, citizen.name <> " has died of old age. RIP")
+    #   CityHelpers.kill_citizen(citizen, citizen.name <> " has died of old age")
     #   # add 1 to available_housing for citizen's city
     # end)
 
@@ -145,7 +130,7 @@ defmodule MayorGame.CityCalculator do
 
         CityHelpers.kill_citizen(
           citizen_too_old,
-          citizen_too_old.name <> " has died of old age. RIP"
+          citizen_too_old.name <> " has died of old age"
         )
 
         updated_acc_city_list
@@ -191,14 +176,15 @@ defmodule MayorGame.CityCalculator do
               Map.update!(update, :available_housing, &(&1 - 1))
             end)
 
-          {:ok, child_citizen} = City.create_citizens(%{
-            money: 0,
-            town_id: citizen_to_reproduce.town_id,
-            age: 0,
-            education: 0,
-            has_car: false,
-            last_moved: world.day
-          })
+          {:ok, child_citizen} =
+            City.create_citizens(%{
+              money: 0,
+              town_id: citizen_to_reproduce.town_id,
+              age: 0,
+              education: 0,
+              has_car: false,
+              last_moved: world.day
+            })
 
           City.update_log(
             City.get_town!(citizen_to_reproduce.town_id),
