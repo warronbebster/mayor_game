@@ -1255,6 +1255,11 @@ select {
   color: rgb(109 40 217 / var(--tw-text-opacity));
 }
 
+.text-violet-600 {
+  --tw-text-opacity: 1;
+  color: rgb(124 58 237 / var(--tw-text-opacity));
+}
+
 .underline {
   text-decoration-line: underline;
 }
