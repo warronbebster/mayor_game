@@ -893,8 +893,9 @@ defmodule MayorGame.CityHelpers do
 
     sorted_buildables =
       Enum.filter(Buildable.buildables_flat(), fn {_name, metadata} ->
-        metadata.job_level !== nil
+        metadata.workers_required !== nil
       end)
+      |> Enum.sort(&(elem(&1, 1).job_priority < elem(&2, 1).job_priority))
       |> Enum.sort(&(elem(&1, 1).job_level > elem(&2, 1).job_level))
 
     results =
@@ -911,6 +912,7 @@ defmodule MayorGame.CityHelpers do
           # pattern match to pull info out
           buildables_list = Map.get(acc.city.details, buildable_type)
           job_level = buildable_options.job_level
+          IO.inspect(buildable_type, label: to_string(job_level))
 
           # ok, they come to here
 

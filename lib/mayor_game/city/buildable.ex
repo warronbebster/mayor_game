@@ -174,7 +174,8 @@ defmodule MayorGame.City.Buildable do
         area_required: 1,
         energy_required: 0,
         purchasable: true,
-        purchasable_reason: "valid"
+        purchasable_reason: "valid",
+        job_priority: 0
       },
       single_family_homes: %BuildableMetadata{
         price: 20,
@@ -197,7 +198,8 @@ defmodule MayorGame.City.Buildable do
             function: %{energy_required: &(&1 - 5)}
           }
         },
-        purchasable_reason: "valid"
+        purchasable_reason: "valid",
+        job_priority: 0
       },
       multi_family_homes: %BuildableMetadata{
         price: 60,
@@ -206,7 +208,8 @@ defmodule MayorGame.City.Buildable do
         area_required: 1,
         energy_required: 18,
         purchasable: true,
-        purchasable_reason: "valid"
+        purchasable_reason: "valid",
+        job_priority: 0
       },
       homeless_shelters: %BuildableMetadata{
         price: 60,
@@ -215,7 +218,8 @@ defmodule MayorGame.City.Buildable do
         area_required: 5,
         energy_required: 70,
         purchasable: true,
-        purchasable_reason: "valid"
+        purchasable_reason: "valid",
+        job_priority: 0
       },
       apartments: %BuildableMetadata{
         price: 60,
@@ -224,7 +228,8 @@ defmodule MayorGame.City.Buildable do
         area_required: 10,
         energy_required: 90,
         purchasable: true,
-        purchasable_reason: "valid"
+        purchasable_reason: "valid",
+        job_priority: 0
       },
       micro_apartments: %BuildableMetadata{
         price: 80,
@@ -233,7 +238,8 @@ defmodule MayorGame.City.Buildable do
         area_required: 5,
         energy_required: 50,
         purchasable: true,
-        purchasable_reason: "valid"
+        purchasable_reason: "valid",
+        job_priority: 0
       },
       high_rises: %BuildableMetadata{
         price: 200,
@@ -243,12 +249,14 @@ defmodule MayorGame.City.Buildable do
         area_required: 2,
         energy_required: 150,
         purchasable: true,
-        purchasable_reason: "valid"
+        purchasable_reason: "valid",
+        job_priority: 0
       },
       roads: %BuildableMetadata{
         price: 200,
         money_required: 0,
         job_level: 0,
+        job_priority: 0,
         sprawl: 10,
         pollution: 5,
         area: 10,
@@ -260,6 +268,7 @@ defmodule MayorGame.City.Buildable do
         price: 400,
         money_required: 0,
         job_level: 0,
+        job_priority: 0,
         sprawl: 20,
         area: 20,
         health: -4,
@@ -272,6 +281,7 @@ defmodule MayorGame.City.Buildable do
         money_required: 10,
         workers_required: 10,
         job_level: 0,
+        job_priority: 1,
         pollution: 10,
         sprawl: 5,
         area: 10,
@@ -285,9 +295,9 @@ defmodule MayorGame.City.Buildable do
         money_required: 30,
         workers_required: 10,
         job_level: 0,
+        job_priority: 1,
         sprawl: 3,
         area: 50,
-        energy_required: 30,
         purchasable: true,
         purchasable_reason: "valid"
       },
@@ -296,6 +306,7 @@ defmodule MayorGame.City.Buildable do
         money_required: 40,
         workers_required: 10,
         job_level: 0,
+        job_priority: 1,
         sprawl: 1,
         area: 1000,
         energy_required: 10000,
@@ -306,6 +317,7 @@ defmodule MayorGame.City.Buildable do
         price: 60,
         money_required: 0,
         job_level: 0,
+        job_priority: 0,
         sprawl: 0,
         area: 10,
         health: 2,
@@ -325,6 +337,7 @@ defmodule MayorGame.City.Buildable do
         price: 70,
         money_required: 0,
         job_level: 0,
+        job_priority: 0,
         sprawl: 0,
         area: 10,
         health: 1,
@@ -347,6 +360,7 @@ defmodule MayorGame.City.Buildable do
         money_required: 10,
         workers_required: 5,
         job_level: 0,
+        job_priority: 2,
         energy: 2000,
         pollution: 20,
         health: -10,
@@ -368,6 +382,7 @@ defmodule MayorGame.City.Buildable do
         money_required: 3,
         workers_required: 10,
         job_level: 1,
+        job_priority: 2,
         energy: 600,
         pollution: 1,
         area_required: 5,
@@ -382,6 +397,7 @@ defmodule MayorGame.City.Buildable do
         money_required: 3,
         workers_required: 10,
         job_level: 2,
+        job_priority: 2,
         energy: 500,
         pollution: 0,
         area_required: 5,
@@ -395,6 +411,7 @@ defmodule MayorGame.City.Buildable do
         money_required: 50,
         workers_required: 10,
         job_level: 3,
+        job_priority: 2,
         energy: 5000,
         pollution: 0,
         area_required: 3,
@@ -408,6 +425,7 @@ defmodule MayorGame.City.Buildable do
         money_required: 50,
         workers_required: 10,
         job_level: 2,
+        job_priority: 2,
         energy: 1000,
         pollution: 3,
         area_required: 10,
@@ -421,6 +439,7 @@ defmodule MayorGame.City.Buildable do
         money_required: 50,
         workers_required: 10,
         job_level: 5,
+        job_priority: 2,
         pollution: -10,
         health: 1,
         area_required: 10,
@@ -445,7 +464,8 @@ defmodule MayorGame.City.Buildable do
         region_fun_multipliers: %{ocean: 1.5, mountain: 0.7, desert: 1.1, forest: 1.2, lake: 1.2},
         energy_required: 12,
         purchasable: true,
-        purchasable_reason: "valid"
+        purchasable_reason: "valid",
+        job_priority: 0
       },
       libraries: %BuildableMetadata{
         price: 200,
@@ -455,13 +475,15 @@ defmodule MayorGame.City.Buildable do
         job_level: 2,
         energy_required: 200,
         purchasable: true,
-        purchasable_reason: "valid"
+        purchasable_reason: "valid",
+        job_priority: 0
       },
       schools: %BuildableMetadata{
         price: 200,
         money_required: 10,
         workers_required: 10,
         job_level: 0,
+        job_priority: 1,
         education_level: 1,
         capacity: 10,
         area_required: 5,
@@ -482,6 +504,7 @@ defmodule MayorGame.City.Buildable do
         money_required: 10,
         workers_required: 5,
         job_level: 1,
+        job_priority: 1,
         education_level: 2,
         capacity: 10,
         area_required: 5,
@@ -494,6 +517,7 @@ defmodule MayorGame.City.Buildable do
         money_required: 10,
         workers_required: 10,
         job_level: 2,
+        job_priority: 1,
         education_level: 3,
         capacity: 10,
         area_required: 5,
@@ -506,6 +530,7 @@ defmodule MayorGame.City.Buildable do
         money_required: 15,
         workers_required: 10,
         job_level: 3,
+        job_priority: 1,
         education_level: 4,
         capacity: 10,
         area_required: 10,
@@ -518,6 +543,7 @@ defmodule MayorGame.City.Buildable do
         money_required: 15,
         workers_required: 10,
         job_level: 4,
+        job_priority: 1,
         education_level: 5,
         capacity: 5,
         area_required: 3,
@@ -530,6 +556,7 @@ defmodule MayorGame.City.Buildable do
         money_required: 5,
         workers_required: 5,
         job_level: 0,
+        job_priority: 0,
         area_required: 2,
         energy_required: 50,
         purchasable: true,
@@ -540,6 +567,7 @@ defmodule MayorGame.City.Buildable do
         money_required: 5,
         workers_required: 20,
         job_level: 0,
+        job_priority: 0,
         area_required: 10,
         health: -3,
         energy_required: 1900,
@@ -559,6 +587,7 @@ defmodule MayorGame.City.Buildable do
         money_required: 5,
         workers_required: 20,
         job_level: 1,
+        job_priority: 0,
         area_required: 5,
         energy_required: 800,
         purchasable: true,
@@ -569,6 +598,7 @@ defmodule MayorGame.City.Buildable do
         money_required: 5,
         workers_required: 10,
         job_level: 0,
+        job_priority: 0,
         fun: 5,
         area_required: 5,
         energy_required: 300,
@@ -580,6 +610,7 @@ defmodule MayorGame.City.Buildable do
         money_required: 5,
         workers_required: 20,
         job_level: 0,
+        job_priority: 0,
         fun: 10,
         area_required: 10,
         energy_required: 500,
@@ -591,6 +622,7 @@ defmodule MayorGame.City.Buildable do
         money_required: 5,
         workers_required: 10,
         job_level: 2,
+        job_priority: 0,
         health: 10,
         area_required: 20,
         energy_required: 400,
@@ -602,6 +634,7 @@ defmodule MayorGame.City.Buildable do
         money_required: 5,
         workers_required: 10,
         job_level: 4,
+        job_priority: 0,
         health: 15,
         area_required: 4,
         energy_required: 50,
