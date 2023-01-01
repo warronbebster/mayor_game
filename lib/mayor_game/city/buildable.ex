@@ -483,7 +483,7 @@ defmodule MayorGame.City.Buildable do
         workers_required: 5,
         job_level: 1,
         education_level: 2,
-        capacity: 5,
+        capacity: 10,
         area_required: 5,
         energy_required: 800,
         purchasable: true,
