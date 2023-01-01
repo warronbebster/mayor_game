@@ -298,9 +298,10 @@ defmodule MayorGame.CityHelpers do
                 else: acc.citizens_too_old
 
             citizens_polluted =
-              if world.pollution > pollution_ceiling and citizen.age <= 5000,
-                do: [citizen | acc.citizens_polluted],
-                else: acc.citizens_polluted
+              if world.pollution > pollution_ceiling and :rand.uniform() > 0.95 and
+                   citizen.age <= 5000,
+                 do: [citizen | acc.citizens_polluted],
+                 else: acc.citizens_polluted
 
             # spawn new citizens if conditions are right; age, random, housing exists
             citizens_to_reproduce =
