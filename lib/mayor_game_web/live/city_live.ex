@@ -111,39 +111,40 @@ defmodule MayorGameWeb.CityLive do
         %{"userid" => user_id},
         %{assigns: %{city: city}} = socket
       ) do
-    reset = Map.new(Buildable.buildables_list(), fn x -> {x, []} end)
-    IO.inspect(reset)
-    IO.inspect(city.details)
+    if socket.assigns.current_user.id == city.user_id do
+      reset = Map.new(Buildable.buildables_list(), fn x -> {x, []} end)
+      IO.inspect(reset)
+      IO.inspect(city.details)
 
-    for building_type <- Buildable.buildables_list() do
-      if city.details[building_type] != [] do
-        for buildable <- city.details[building_type] do
-          case City.demolish_buildable(city.details, building_type, buildable.buildable.id) do
-            {:ok, _updated_details} ->
-              IO.puts("demolition success")
+      for building_type <- Buildable.buildables_list() do
+        if city.details[building_type] != [] do
+          for buildable <- city.details[building_type] do
+            case City.demolish_buildable(city.details, building_type, buildable.buildable.id) do
+              {:ok, _updated_details} ->
+                IO.puts("demolition success")
 
-            {:error, err} ->
-              Logger.error(inspect(err))
+              {:error, err} ->
+                Logger.error(inspect(err))
+            end
           end
         end
       end
-    end
 
-    # case City.demolish_buildable(city.details, building_to_demolish, buildable_id) do
-    #   {:ok, _updated_details} ->
-    #     IO.puts("demolition success")
+      # case City.demolish_buildable(city.details, building_to_demolish, buildable_id) do
+      #   {:ok, _updated_details} ->
+      #     IO.puts("demolition success")
 
-    #   {:error, err} ->
-    #     Logger.error(inspect(err))
-    # end
+      #   {:error, err} ->
+      #     Logger.error(inspect(err))
+      # end
 
-    case City.update_details(city.details, %{city_treasury: 5000}) do
-      {:ok, updated_town} ->
-        IO.inspect(updated_town.retail_shops)
-        IO.puts("city_reset")
+      case City.update_details(city.details, %{city_treasury: 5000}) do
+        {:ok, updated_town} ->
+          IO.puts("city_reset")
 
-      {:error, err} ->
-        Logger.error(inspect(err))
+        {:error, err} ->
+          Logger.error(inspect(err))
+      end
     end
 
     # this is all ya gotta do to update, baybee
