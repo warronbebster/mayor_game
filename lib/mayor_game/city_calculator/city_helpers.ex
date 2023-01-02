@@ -685,8 +685,6 @@ defmodule MayorGame.CityHelpers do
                         )
                     )
 
-                  IO.inspect(pollution, label: buildable_type)
-
                   energy_required =
                     if(no_energy_required,
                       do: 0,
