@@ -70,7 +70,7 @@ To IEX in to prod:
 fly ssh console
 app/bin/mayor_game remote
 world = MayorGame.City.get_world(1)
-MayorGame.City.update_world(world, %{pollution: 1000})
+MayorGame.City.update_world(world, %{pollution: 1000000})
 ```
 
 ## Learn more

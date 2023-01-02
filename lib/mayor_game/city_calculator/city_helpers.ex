@@ -251,8 +251,8 @@ defmodule MayorGame.CityHelpers do
             # could also use total citizens here
 
             pollution_ceiling =
-              cities_count * 1000_000 +
-                1000_000 * Random.gammavariate(7.5, 1)
+              cities_count * 10000_000 +
+                10000_000 * Random.gammavariate(7.5, 1)
 
             # if there are NO workers for citizen in this town, returns -1.
             best_possible_job =
@@ -725,8 +725,6 @@ defmodule MayorGame.CityHelpers do
           end
         end
       )
-
-    IO.inspect(energy_results.pollution)
 
     results_map =
       Map.merge(preliminary_results, %{
