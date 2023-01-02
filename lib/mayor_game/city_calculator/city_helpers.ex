@@ -678,7 +678,7 @@ defmodule MayorGame.CityHelpers do
                           do:
                             individual_buildable.metadata.pollution *
                               if(individual_buildable.metadata.area != nil,
-                                do: length(city.citizens),
+                                do: round(length(city.citizens) / 10),
                                 else: 1
                               ),
                           else: individual_buildable.metadata.pollution || 0
