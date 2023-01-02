@@ -279,7 +279,6 @@ defmodule MayorGame.CityHelpers do
                 else: acc.workers
 
             # citizen will look if there is a job gap
-            # TODO: add citizens randomly look even if there's not a job gap
 
             citizens_looking =
               if (job_gap > 0 or

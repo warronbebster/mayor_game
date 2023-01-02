@@ -238,22 +238,78 @@ defmodule MayorGame.CityCalculator do
         end
       end)
 
+    # IO.inspect(cities_after_job_search)
+    # ok, available housing looks right here
+
     # CHECK —————
     # LAST CITIZEN CHECK: OUT OF ROOM
     Enum.reduce(leftovers.citizens_out_of_room, cities_after_job_search, fn citizen_out_of_room,
                                                                             acc_city_list ->
-      # find where the city is in the list
-      indexx = Enum.find_index(acc_city_list, &(&1.id == citizen_out_of_room.town_id))
+      cities_with_housing = Enum.filter(acc_city_list, fn city -> city.available_housing > 0 end)
 
-      # make updated list, decrement housing
-      updated_acc_city_list =
-        List.update_at(acc_city_list, indexx, fn update ->
-          Map.update!(update, :available_housing, &(&1 + 1))
-        end)
+      best_job = CityHelpers.find_best_job(cities_with_housing, citizen_out_of_room)
 
-      CityHelpers.kill_citizen(citizen_out_of_room, "no housing available")
+      if !is_nil(best_job) do
+        # move citizen to city
 
-      updated_acc_city_list
+        # TODO: check last_moved date here
+        # although this could result in looking citizens staying in a city even though there's no housing
+        # may need to consolidate out of room and looking
+        CityHelpers.move_citizen(
+          citizen_out_of_room,
+          City.get_town!(best_job.best_city.id),
+          db_world.day
+        )
+
+        # find where the city is in the list
+        indexx = Enum.find_index(acc_city_list, &(&1.id == best_job.best_city.id))
+
+        # make updated list, decrement housing and workers
+        updated_acc_city_list =
+          List.update_at(acc_city_list, indexx, fn update ->
+            update
+            |> Map.update!(:available_housing, &(&1 - 1))
+            |> update_in([:workers, best_job.job_level], &(&1 - 1))
+          end)
+
+        updated_acc_city_list
+
+        # if no best job
+      else
+        # if there's any cities with housing left
+        if cities_with_housing != [] do
+          CityHelpers.move_citizen(
+            citizen_out_of_room,
+            City.get_town!(hd(cities_with_housing).id),
+            db_world.day
+          )
+
+          # find where the city is in the list
+          indexx = Enum.find_index(acc_city_list, &(&1.id == hd(cities_with_housing).id))
+
+          # make updated list, decrement housing and workers
+          updated_acc_city_list =
+            List.update_at(acc_city_list, indexx, fn update ->
+              update
+              |> Map.update!(:available_housing, &(&1 - 1))
+            end)
+
+          updated_acc_city_list
+        else
+          # find where the city is in the list
+          indexx = Enum.find_index(acc_city_list, &(&1.id == citizen_out_of_room.town_id))
+
+          # make updated list, decrement housing
+          updated_acc_city_list =
+            List.update_at(acc_city_list, indexx, fn update ->
+              Map.update!(update, :available_housing, &(&1 + 1))
+            end)
+
+          CityHelpers.kill_citizen(citizen_out_of_room, "no housing available")
+
+          updated_acc_city_list
+        end
+      end
     end)
 
     updated_pollution =
