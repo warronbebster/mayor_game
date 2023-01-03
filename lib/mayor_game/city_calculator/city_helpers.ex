@@ -911,8 +911,8 @@ defmodule MayorGame.CityHelpers do
       Enum.filter(Buildable.buildables_flat(), fn {_name, metadata} ->
         metadata.workers_required !== nil
       end)
-      |> Enum.sort_by(&elem(&1, 1).job_level, :desc)
       |> Enum.sort_by(&elem(&1, 1).job_priority, :desc)
+      |> Enum.sort_by(&elem(&1, 1).job_level, :desc)
 
     results =
       Enum.reduce(
