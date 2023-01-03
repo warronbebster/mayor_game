@@ -565,7 +565,7 @@ defmodule MayorGame.CityHelpers do
 
     sorted_buildables =
       Buildable.buildables_flat()
-      |> Enum.sort(&(elem(&1, 1).energy_priority < elem(&2, 1).energy_priority))
+      |> Enum.sort_by(&elem(&1, 1).energy_priority, :desc)
 
     # for each building in the energy category
     preliminary_results =
@@ -911,8 +911,8 @@ defmodule MayorGame.CityHelpers do
       Enum.filter(Buildable.buildables_flat(), fn {_name, metadata} ->
         metadata.workers_required !== nil
       end)
-      |> Enum.sort(&(elem(&1, 1).job_priority < elem(&2, 1).job_priority))
-      |> Enum.sort(&(elem(&1, 1).job_level > elem(&2, 1).job_level))
+      |> Enum.sort_by(&elem(&1, 1).job_level, :desc)
+      |> Enum.sort_by(&elem(&1, 1).job_priority, :desc)
 
     results =
       Enum.reduce(
