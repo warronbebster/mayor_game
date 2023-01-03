@@ -9,6 +9,7 @@ defmodule MayorGame.City.BuildableMetadata do
     :money_required,
     :area_required,
     :energy_required,
+    :energy_priority,
     :workers_required,
     :job_level,
     :job_priority,

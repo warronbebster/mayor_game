@@ -563,10 +563,14 @@ defmodule MayorGame.CityHelpers do
   def calculate_energy(%Town{} = city, world) do
     # city_preloaded = preload_city_check(city)
 
+    sorted_buildables =
+      Buildable.buildables_flat()
+      |> Enum.sort(&(elem(&1, 1).energy_priority < elem(&2, 1).energy_priority))
+
     # for each building in the energy category
     preliminary_results =
       Enum.reduce(
-        MayorGame.City.Buildable.buildables_flat(),
+        Buildable.buildables_flat(),
         %{total_energy: 0},
         fn {energy_type, energy_options}, acc ->
           # region checking and multipliers
@@ -627,7 +631,7 @@ defmodule MayorGame.CityHelpers do
 
     energy_results =
       Enum.reduce(
-        Buildable.buildables_flat(),
+        sorted_buildables,
         %{available_energy: preliminary_results.total_energy, pollution: 0, city: city},
         fn {buildable_type, buildable_options}, acc ->
           # get list of each type of buildables

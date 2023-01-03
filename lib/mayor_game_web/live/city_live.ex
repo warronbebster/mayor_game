@@ -113,8 +113,6 @@ defmodule MayorGameWeb.CityLive do
       ) do
     if socket.assigns.current_user.id == city.user_id do
       reset = Map.new(Buildable.buildables_list(), fn x -> {x, []} end)
-      IO.inspect(reset)
-      IO.inspect(city.details)
 
       for building_type <- Buildable.buildables_list() do
         if city.details[building_type] != [] do
