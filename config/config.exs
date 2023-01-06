@@ -33,8 +33,7 @@ config :logger, :console,
 config :phoenix, :json_library, Jason
 
 # https://github.com/ZennerIoT/pow_postgres_store
-config :pow, Pow.Postgres.Store,
-  repo: MayorGame.Repo
+config :pow, Pow.Postgres.Store, repo: MayorGame.Repo
 
 config :mayor_game, :pow,
   user: MayorGame.Auth.User,
@@ -68,6 +67,13 @@ config :tailwind,
       --output=../priv/static/assets/app.css
     ),
     cd: Path.expand("../assets", __DIR__)
+  ]
+
+config :number,
+  delimit: [
+    precision: 0,
+    delimiter: ",",
+    separator: "."
   ]
 
 # Import environment specific config. This must remain at the bottom

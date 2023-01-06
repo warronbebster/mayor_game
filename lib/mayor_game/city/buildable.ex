@@ -217,7 +217,7 @@ defmodule MayorGame.City.Buildable do
       homeless_shelters: %BuildableMetadata{
         price: 60,
         fits: 20,
-        money_required: 10,
+        money_required: 100,
         area_required: 5,
         energy_required: 70,
         energy_priority: 2,
@@ -395,7 +395,7 @@ defmodule MayorGame.City.Buildable do
       },
       wind_turbines: %BuildableMetadata{
         price: 1000,
-        money_required: 3,
+        money_required: 30,
         workers_required: 10,
         job_level: 1,
         job_priority: 3,
@@ -440,9 +440,9 @@ defmodule MayorGame.City.Buildable do
         purchasable_reason: "valid"
       },
       dams: %BuildableMetadata{
-        price: 1000,
-        money_required: 50,
-        workers_required: 10,
+        price: 5000,
+        money_required: 30,
+        workers_required: 5,
         job_level: 2,
         job_priority: 3,
         energy: 1000,
@@ -473,6 +473,7 @@ defmodule MayorGame.City.Buildable do
         price: 20,
         money_required: 5,
         area_required: 10,
+        pollution: -1,
         fun: 3,
         health: 5,
         region_health_multipliers: %{

@@ -283,7 +283,7 @@ defmodule MayorGame.CityHelpers do
             citizens_looking =
               if (job_gap > 0 or
                     :rand.uniform() < city_with_stats.tax_rates[to_string(citizen.education)]) and
-                   citizen.last_moved + 100 < world.day,
+                   citizen.last_moved + 20 < world.day,
                  do: [citizen | acc.citizens_looking],
                  else: acc.citizens_looking
 
@@ -651,7 +651,8 @@ defmodule MayorGame.CityHelpers do
                   # ok, airports and carbon capture aren't even making it here
                   # also universities, retail_shops
 
-                  no_energy_required = individual_buildable.metadata.energy_required == nil
+                  no_energy_required = individual_buildable.metadata.energy_required == nil || 0
+                  no_energy_generated = individual_buildable.metadata.energy_required == nil || 0
 
                   not_enough_energy =
                     if no_energy_required do
@@ -677,7 +678,7 @@ defmodule MayorGame.CityHelpers do
                     if(not_enough_energy || !individual_buildable.buildable.enabled,
                       do: 0,
                       else:
-                        if(no_energy_required && individual_buildable.metadata.pollution != nil,
+                        if(no_energy_generated && individual_buildable.metadata.pollution != nil,
                           do:
                             individual_buildable.metadata.pollution *
                               if(individual_buildable.metadata.area != nil,
@@ -1238,7 +1239,7 @@ defmodule MayorGame.CityHelpers do
 
         buildable_metadata = Map.get(Buildable.buildables_flat(), buildable_list_item)
 
-        updated_price = buildable_metadata.price * round(:math.pow(buildable_count, 2) + 1)
+        updated_price = building_price(buildable_metadata.price, buildable_count)
 
         buildable_metadata_price_updated = %MayorGame.City.BuildableMetadata{
           buildable_metadata
@@ -1398,6 +1399,10 @@ defmodule MayorGame.CityHelpers do
       |> put_in([:metadata, :purchasable], false)
       |> put_in([:metadata, :purchasable_reason], "not enough money")
     end
+  end
+
+  def building_price(initial_price, buildable_count) do
+    initial_price * round(:math.pow(buildable_count, 2) + 1)
   end
 
   defp put_reason_in_buildable(city, buildable_type, individual_buildable, reason) do

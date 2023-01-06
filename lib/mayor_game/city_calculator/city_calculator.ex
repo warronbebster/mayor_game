@@ -219,6 +219,7 @@ defmodule MayorGame.CityCalculator do
           # TODO: check last_moved date here
           # although this could result in looking citizens staying in a city even though there's no housing
           # may need to consolidate out of room and looking
+          # this is where the stale structs keep getting hit
           CityHelpers.move_citizen(citizen, City.get_town!(best_job.best_city.id), db_world.day)
 
           # find where the city is in the list

@@ -161,7 +161,7 @@ defmodule MayorGameWeb.CityLive do
     # get exponential price — don't want to set price on front-end for cheating reasons
     initial_purchase_price = get_in(Buildable.buildables_flat(), [building_to_buy_atom, :price])
     buildable_count = length(city.details[building_to_buy_atom])
-    purchase_price = initial_purchase_price * round(:math.pow(buildable_count, 2))
+    purchase_price = MayorGame.CityHelpers.building_price(initial_purchase_price, buildable_count)
 
     # check for upgrade requirements?
 
@@ -208,6 +208,7 @@ defmodule MayorGameWeb.CityLive do
     # check if user is mayor here?
     buildable_to_demolish_atom = String.to_existing_atom(building_to_demolish)
 
+    # sometimes this is empty?
     buildable_to_id = hd(city.details[String.to_existing_atom(building_to_demolish)])
     buildable_id = buildable_to_id.buildable.id
 

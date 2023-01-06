@@ -83,10 +83,14 @@
     </tr>
     <tr>
       <td class="top_td">
-        <span class="text-purple-800"><%= @world.pollution %></span>
+        <span class="text-purple-800">
+          <%= Number.Delimit.number_to_delimited(@world.pollution) %>
+        </span>
       </td>
       <td class="top_td">
-        <span class="text-purple-800"><%= @city.pollution %>/day</span>
+        <span class="text-purple-800">
+          <%= Number.Delimit.number_to_delimited(@city.pollution) %>/day
+        </span>
       </td>
 
       <td class="top_td">
@@ -96,30 +100,38 @@
       </td>
       <td class="top_td">
         <span class="text-green-800">
-          $<%= @city.tax %>/day
+          $<%= Number.Delimit.number_to_delimited(@city.tax) %>/day
         </span>
       </td>
       <td class="top_td">
-        <span class="text-red-800">$<%= @city.cost %>/day</span>
+        <span class="text-red-800">
+          $<%= Number.Delimit.number_to_delimited(@city.cost) %>/day
+        </span>
       </td>
       <td class="top_td">
-        <span class="text-green-800">$<%= @city.details.city_treasury %></span>
+        <span class="text-green-800">
+          $<%= Number.Delimit.number_to_delimited(@city.details.city_treasury) %>
+        </span>
       </td>
       <td class="top_td">
         <span class="text-yellow-800">
-          <%= @city.available_energy %>/<%= @city.total_energy %>
+          <%= Number.Delimit.number_to_delimited(@city.available_energy) %>/<%= Number.Delimit.number_to_delimited(
+            @city.total_energy
+          ) %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-cyan-800">
-          <%= @city.available_area %>/<%= @city.total_area %>
+          <%= Number.Delimit.number_to_delimited(@city.available_area) %>/<%= Number.Delimit.number_to_delimited(
+            @city.total_area
+          ) %>
         </span>
       </td>
       <td class="top_td">
-        <%= @city.fun %>
+        <%= Number.Delimit.number_to_delimited(@city.fun) %>
       </td>
       <td class="top_td">
-        <%= @city.health %>
+        <%= Number.Delimit.number_to_delimited(@city.health) %>
       </td>
     </tr>
   </table>
@@ -235,7 +247,7 @@
                     phx-throttle="200"
                     phx-value-building={building_type}
                   >
-                    $<%= building_stats.price %>
+                    $<%= Number.Delimit.number_to_delimited(building_stats.price) %>
                   </button>
                 <% else %>
                   <div class="group relative inline-block">
@@ -243,7 +255,7 @@
                       disabled
                       class="opacity-50 rounded-none m-0 border border-neutral-800/25 leading-none h-6"
                     >
-                      $<%= building_stats.price %>
+                      $<%= Number.Delimit.number_to_delimited(building_stats.price) %>
                     </button>
                     <div class="tooltip w-28"><%= building_stats.purchasable_reason %></div>
                   </div>
@@ -284,7 +296,7 @@
                         <p class={
                           "#{if operation_type == [], do: 'text-green-700', else: 'text-red-700'}"
                         }>
-                          <%= operation_count %>
+                          <%= Number.Delimit.number_to_delimited(operation_count) %>
                         </p>
 
                         <%= for requirement <- @building_requirements do %>
@@ -335,7 +347,9 @@
                 <%= if building_stats.area != nil do %>
                   <div class=" group relative flex flex-row items-center text-cyan-700 gap-1 w-20">
                     <img src="/images/area.svg" alt="total area" height="12" width="12" />
-                    <%= @operating_count[building_type][[]] * building_stats.area %>
+                    <%= Number.Delimit.number_to_delimited(
+                      @operating_count[building_type][[]] * building_stats.area
+                    ) %>
                     <div class="pointer-events-none group-hover:opacity-100 transition-opacity bg-amber-50 border border-neutral-800 z-10 p-2 absolute top-8 right-0 opacity-0 max-w-sm ">
                       <%= @operating_count[building_type][[]] * building_stats.area %> area generated
                     </div>
@@ -355,27 +369,8 @@
                 <%= if building_stats.energy != nil do %>
                   <div class="group relative flex flex-row items-center text-yellow-700 gap-1 w-20">
                     <img src="/images/energy.svg" alt="total area" height="12" width="12" />
-                    <%= round(
-                      @operating_count[building_type][[]] * building_stats.energy *
-                        if(
-                          Map.has_key?(
-                            building_stats.region_energy_multipliers,
-                            String.to_existing_atom(@city.region)
-                          ),
-                          do:
-                            building_stats.region_energy_multipliers[
-                              String.to_existing_atom(@city.region)
-                            ],
-                          else: 1
-                        ) *
-                        if(
-                          Map.has_key?(building_stats.season_energy_multipliers, @season),
-                          do: building_stats.season_energy_multipliers[@season],
-                          else: 1
-                        )
-                    ) %>
-                    <div class="pointer-events-none group-hover:opacity-100 transition-opacity bg-amber-50 border border-neutral-800 z-10 p-2 absolute top-8 right-0 opacity-0 max-w-sm ">
-                      <%= round(
+                    <%= Number.Delimit.number_to_delimited(
+                      round(
                         @operating_count[building_type][[]] * building_stats.energy *
                           if(
                             Map.has_key?(
@@ -393,6 +388,29 @@
                             do: building_stats.season_energy_multipliers[@season],
                             else: 1
                           )
+                      )
+                    ) %>
+                    <div class="pointer-events-none group-hover:opacity-100 transition-opacity bg-amber-50 border border-neutral-800 z-10 p-2 absolute top-8 right-0 opacity-0 max-w-sm ">
+                      <%= Number.Delimit.number_to_delimited(
+                        round(
+                          @operating_count[building_type][[]] * building_stats.energy *
+                            if(
+                              Map.has_key?(
+                                building_stats.region_energy_multipliers,
+                                String.to_existing_atom(@city.region)
+                              ),
+                              do:
+                                building_stats.region_energy_multipliers[
+                                  String.to_existing_atom(@city.region)
+                                ],
+                              else: 1
+                            ) *
+                            if(
+                              Map.has_key?(building_stats.season_energy_multipliers, @season),
+                              do: building_stats.season_energy_multipliers[@season],
+                              else: 1
+                            )
+                        )
                       ) %> energy generated
                     </div>
                   </div>
@@ -402,22 +420,28 @@
                   <%= if building_stats.pollution != nil do %>
                     <img src="/images/pollution.svg" alt="total area" height="12" width="12" />
                     <%= if building_stats.area != nil do %>
-                      <%= @operating_count[
-                        building_type
-                      ][[]] * building_stats.pollution * round(@total_citizens / 10) %>
+                      <%= Number.Delimit.number_to_delimited(
+                        @operating_count[
+                          building_type
+                        ][[]] * building_stats.pollution * round(@total_citizens / 10)
+                      ) %>
                     <% else %>
-                      <%= @operating_count[
-                        building_type
-                      ][[]] * building_stats.pollution %>
+                      <%= Number.Delimit.number_to_delimited(
+                        @operating_count[
+                          building_type
+                        ][[]] * building_stats.pollution
+                      ) %>
                     <% end %>
 
                     <div class="pointer-events-none group-hover:opacity-100 transition-opacity bg-amber-50 border border-neutral-800 z-10 p-2 absolute top-8 right-0 opacity-0 max-w-sm ">
                       <%= if building_stats.area != nil do %>
                         <%= building_stats.pollution %> pollution generated per building per 10 citizens
                       <% else %>
-                        <%= @operating_count[
-                          building_type
-                        ][[]] * building_stats.pollution %> pollution generated
+                        <%= Number.Delimit.number_to_delimited(
+                          @operating_count[
+                            building_type
+                          ][[]] * building_stats.pollution
+                        ) %> pollution generated
                       <% end %>
                     </div>
                   <% end %>
