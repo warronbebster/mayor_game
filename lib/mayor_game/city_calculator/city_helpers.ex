@@ -651,8 +651,13 @@ defmodule MayorGame.CityHelpers do
                   # ok, airports and carbon capture aren't even making it here
                   # also universities, retail_shops
 
-                  no_energy_required = individual_buildable.metadata.energy_required == nil || 0
-                  no_energy_generated = individual_buildable.metadata.energy_required == nil || 0
+                  no_energy_required =
+                    individual_buildable.metadata.energy_required == nil ||
+                      individual_buildable.metadata.energy_required == 0
+
+                  no_energy_generated =
+                    individual_buildable.metadata.energy == nil ||
+                      individual_buildable.metadata.energy == 0
 
                   not_enough_energy =
                     if no_energy_required do
