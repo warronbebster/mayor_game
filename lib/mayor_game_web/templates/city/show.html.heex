@@ -423,7 +423,7 @@
                       <%= Number.Delimit.number_to_delimited(
                         @operating_count[
                           building_type
-                        ][[]] * building_stats.pollution * round(@total_citizens / 10)
+                        ][[]] * building_stats.pollution * round(@total_citizens / 100)
                       ) %>
                     <% else %>
                       <%= Number.Delimit.number_to_delimited(
