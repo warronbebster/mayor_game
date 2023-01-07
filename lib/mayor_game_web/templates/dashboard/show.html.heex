@@ -28,6 +28,58 @@
     </div>
 
     <article>
+      <%= if assigns[:current_user] do %>
+        My City
+        <div class="flex flex-row items-center space-x-1 pb-4">
+          <span class="hover:underline">
+            <%= link(@current_user.town.title,
+              to: Routes.city_path(@socket, MayorGameWeb.CityLive, @current_user.town.title)
+            ) %>
+          </span>
+          <hr class="border-neutral-300 flex-1" />
+          <div class="flex flex-row items-center gap-1">
+            <div class="flex flex-row items-center gap-1 w-20">
+              <img
+                src="/images/pollution.svg"
+                alt="pollution logo"
+                height="12"
+                width="12"
+                class="inline"
+              />
+              <span class="text-violet-600 ">
+                <%= Number.Delimit.number_to_delimited(@current_user.town.details.pollution) %>
+              </span>
+              <hr class="border-neutral-300 flex-1" />
+            </div>
+            <div class="flex flex-row items-center gap-1 w-20">
+              <img
+                src="/images/citizen.svg"
+                alt="pollution logo"
+                height="12"
+                width="12"
+                class="inline"
+              />
+              <span>
+                <%= Number.Delimit.number_to_delimited(Enum.count(@current_user.town.citizens)) %>
+              </span>
+              <hr class="border-neutral-300 flex-1" />
+            </div>
+          </div>
+          <%= if assigns[:current_user] && @current_user.id == 1 do %>
+            <button
+              class="btn text-xs px-1 border-none"
+              phx-click="add_citizen"
+              phx-throttle="100"
+              phx-value-name="name"
+              phx-value-userid={@current_user.id}
+              phx-value-city_id={@current_user.town.id}
+            >
+              +1
+            </button>
+          <% end %>
+        </div>
+      <% end %>
+      <!-- list cities-->
       <%= for city <- @cities do %>
         <div class="flex flex-row items-center space-x-1">
           <span class="hover:underline">
@@ -37,7 +89,7 @@
           </span>
           <span class="opacity-50">
             <%= if assigns[:current_user] && assigns[:current_user].nickname == city.user.nickname do %>
-              your city
+              My City
             <% end %>
           </span>
           <hr class="border-neutral-300 flex-1" />

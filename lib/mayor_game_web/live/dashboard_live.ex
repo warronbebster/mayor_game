@@ -21,7 +21,7 @@ defmodule MayorGameWeb.DashboardLive do
 
     {:ok,
      socket
-     |> assign(current_user: current_user |> MayorGame.Repo.preload(:town))
+     |> assign(current_user: current_user |> MayorGame.Repo.preload(town: [:details, :citizens]))
      |> assign_cities()}
   end
 
