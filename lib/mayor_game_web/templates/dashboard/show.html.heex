@@ -28,7 +28,7 @@
     </div>
 
     <article>
-      <%= if assigns[:current_user] do %>
+      <%= if assigns[:current_user] && @current_user.town != nil do %>
         My City
         <div class="flex flex-row items-center space-x-1 pb-4">
           <span class="hover:underline">
