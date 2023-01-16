@@ -27,6 +27,9 @@ defmodule MayorGame.City.BuildableMetadata do
     :season_energy_multipliers,
     :upgrades,
     :purchasable_reason,
+    :requires,
+    :produces,
+    :multipliers,
     purchasable: true
   ]
 

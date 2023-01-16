@@ -6,7 +6,7 @@ defmodule MayorGameWeb.CityLive do
   use Phoenix.HTML
 
   alias MayorGame.{Auth, City, Repo}
-  import MayorGame.CityHelpers
+  # import MayorGame.CityHelpers
   alias MayorGame.City.Buildable
 
   alias MayorGameWeb.CityView
@@ -325,7 +325,7 @@ defmodule MayorGameWeb.CityLive do
     # this shouuuuld be fresh…
     city =
       City.get_town_by_title!(title)
-      |> preload_city_check()
+      |> MayorGame.CityHelpers.preload_city_check()
 
     # grab whole user struct
     user = Auth.get_user!(city.user_id)

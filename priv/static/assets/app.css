@@ -891,10 +891,6 @@ select {
   width: 5rem;
 }
 
-.w-16 {
-  width: 4rem;
-}
-
 .min-w-\[240px\] {
   min-width: 240px;
 }

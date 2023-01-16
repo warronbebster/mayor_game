@@ -1,5 +1,5 @@
 defmodule MayorGameWeb.DashboardLive do
-  # require Logger
+  require Logger
 
   use Phoenix.LiveView, container: {:div, class: "liveview-container"}
   # don't need this because you get it in DashboardView?

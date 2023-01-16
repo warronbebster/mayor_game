@@ -176,8 +176,15 @@ defmodule MayorGame.City.Buildable do
         energy_priority: 2,
         purchasable: true,
         purchasable_reason: "valid",
-        job_priority: 0
+        job_priority: 0,
+        requires: %{
+          area: 1
+        },
+        produces: %{
+          housing: 1
+        }
       },
+      # single family homes ————————————————————————————————————
       single_family_homes: %BuildableMetadata{
         price: 20,
         fits: 2,
@@ -201,8 +208,16 @@ defmodule MayorGame.City.Buildable do
           }
         },
         purchasable_reason: "valid",
-        job_priority: 0
+        job_priority: 0,
+        requires: %{
+          area: 1,
+          energy: 12
+        },
+        produces: %{
+          housing: 2
+        }
       },
+      # multi family homes ————————————————————————————————————
       multi_family_homes: %BuildableMetadata{
         price: 60,
         fits: 6,
@@ -212,8 +227,16 @@ defmodule MayorGame.City.Buildable do
         energy_priority: 2,
         purchasable: true,
         purchasable_reason: "valid",
-        job_priority: 0
+        job_priority: 0,
+        requires: %{
+          area: 1,
+          energy: 18
+        },
+        produces: %{
+          housing: 6
+        }
       },
+      # homeless shelters ————————————————————————————————————
       homeless_shelters: %BuildableMetadata{
         price: 60,
         fits: 20,
@@ -223,8 +246,17 @@ defmodule MayorGame.City.Buildable do
         energy_priority: 2,
         purchasable: true,
         purchasable_reason: "valid",
-        job_priority: 0
+        job_priority: 0,
+        requires: %{
+          area: 5,
+          money: 100,
+          energy: 70
+        },
+        produces: %{
+          housing: 20
+        }
       },
+      # apartments ————————————————————————————————————
       apartments: %BuildableMetadata{
         price: 60,
         fits: 20,
@@ -234,8 +266,16 @@ defmodule MayorGame.City.Buildable do
         energy_priority: 2,
         purchasable: true,
         purchasable_reason: "valid",
-        job_priority: 0
+        job_priority: 0,
+        requires: %{
+          area: 10,
+          energy: 90
+        },
+        produces: %{
+          housing: 20
+        }
       },
+      # micro apartments ————————————————————————————————————
       micro_apartments: %BuildableMetadata{
         price: 80,
         fits: 20,
@@ -245,8 +285,16 @@ defmodule MayorGame.City.Buildable do
         energy_priority: 2,
         purchasable: true,
         purchasable_reason: "valid",
-        job_priority: 0
+        job_priority: 0,
+        requires: %{
+          area: 5,
+          energy: 50
+        },
+        produces: %{
+          housing: 20
+        }
       },
+      # high rises ————————————————————————————————————
       high_rises: %BuildableMetadata{
         price: 200,
         fits: 100,
@@ -257,8 +305,17 @@ defmodule MayorGame.City.Buildable do
         energy_priority: 2,
         purchasable: true,
         purchasable_reason: "valid",
-        job_priority: 0
+        job_priority: 0,
+        requires: %{
+          area: 2,
+          energy: 150
+        },
+        produces: %{
+          housing: 100,
+          pollution: 10
+        }
       },
+      # roads ————————————————————————————————————
       roads: %BuildableMetadata{
         price: 200,
         money_required: 0,
@@ -270,8 +327,16 @@ defmodule MayorGame.City.Buildable do
         area: 10,
         health: -1,
         purchasable: true,
-        purchasable_reason: "valid"
+        purchasable_reason: "valid",
+        produces: %{
+          health: -1,
+          sprawl: 10,
+          area: 10,
+          # todo: some of these could be functions?
+          pollution: &(&1 * 0.1)
+        }
       },
+      # highways ————————————————————————————————————
       highways: %BuildableMetadata{
         price: 400,
         money_required: 0,
@@ -284,8 +349,16 @@ defmodule MayorGame.City.Buildable do
         health: -4,
         region_health_multipliers: %{forest: 0.7, mountain: 0.7, desert: 0.9, lake: 0.7},
         purchasable: true,
-        purchasable_reason: "valid"
+        purchasable_reason: "valid",
+        produces: %{
+          health: -4,
+          sprawl: 20,
+          area: 20,
+          # todo: some of these could be functions?
+          pollution: &(&1 * 0.2)
+        }
       },
+      # Airports —————————————————————————————————————
       airports: %BuildableMetadata{
         price: 200,
         money_required: 10,
@@ -299,8 +372,19 @@ defmodule MayorGame.City.Buildable do
         energy_required: 150,
         energy_priority: 3,
         purchasable: true,
-        purchasable_reason: "valid"
+        purchasable_reason: "valid",
+        requires: %{
+          workers: %{count: 10, level: 0},
+          energy: 150
+        },
+        produces: %{
+          health: -2,
+          area: 10,
+          # todo: some of these could be functions?
+          pollution: &(&1 * 0.2)
+        }
       },
+      # Bus Lines ————————————————————————————————————
       bus_lines: %BuildableMetadata{
         price: 70,
         money_required: 30,
@@ -311,8 +395,18 @@ defmodule MayorGame.City.Buildable do
         sprawl: 3,
         area: 50,
         purchasable: true,
-        purchasable_reason: "valid"
+        purchasable_reason: "valid",
+        requires: %{
+          workers: %{count: 10, level: 0},
+          money: 30
+        },
+        produces: %{
+          health: -2,
+          sprawl: 3,
+          area: 50
+        }
       },
+      # Subway Lines ————————————————————————————————————
       subway_lines: %BuildableMetadata{
         price: 2000,
         money_required: 40,
@@ -324,8 +418,18 @@ defmodule MayorGame.City.Buildable do
         energy_required: 10000,
         energy_priority: 3,
         purchasable: true,
-        purchasable_reason: "valid"
+        purchasable_reason: "valid",
+        requires: %{
+          workers: %{count: 10, level: 0},
+          energy: 10000,
+          money: 40
+        },
+        produces: %{
+          sprawl: 1,
+          area: 1000
+        }
       },
+      # Bike lanes ————————————————————————————————————
       bike_lanes: %BuildableMetadata{
         price: 60,
         money_required: 0,
@@ -345,8 +449,30 @@ defmodule MayorGame.City.Buildable do
         energy_required: 0,
         energy_priority: 3,
         purchasable: true,
-        purchasable_reason: "valid"
+        purchasable_reason: "valid",
+        requires: nil,
+        multipliers: %{
+          region: %{
+            health: %{
+              forest: 1.3,
+              mountain: 1.4,
+              lake: 1.1,
+              desert: 1.1,
+              ocean: 1.1
+            },
+            fun: %{
+              ocean: 1.5,
+              mountain: 0.7,
+              desert: 0.6
+            }
+          }
+        },
+        produces: %{
+          health: 2,
+          area: 10
+        }
       },
+      # Bikeshare Stations ————————————————————————————————————
       bikeshare_stations: %BuildableMetadata{
         price: 70,
         money_required: 0,
@@ -355,21 +481,31 @@ defmodule MayorGame.City.Buildable do
         sprawl: 0,
         area: 10,
         health: 1,
-        upgrades: %{
-          more_stations: %{
-            cost: 5,
-            description: "+5 area",
-            requirements: [],
-            function: %{area: &(&1 + 5)}
-          }
-        },
         region_health_multipliers: %{forest: 1.3, mountain: 1.4},
         region_fun_multipliers: %{ocean: 1.5, mountain: 0.7, desert: 0.6},
         energy_required: 0,
         energy_priority: 3,
         purchasable: true,
-        purchasable_reason: "valid"
+        purchasable_reason: "valid",
+        multipliers: %{
+          region: %{
+            health: %{
+              forest: 1.3,
+              mountain: 1.4
+            },
+            fun: %{
+              ocean: 1.5,
+              mountain: 0.7,
+              desert: 0.6
+            }
+          }
+        },
+        produces: %{
+          health: 1,
+          area: 10
+        }
       },
+      # Coal Plants ————————————————————————————————————
       coal_plants: %BuildableMetadata{
         price: 500,
         money_required: 10,
@@ -391,8 +527,26 @@ defmodule MayorGame.City.Buildable do
         region_energy_multipliers: %{mountain: 1.3},
         season_energy_multipliers: %{},
         purchasable: true,
-        purchasable_reason: "valid"
+        purchasable_reason: "valid",
+        multipliers: %{
+          region: %{
+            energy: %{
+              mountain: 1.5
+            }
+          }
+        },
+        requires: %{
+          area: 5,
+          money: 10,
+          workers: %{count: 5, level: 0}
+        },
+        produces: %{
+          energy: 2000,
+          pollution: 30,
+          health: -10
+        }
       },
+      # wind turbines ————————————————————————————————————
       wind_turbines: %BuildableMetadata{
         price: 1000,
         money_required: 30,
@@ -407,8 +561,31 @@ defmodule MayorGame.City.Buildable do
         region_energy_multipliers: %{ocean: 1.3, desert: 1.5},
         season_energy_multipliers: %{spring: 1.2, fall: 1.2},
         purchasable: true,
-        purchasable_reason: "valid"
+        purchasable_reason: "valid",
+        multipliers: %{
+          region: %{
+            energy: %{
+              ocean: 1.3,
+              desert: 1.5
+            }
+          },
+          season: %{
+            energy: %{
+              ocean: 1.3,
+              desert: 1.5
+            }
+          }
+        },
+        requires: %{
+          area: 5,
+          money: 30,
+          workers: %{count: 10, level: 1}
+        },
+        produces: %{
+          energy: 600
+        }
       },
+      # Solar Plants ————————————————————————————————————
       solar_plants: %BuildableMetadata{
         price: 2000,
         money_required: 3,
@@ -422,8 +599,33 @@ defmodule MayorGame.City.Buildable do
         region_energy_multipliers: %{desert: 1.5, ocean: 1.2, forest: 0.7},
         season_energy_multipliers: %{spring: 1.2, summer: 1.5, winter: 0.7},
         purchasable: true,
-        purchasable_reason: "valid"
+        purchasable_reason: "valid",
+        multipliers: %{
+          region: %{
+            energy: %{
+              desert: 1.5,
+              ocean: 1.2,
+              forest: 0.7
+            }
+          },
+          season: %{
+            energy: %{
+              spring: 1.2,
+              summer: 1.5,
+              winter: 0.7
+            }
+          }
+        },
+        requires: %{
+          money: 3,
+          area: 5,
+          workers: %{count: 10, level: 2}
+        },
+        produces: %{
+          energy: 500
+        }
       },
+      # Nuclear Plants ————————————————————————————————————
       nuclear_plants: %BuildableMetadata{
         price: 10000,
         money_required: 50,
@@ -437,8 +639,17 @@ defmodule MayorGame.City.Buildable do
         region_energy_multipliers: %{},
         season_energy_multipliers: %{},
         purchasable: true,
-        purchasable_reason: "valid"
+        purchasable_reason: "valid",
+        requires: %{
+          money: 500,
+          area: 10,
+          workers: %{count: 10, level: 3}
+        },
+        produces: %{
+          energy: 5000
+        }
       },
+      # Dams ————————————————————————————————————
       dams: %BuildableMetadata{
         price: 5000,
         money_required: 30,
@@ -452,8 +663,30 @@ defmodule MayorGame.City.Buildable do
         region_energy_multipliers: %{mountain: 1.5},
         season_energy_multipliers: %{winter: 0.7, spring: 1.3},
         purchasable: true,
-        purchasable_reason: "valid"
+        purchasable_reason: "valid",
+        multipliers: %{
+          region: %{
+            energy: %{
+              mountain: 1.5
+            }
+          },
+          season: %{
+            energy: %{
+              winter: 0.7,
+              spring: 1.3
+            }
+          }
+        },
+        requires: %{
+          money: 30,
+          area: 10,
+          workers: %{count: 5, level: 2}
+        },
+        produces: %{
+          energy: 1000
+        }
       },
+      # Carbon Capture Plants ————————————————————————————————————
       carbon_capture_plants: %BuildableMetadata{
         price: 10000,
         money_required: 50,
@@ -467,8 +700,17 @@ defmodule MayorGame.City.Buildable do
         region_energy_multipliers: %{},
         season_energy_multipliers: %{},
         purchasable: true,
-        purchasable_reason: "valid"
+        purchasable_reason: "valid",
+        requires: %{
+          money: 50,
+          area: 10,
+          workers: %{count: 10, level: 5}
+        },
+        produces: %{
+          pollution: -100
+        }
       },
+      # PARKS ————————————————————————————————————
       parks: %BuildableMetadata{
         price: 20,
         money_required: 5,
@@ -488,8 +730,36 @@ defmodule MayorGame.City.Buildable do
         energy_priority: 0,
         purchasable: true,
         purchasable_reason: "valid",
-        job_priority: 0
+        job_priority: 0,
+        multipliers: %{
+          region: %{
+            health: %{
+              ocean: 1.1,
+              mountain: 1.4,
+              desert: 1.1,
+              forest: 1.3,
+              lake: 1.1
+            },
+            fun: %{
+              ocean: 1.5,
+              mountain: 0.7,
+              desert: 1.1,
+              forest: 1.2,
+              lake: 1.2
+            }
+          }
+        },
+        requires: %{
+          money: 5,
+          area: 10
+        },
+        produces: %{
+          fun: 3,
+          health: 5,
+          pollution: -1
+        }
       },
+      # LIBRARIES ————————————————————————————————————
       libraries: %BuildableMetadata{
         price: 200,
         money_required: 10,
@@ -500,8 +770,15 @@ defmodule MayorGame.City.Buildable do
         energy_priority: 0,
         purchasable: true,
         purchasable_reason: "valid",
-        job_priority: 0
+        job_priority: 0,
+        requires: %{
+          money: 10,
+          area: 2,
+          energy: 200,
+          workers: %{count: 4, level: 2}
+        }
       },
+      # SCHOOLS ————————————————————————————————————
       schools: %BuildableMetadata{
         price: 200,
         money_required: 10,
@@ -522,8 +799,18 @@ defmodule MayorGame.City.Buildable do
           }
         },
         purchasable: true,
-        purchasable_reason: "valid"
+        purchasable_reason: "valid",
+        requires: %{
+          money: 10,
+          energy: 600,
+          area: 5,
+          workers: %{count: 10, level: 0}
+        },
+        produces: %{
+          education: %{1 => 10}
+        }
       },
+      # MIDDLE SCHOOLS ————————————————————————————————————
       middle_schools: %BuildableMetadata{
         price: 300,
         money_required: 10,
@@ -536,8 +823,18 @@ defmodule MayorGame.City.Buildable do
         energy_required: 800,
         energy_priority: 1,
         purchasable: true,
-        purchasable_reason: "valid"
+        purchasable_reason: "valid",
+        requires: %{
+          money: 10,
+          energy: 800,
+          area: 5,
+          workers: %{count: 10, level: 1}
+        },
+        produces: %{
+          education: %{2 => 10}
+        }
       },
+      # HIGH SCHOOLS ————————————————————————————————————
       high_schools: %BuildableMetadata{
         price: 400,
         money_required: 10,
@@ -550,8 +847,18 @@ defmodule MayorGame.City.Buildable do
         energy_required: 800,
         energy_priority: 1,
         purchasable: true,
-        purchasable_reason: "valid"
+        purchasable_reason: "valid",
+        requires: %{
+          money: 10,
+          energy: 800,
+          area: 5,
+          workers: %{count: 10, level: 2}
+        },
+        produces: %{
+          education: %{3 => 10}
+        }
       },
+      # UNIVERSITIES ————————————————————————————————————
       universities: %BuildableMetadata{
         price: 650,
         money_required: 15,
@@ -564,8 +871,18 @@ defmodule MayorGame.City.Buildable do
         energy_required: 1200,
         energy_priority: 1,
         purchasable: true,
-        purchasable_reason: "valid"
+        purchasable_reason: "valid",
+        requires: %{
+          money: 150,
+          energy: 1200,
+          area: 20,
+          workers: %{count: 10, level: 3}
+        },
+        produces: %{
+          education: %{4 => 10}
+        }
       },
+      # RESEARCH LABS ————————————————————————————————————
       research_labs: %BuildableMetadata{
         price: 900,
         money_required: 15,
@@ -578,8 +895,18 @@ defmodule MayorGame.City.Buildable do
         energy_required: 600,
         energy_priority: 1,
         purchasable: true,
-        purchasable_reason: "valid"
+        purchasable_reason: "valid",
+        requires: %{
+          money: 200,
+          energy: 1200,
+          area: 3,
+          workers: %{count: 10, level: 4}
+        },
+        produces: %{
+          education: %{5 => 10}
+        }
       },
+      # RETAIL SHOPS ————————————————————————————————————
       retail_shops: %BuildableMetadata{
         price: 200,
         money_required: 5,
@@ -590,8 +917,15 @@ defmodule MayorGame.City.Buildable do
         energy_required: 50,
         energy_priority: 0,
         purchasable: true,
-        purchasable_reason: "valid"
+        purchasable_reason: "valid",
+        requires: %{
+          money: 5,
+          energy: 100,
+          area: 2,
+          workers: %{count: 3, level: 0}
+        }
       },
+      # FACTORIES ————————————————————————————————————
       factories: %BuildableMetadata{
         price: 500,
         money_required: 5,
@@ -611,8 +945,19 @@ defmodule MayorGame.City.Buildable do
           }
         },
         purchasable: true,
-        purchasable_reason: "valid"
+        purchasable_reason: "valid",
+        requires: %{
+          money: 50,
+          energy: 1900,
+          area: 15,
+          workers: %{count: 20, level: 0}
+        },
+        produces: %{
+          health: -3,
+          pollution: 1
+        }
       },
+      # OFFICE BUILDINGS ————————————————————————————————————
       office_buildings: %BuildableMetadata{
         price: 400,
         money_required: 5,
@@ -623,8 +968,15 @@ defmodule MayorGame.City.Buildable do
         energy_required: 800,
         energy_priority: 0,
         purchasable: true,
-        purchasable_reason: "valid"
+        purchasable_reason: "valid",
+        requires: %{
+          money: 5,
+          energy: 800,
+          area: 2,
+          workers: %{count: 20, level: 1}
+        }
       },
+      # THEATRES ————————————————————————————————————
       theatres: %BuildableMetadata{
         price: 300,
         money_required: 5,
@@ -636,8 +988,18 @@ defmodule MayorGame.City.Buildable do
         energy_required: 300,
         energy_priority: 0,
         purchasable: true,
-        purchasable_reason: "valid"
+        purchasable_reason: "valid",
+        requires: %{
+          money: 10,
+          energy: 300,
+          area: 5,
+          workers: %{count: 10, level: 0}
+        },
+        produces: %{
+          fun: 5
+        }
       },
+      # ARENAS ————————————————————————————————————
       arenas: %BuildableMetadata{
         price: 600,
         money_required: 5,
@@ -649,8 +1011,18 @@ defmodule MayorGame.City.Buildable do
         energy_required: 500,
         energy_priority: 0,
         purchasable: true,
-        purchasable_reason: "valid"
+        purchasable_reason: "valid",
+        requires: %{
+          money: 100,
+          energy: 500,
+          area: 40,
+          workers: %{count: 20, level: 0}
+        },
+        produces: %{
+          fun: 10
+        }
       },
+      # HOSPITALS ————————————————————————————————————
       hospitals: %BuildableMetadata{
         price: 600,
         money_required: 5,
@@ -662,8 +1034,18 @@ defmodule MayorGame.City.Buildable do
         energy_required: 400,
         energy_priority: 0,
         purchasable: true,
-        purchasable_reason: "valid"
+        purchasable_reason: "valid",
+        requires: %{
+          money: 100,
+          energy: 400,
+          area: 20,
+          workers: %{count: 10, level: 2}
+        },
+        produces: %{
+          health: 10
+        }
       },
+      # DOCTOR OFFICES ————————————————————————————————————
       doctor_offices: %BuildableMetadata{
         price: 300,
         money_required: 5,
@@ -675,7 +1057,16 @@ defmodule MayorGame.City.Buildable do
         energy_required: 50,
         energy_priority: 0,
         purchasable: true,
-        purchasable_reason: "valid"
+        purchasable_reason: "valid",
+        requires: %{
+          money: 50,
+          energy: 50,
+          area: 4,
+          workers: %{count: 10, level: 4}
+        },
+        produces: %{
+          health: 15
+        }
       }
     }
   end
@@ -687,6 +1078,48 @@ defmodule MayorGame.City.Buildable do
     Enum.reduce(buildables_flat(), [], fn {building_type, _building_options}, acc2 ->
       [building_type | acc2]
     end)
+  end
+
+  @doc """
+  an ordered list of buildabels to build generatives every day
+  """
+  def buildables_ordered do
+    needs_nothing =
+      Map.filter(buildables_flat(), fn {_cat, stats} -> stats.requires == nil end)
+      |> Map.keys()
+
+    [
+      needs_nothing,
+      get_requirements_keys([:area]),
+      get_requirements_keys([:money]),
+      get_requirements_keys([:money, :workers]),
+      get_requirements_keys([:area, :workers]),
+      get_requirements_keys([:area, :money, :workers]),
+      get_requirements_keys([:energy, :area]),
+      get_requirements_keys([:energy, :area, :money]),
+      get_requirements_keys([:energy, :workers]),
+      get_requirements_keys([:energy, :money, :workers]),
+      get_requirements_keys([:energy, :area, :workers]),
+      get_requirements_keys([:energy, :area, :money, :workers])
+    ]
+  end
+
+  @doc """
+  a flat list of buildable atoms in order of generation
+  """
+  def buildables_ordered_flat do
+    List.flatten(buildables_ordered())
+  end
+
+  defp check_requirements(requirements_map, list_of_reqs) do
+    requirements_map != nil and Enum.sort(Map.keys(requirements_map)) == Enum.sort(list_of_reqs)
+  end
+
+  defp get_requirements_keys(list_of_reqs) do
+    Map.filter(buildables_flat(), fn {_cat, stats} ->
+      check_requirements(stats.requires, list_of_reqs)
+    end)
+    |> Map.keys()
   end
 
   # ——————————————————————————————————————————————————————————————————

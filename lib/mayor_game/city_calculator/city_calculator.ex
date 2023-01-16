@@ -49,12 +49,14 @@ defmodule MayorGame.CityCalculator do
         to_string(db_world.pollution) <> " | —————————————————————————————————————————————"
     )
 
+    cities_list = if rem(db_world.day, 2) == 1, do: Enum.reverse(cities), else: cities
+
     # result is map %{cities_w_room: [], citizens_looking: [], citizens_to_reproduce: [], etc}
     # FIRST ROUND CHECK
     # go through all cities
     leftovers =
       Enum.reduce(
-        cities,
+        cities_list,
         %{
           all_cities: [],
           citizens_looking: [],
@@ -66,7 +68,10 @@ defmodule MayorGame.CityCalculator do
         },
         fn city, acc ->
           # result here is a %Town{} with stats calculated
-          city_with_stats = CityHelpers.calculate_city_stats(city, db_world)
+          city_with_stats = MayorGame.CityHelpers.calculate_city_stats(city, db_world)
+
+          city_with_stats2 = MayorGame.CityHelpersTwo.calculate_city_stats(city, db_world)
+          # IO.inspect(city_with_stats2)
 
           city_calculated_values =
             CityHelpers.calculate_stats_based_on_citizens(
@@ -336,7 +341,7 @@ defmodule MayorGame.CityCalculator do
     )
 
     # recurse, do it again
-    Process.send_after(self(), :tax, 10000)
+    Process.send_after(self(), :tax, 5000)
 
     # returns this to whatever calls ?
     {:noreply, updated_world}
