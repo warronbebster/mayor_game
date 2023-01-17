@@ -22,7 +22,7 @@ defmodule MayorGame.CityHelpersTwo do
     }
     ```
   """
-  def calculate_city_stats(%Town{} = city, %World{} = world) do
+  def calculate_city_stats(%Town{} = city, %World{} = world, cities_count, pollution_ceiling) do
     city_preloaded = preload_city_check(city)
 
     # reset buildables status in database
@@ -38,8 +38,6 @@ defmodule MayorGame.CityHelpersTwo do
 
     # this is a map
     # I can either re-order this (JK, maps are unordered)
-
-    # IO.inspect(List.flatten(Buildable.buildables_ordered()))
 
     # I think this looks like a keyword list with {type of buildable, list of actual buildables}
     ordered_buildables =
@@ -171,28 +169,88 @@ defmodule MayorGame.CityHelpersTwo do
         end
       )
 
-    if city.id == 2 do
-      IO.inspect(
-        Map.drop(results, [:citizens, :employed_citizens, :result_buildables, :buildables])
+    all_citizens = results.employed_citizens ++ results.citizens
+
+    # ________________________________________________________________________
+    # Iterate through citizens
+    # ________________________________________________________________________
+    after_citizen_checks =
+      Enum.reduce(
+        all_citizens,
+        %{
+          housing_left: results.housing,
+          education_left: results.education,
+          educated_citizens: %{0 => [], 1 => [], 2 => [], 3 => [], 4 => [], 5 => []},
+          housed_citizens: [],
+          housed_employed_citizens: [],
+          unhoused_citizens: all_citizens,
+          polluted_citizens: [],
+          reproducing_citizens: []
+        },
+        fn citizen, acc ->
+          housed_citizens =
+            if acc.housing_left > 0 && !citizen.has_job,
+              do: [citizen | acc.housed_citizens],
+              else: acc.housed_citizens
+
+          housed_employed_citizens =
+            if acc.housing_left > 0 && citizen.has_job,
+              do: [citizen | acc.housed_employed_citizens],
+              else: acc.housed_employed_citizens
+
+          housing_left = if acc.housing_left > 0, do: acc.housing_left - 1, else: acc.housing_left
+
+          unhoused_citizens =
+            if acc.housing_left > 0, do: tl(acc.unhoused_citizens), else: acc.unhoused_citizens
+
+          polluted_citizens =
+            if world.pollution > pollution_ceiling and :rand.uniform() > 0.95,
+              do: [citizen | acc.polluted_citizens],
+              else: acc.polluted_citizens
+
+          # spawn new citizens if conditions are right; age, random, housing exists
+          reproducing_citizens =
+            if citizen.age > 500 and citizen.age < 2000 and
+                 :rand.uniform(length(city_baked_details.citizens) + 100) == 1,
+               do: [citizen | acc.reproducing_citizens],
+               else: acc.reproducing_citizens
+
+          will_citizen_learn =
+            rem(world.day, 365) == 0 && citizen.education < 5 &&
+              acc.education_left[citizen.education + 1] > 0
+
+          education_left =
+            if will_citizen_learn do
+              Map.update!(acc.education_left, citizen.education + 1, &(&1 - 1))
+            else
+              acc.education_left
+            end
+
+          educated_citizens =
+            if will_citizen_learn do
+              Map.update!(acc.educated_citizens, citizen.education + 1, &[citizen | &1])
+            else
+              acc.educated_citizens
+            end
+
+          # return
+          %{
+            housing_left: housing_left,
+            education_left: education_left,
+            educated_citizens: educated_citizens,
+            housed_citizens: housed_citizens,
+            unhoused_citizens: unhoused_citizens,
+            housed_employed_citizens: housed_employed_citizens,
+            polluted_citizens: polluted_citizens,
+            reproducing_citizens: reproducing_citizens
+          }
+        end
       )
 
-      # IO.inspect(Enum.filter(results.result_buildables, fn x -> x.buildable.enabled == false end))
-
-      # IO.inspect(results.energy, label: "energy")
-      # IO.inspect(results.area, label: "area")
-      # IO.inspect(results.pollution, label: "pollution")
-      # IO.inspect(results.housing, label: "housing")
-      # IO.inspect(results.income, label: "income")
-      # IO.inspect(results.money, label: "money")
-    end
-
-    # Take housing generated
-    # For each citizen with a job starting from highest level, give em housing, mark them has_house:true and decrement housing
-    # Then give housing to citizens without jobs
-
-    # buildables should have job counts (if they don;t have a job key, they're disabled before requiring workers)
-
-    Map.merge(city_baked_details, results)
+    city_baked_details
+    |> Map.from_struct()
+    |> Map.merge(results)
+    |> Map.merge(after_citizen_checks)
   end
 
   @doc """
@@ -228,6 +286,8 @@ defmodule MayorGame.CityHelpersTwo do
   end
 
   def render_production(production_map, citizen_count) do
+    # TODO: add seasonality and region changes to this
+
     totals = %{
       total_area: if(Map.has_key?(production_map, :area), do: production_map.area, else: 0),
       total_energy: if(Map.has_key?(production_map, :energy), do: production_map.energy, else: 0),
@@ -1021,10 +1081,10 @@ defmodule MayorGame.CityHelpersTwo do
       Enum.reduce_while(0..(count_to_check - 1), [], fn x, acc ->
         cond do
           Enum.at(citizens, x).education > reqs.workers.level ->
-            {:cont, [Map.put(Enum.at(citizens, x), :looking, true) | acc]}
+            {:cont, [Map.put(Enum.at(citizens, x), :has_job, true) | acc]}
 
           Enum.at(citizens, x).education == reqs.workers.level ->
-            {:cont, [Map.put(Enum.at(citizens, x), :looking, false) | acc]}
+            {:cont, [Map.put(Enum.at(citizens, x), :has_job, true) | acc]}
 
           Enum.at(citizens, x).education < reqs.workers.level ->
             {:halt, acc}

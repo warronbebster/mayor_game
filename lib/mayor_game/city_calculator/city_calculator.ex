@@ -38,6 +38,10 @@ defmodule MayorGame.CityCalculator do
     cities = City.list_cities_preload()
     cities_count = Enum.count(cities)
 
+    pollution_ceiling =
+      cities_count * 10000_000 +
+        10000_000 * Random.gammavariate(7.5, 1)
+
     db_world = City.get_world!(1)
 
     IO.puts(
@@ -70,8 +74,28 @@ defmodule MayorGame.CityCalculator do
           # result here is a %Town{} with stats calculated
           city_with_stats = MayorGame.CityHelpers.calculate_city_stats(city, db_world)
 
-          city_with_stats2 = MayorGame.CityHelpersTwo.calculate_city_stats(city, db_world)
-          # IO.inspect(city_with_stats2)
+          city_with_stats2 =
+            MayorGame.CityHelpersTwo.calculate_city_stats(
+              city,
+              db_world,
+              cities_count,
+              pollution_ceiling
+            )
+
+          if city.id == 2 do
+            IO.inspect(
+              Map.drop(city_with_stats2, [
+                :details,
+                :citizens,
+                :employed_citizens,
+                :result_buildables,
+                :buildables,
+                :logs
+              ])
+            )
+
+            # IO.inspect(Map.keys(city_with_stats2))
+          end
 
           city_calculated_values =
             CityHelpers.calculate_stats_based_on_citizens(
@@ -189,6 +213,7 @@ defmodule MayorGame.CityCalculator do
               age: 0,
               education: 0,
               has_car: false,
+              has_job: false,
               last_moved: db_world.day
             })
 
