@@ -52,6 +52,7 @@ defmodule MayorGame.CityHelpersTwo do
         %{
           money: city_baked_details.details.city_treasury,
           income: 0,
+          daily_cost: 0,
           citizens: sorted_citizens,
           employed_citizens: [],
           fun: 0,
@@ -118,12 +119,21 @@ defmodule MayorGame.CityHelpersTwo do
                           10
                       )
 
+                    money_required =
+                      if Map.has_key?(individual_buildable.metadata.requires, :money),
+                        do: individual_buildable.metadata.requires.money,
+                        else: 0
+
                     acc_after_workers =
                       if enough_workers,
                         do:
                           update_generated_acc(individual_buildable, length(acc.citizens), acc2)
                           |> Map.merge(reqs_minus_workers, fn _k, v1, v2 -> v1 - v2 end)
                           |> Map.put(:income, acc2.income + tax_earned)
+                          |> Map.put(
+                            :daily_cost,
+                            acc2.daily_cost + money_required
+                          )
                           |> Map.put(:money, acc2.money + tax_earned),
                         else: acc2
 
@@ -198,13 +208,18 @@ defmodule MayorGame.CityHelpersTwo do
               do: [citizen | acc.housed_employed_citizens],
               else: acc.housed_employed_citizens
 
-          housing_left = if acc.housing_left > 0, do: acc.housing_left - 1, else: acc.housing_left
+          pollution_death = world.pollution > pollution_ceiling and :rand.uniform() > 0.95
+
+          housing_left =
+            if acc.housing_left > 0 and !pollution_death,
+              do: acc.housing_left - 1,
+              else: acc.housing_left
 
           unhoused_citizens =
             if acc.housing_left > 0, do: tl(acc.unhoused_citizens), else: acc.unhoused_citizens
 
           polluted_citizens =
-            if world.pollution > pollution_ceiling and :rand.uniform() > 0.95,
+            if pollution_death,
               do: [citizen | acc.polluted_citizens],
               else: acc.polluted_citizens
 

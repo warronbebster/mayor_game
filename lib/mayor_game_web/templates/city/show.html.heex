@@ -163,11 +163,11 @@
   <!--Taxes-->
 
   <!--All building details-->
-  <h2 class="text-xl pt-2 pb-1">Job levels</h2>
+  <h2 class="text-base pt-2 pb-1">Job levels</h2>
   <div class="flex flex-row flex-wrap gap-x-8 gap-y-4 divide-solid leading-none">
     <%= for {job_level, rate} <- @city.tax_rates do %>
       <div class="flex flex-col gap-1">
-        <span class="text-lg">Level <%= job_level %></span>
+        <span class="text-base">Level <%= job_level %></span>
         <%= if @is_user_mayor do %>
           <div class="flex flex-col gap-1">
             tax rate
@@ -209,7 +209,7 @@
 
   <%= for {category, buildings} <- @buildables do %>
     <div class="group relative flex-shrink self-start">
-      <h2 class="text-xl pt-2 first-letter:uppercase underline underline-offset-4 decoration-neutral-800/40 decoration-dotted	">
+      <h2 class="text-base pt-2 first-letter:uppercase underline underline-offset-4 decoration-neutral-800/40 decoration-dotted	">
         <%= category %>
       </h2>
       <div class="tooltip min-w-[240px]">
@@ -219,7 +219,7 @@
     <div class="divide-y divide-neutral-800/10">
       <%= for {building_type, building_stats} <- buildings do %>
         <div class="flex flex-wrap items-center gap-2 py-0.5">
-          <div class="basis-full md:basis-80 flex flex-row items-center justify-between">
+          <div class="basis-full md:basis-48 flex flex-row items-center justify-between">
             <!-- building title -->
             <div class="group relative inline-block">
               <h3 class="text-l first-letter:uppercase decoration-1	underline underline-offset-4 decoration-neutral-800/40 decoration-dotted	">
@@ -473,7 +473,7 @@
     <div class="flex-grow">
       <div class="relative pt-4">
         <div class="flex items-center space-x-2 sticky top-0 bg-amber-50">
-          <div class="text-xl ">
+          <div class="text-base ">
             Log
           </div>
           <hr class="border-neutral-800/25flex-1" />

@@ -63,6 +63,7 @@ defmodule MayorGame.CityCalculator do
         cities_list,
         %{
           all_cities: [],
+          all_cities_new: [],
           citizens_looking: [],
           citizens_out_of_room: [],
           citizens_too_old: [],
@@ -83,18 +84,22 @@ defmodule MayorGame.CityCalculator do
             )
 
           if city.id == 2 do
-            IO.inspect(
-              Map.drop(city_with_stats2, [
-                :details,
-                :citizens,
-                :employed_citizens,
-                :result_buildables,
-                :buildables,
-                :logs
-              ])
-            )
-
-            # IO.inspect(Map.keys(city_with_stats2))
+            # IO.inspect(
+            #   Map.drop(city_with_stats2, [
+            #     :details,
+            #     :citizens,
+            #     :employed_citizens,
+            #     :result_buildables,
+            #     :buildables,
+            #     :logs
+            #   ])
+            # )
+            IO.inspect(city_with_stats2.housing_left, label: 'housing_left')
+            IO.inspect(city_with_stats2.pollution, label: 'pollution')
+            IO.inspect(city_with_stats2.tax_rates, label: 'tax_rates')
+            IO.inspect(city_with_stats2.sprawl, label: 'sprawl')
+            IO.inspect(city_with_stats2.fun, label: 'fun')
+            IO.inspect(city_with_stats2.health, label: 'health')
           end
 
           city_calculated_values =
@@ -107,24 +112,26 @@ defmodule MayorGame.CityCalculator do
           # should i loop through citizens here, instead of in calculate_city_stats?
           # that way I can use the same function later?
 
-          updated_city_treasury =
-            if city_calculated_values.available_money + city_calculated_values.tax < 0,
-              do: 0,
-              else: city_calculated_values.available_money + city_calculated_values.tax
+          # updated_city_treasury =
+          #   if city_with_stats2.money < 0,
+          #     do: 0,
+          #     else: city_with_stats2.money
 
-          # check here for if tax_income - money is less than zero
-          case City.update_details(city.details, %{
-                 city_treasury: updated_city_treasury,
-                 pollution: city_calculated_values.pollution
-               }) do
-            {:ok, updated_details} ->
-              nil
+          # # check here for if tax_income - money is less than zero
+          # # TODO: move this outside the enum to a multi update
+          # case City.update_details(city.details, %{
+          #        city_treasury: updated_city_treasury,
+          #        pollution: city_with_stats2.pollution
+          #      }) do
+          #   {:ok, updated_details} ->
+          #     nil
 
-            {:error, err} ->
-              IO.inspect(err)
-          end
+          #   {:error, err} ->
+          #     IO.inspect(err)
+          # end
 
           %{
+            all_cities_new: [city_with_stats2 | acc.all_cities_new],
             all_cities: [city_calculated_values | acc.all_cities],
             citizens_too_old: city_calculated_values.citizens_too_old ++ acc.citizens_too_old,
             citizens_polluted: city_calculated_values.citizens_polluted ++ acc.citizens_polluted,
@@ -138,102 +145,139 @@ defmodule MayorGame.CityCalculator do
         end
       )
 
+    IO.inspect(Enum.max(Enum.map(leftovers.all_cities_new, &nil_value_check(&1, :pollution))),
+      label: "pollution max"
+    )
+
+    IO.inspect(Enum.max(Enum.map(leftovers.all_cities_new, &nil_value_check(&1, :sprawl))),
+      label: "sprawl max"
+    )
+
+    IO.inspect(Enum.max(Enum.map(leftovers.all_cities_new, &nil_value_check(&1, :fun))),
+      label: "fun max"
+    )
+
+    IO.inspect(Enum.max(Enum.map(leftovers.all_cities_new, &nil_value_check(&1, :health))),
+      label: "health max"
+    )
+
+    # first filter by job level?
+    # get rating for each citizen for each city (or each housing slot?)
+    # run hungarian
+    # hungarian actually doesn't need to affect housing count because the citizens are just trading
+    # 1 slot for each citizen looking, and 1 for each housing slot in housing_left
+
+    # this is where the cities are done
+    # first kill the polluted citizens and old citizens
+    # should I add housing back to the cities in that case? probably
+
+    # MULTI UPDATE: update city money/treasury in DB
+    leftovers.all_cities_new
+    |> Enum.with_index()
+    |> Enum.reduce(Ecto.Multi.new(), fn {city, idx}, multi ->
+      updated_city_treasury =
+        if city.money < 0,
+          do: 0,
+          else: city.money
+
+      details_update_changeset =
+        city.details
+        |> MayorGame.City.Details.changeset(%{
+          city_treasury: updated_city_treasury,
+          pollution: city.pollution
+        })
+
+      Ecto.Multi.update(multi, {:update_towns, idx}, details_update_changeset)
+    end)
+    |> MayorGame.Repo.transaction()
+
     # CHECK —————
     # FIRST CITIZEN CHECK: AGE DEATHS
     # Enum.each(leftovers.citizens_too_old, fn citizen ->
     #   CityHelpers.kill_citizen(citizen, citizen.name <> " has died of old age")
     #   # add 1 to available_housing for citizen's city
     # end)
+    # MULTI CHANGESET KILL OLD CITIZENS
+    leftovers.citizens_too_old
+    |> Enum.with_index()
+    |> Enum.reduce(Ecto.Multi.new(), fn {citizen, idx}, multi ->
+      town = City.get_town!(citizen.town_id)
 
-    cities_after_aging_deaths =
-      Enum.reduce(leftovers.citizens_too_old, leftovers.all_cities, fn citizen_too_old,
-                                                                       acc_city_list ->
-        # find where the city is in the list
-        indexx = Enum.find_index(acc_city_list, &(&1.id == citizen_too_old.town_id))
+      log =
+        MayorGame.CityHelpersTwo.describe_citizen(citizen) <> " has died because of old age. RIP"
 
-        # make updated list, increment housing and workers
-        updated_acc_city_list =
-          List.update_at(acc_city_list, indexx, fn update ->
-            update
-            |> Map.update!(:available_housing, &(&1 + 1))
+      # if list is longer than 50, remove last item
+      limited_log = update_logs(log, town.logs)
 
-            # |> update_in([:workers, best_job.job_level], &(&1 - 1))
-            # could update job count if we really knew which job level the citizen held
-          end)
+      town_changeset =
+        town
+        |> MayorGame.City.Town.changeset(%{logs: limited_log})
 
-        CityHelpers.kill_citizen(citizen_too_old, "old age")
+      Ecto.Multi.delete(multi, {:delete, idx}, citizen)
+      |> Ecto.Multi.update({:update, idx}, town_changeset)
+    end)
+    |> MayorGame.Repo.transaction()
 
-        updated_acc_city_list
-      end)
+    # MULTI KILL POLLUTED CITIZENS
+    leftovers.citizens_polluted
+    |> Enum.with_index()
+    |> Enum.reduce(Ecto.Multi.new(), fn {citizen, idx}, multi ->
+      town = City.get_town!(citizen.town_id)
 
-    # CHECK —————
-    # SECOND CITIZEN CHECK: POLLUTION DEATHS
-    cities_after_pollution_deaths =
-      Enum.reduce(leftovers.citizens_polluted, cities_after_aging_deaths, fn citizen_polluted,
-                                                                             acc_city_list ->
-        # find where the city is in the list
-        indexx = Enum.find_index(acc_city_list, &(&1.id == citizen_polluted.town_id))
+      log =
+        MayorGame.CityHelpersTwo.describe_citizen(citizen) <>
+          " has died because of pollution. RIP"
 
-        # make updated list, increment housing and workers
-        updated_acc_city_list =
-          List.update_at(acc_city_list, indexx, fn update ->
-            update
-            |> Map.update!(:available_housing, &(&1 + 1))
+      limited_log = update_logs(log, town.logs)
 
-            # |> update_in([:workers, best_job.job_level], &(&1 - 1))
-            # could update job count if we really knew which job level the citizen held
-          end)
+      town_changeset =
+        town
+        |> MayorGame.City.Town.changeset(%{logs: limited_log})
 
-        CityHelpers.kill_citizen(citizen_polluted, "high pollution levels")
+      Ecto.Multi.delete(multi, {:delete, idx}, citizen)
+      |> Ecto.Multi.update({:update, idx}, town_changeset)
+    end)
+    |> MayorGame.Repo.transaction()
 
-        updated_acc_city_list
-      end)
+    # MULTI REPRODUCE
+    leftovers.citizens_to_reproduce
+    |> Enum.with_index()
+    |> Enum.reduce(Ecto.Multi.new(), fn {citizen, idx}, multi ->
+      town = City.get_town!(citizen.town_id)
 
-    # CHECK —————
-    # THIRD CITIZEN CHECK: REPRODUCTION
-    cities_after_reproduction =
-      Enum.reduce(
-        leftovers.citizens_to_reproduce,
-        cities_after_pollution_deaths,
-        fn citizen_to_reproduce, acc_city_list ->
-          # find where the city is in the list
-          indexx = Enum.find_index(acc_city_list, &(&1.id == citizen_to_reproduce.town_id))
+      log =
+        MayorGame.CityHelpersTwo.describe_citizen(citizen) <>
+          " had a child"
 
-          # make updated list, decrement housing
-          # this is how a city can end up with negative housing
-          updated_acc_city_list =
-            List.update_at(acc_city_list, indexx, fn update ->
-              Map.update!(update, :available_housing, &(&1 - 1))
-            end)
+      limited_log = update_logs(log, town.logs)
+      # if list is longer than 50, remove last item
 
-          {:ok, child_citizen} =
-            City.create_citizens(%{
-              money: 0,
-              town_id: citizen_to_reproduce.town_id,
-              age: 0,
-              education: 0,
-              has_car: false,
-              has_job: false,
-              last_moved: db_world.day
-            })
+      changeset =
+        City.create_citizens_changeset(%{
+          money: 0,
+          town_id: citizen.town_id,
+          age: 0,
+          education: 0,
+          has_car: false,
+          has_job: false,
+          last_moved: db_world.day
+        })
 
-          City.update_log(
-            City.get_town!(citizen_to_reproduce.town_id),
-            CityHelpers.describe_citizen(citizen_to_reproduce) <>
-              " had a child: " <> CityHelpers.describe_citizen(child_citizen)
-          )
+      town_changeset =
+        town
+        |> MayorGame.City.Town.changeset(%{logs: limited_log})
 
-          updated_acc_city_list
-        end
-      )
+      Ecto.Multi.insert(multi, {:add_citizen, idx}, changeset)
+      |> Ecto.Multi.update({:update, idx}, town_changeset)
+    end)
+    |> MayorGame.Repo.transaction()
 
     # CHECK —————
     # FOURTH CITIZEN CHECK: LOOKING FOR workers
 
     # if there are cities with room at all (if a city has room, this list won't be empty):
     cities_after_job_search =
-      Enum.reduce(leftovers.citizens_looking, cities_after_reproduction, fn citizen,
-                                                                            acc_city_list ->
+      Enum.reduce(leftovers.citizens_looking, leftovers.all_cities, fn citizen, acc_city_list ->
         cities_with_housing_and_workers =
           Enum.filter(acc_city_list, fn city -> city.available_housing > 0 end)
           |> Enum.filter(fn city ->
@@ -370,5 +414,19 @@ defmodule MayorGame.CityCalculator do
 
     # returns this to whatever calls ?
     {:noreply, updated_world}
+  end
+
+  def update_logs(log, existing_logs) do
+    updated_log = [log | existing_logs]
+
+    if length(updated_log) > 50 do
+      updated_log |> Enum.reverse() |> tl() |> Enum.reverse()
+    else
+      updated_log
+    end
+  end
+
+  def nil_value_check(map, key) do
+    if Map.has_key?(map, key), do: map[key], else: 0
   end
 end
