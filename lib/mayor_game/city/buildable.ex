@@ -495,6 +495,14 @@ defmodule MayorGame.City.Buildable do
         sprawl: 0,
         area: 10,
         health: 1,
+        upgrades: %{
+          more_stations: %{
+            cost: 5,
+            description: "+5 area",
+            requirements: [],
+            function: %{area: &(&1 + 5)}
+          }
+        },
         region_health_multipliers: %{forest: 1.3, mountain: 1.4},
         region_fun_multipliers: %{ocean: 1.5, mountain: 0.7, desert: 0.6},
         energy_required: 0,
