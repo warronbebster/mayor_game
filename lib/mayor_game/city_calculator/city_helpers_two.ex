@@ -374,7 +374,11 @@ defmodule MayorGame.CityHelpersTwo do
         production_map
       end
 
-    Map.merge(results, totals)
+    if production_map != nil do
+      totals
+    else
+      Map.merge(results, totals)
+    end
   end
 
   def kill_citizen(%Citizens{} = citizen, deathReason) do
