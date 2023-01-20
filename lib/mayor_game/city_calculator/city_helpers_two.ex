@@ -374,7 +374,7 @@ defmodule MayorGame.CityHelpersTwo do
         production_map
       end
 
-    if production_map != nil do
+    if production_map == nil do
       totals
     else
       Map.merge(results, totals)
