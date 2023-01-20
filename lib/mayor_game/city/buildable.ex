@@ -1156,6 +1156,14 @@ defmodule MayorGame.City.Buildable do
     |> Map.keys()
   end
 
+  def sorted_buildables do
+    Enum.filter(buildables_flat(), fn {_name, metadata} ->
+      metadata.workers_required !== nil
+    end)
+    |> Enum.sort_by(&elem(&1, 1).job_priority, :desc)
+    |> Enum.sort_by(&elem(&1, 1).job_level, :asc)
+  end
+
   # ——————————————————————————————————————————————————————————————————
 
   # defmodule MayorGame.City.Upgrade do

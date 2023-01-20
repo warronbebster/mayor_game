@@ -1935,18 +1935,6 @@ input[type="submit"] {
 }
 
 @media (min-width: 768px) {
-  .md\:basis-48 {
-    flex-basis: 12rem;
-  }
-
-  .md\:basis-60 {
-    flex-basis: 15rem;
-  }
-
-  .md\:basis-64 {
-    flex-basis: 16rem;
-  }
-
   .md\:basis-72 {
     flex-basis: 18rem;
   }

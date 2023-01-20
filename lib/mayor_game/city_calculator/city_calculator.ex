@@ -174,21 +174,21 @@ defmodule MayorGame.CityCalculator do
     # first kill the polluted citizens and old citizens
     # should I add housing back to the cities in that case? probably
 
-    IO.inspect(Enum.max(Enum.map(leftovers.all_cities_new, &nil_value_check(&1, :pollution))),
-      label: "pollution max"
-    )
+    # IO.inspect(Enum.max(Enum.map(leftovers.all_cities_new, &nil_value_check(&1, :pollution))),
+    #   label: "pollution max"
+    # )
 
-    IO.inspect(Enum.max(Enum.map(leftovers.all_cities_new, &nil_value_check(&1, :sprawl))),
-      label: "sprawl max"
-    )
+    # IO.inspect(Enum.max(Enum.map(leftovers.all_cities_new, &nil_value_check(&1, :sprawl))),
+    #   label: "sprawl max"
+    # )
 
-    IO.inspect(Enum.max(Enum.map(leftovers.all_cities_new, &nil_value_check(&1, :fun))),
-      label: "fun max"
-    )
+    # IO.inspect(Enum.max(Enum.map(leftovers.all_cities_new, &nil_value_check(&1, :fun))),
+    #   label: "fun max"
+    # )
 
-    IO.inspect(Enum.max(Enum.map(leftovers.all_cities_new, &nil_value_check(&1, :health))),
-      label: "health max"
-    )
+    # IO.inspect(Enum.max(Enum.map(leftovers.all_cities_new, &nil_value_check(&1, :health))),
+    #   label: "health max"
+    # )
 
     # MULTI UPDATE: update city money/treasury in DB
     leftovers.all_cities_new

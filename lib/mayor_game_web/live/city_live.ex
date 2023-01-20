@@ -345,10 +345,7 @@ defmodule MayorGameWeb.CityLive do
         pollution_ceiling
       )
 
-    # IO.inspect(city_updated.details, label: "city_updated details")
-
     # ok, here the price is updated per each CombinedBuildable
-    # IO.inspect(city_updated.details.roads)
 
     # have to have this separate from the actual city because the city might not have some buildables, but they're still purchasable
     # this status is for the whole category
@@ -366,8 +363,6 @@ defmodule MayorGameWeb.CityLive do
           [buildable | current_list]
         end)
       end)
-
-    IO.inspect(length(mapped_details_2.carbon_capture_plants))
 
     # need to get a map with the key
 
@@ -402,7 +397,7 @@ defmodule MayorGameWeb.CityLive do
         :education
       ])
 
-    IO.inspect(citizen_edu_count)
+    IO.inspect(operating_count)
 
     socket
     |> assign(:season, season)
