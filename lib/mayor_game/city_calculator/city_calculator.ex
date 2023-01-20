@@ -58,6 +58,7 @@ defmodule MayorGame.CityCalculator do
     # result is map %{cities_w_room: [], citizens_looking: [], citizens_to_reproduce: [], etc}
     # FIRST ROUND CHECK
     # go through all cities
+    # could try flowing this
     leftovers =
       Enum.reduce(
         cities_list,
@@ -66,6 +67,7 @@ defmodule MayorGame.CityCalculator do
           all_cities_new: [],
           citizens_looking: [],
           citizens_out_of_room: [],
+          citizens_learning: %{0 => [], 1 => [], 2 => [], 3 => [], 4 => [], 5 => []},
           citizens_too_old: [],
           citizens_polluted: [],
           citizens_to_reproduce: [],
@@ -94,12 +96,12 @@ defmodule MayorGame.CityCalculator do
             #     :logs
             #   ])
             # )
-            IO.inspect(city_with_stats2.housing_left, label: 'housing_left')
-            IO.inspect(city_with_stats2.pollution, label: 'pollution')
-            IO.inspect(city_with_stats2.tax_rates, label: 'tax_rates')
-            IO.inspect(city_with_stats2.sprawl, label: 'sprawl')
-            IO.inspect(city_with_stats2.fun, label: 'fun')
-            IO.inspect(city_with_stats2.health, label: 'health')
+            # IO.inspect(city_with_stats2.housing_left, label: 'housing_left')
+            # IO.inspect(city_with_stats2.pollution, label: 'pollution')
+            # IO.inspect(city_with_stats2.tax_rates, label: 'tax_rates')
+            # IO.inspect(city_with_stats2.sprawl, label: 'sprawl')
+            # IO.inspect(city_with_stats2.fun, label: 'fun')
+            # IO.inspect(city_with_stats2.health, label: 'health')
           end
 
           city_calculated_values =
@@ -133,17 +135,44 @@ defmodule MayorGame.CityCalculator do
           %{
             all_cities_new: [city_with_stats2 | acc.all_cities_new],
             all_cities: [city_calculated_values | acc.all_cities],
-            citizens_too_old: city_calculated_values.citizens_too_old ++ acc.citizens_too_old,
-            citizens_polluted: city_calculated_values.citizens_polluted ++ acc.citizens_polluted,
+            citizens_too_old: city_with_stats2.old_citizens ++ acc.citizens_too_old,
+            citizens_learning:
+              Map.merge(city_with_stats2.educated_citizens, acc.citizens_learning, fn _k,
+                                                                                      v1,
+                                                                                      v2 ->
+                v1 ++ v2
+              end),
+            citizens_polluted: city_with_stats2.polluted_citizens ++ acc.citizens_polluted,
             citizens_to_reproduce:
-              city_calculated_values.citizens_to_reproduce ++ acc.citizens_to_reproduce,
+              city_with_stats2.reproducing_citizens ++ acc.citizens_to_reproduce,
             citizens_out_of_room:
               city_calculated_values.citizens_out_of_room ++ acc.citizens_out_of_room,
             citizens_looking: city_calculated_values.citizens_looking ++ acc.citizens_looking,
-            new_world_pollution: city_calculated_values.pollution + acc.new_world_pollution
+            new_world_pollution: city_with_stats2.pollution + acc.new_world_pollution
           }
         end
       )
+
+    # ok so here each city has
+
+    # educated citizens (map of level to list of citizens)
+    # gotta multi educate here
+
+    # housed_employed_looking_citizens
+    # housed_employed_citizens
+    # check tax rates for these to decide if they're looking
+    # housed_citizens (no job)
+    # unhoused_citizens (no anything)
+
+    # first filter by job level?
+    # get rating for each citizen for each city (or each housing slot?)
+    # run hungarian
+    # hungarian actually doesn't need to affect housing count because the citizens are just trading
+    # 1 slot for each citizen looking, and 1 for each housing slot in housing_left
+
+    # this is where the cities are done
+    # first kill the polluted citizens and old citizens
+    # should I add housing back to the cities in that case? probably
 
     IO.inspect(Enum.max(Enum.map(leftovers.all_cities_new, &nil_value_check(&1, :pollution))),
       label: "pollution max"
@@ -160,16 +189,6 @@ defmodule MayorGame.CityCalculator do
     IO.inspect(Enum.max(Enum.map(leftovers.all_cities_new, &nil_value_check(&1, :health))),
       label: "health max"
     )
-
-    # first filter by job level?
-    # get rating for each citizen for each city (or each housing slot?)
-    # run hungarian
-    # hungarian actually doesn't need to affect housing count because the citizens are just trading
-    # 1 slot for each citizen looking, and 1 for each housing slot in housing_left
-
-    # this is where the cities are done
-    # first kill the polluted citizens and old citizens
-    # should I add housing back to the cities in that case? probably
 
     # MULTI UPDATE: update city money/treasury in DB
     leftovers.all_cities_new
@@ -190,6 +209,35 @@ defmodule MayorGame.CityCalculator do
       Ecto.Multi.update(multi, {:update_towns, idx}, details_update_changeset)
     end)
     |> MayorGame.Repo.transaction()
+
+    # MULTI CHANGESET EDUCATE
+    leftovers.citizens_learning
+    |> Enum.map(fn {level, list} ->
+      list
+      |> Enum.with_index()
+      |> Enum.reduce(Ecto.Multi.new(), fn {citizen, idx}, multi ->
+        town = City.get_town!(citizen.town_id)
+
+        log =
+          MayorGame.CityHelpersTwo.describe_citizen(citizen) <>
+            " has graduated to level " <> to_string(level)
+
+        # if list is longer than 50, remove last item
+        limited_log = update_logs(log, town.logs)
+
+        citizen_changeset =
+          citizen
+          |> MayorGame.City.Citizens.changeset(%{education: level})
+
+        town_changeset =
+          town
+          |> MayorGame.City.Town.changeset(%{logs: limited_log})
+
+        Ecto.Multi.update(multi, {:update_citizen_edu, idx}, citizen_changeset)
+        |> Ecto.Multi.update({:update_town_log, idx}, town_changeset)
+      end)
+      |> MayorGame.Repo.transaction()
+    end)
 
     # CHECK —————
     # FIRST CITIZEN CHECK: AGE DEATHS

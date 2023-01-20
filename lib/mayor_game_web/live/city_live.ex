@@ -59,12 +59,10 @@ defmodule MayorGameWeb.CityLive do
   # this handles different events
   def handle_event(
         "add_citizen",
-        %{"name" => content, "userid" => user_id},
+        _value,
         # pull these variables out of the socket
-        %{assigns: %{city: city}} = socket
+        %{assigns: %{city2: city}} = socket
       ) do
-    # IO.inspect(get_user(socket, session))
-
     if socket.assigns.current_user.id == 1 do
       case City.create_citizens(%{
              town_id: city.id,
@@ -77,7 +75,7 @@ defmodule MayorGameWeb.CityLive do
            }) do
         # pattern match to assign new_citizen to what's returned from City.create_citizens
         {:ok, _updated_citizens} ->
-          IO.puts("updated 1 citizen")
+          IO.inspect("updated 1 citizen")
 
         {:error, err} ->
           Logger.error(inspect(err))
@@ -90,8 +88,8 @@ defmodule MayorGameWeb.CityLive do
   # event
   def handle_event(
         "gib_money",
-        %{"userid" => user_id},
-        %{assigns: %{city: city}} = socket
+        _value,
+        %{assigns: %{city2: city}} = socket
       ) do
     if socket.assigns.current_user.id == 1 do
       case City.update_details(city.details, %{city_treasury: city.details.city_treasury + 1000}) do
@@ -110,7 +108,7 @@ defmodule MayorGameWeb.CityLive do
   def handle_event(
         "reset_city",
         %{"userid" => user_id},
-        %{assigns: %{city: city}} = socket
+        %{assigns: %{city2: city}} = socket
       ) do
     if socket.assigns.current_user.id == city.user_id do
       reset = Map.new(Buildable.buildables_list(), fn x -> {x, []} end)
@@ -153,7 +151,7 @@ defmodule MayorGameWeb.CityLive do
   def handle_event(
         "purchase_building",
         %{"building" => building_to_buy},
-        %{assigns: %{city: city}} = socket
+        %{assigns: %{city2: city}} = socket
       ) do
     # check if user is mayor here?
 
@@ -204,7 +202,7 @@ defmodule MayorGameWeb.CityLive do
   def handle_event(
         "demolish_building_2",
         %{"building" => building_to_demolish},
-        %{assigns: %{city: city}} = socket
+        %{assigns: %{city2: city}} = socket
       ) do
     # check if user is mayor here?
     buildable_to_demolish_atom = String.to_existing_atom(building_to_demolish)
@@ -225,54 +223,54 @@ defmodule MayorGameWeb.CityLive do
     {:noreply, socket |> update_city_by_title()}
   end
 
-  def handle_event(
-        "buy_upgrade",
-        %{
-          "building" => buildable_to_upgrade,
-          "buildable_id" => buildable_id,
-          "upgrade" => upgrade_name,
-          "upgrade_cost" => upgrade_cost,
-          "value" => _value
-        },
-        %{assigns: %{city: city}} = socket
-      ) do
-    # check if user is mayor here?
+  # def handle_event(
+  #       "buy_upgrade",
+  #       %{
+  #         "building" => buildable_to_upgrade,
+  #         "buildable_id" => buildable_id,
+  #         "upgrade" => upgrade_name,
+  #         "upgrade_cost" => upgrade_cost,
+  #         "value" => _value
+  #       },
+  #       %{assigns: %{city2: city}} = socket
+  #     ) do
+  #   # check if user is mayor here?
 
-    buildable_to_upgrade_atom =
-      if is_atom(buildable_to_upgrade),
-        do: buildable_to_upgrade,
-        else: String.to_existing_atom(buildable_to_upgrade)
+  #   buildable_to_upgrade_atom =
+  #     if is_atom(buildable_to_upgrade),
+  #       do: buildable_to_upgrade,
+  #       else: String.to_existing_atom(buildable_to_upgrade)
 
-    buildable_to_upgrade =
-      Repo.get_by!(Ecto.assoc(city.details, buildable_to_upgrade_atom), id: buildable_id)
+  #   buildable_to_upgrade =
+  #     Repo.get_by!(Ecto.assoc(city.details, buildable_to_upgrade_atom), id: buildable_id)
 
-    case City.update_buildable(city.details, buildable_to_upgrade_atom, buildable_id, %{
-           # updates the upgrades map in the specific buildable
-           upgrades: [to_string(upgrade_name) | buildable_to_upgrade.upgrades]
-         }) do
-      {:ok, _updated_details} ->
-        IO.puts("buildable upgraded successfully")
+  #   case City.update_buildable(city.details, buildable_to_upgrade_atom, buildable_id, %{
+  #          # updates the upgrades map in the specific buildable
+  #          upgrades: [to_string(upgrade_name) | buildable_to_upgrade.upgrades]
+  #        }) do
+  #     {:ok, _updated_details} ->
+  #       IO.puts("buildable upgraded successfully")
 
-        # then charges from the treasury
-        City.update_details(city.details, %{
-          city_treasury: city.details.city_treasury - String.to_integer(upgrade_cost)
-        })
+  #       # then charges from the treasury
+  #       City.update_details(city.details, %{
+  #         city_treasury: city.details.city_treasury - String.to_integer(upgrade_cost)
+  #       })
 
-      {:error, err} ->
-        Logger.error(inspect(err))
+  #     {:error, err} ->
+  #       Logger.error(inspect(err))
 
-      nil ->
-        IO.puts('wat nil')
-    end
+  #     nil ->
+  #       IO.puts('wat nil')
+  #   end
 
-    # this is all ya gotta do to update, baybee
-    {:noreply, socket |> update_city_by_title()}
-  end
+  #   # this is all ya gotta do to update, baybee
+  #   {:noreply, socket |> update_city_by_title()}
+  # end
 
   def handle_event(
         "update_tax_rates",
         %{"job_level" => job_level, "value" => updated_value},
-        %{assigns: %{city: city}} = socket
+        %{assigns: %{city2: city}} = socket
       ) do
     # check if user is mayor here?
     updated_value_float = Float.parse(updated_value)
@@ -315,6 +313,12 @@ defmodule MayorGameWeb.CityLive do
   # function to update city
   # maybe i should make one just for "updating" — e.g. only pull details and citizens from DB
   defp update_city_by_title(%{assigns: %{title: title, world: world}} = socket) do
+    cities_count = MayorGame.Repo.aggregate(City.Town, :count, :id)
+
+    pollution_ceiling =
+      cities_count * 10000_000 +
+        10000_000 * Random.gammavariate(7.5, 1)
+
     season =
       cond do
         rem(world.day, 365) < 91 -> :winter
@@ -331,7 +335,15 @@ defmodule MayorGameWeb.CityLive do
     # grab whole user struct
     user = Auth.get_user!(city.user_id)
 
-    city_with_stats = MayorGame.CityHelpers.calculate_city_stats(city, world)
+    # city_with_stats = MayorGame.CityHelpers.calculate_city_stats(city, world)
+
+    city_with_stats2 =
+      MayorGame.CityHelpersTwo.calculate_city_stats(
+        city,
+        world,
+        cities_count,
+        pollution_ceiling
+      )
 
     # IO.inspect(city_updated.details, label: "city_updated details")
 
@@ -340,22 +352,47 @@ defmodule MayorGameWeb.CityLive do
 
     # have to have this separate from the actual city because the city might not have some buildables, but they're still purchasable
     # this status is for the whole category
-    buildables_with_status = calculate_buildables_statuses(city_with_stats)
+    buildables_with_status = calculate_buildables_statuses(city_with_stats2)
     # IO.inspect(city_with_stats.details.airports)
 
     mapped_details =
-      Map.from_struct(city_with_stats.details) |> Map.take(Buildable.buildables_list())
+      Map.from_struct(city_with_stats2.details) |> Map.take(Buildable.buildables_list())
+
+    empty_buildable_map = Map.new(Buildable.buildables_list(), fn x -> {x, []} end)
+
+    mapped_details_2 =
+      Enum.reduce(city_with_stats2.result_buildables, empty_buildable_map, fn buildable, acc ->
+        Map.update!(acc, buildable.metadata.title, fn current_list ->
+          [buildable | current_list]
+        end)
+      end)
+
+    IO.inspect(length(mapped_details_2.carbon_capture_plants))
+
+    # need to get a map with the key
 
     operating_count =
-      Enum.map(mapped_details, fn {category, list} ->
+      Enum.map(mapped_details_2, fn {category, list} ->
         {category, Enum.frequencies_by(list, fn x -> x.buildable.reason end)}
       end)
       |> Enum.into(%{})
 
-    citizen_edu_count = Enum.frequencies_by(city_with_stats.citizens, fn x -> x.education end)
+    citizen_edu_count =
+      Enum.frequencies_by(city_with_stats2.all_citizens, fn x -> x.education end)
 
-    city_without_citizens =
-      Map.drop(city_with_stats, [
+    # city_without_citizens =
+    #   Map.drop(city_with_stats, [
+    #     :citizens,
+    #     :citizens_looking,
+    #     :citizens_to_reproduce,
+    #     :citizens_polluted,
+    #     :resources,
+    #     :citizens_looking,
+    #     :education
+    #   ])
+
+    city2_without_citizens =
+      Map.drop(city_with_stats2, [
         :citizens,
         :citizens_looking,
         :citizens_to_reproduce,
@@ -365,15 +402,17 @@ defmodule MayorGameWeb.CityLive do
         :education
       ])
 
+    IO.inspect(citizen_edu_count)
+
     socket
     |> assign(:season, season)
     |> assign(:buildables, buildables_with_status)
     |> assign(:user_id, user.id)
     |> assign(:username, user.nickname)
-    |> assign(:city, city_without_citizens)
+    |> assign(:city2, city2_without_citizens)
     |> assign(:operating_count, operating_count)
     |> assign(:citizens_by_edu, citizen_edu_count)
-    |> assign(:total_citizens, length(city_with_stats.citizens))
+    |> assign(:total_citizens, length(city_with_stats2.all_citizens))
   end
 
   # this takes the generic buildables map and builds the status (enabled, etc) for each buildable
@@ -404,16 +443,16 @@ defmodule MayorGameWeb.CityLive do
         # enough energy AND enough area
 
         (buildable.energy_required != nil || buildable.energy_required > 0) and
-          city_with_stats.available_energy >= buildable.energy_required &&
+          city_with_stats.energy >= buildable.energy_required &&
             (buildable.area_required != nil and
-               city_with_stats.available_area >= buildable.area_required) ->
+               city_with_stats.area >= buildable.area_required) ->
           %{buildable | purchasable: true, purchasable_reason: "valid", price: updated_price}
 
         # not enough energy, enough area
         buildable.energy_required != nil && buildable.energy_required > 0 and
-          city_with_stats.available_energy < buildable.energy_required &&
+          city_with_stats.energy < buildable.energy_required &&
             (buildable.area_required != nil and
-               city_with_stats.available_area >= buildable.area_required) ->
+               city_with_stats.area >= buildable.area_required) ->
           %{
             buildable
             | purchasable: false,
@@ -423,9 +462,9 @@ defmodule MayorGameWeb.CityLive do
 
         # enough energy, not enough area
         buildable.energy_required != nil && buildable.energy_required > 0 and
-          city_with_stats.available_energy >= buildable.energy_required &&
+          city_with_stats.energy >= buildable.energy_required &&
             (buildable.area_required != nil and
-               city_with_stats.available_area < buildable.area_required) ->
+               city_with_stats.area < buildable.area_required) ->
           %{
             buildable
             | purchasable: false,
@@ -435,9 +474,9 @@ defmodule MayorGameWeb.CityLive do
 
         # not enough energy AND not enough area
         buildable.energy_required != nil && buildable.energy_required > 0 and
-          city_with_stats.available_energy < buildable.energy_required &&
+          city_with_stats.energy < buildable.energy_required &&
             (buildable.area_required != nil and
-               city_with_stats.available_area < buildable.area_required) ->
+               city_with_stats.area < buildable.area_required) ->
           %{
             buildable
             | purchasable: false,
@@ -448,13 +487,13 @@ defmodule MayorGameWeb.CityLive do
         # no energy needed, enough area
         buildable.energy_required != nil && buildable.energy_required > 0 &&
             (buildable.area_required != nil and
-               city_with_stats.available_area >= buildable.area_required) ->
+               city_with_stats.area >= buildable.area_required) ->
           %{buildable | purchasable: true, purchasable_reason: "valid", price: updated_price}
 
         # no energy needed, not enough area
         buildable.energy_required != nil && buildable.energy_required > 0 &&
             (buildable.area_required != nil and
-               city_with_stats.available_area < buildable.area_required) ->
+               city_with_stats.area < buildable.area_required) ->
           %{
             buildable
             | purchasable: false,
@@ -465,13 +504,13 @@ defmodule MayorGameWeb.CityLive do
         # no area needed, enough energy
         buildable.area_required == nil &&
             (buildable.energy_required != nil && buildable.energy_required > 0 and
-               city_with_stats.available_energy >= buildable.energy_required) ->
+               city_with_stats.energy >= buildable.energy_required) ->
           %{buildable | purchasable: true, purchasable_reason: "valid", price: updated_price}
 
         # no area needed, not enough energy
         buildable.area_required == nil &&
             (buildable.energy_required != nil && buildable.energy_required > 0 and
-               city_with_stats.available_energy < buildable.energy_required) ->
+               city_with_stats.energy < buildable.energy_required) ->
           %{
             buildable
             | purchasable: false,

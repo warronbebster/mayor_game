@@ -54,6 +54,7 @@ defmodule MayorGameWeb.DashboardLive do
              education: 0,
              age: 0,
              has_car: false,
+             has_job: false,
              last_moved: socket.assigns.world.day
            }) do
         # pattern match to assign new_citizen to what's returned from City.create_citizens

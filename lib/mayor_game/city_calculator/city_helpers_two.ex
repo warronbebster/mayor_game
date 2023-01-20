@@ -43,7 +43,7 @@ defmodule MayorGame.CityHelpersTwo do
     ordered_buildables =
       Enum.map(Buildable.buildables_ordered_flat(), fn x -> {x, all_buildables[x]} end)
 
-    sorted_citizens = Enum.sort_by(city_baked_details.citizens, & &1.education, :asc)
+    sorted_citizens = Enum.sort_by(city_baked_details.citizens, & &1.education, :desc)
 
     # buildables_ordered is in order
     results =
@@ -62,6 +62,8 @@ defmodule MayorGame.CityHelpersTwo do
           total_energy: 0,
           energy: 0,
           pollution: 0,
+          jobs: %{0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0},
+          total_jobs: %{0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0},
           education: %{1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0},
           total_area: 0,
           area: 0,
@@ -86,12 +88,22 @@ defmodule MayorGame.CityHelpersTwo do
 
                 if checked_reqs == [] do
                   if Map.has_key?(individual_buildable.metadata.requires, :workers) do
+                    IO.inspect(length(acc2.citizens), label: "length")
+
+                    IO.inspect(Enum.at(acc2.citizens, 0).education, label: "first citizen's edu")
+
                     checked_workers =
                       check_workers(individual_buildable.metadata.requires, acc2.citizens)
+
+                    IO.inspect(length(checked_workers), label: 'length checked workers')
 
                     enough_workers =
                       length(checked_workers) >=
                         individual_buildable.metadata.requires.workers.count
+
+                    IO.inspect(enough_workers,
+                      label: to_string(buildable_type) <> "has enough workers ——————"
+                    )
 
                     updated_buildable =
                       if !enough_workers do
@@ -108,6 +120,8 @@ defmodule MayorGame.CityHelpersTwo do
                         individual_buildable
                         |> put_in([:metadata, :jobs], 0)
                       end
+
+                    IO.inspect(updated_buildable.buildable.reason, label: 'enabled reason')
 
                     tax_earned =
                       round(
@@ -138,15 +152,33 @@ defmodule MayorGame.CityHelpersTwo do
                         else: acc2
 
                     # update acc with disabled buildable
+
                     acc_after_workers
                     |> Map.update!(:result_buildables, fn current ->
                       [updated_buildable | current]
                     end)
                     |> Map.update!(:employed_citizens, fn currently_employed ->
-                      checked_workers ++ currently_employed
+                      Enum.map(checked_workers, fn cit -> Map.put(cit, :has_job, true) end) ++
+                        currently_employed
                     end)
                     |> Map.update!(:citizens, fn current_citizens ->
-                      Enum.drop(current_citizens, length(checked_workers))
+                      # this is where I need to filter by the job level
+                      # I thought this would do it
+                      current_citizens -- checked_workers
+                    end)
+                    |> Map.update!(:jobs, fn current_jobs_map ->
+                      Map.update!(
+                        current_jobs_map,
+                        individual_buildable.metadata.requires.workers.level,
+                        &(&1 + length(checked_workers))
+                      )
+                    end)
+                    |> Map.update!(:total_jobs, fn current_total_jobs_map ->
+                      Map.update!(
+                        current_total_jobs_map,
+                        individual_buildable.metadata.requires.workers.level,
+                        &(&1 + individual_buildable.metadata.requires.workers.count)
+                      )
                     end)
 
                     # if number is less than reqs.workers.count, buildable is disabled, reason workers
@@ -191,22 +223,31 @@ defmodule MayorGame.CityHelpersTwo do
           housing_left: results.housing,
           education_left: results.education,
           educated_citizens: %{0 => [], 1 => [], 2 => [], 3 => [], 4 => [], 5 => []},
-          housed_citizens: [],
-          housed_employed_citizens: [],
+          housed_unemployed_citizens: [],
+          housed_employed_staying_citizens: [],
+          housed_employed_looking_citizens: [],
           unhoused_citizens: all_citizens,
           polluted_citizens: [],
+          old_citizens: [],
           reproducing_citizens: []
         },
         fn citizen, acc ->
-          housed_citizens =
-            if acc.housing_left > 0 && !citizen.has_job,
-              do: [citizen | acc.housed_citizens],
-              else: acc.housed_citizens
+          housed_unemployed_citizens =
+            if acc.housing_left > 0 && !citizen.has_job && citizen.age < 5000,
+              do: [citizen | acc.housed_unemployed_citizens],
+              else: acc.housed_unemployed_citizens
 
-          housed_employed_citizens =
-            if acc.housing_left > 0 && citizen.has_job,
-              do: [citizen | acc.housed_employed_citizens],
-              else: acc.housed_employed_citizens
+          tax_too_high = :rand.uniform() < city.tax_rates[to_string(citizen.education)]
+
+          housed_employed_staying_citizens =
+            if acc.housing_left > 0 && citizen.has_job && citizen.age < 5000 && !tax_too_high,
+              do: [citizen | acc.housed_employed_staying_citizens],
+              else: acc.housed_employed_staying_citizens
+
+          housed_employed_looking_citizens =
+            if acc.housing_left > 0 && citizen.has_job && citizen.age < 5000 && tax_too_high,
+              do: [citizen | acc.housed_employed_looking_citizens],
+              else: acc.housed_employed_looking_citizens
 
           pollution_death = world.pollution > pollution_ceiling and :rand.uniform() > 0.95
 
@@ -219,9 +260,14 @@ defmodule MayorGame.CityHelpersTwo do
             if acc.housing_left > 0, do: tl(acc.unhoused_citizens), else: acc.unhoused_citizens
 
           polluted_citizens =
-            if pollution_death,
+            if pollution_death && citizen.age < 5000,
               do: [citizen | acc.polluted_citizens],
               else: acc.polluted_citizens
+
+          old_citizens =
+            if citizen.age > 5000,
+              do: [citizen | acc.old_citizens],
+              else: acc.old_citizens
 
           # spawn new citizens if conditions are right; age, random, housing exists
           reproducing_citizens =
@@ -253,10 +299,12 @@ defmodule MayorGame.CityHelpersTwo do
             housing_left: housing_left,
             education_left: education_left,
             educated_citizens: educated_citizens,
-            housed_citizens: housed_citizens,
+            housed_unemployed_citizens: housed_unemployed_citizens,
             unhoused_citizens: unhoused_citizens,
-            housed_employed_citizens: housed_employed_citizens,
+            housed_employed_staying_citizens: housed_employed_staying_citizens,
+            housed_employed_looking_citizens: housed_employed_looking_citizens,
             polluted_citizens: polluted_citizens,
+            old_citizens: old_citizens,
             reproducing_citizens: reproducing_citizens
           }
         end
@@ -265,6 +313,7 @@ defmodule MayorGame.CityHelpersTwo do
     city_baked_details
     |> Map.from_struct()
     |> Map.merge(results)
+    |> Map.put(:all_citizens, all_citizens)
     |> Map.merge(after_citizen_checks)
   end
 
@@ -1086,26 +1135,34 @@ defmodule MayorGame.CityHelpersTwo do
   end
 
   defp check_workers(%{} = reqs, citizens) do
+    IO.inspect(Enum.at(citizens, 0).education, label: 'top education before filter')
     filtered_citizens = Enum.filter(citizens, fn cit -> cit.education == reqs.workers.level end)
 
-    if hd(citizens).education < reqs.workers.level or length(filtered_citizens) == 0 do
+    IO.inspect(length(filtered_citizens), label: 'filtered_citizens')
+
+    if length(filtered_citizens) == 0 or hd(filtered_citizens).education < reqs.workers.level do
       []
     else
       count_to_check = min(reqs.workers.count, length(filtered_citizens))
+      # IO.inspect(count_to_check)
+
+      IO.inspect(Enum.at(filtered_citizens, 0).education, label: 'top education after filter')
 
       Enum.reduce_while(0..(count_to_check - 1), [], fn x, acc ->
         cond do
-          Enum.at(citizens, x).education > reqs.workers.level ->
-            {:cont, [Map.put(Enum.at(citizens, x), :has_job, true) | acc]}
+          # Enum.at(citizens, x).education > reqs.workers.level ->
+          #   {:cont, [Map.put(Enum.at(citizens, x), :has_job, true) | acc]}
 
-          Enum.at(citizens, x).education == reqs.workers.level ->
-            {:cont, [Map.put(Enum.at(citizens, x), :has_job, true) | acc]}
+          #   IO.inspect(acc)
 
-          Enum.at(citizens, x).education < reqs.workers.level ->
+          Enum.at(filtered_citizens, x).education == reqs.workers.level ->
+            {:cont, [Enum.at(filtered_citizens, x) | acc]}
+
+          Enum.at(filtered_citizens, x).education < reqs.workers.level ->
             {:halt, acc}
 
-          true ->
-            {:cond, acc}
+            # true ->
+            #   {:cond, acc}
         end
       end)
     end
@@ -1117,9 +1174,10 @@ defmodule MayorGame.CityHelpersTwo do
     Map.merge(acc, generated, fn k, v1, v2 ->
       recurse_merge(k, v1, v2)
     end)
-    |> Map.update!(:result_buildables, fn current ->
-      [buildable | current]
-    end)
+
+    # |> Map.update!(:result_buildables, fn current ->
+    #   [buildable | current]
+    # end)
   end
 
   def recurse_merge(k, v1, v2) do
