@@ -397,8 +397,6 @@ defmodule MayorGameWeb.CityLive do
         :education
       ])
 
-    IO.inspect(operating_count)
-
     socket
     |> assign(:season, season)
     |> assign(:buildables, buildables_with_status)

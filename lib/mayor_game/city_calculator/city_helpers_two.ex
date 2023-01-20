@@ -97,10 +97,6 @@ defmodule MayorGame.CityHelpersTwo do
 
                     updated_buildable =
                       if !enough_workers do
-                        IO.inspect(individual_buildable.metadata.title,
-                          label: "not enough workers"
-                        )
-
                         individual_buildable
                         |> put_in([:buildable, :reason], [:workers])
                         |> put_in([:buildable, :enabled], false)
@@ -310,8 +306,6 @@ defmodule MayorGame.CityHelpersTwo do
       |> Enum.to_list()
       |> Enum.into(%{})
 
-    # IO.inspect(after_citizen_checks)
-
     city_baked_details
     |> Map.from_struct()
     |> Map.merge(results)
@@ -494,22 +488,18 @@ defmodule MayorGame.CityHelpersTwo do
   def calculate_stats_based_on_citizens(city_with_stats, world, cities_count) do
     unless Enum.empty?(city_with_stats.citizens) do
       results =
-        Enum.reduce(
-          city_with_stats.citizens,
-          city_with_stats,
+        Flow.from_enumerable(city_with_stats.citizens)
+        |> Flow.partition()
+        |> Flow.reduce(
+          fn -> city_with_stats end,
           fn citizen, acc ->
             # see if I can just do this all at once instead of a DB write per loop
             # probably can't because it's a unique value per citizen
             # TODO see if
-            City.update_citizens(citizen, %{age: citizen.age + 1})
 
             # set a random pollution ceiling based on how many cities are in the ecosystem
             # could try using :rand.normal here
             # could also use total citizens here
-
-            pollution_ceiling =
-              cities_count * 10000_000 +
-                10000_000 * Random.gammavariate(7.5, 1)
 
             # if there are NO workers for citizen in this town, returns -1.
             best_possible_job =
@@ -549,24 +539,6 @@ defmodule MayorGame.CityHelpersTwo do
                 do: [citizen | acc.citizens_out_of_room],
                 else: acc.citizens_out_of_room
 
-            citizens_too_old =
-              if citizen.age > 5000,
-                do: [citizen | acc.citizens_too_old],
-                else: acc.citizens_too_old
-
-            citizens_polluted =
-              if world.pollution > pollution_ceiling and :rand.uniform() > 0.95 and
-                   citizen.age <= 5000,
-                 do: [citizen | acc.citizens_polluted],
-                 else: acc.citizens_polluted
-
-            # spawn new citizens if conditions are right; age, random, housing exists
-            citizens_to_reproduce =
-              if citizen.age > 500 and citizen.age < 2000 and
-                   :rand.uniform(length(city_with_stats.citizens) + 100) == 1,
-                 do: [citizen | acc.citizens_to_reproduce],
-                 else: acc.citizens_to_reproduce
-
             # once a year, update education of citizen if there is capacity
             # e.g. if the edu institutions have capacity
             # otherwise citizens might just keep levelling up
@@ -595,11 +567,10 @@ defmodule MayorGame.CityHelpersTwo do
             |> Map.put(:education, updated_education)
             |> Map.put(:citizens_looking, citizens_looking)
             |> Map.put(:citizens_out_of_room, citizens_out_of_room)
-            |> Map.put(:citizens_too_old, citizens_too_old)
-            |> Map.put(:citizens_polluted, citizens_polluted)
-            |> Map.put(:citizens_to_reproduce, citizens_to_reproduce)
           end
         )
+        |> Enum.to_list()
+        |> Enum.into(%{})
 
       results
     else
@@ -1143,14 +1114,11 @@ defmodule MayorGame.CityHelpersTwo do
       []
     else
       count_to_check = min(reqs.workers.count, length(filtered_citizens))
-      # IO.inspect(count_to_check)
 
       Enum.reduce_while(0..(count_to_check - 1), [], fn x, acc ->
         cond do
           # Enum.at(citizens, x).education > reqs.workers.level ->
           #   {:cont, [Map.put(Enum.at(citizens, x), :has_job, true) | acc]}
-
-          #   IO.inspect(acc)
 
           Enum.at(filtered_citizens, x).education == reqs.workers.level ->
             {:cont, [Enum.at(filtered_citizens, x) | acc]}

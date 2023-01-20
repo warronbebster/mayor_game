@@ -239,6 +239,8 @@ defmodule MayorGame.CityCalculator do
       |> MayorGame.Repo.transaction()
     end)
 
+    # MULTI CHANGESET AGE
+    MayorGame.Repo.update_all(MayorGame.City.Citizens, inc: [age: 1])
     # CHECK —————
     # FIRST CITIZEN CHECK: AGE DEATHS
     # Enum.each(leftovers.citizens_too_old, fn citizen ->
@@ -361,7 +363,6 @@ defmodule MayorGame.CityCalculator do
         end
       end)
 
-    # IO.inspect(cities_after_job_search)
     # ok, available housing looks right here
 
     # CHECK —————
