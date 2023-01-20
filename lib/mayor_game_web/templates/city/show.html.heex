@@ -310,16 +310,16 @@
                         <%= for requirement <- @building_requirements do %>
                           <%= if building_stats[String.to_existing_atom(requirement <> "_required")] != nil && building_stats[String.to_existing_atom(requirement <> "_required")] > 0 && !Enum.member?(operation_type, String.to_existing_atom(requirement)) do %>
                             <img
-                              src={"/images/#{requirement}-fulfilled.svg"}
-                              alt={"has enough #{requirement} to operate"}
+                              src={"/images/#{to_string(requirement)}-fulfilled.svg"}
+                              alt={"has enough #{to_string(requirement)} to operate"}
                               height="12"
                               width="12"
                             />
                           <% else %>
                             <%= if Enum.member?(operation_type, String.to_existing_atom(requirement)) do %>
                               <img
-                                src={"/images/#{requirement}-off.svg"}
-                                alt={"requires #{requirement} to operate"}
+                                src={"/images/#{to_string(requirement)}-off.svg"}
+                                alt={"requires #{to_string(requirement)} to operate"}
                                 height="12"
                                 width="12"
                               />
