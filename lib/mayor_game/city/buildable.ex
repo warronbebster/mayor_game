@@ -935,7 +935,7 @@ defmodule MayorGame.City.Buildable do
       },
       # RETAIL SHOPS ————————————————————————————————————
       retail_shops: %BuildableMetadata{
-        title: :retails_shops,
+        title: :retail_shops,
         price: 200,
         money_required: 5,
         workers_required: 5,
@@ -1126,6 +1126,7 @@ defmodule MayorGame.City.Buildable do
       needs_nothing,
       get_requirements_keys([:area]),
       get_requirements_keys([:money]),
+      get_requirements_keys([:money, :area]),
       get_requirements_keys([:money, :workers]),
       get_requirements_keys([:area, :workers]),
       get_requirements_keys([:area, :money, :workers]),

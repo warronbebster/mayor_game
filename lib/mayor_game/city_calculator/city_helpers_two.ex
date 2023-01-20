@@ -349,10 +349,21 @@ defmodule MayorGame.CityHelpersTwo do
     # TODO: add seasonality and region changes to this
 
     totals = %{
-      total_area: if(Map.has_key?(production_map, :area), do: production_map.area, else: 0),
-      total_energy: if(Map.has_key?(production_map, :energy), do: production_map.energy, else: 0),
+      total_area:
+        if(production_map != nil && Map.has_key?(production_map, :area),
+          do: production_map.area,
+          else: 0
+        ),
+      total_energy:
+        if(production_map != nil and Map.has_key?(production_map, :energy),
+          do: production_map.energy,
+          else: 0
+        ),
       total_housing:
-        if(Map.has_key?(production_map, :housing), do: production_map.housing, else: 0)
+        if(Map.has_key?(production_map != nil and production_map, :housing),
+          do: production_map.housing,
+          else: 0
+        )
     }
 
     results =
