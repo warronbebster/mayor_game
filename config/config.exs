@@ -7,11 +7,11 @@
 # General application configuration
 import Config
 
-mail_secret =
-  System.get_env("MAIL_SECRET") ||
-    raise """
-    environment variable MAIL_SECRET is missing.
-    """
+mail_secret = "3ab294dfbb937aa9065ab365baeac51b"
+  # System.get_env("MAIL_SECRET") ||
+  #   raise """
+  #   eyyyyy environment variable MAIL_SECRET is missing in config.
+  #   """
 
 config :mayor_game,
   ecto_repos: [MayorGame.Repo]

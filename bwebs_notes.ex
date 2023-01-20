@@ -30,6 +30,8 @@
 # transition buildables to integer?
 # add way to give other cities money
 
+# :math.atan(2)*2/:math.pi()
+
 
 
 

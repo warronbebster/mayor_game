@@ -1,7 +1,7 @@
 <div class="top-0 p-1 px-2 z-20 bg-amber-50 border-b border-neutral-800 flex space-x-3 w-screen overflow-x-scroll shrink-0 leading-tight">
   <table class="self-end mr-auto align-bottom">
     <tr>
-      <td class="top_td"><%= @city.title %></td>
+      <td class="top_td"><%= @city2.title %></td>
       <td class="top_td">
         Year
       </td>
@@ -89,49 +89,49 @@
       </td>
       <td class="top_td">
         <span class="text-purple-800">
-          <%= Number.Delimit.number_to_delimited(@city.pollution) %>/day
+          <%= Number.Delimit.number_to_delimited(@city2.pollution) %>/day
         </span>
       </td>
 
       <td class="top_td">
         <span class="text-amber-800">
-          <%= @city.housing - @total_citizens %>/<%= @city.housing %>
+          <%= @total_citizens %>/<%= @city2.housing %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-green-800">
-          $<%= Number.Delimit.number_to_delimited(@city.tax) %>/day
+          $<%= Number.Delimit.number_to_delimited(@city2.income) %>/day
         </span>
       </td>
       <td class="top_td">
         <span class="text-red-800">
-          $<%= Number.Delimit.number_to_delimited(@city.cost) %>/day
+          $<%= Number.Delimit.number_to_delimited(@city2.daily_cost) %>/day
         </span>
       </td>
       <td class="top_td">
         <span class="text-green-800">
-          $<%= Number.Delimit.number_to_delimited(@city.details.city_treasury) %>
+          $<%= Number.Delimit.number_to_delimited(@city2.details.city_treasury) %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-yellow-800">
-          <%= Number.Delimit.number_to_delimited(@city.available_energy) %>/<%= Number.Delimit.number_to_delimited(
-            @city.total_energy
+          <%= Number.Delimit.number_to_delimited(@city2.energy) %>/<%= Number.Delimit.number_to_delimited(
+            @city2.total_energy
           ) %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-cyan-800">
-          <%= Number.Delimit.number_to_delimited(@city.available_area) %>/<%= Number.Delimit.number_to_delimited(
-            @city.total_area
+          <%= Number.Delimit.number_to_delimited(@city2.area) %>/<%= Number.Delimit.number_to_delimited(
+            @city2.total_area
           ) %>
         </span>
       </td>
       <td class="top_td">
-        <%= Number.Delimit.number_to_delimited(@city.fun) %>
+        <%= Number.Delimit.number_to_delimited(@city2.fun) %>
       </td>
       <td class="top_td">
-        <%= Number.Delimit.number_to_delimited(@city.health) %>
+        <%= Number.Delimit.number_to_delimited(@city2.health) %>
       </td>
     </tr>
   </table>
@@ -163,16 +163,16 @@
   <!--Taxes-->
 
   <!--All building details-->
-  <h2 class="text-xl pt-2 pb-1">Job levels</h2>
+  <h2 class="text-base pt-2 pb-1">Job levels</h2>
   <div class="flex flex-row flex-wrap gap-x-8 gap-y-4 divide-solid leading-none">
-    <%= for {job_level, rate} <- @city.tax_rates do %>
+    <%= for {job_level, rate} <- @city2.tax_rates do %>
       <div class="flex flex-col gap-1">
-        <span class="text-lg">Level <%= job_level %></span>
+        <span class="text-base">Level <%= job_level %></span>
         <%= if @is_user_mayor do %>
           <div class="flex flex-col gap-1">
             tax rate
             <input
-              class="btn text-s bg-amber-50 p-[2px] border leading-none border-neutral-800/25"
+              class="btn text-sm bg-amber-50 p-[2px] border leading-none border-neutral-800/25"
               step="0.01"
               phx-blur="update_tax_rates"
               type="number"
@@ -196,12 +196,20 @@
         </div>
         <!--print job count at level-->
         <div>
-          <%= if @city.jobs_map[String.to_integer(job_level)] !== nil do %>
-            <%= to_string(@city.jobs_map[String.to_integer(job_level)]) %>
+          <%= if @city2.total_jobs[String.to_integer(job_level)] !== nil do %>
+            <%= to_string(@city2.total_jobs[String.to_integer(job_level)]) %>
           <% else %>
             0
           <% end %>
           total jobs
+        </div>
+        <div>
+          <%= if @city2.jobs[String.to_integer(job_level)] !== nil do %>
+            <%= to_string(@city2.jobs[String.to_integer(job_level)]) %>
+          <% else %>
+            0
+          <% end %>
+          available jobs
         </div>
       </div>
     <% end %>
@@ -209,7 +217,7 @@
 
   <%= for {category, buildings} <- @buildables do %>
     <div class="group relative flex-shrink self-start">
-      <h2 class="text-xl pt-2 first-letter:uppercase underline underline-offset-4 decoration-neutral-800/40 decoration-dotted	">
+      <h2 class="text-base pt-2 first-letter:uppercase underline underline-offset-4 decoration-neutral-800/40 decoration-dotted	">
         <%= category %>
       </h2>
       <div class="tooltip min-w-[240px]">
@@ -219,7 +227,7 @@
     <div class="divide-y divide-neutral-800/10">
       <%= for {building_type, building_stats} <- buildings do %>
         <div class="flex flex-wrap items-center gap-2 py-0.5">
-          <div class="basis-full md:basis-80 flex flex-row items-center justify-between">
+          <div class="basis-full md:basis-72 flex flex-row items-center justify-between">
             <!-- building title -->
             <div class="group relative inline-block">
               <h3 class="text-l first-letter:uppercase decoration-1	underline underline-offset-4 decoration-neutral-800/40 decoration-dotted	">
@@ -227,7 +235,7 @@
               </h3>
               <div class="tooltip">
                 <%= for {building_stat, value} <- building_stats do %>
-                  <%= if !String.contains?(Atom.to_string(building_stat), ["multipliers", "price", "purchasable", "upgrades"]) && value != nil do %>
+                  <%= if !String.contains?(Atom.to_string(building_stat), ["multipliers", "price", "purchasable", "upgrades", "produces", "requires"]) && value != nil do %>
                     <div class="flex items-center gap-1">
                       <div class=""><%= building_stat %></div>
                       <hr class="border-neutral-800 flex-1" />
@@ -300,7 +308,7 @@
                         </p>
 
                         <%= for requirement <- @building_requirements do %>
-                          <%= if building_stats[String.to_existing_atom(requirement <> "_required")] != nil && building_stats[String.to_existing_atom(requirement <> "_required")] > 0 && !Enum.member?(operation_type, requirement) do %>
+                          <%= if building_stats[String.to_existing_atom(requirement <> "_required")] != nil && building_stats[String.to_existing_atom(requirement <> "_required")] > 0 && !Enum.member?(operation_type, String.to_existing_atom(requirement)) do %>
                             <img
                               src={"/images/#{requirement}-fulfilled.svg"}
                               alt={"has enough #{requirement} to operate"}
@@ -308,7 +316,7 @@
                               width="12"
                             />
                           <% else %>
-                            <%= if Enum.member?(operation_type, requirement) do %>
+                            <%= if Enum.member?(operation_type, String.to_existing_atom(requirement)) do %>
                               <img
                                 src={"/images/#{requirement}-off.svg"}
                                 alt={"requires #{requirement} to operate"}
@@ -370,47 +378,11 @@
                   <div class="group relative flex flex-row items-center text-yellow-700 gap-1 w-20">
                     <img src="/images/energy.svg" alt="total area" height="12" width="12" />
                     <%= Number.Delimit.number_to_delimited(
-                      round(
-                        @operating_count[building_type][[]] * building_stats.energy *
-                          if(
-                            Map.has_key?(
-                              building_stats.region_energy_multipliers,
-                              String.to_existing_atom(@city.region)
-                            ),
-                            do:
-                              building_stats.region_energy_multipliers[
-                                String.to_existing_atom(@city.region)
-                              ],
-                            else: 1
-                          ) *
-                          if(
-                            Map.has_key?(building_stats.season_energy_multipliers, @season),
-                            do: building_stats.season_energy_multipliers[@season],
-                            else: 1
-                          )
-                      )
+                      round(@operating_count[building_type][[]] * building_stats.energy)
                     ) %>
                     <div class="pointer-events-none group-hover:opacity-100 transition-opacity bg-amber-50 border border-neutral-800 z-10 p-2 absolute top-8 right-0 opacity-0 max-w-sm ">
                       <%= Number.Delimit.number_to_delimited(
-                        round(
-                          @operating_count[building_type][[]] * building_stats.energy *
-                            if(
-                              Map.has_key?(
-                                building_stats.region_energy_multipliers,
-                                String.to_existing_atom(@city.region)
-                              ),
-                              do:
-                                building_stats.region_energy_multipliers[
-                                  String.to_existing_atom(@city.region)
-                                ],
-                              else: 1
-                            ) *
-                            if(
-                              Map.has_key?(building_stats.season_energy_multipliers, @season),
-                              do: building_stats.season_energy_multipliers[@season],
-                              else: 1
-                            )
-                        )
+                        round(@operating_count[building_type][[]] * building_stats.energy)
                       ) %> energy generated
                     </div>
                   </div>
@@ -473,13 +445,13 @@
     <div class="flex-grow">
       <div class="relative pt-4">
         <div class="flex items-center space-x-2 sticky top-0 bg-amber-50">
-          <div class="text-xl ">
+          <div class="text-base ">
             Log
           </div>
           <hr class="border-neutral-800/25flex-1" />
         </div>
 
-        <%= for log_item <- @city.logs do %>
+        <%= for log_item <- @city2.logs do %>
           <%= log_item %>
           <br />
         <% end %>

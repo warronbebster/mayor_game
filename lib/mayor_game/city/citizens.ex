@@ -18,6 +18,7 @@ defmodule MayorGame.City.Citizens do
           education: 1..5,
           job: 1..5,
           has_car: boolean,
+          has_job: boolean,
           last_moved: integer | nil,
           preferences: map,
           town: MayorGame.City.Town.t()
@@ -30,6 +31,7 @@ defmodule MayorGame.City.Citizens do
     field :education, :integer
     field :job, :integer
     field :has_car, :boolean
+    field :has_job, :boolean
     # probably can get rid of this and just rely on lastUpdated in the DB
     field :last_moved, :integer
     field :preferences, :map
@@ -47,6 +49,7 @@ defmodule MayorGame.City.Citizens do
       :age,
       :education,
       :has_car,
+      :has_job,
       :last_moved,
       :preferences
     ]
