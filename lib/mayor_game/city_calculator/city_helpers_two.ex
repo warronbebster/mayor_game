@@ -360,7 +360,7 @@ defmodule MayorGame.CityHelpersTwo do
           else: 0
         ),
       total_housing:
-        if(Map.has_key?(production_map != nil and production_map, :housing),
+        if(production_map != nil and Map.has_key?(production_map, :housing),
           do: production_map.housing,
           else: 0
         )
