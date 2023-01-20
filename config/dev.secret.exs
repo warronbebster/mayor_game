@@ -1,5 +1,8 @@
 import Config
 
+config :mayor_game,
+mail_secret: "3ab294dfbb937aa9065ab365baeac51b"
+
 # Configure your database
 config :mayor_game, MayorGame.Repo,
   username: "postgres",
