@@ -11,12 +11,12 @@ defmodule Hungarian do
   # tuples of assigments that minimizes total cost
   def compute([row1 | _] = matrix) do
     matrix
-    |> IO.inspect(
-      label: "hungarian_input_matrix",
-      limit: :infinity,
-      printable_limit: :infinity,
-      pretty: true
-    )
+    # |> IO.inspect(
+    #   label: "hungarian_input_matrix",
+    #   limit: :infinity,
+    #   printable_limit: :infinity,
+    #   pretty: true
+    # )
     # add "zero" rows if its not a square matrix
     |> pad()
     # perform the calculation
@@ -54,7 +54,7 @@ defmodule Hungarian do
 
   defp step(matrix, 3, _assignments, count) do
     {covered_rows, covered_cols} = min_lines(matrix)
-    IO.inspect("#{Enum.join(covered_rows, ",")} x #{Enum.join(covered_cols, ",")}")
+    # IO.inspect("#{Enum.join(covered_rows, ",")} x #{Enum.join(covered_cols, ",")}")
 
     min_uncovered =
       matrix
@@ -66,7 +66,8 @@ defmodule Hungarian do
       |> List.flatten()
       |> Enum.filter(&(!is_nil(&1)))
       |> Enum.min()
-      |> IO.inspect(label: "min_uncovered")
+
+    # |> IO.inspect(label: "min_uncovered")
 
     transformed =
       matrix
@@ -112,7 +113,8 @@ defmodule Hungarian do
         acc
       end
     end)
-    |> IO.inspect()
+
+    # |> IO.inspect()
   end
 
   # https://stackoverflow.com/questions/23379660/hungarian-algorithm-finding-minimum-number-of-lines-to-cover-zeroes
@@ -146,7 +148,7 @@ defmodule Hungarian do
       min = Enum.min(row)
 
       Enum.map(row, fn column ->
-        Float.round(column - min, 3)
+        if column - min == 0, do: 0, else: Float.round(column - min, 3)
       end)
     end)
   end

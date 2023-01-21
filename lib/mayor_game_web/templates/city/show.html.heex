@@ -34,45 +34,61 @@
 
   <table class="self-start mr-auto align-bottom flex-shrink">
     <tr>
-      <td class="text-purple-600 top_td">
-        <img src="/images/pollution.svg" alt="total area" height="12" width="12" class="inline" />
-        Global&nbsp;Pollution
+      <td class="text-purple-600 top_td align-middle">
+        <div class="flex gap-1 items-center pr-2">
+          <img src="/images/pollution.svg" alt="total area" height="12" width="12" class="inline" />
+          Global&nbsp;Pollution
+        </div>
       </td>
       <td class="text-purple-600 top_td">
-        <img src="/images/pollution.svg" alt="total area" height="12" width="12" class="inline" />
-        City&nbsp;Pollution
+        <div class="flex gap-1 items-center pr-2">
+          <img src="/images/pollution.svg" alt="total area" height="12" width="12" class="inline" />
+          City&nbsp;Pollution
+        </div>
       </td>
 
       <td class="top_td text-amber-600">
-        <img src="/images/housing.svg" alt="total area" height="12" width="12" class="inline" />
-        Housing
+        <div class="flex gap-1 items-center pr-2">
+          <img src="/images/housing.svg" alt="total area" height="12" width="12" class="inline" />
+          Housing
+        </div>
       </td>
       <td class="top_td text-green-600">
-        <img
-          src="/images/money-fulfilled.svg"
-          alt="total area"
-          height="12"
-          width="12"
-          class="inline"
-        />&nbsp;Income
+        <div class="flex items-center pr-2">
+          <img
+            src="/images/money-fulfilled.svg"
+            alt="total area"
+            height="12"
+            width="12"
+            class="inline"
+          />&nbsp;Income
+        </div>
       </td>
       <td class="top_td text-red-600">
-        <img src="/images/money-off.svg" alt="total area" height="12" width="12" class="inline" />&nbsp;Expenses
+        <div class="flex items-center pr-2">
+          <img src="/images/money-off.svg" alt="total area" height="12" width="12" class="inline" />&nbsp;Expenses
+        </div>
       </td>
       <td class="top_td text-green-600">
-        <img
-          src="/images/money-fulfilled.svg"
-          alt="total area"
-          height="12"
-          width="12"
-          class="inline"
-        />&nbsp;Money
+        <div class="flex items-center pr-2">
+          <img
+            src="/images/money-fulfilled.svg"
+            alt="total area"
+            height="12"
+            width="12"
+            class="inline"
+          />&nbsp;Money
+        </div>
       </td>
       <td class="top_td text-yellow-600">
-        <img src="/images/energy.svg" alt="total energy" height="12" width="12" class="inline" />&nbsp;Energy
+        <div class="flex items-center pr-2">
+          <img src="/images/energy.svg" alt="total energy" height="12" width="12" class="inline" />&nbsp;Energy
+        </div>
       </td>
       <td class="top_td text-cyan-600">
-        <img src="/images/area.svg" alt="total energy" height="12" width="12" class="inline" />&nbsp;Area
+        <div class="flex gap-1 items-center pr-2">
+          <img src="/images/area.svg" alt="total energy" height="12" width="12" class="inline" />&nbsp;Area
+        </div>
       </td>
       <td class="top_td">
         Fun
@@ -95,7 +111,7 @@
 
       <td class="top_td">
         <span class="text-amber-800">
-          <%= @total_citizens %>/<%= @city2.housing %>
+          <%= @city2.housing - @total_citizens %>/<%= @city2.housing %>
         </span>
       </td>
       <td class="top_td">

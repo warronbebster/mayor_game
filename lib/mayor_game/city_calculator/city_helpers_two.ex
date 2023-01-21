@@ -8,18 +8,36 @@ defmodule MayorGame.CityHelpersTwo do
     returns a map:
     ```
     %{
-      city: city_update,
-      workers: total_workers,
-      education: total_education,
-      tax: 0,
-      housing: total_housing,
-      money: money,
-      area: area.total_area,
-      sprawl: area.sprawl,
-      energy: energy.total_energy,
-      pollution: energy.pollution,
-      citizens_looking: []
-    }
+      money: city_baked_details.details.city_treasury,
+      income: 0,
+      daily_cost: 0,
+      citizens: sorted_citizens,
+      employed_citizens: [],
+      fun: 0,
+      health: 0,
+      total_housing: 0,
+      housing: 0,
+      total_energy: 0,
+      energy: 0,
+      pollution: 0,
+      jobs: %{0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0},
+      total_jobs: %{0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0},
+      education: %{1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0},
+      total_area: 0,
+      area: 0,
+      buildables: ordered_buildables,
+      result_buildables: []
+      housing_left: results.housing,
+      education_left: results.education,
+      educated_citizens: %{0 => [], 1 => [], 2 => [], 3 => [], 4 => [], 5 => []},
+      housed_unemployed_citizens: [],
+      housed_employed_staying_citizens: [],
+      housed_employed_looking_citizens: [],
+      unhoused_citizens: all_citizens,
+      polluted_citizens: [],
+      old_citizens: [],
+      reproducing_citizens: []
+    },
     ```
   """
   def calculate_city_stats(%Town{} = city, %World{} = world, cities_count, pollution_ceiling) do

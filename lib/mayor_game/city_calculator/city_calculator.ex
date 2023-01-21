@@ -71,7 +71,11 @@ defmodule MayorGame.CityCalculator do
           citizens_too_old: [],
           citizens_polluted: [],
           citizens_to_reproduce: [],
-          new_world_pollution: 0
+          new_world_pollution: 0,
+          housed_unemployed_citizens: [],
+          housed_employed_looking_citizens: [],
+          unhoused_citizens: [],
+          housing_slots: []
         },
         fn city, acc ->
           # result here is a %Town{} with stats calculated
@@ -132,6 +136,14 @@ defmodule MayorGame.CityCalculator do
           #     IO.inspect(err)
           # end
 
+          citizens_looking =
+            city_with_stats2.housed_unemployed_citizens ++
+              city_with_stats2.housed_employed_looking_citizens
+
+          housing_slots =
+            city_with_stats2.housing_left + length(city_with_stats2.housed_unemployed_citizens) +
+              length(city_with_stats2.housed_employed_looking_citizens)
+
           %{
             all_cities_new: [city_with_stats2 | acc.all_cities_new],
             all_cities: [city_calculated_values | acc.all_cities],
@@ -145,22 +157,73 @@ defmodule MayorGame.CityCalculator do
             citizens_polluted: city_with_stats2.polluted_citizens ++ acc.citizens_polluted,
             citizens_to_reproduce:
               city_with_stats2.reproducing_citizens ++ acc.citizens_to_reproduce,
-            citizens_out_of_room:
-              city_calculated_values.citizens_out_of_room ++ acc.citizens_out_of_room,
-            citizens_looking: city_calculated_values.citizens_looking ++ acc.citizens_looking,
-            new_world_pollution: city_with_stats2.pollution + acc.new_world_pollution
+            citizens_out_of_room: city_with_stats2.unhoused_citizens ++ acc.citizens_out_of_room,
+            citizens_looking: citizens_looking ++ acc.citizens_looking,
+            new_world_pollution: city_with_stats2.pollution + acc.new_world_pollution,
+            housed_unemployed_citizens:
+              city_with_stats2.housed_unemployed_citizens ++ acc.housed_unemployed_citizens,
+            housed_employed_looking_citizens:
+              city_with_stats2.housed_employed_looking_citizens ++
+                acc.housed_employed_looking_citizens,
+            unhoused_citizens: city_with_stats2.unhoused_citizens ++ acc.unhoused_citizens,
+            housing_slots:
+              if(housing_slots > 0,
+                do: [{city_with_stats2, housing_slots} | acc.housing_slots],
+                else: acc.housing_slots
+              )
           }
         end
       )
 
     # ok so here each city has
 
-    # educated citizens (map of level to list of citizens)
-    # gotta multi educate here
+    pollution_max = Enum.max(Enum.map(leftovers.all_cities_new, &nil_value_check(&1, :pollution)))
+    fun_max = Enum.max(Enum.map(leftovers.all_cities_new, &nil_value_check(&1, :fun)))
+    health_max = Enum.max(Enum.map(leftovers.all_cities_new, &nil_value_check(&1, :health)))
+    sprawl_max = Enum.max(Enum.map(leftovers.all_cities_new, &nil_value_check(&1, :sprawl)))
+
+    # housed_employed_looking_citizens
+    # for each other citizen & housing slot
+    # get dot product
+    # IO.inspect(leftovers.housing_slots)
+
+    housing_slots_normalized =
+      Enum.map(leftovers.housing_slots, fn {k, v} ->
+        {normalize_city(k, fun_max, health_max, pollution_max, sprawl_max), v}
+      end)
+
+    preference_maps =
+      Enum.map(leftovers.citizens_looking, fn citizen ->
+        Enum.flat_map(housing_slots_normalized, fn {k, v} ->
+          # duplicate this score v times (1 for each slot)
+
+          score = Float.round(1 - citizen_score(citizen.preferences, citizen.education, k), 4)
+
+          for _ <- 1..v,
+              do: score
+        end)
+      end)
+
+    # [
+    # [score, score, score], citizen
+    # [score, score, score], citizen
+    # ]
+
+    IO.inspect(preference_maps)
+
+    if preference_maps != [], do: IO.inspect(Hungarian.compute(preference_maps))
+
+    # preference_maps =
+    #   Enum.map(housing_slots_normalized, fn {k, v} ->
+    #     for _ <- 1..v,
+    #   Enum.map(leftovers.citizens_looking, fn citizen ->
+    #       # duplicate this score v times (1 for each slot)
+    #           do: Float.round(1 - citizen_score(citizen.preferences, citizen.education, k), 4)
+    #     end)
+    #   end)
 
     # housed_employed_looking_citizens
     # housed_employed_citizens
-    # check tax rates for these to decide if they're looking
     # housed_citizens (no job)
     # unhoused_citizens (no anything)
 
@@ -173,22 +236,6 @@ defmodule MayorGame.CityCalculator do
     # this is where the cities are done
     # first kill the polluted citizens and old citizens
     # should I add housing back to the cities in that case? probably
-
-    # IO.inspect(Enum.max(Enum.map(leftovers.all_cities_new, &nil_value_check(&1, :pollution))),
-    #   label: "pollution max"
-    # )
-
-    # IO.inspect(Enum.max(Enum.map(leftovers.all_cities_new, &nil_value_check(&1, :sprawl))),
-    #   label: "sprawl max"
-    # )
-
-    # IO.inspect(Enum.max(Enum.map(leftovers.all_cities_new, &nil_value_check(&1, :fun))),
-    #   label: "fun max"
-    # )
-
-    # IO.inspect(Enum.max(Enum.map(leftovers.all_cities_new, &nil_value_check(&1, :health))),
-    #   label: "health max"
-    # )
 
     # MULTI UPDATE: update city money/treasury in DB
     leftovers.all_cities_new
@@ -241,12 +288,7 @@ defmodule MayorGame.CityCalculator do
 
     # MULTI CHANGESET AGE
     MayorGame.Repo.update_all(MayorGame.City.Citizens, inc: [age: 1])
-    # CHECK —————
-    # FIRST CITIZEN CHECK: AGE DEATHS
-    # Enum.each(leftovers.citizens_too_old, fn citizen ->
-    #   CityHelpers.kill_citizen(citizen, citizen.name <> " has died of old age")
-    #   # add 1 to available_housing for citizen's city
-    # end)
+
     # MULTI CHANGESET KILL OLD CITIZENS
     leftovers.citizens_too_old
     |> Enum.with_index()
@@ -478,4 +520,32 @@ defmodule MayorGame.CityCalculator do
   def nil_value_check(map, key) do
     if Map.has_key?(map, key), do: map[key], else: 0
   end
+
+  def normalize_city(city, max_fun, max_health, max_pollution, max_sprawl) do
+    %{
+      city: city,
+      id: city.id,
+      sprawl_normalized: zero_check(city.sprawl, max_sprawl),
+      pollution_normalized: zero_check(city.pollution, max_pollution),
+      fun_normalized: zero_check(city.fun, max_fun),
+      health_normalized: zero_check(city.health, max_health),
+      tax_rates: city.tax_rates
+    }
+  end
+
+  def zero_check(check, divisor) do
+    if check == 0 or divisor == 0, do: 0, else: check / divisor
+  end
+
+  def citizen_score(citizen_preferences, education_level, normalized_city) do
+    normalized_city.tax_rates[to_string(education_level)] * citizen_preferences["tax_rates"] +
+      normalized_city.pollution_normalized * citizen_preferences["pollution"] +
+      normalized_city.sprawl_normalized * citizen_preferences["sprawl"] +
+      normalized_city.fun_normalized * citizen_preferences["fun"] +
+      normalized_city.health_normalized * citizen_preferences["health"]
+  end
+
+  def mindotproduct(a, b), do: dotproduct(Enum.sort(a), Enum.sort(b))
+  defp dotproduct([], []), do: 0
+  defp dotproduct([ah | at] = _a, [bh | bt] = _b), do: ah * bh + dotproduct(at, bt)
 end
