@@ -273,53 +273,56 @@ defmodule MayorGame.CityCalculator do
 
     # MULTI CHANGESET MOVE JOB SEARCHING CITIZENS
     # MOVE CITIZENS
-    # Enum.map(0..5, fn x ->
-    #   if hungarian_results_by_level[x].output != [] do
-    #     hungarian_results_by_level[x].output
-    #     |> Enum.reduce(Ecto.Multi.new(), fn {citizen_index, slot_index}, multi ->
-    #       citizen = Enum.at(elem(citizens_split[x], 0), citizen_index)
-    #       town_from = City.get_town!(citizen.town_id)
+    Enum.map(0..5, fn x ->
+      if hungarian_results_by_level[x].output != [] do
+        hungarian_results_by_level[x].output
+        |> Enum.chunk_every(100)
+        |> Enum.map(fn chunk ->
+          Enum.reduce(chunk, Ecto.Multi.new(), fn {citizen_index, slot_index}, multi ->
+            citizen = Enum.at(elem(citizens_split[x], 0), citizen_index)
+            town_from = City.get_town!(citizen.town_id)
 
-    #       town_to =
-    #         City.get_town!(
-    #           Enum.at(job_and_housing_slots_normalized[x].slots_expanded, slot_index).id
-    #         )
+            town_to =
+              City.get_town!(
+                Enum.at(job_and_housing_slots_normalized[x].slots_expanded, slot_index).id
+              )
 
-    #       if town_from.id != town_to.id do
-    #         citizen_changeset =
-    #           citizen
-    #           |> City.Citizens.changeset(%{town_id: town_to.id, town: town_to})
+            if town_from.id != town_to.id do
+              citizen_changeset =
+                citizen
+                |> City.Citizens.changeset(%{town_id: town_to.id, town: town_to})
 
-    #         log_from =
-    #           CityHelpersTwo.describe_citizen(citizen) <>
-    #             " has moved to " <> town_to.title
+              log_from =
+                CityHelpersTwo.describe_citizen(citizen) <>
+                  " has moved to " <> town_to.title
 
-    #         log_to =
-    #           CityHelpersTwo.describe_citizen(citizen) <>
-    #             " has moved from " <> town_from.title
+              log_to =
+                CityHelpersTwo.describe_citizen(citizen) <>
+                  " has moved from " <> town_from.title
 
-    #         # if list is longer than 50, remove last item
-    #         limited_log_from = update_logs(log_from, town_from.logs)
-    #         limited_log_to = update_logs(log_to, town_to.logs)
+              # if list is longer than 50, remove last item
+              limited_log_from = update_logs(log_from, town_from.logs)
+              limited_log_to = update_logs(log_to, town_to.logs)
 
-    #         town_from_changeset =
-    #           town_from
-    #           |> City.Town.changeset(%{logs: limited_log_from})
+              town_from_changeset =
+                town_from
+                |> City.Town.changeset(%{logs: limited_log_from})
 
-    #         town_to_changeset =
-    #           town_to
-    #           |> City.Town.changeset(%{logs: limited_log_to})
+              town_to_changeset =
+                town_to
+                |> City.Town.changeset(%{logs: limited_log_to})
 
-    #         Ecto.Multi.update(multi, {:update_citizen_town, citizen_index}, citizen_changeset)
-    #         |> Ecto.Multi.update({:update_town_from, citizen_index}, town_from_changeset)
-    #         |> Ecto.Multi.update({:update_town_to, citizen_index}, town_to_changeset)
-    #       else
-    #         multi
-    #       end
-    #     end)
-    #     |> Repo.transaction()
-    #   end
-    # end)
+              Ecto.Multi.update(multi, {:update_citizen_town, citizen_index}, citizen_changeset)
+              |> Ecto.Multi.update({:update_town_from, citizen_index}, town_from_changeset)
+              |> Ecto.Multi.update({:update_town_to, citizen_index}, town_to_changeset)
+            else
+              multi
+            end
+          end)
+          |> Repo.transaction()
+        end)
+      end
+    end)
 
     IO.inspect("round 1 done")
 
@@ -402,47 +405,50 @@ defmodule MayorGame.CityCalculator do
 
     # MULTI CHANGESET MOVE LOOKING CITIZENS
     # MOVE CITIZENS
-    # if hungarian_results.output != [] do
-    #   hungarian_results.output
-    #   |> Enum.reduce(Ecto.Multi.new(), fn {citizen_index, slot_index}, multi ->
-    #     citizen = Enum.at(looking_but_not_in_job_race, citizen_index)
-    #     town_from = City.get_town!(citizen.town_id)
-    #     town_to = City.get_town!(Enum.at(housing_slots_expanded, slot_index).id)
+    if hungarian_results.output != [] do
+      hungarian_results.output
+      |> Enum.chunk_every(100)
+      |> Enum.map(fn chunk ->
+        Enum.reduce(chunk, Ecto.Multi.new(), fn {citizen_index, slot_index}, multi ->
+          citizen = Enum.at(looking_but_not_in_job_race, citizen_index)
+          town_from = City.get_town!(citizen.town_id)
+          town_to = City.get_town!(Enum.at(housing_slots_expanded, slot_index).id)
 
-    #     if town_from.id != town_to.id do
-    #       citizen_changeset =
-    #         citizen
-    #         |> City.Citizens.changeset(%{town_id: town_to.id, town: town_to})
+          if town_from.id != town_to.id do
+            citizen_changeset =
+              citizen
+              |> City.Citizens.changeset(%{town_id: town_to.id, town: town_to})
 
-    #       log_from =
-    #         CityHelpersTwo.describe_citizen(citizen) <>
-    #           " has moved to " <> town_to.title
+            log_from =
+              CityHelpersTwo.describe_citizen(citizen) <>
+                " has moved to " <> town_to.title
 
-    #       log_to =
-    #         CityHelpersTwo.describe_citizen(citizen) <>
-    #           " has moved from " <> town_from.title
+            log_to =
+              CityHelpersTwo.describe_citizen(citizen) <>
+                " has moved from " <> town_from.title
 
-    #       # if list is longer than 50, remove last item
-    #       limited_log_from = update_logs(log_from, town_from.logs)
-    #       limited_log_to = update_logs(log_to, town_to.logs)
+            # if list is longer than 50, remove last item
+            limited_log_from = update_logs(log_from, town_from.logs)
+            limited_log_to = update_logs(log_to, town_to.logs)
 
-    #       town_from_changeset =
-    #         town_from
-    #         |> City.Town.changeset(%{logs: limited_log_from})
+            town_from_changeset =
+              town_from
+              |> City.Town.changeset(%{logs: limited_log_from})
 
-    #       town_to_changeset =
-    #         town_to
-    #         |> City.Town.changeset(%{logs: limited_log_to})
+            town_to_changeset =
+              town_to
+              |> City.Town.changeset(%{logs: limited_log_to})
 
-    #       Ecto.Multi.update(multi, {:update_citizen_town, citizen_index}, citizen_changeset)
-    #       |> Ecto.Multi.update({:update_town_from, citizen_index}, town_from_changeset)
-    #       |> Ecto.Multi.update({:update_town_to, citizen_index}, town_to_changeset)
-    #     else
-    #       multi
-    #     end
-    #   end)
-    #   |> Repo.transaction()
-    # end
+            Ecto.Multi.update(multi, {:update_citizen_town, citizen_index}, citizen_changeset)
+            |> Ecto.Multi.update({:update_town_from, citizen_index}, town_from_changeset)
+            |> Ecto.Multi.update({:update_town_to, citizen_index}, town_to_changeset)
+          else
+            multi
+          end
+        end)
+        |> Repo.transaction()
+      end)
+    end
 
     IO.inspect("round 2 done")
 
@@ -505,68 +511,74 @@ defmodule MayorGame.CityCalculator do
         do: compute_destination(unhoused_preference_maps),
         else: %{matrix: [], output: []}
 
-    # if hungarian_results_unhoused.output != [] do
-    #   hungarian_results_unhoused.output
-    #   |> Enum.reduce(Ecto.Multi.new(), fn {citizen_index, slot_index}, multi ->
-    #     citizen = Enum.at(elem(unhoused_split, 0), citizen_index)
-    #     town_from = City.get_town!(citizen.town_id)
-    #     town_to = City.get_town!(Enum.at(housing_slots_3_expanded, slot_index).id)
+    if hungarian_results_unhoused.output != [] do
+      hungarian_results_unhoused.output
+      |> Enum.chunk_every(100)
+      |> Enum.map(fn chunk ->
+        Enum.reduce(chunk, Ecto.Multi.new(), fn {citizen_index, slot_index}, multi ->
+          citizen = Enum.at(elem(unhoused_split, 0), citizen_index)
+          town_from = City.get_town!(citizen.town_id)
+          town_to = City.get_town!(Enum.at(housing_slots_3_expanded, slot_index).id)
 
-    #     if town_from.id != town_to.id do
-    #       citizen_changeset =
-    #         citizen
-    #         |> City.Citizens.changeset(%{town_id: town_to.id, town: town_to})
+          if town_from.id != town_to.id do
+            citizen_changeset =
+              citizen
+              |> City.Citizens.changeset(%{town_id: town_to.id, town: town_to})
 
-    #       log_from =
-    #         CityHelpersTwo.describe_citizen(citizen) <>
-    #           " has moved to " <> town_to.title
+            log_from =
+              CityHelpersTwo.describe_citizen(citizen) <>
+                " has moved to " <> town_to.title
 
-    #       log_to =
-    #         CityHelpersTwo.describe_citizen(citizen) <>
-    #           " has moved from " <> town_from.title
+            log_to =
+              CityHelpersTwo.describe_citizen(citizen) <>
+                " has moved from " <> town_from.title
 
-    #       # if list is longer than 50, remove last item
-    #       limited_log_from = update_logs(log_from, town_from.logs)
-    #       limited_log_to = update_logs(log_to, town_to.logs)
+            # if list is longer than 50, remove last item
+            limited_log_from = update_logs(log_from, town_from.logs)
+            limited_log_to = update_logs(log_to, town_to.logs)
 
-    #       town_from_changeset =
-    #         town_from
-    #         |> City.Town.changeset(%{logs: limited_log_from})
+            town_from_changeset =
+              town_from
+              |> City.Town.changeset(%{logs: limited_log_from})
 
-    #       town_to_changeset =
-    #         town_to
-    #         |> City.Town.changeset(%{logs: limited_log_to})
+            town_to_changeset =
+              town_to
+              |> City.Town.changeset(%{logs: limited_log_to})
 
-    #       Ecto.Multi.update(multi, {:update_citizen_town, citizen_index}, citizen_changeset)
-    #       |> Ecto.Multi.update({:update_town_from, citizen_index}, town_from_changeset)
-    #       |> Ecto.Multi.update({:update_town_to, citizen_index}, town_to_changeset)
-    #     else
-    #       multi
-    #     end
-    #   end)
-    #   |> Repo.transaction()
-    # end
+            Ecto.Multi.update(multi, {:update_citizen_town, citizen_index}, citizen_changeset)
+            |> Ecto.Multi.update({:update_town_from, citizen_index}, town_from_changeset)
+            |> Ecto.Multi.update({:update_town_to, citizen_index}, town_to_changeset)
+          else
+            multi
+          end
+        end)
+        |> Repo.transaction()
+      end)
+    end
 
     # MULTI KILL REST OF UNHOUSED CITIZENS
-    # elem(unhoused_split, 1)
-    # |> Enum.with_index()
-    # |> Enum.reduce(Ecto.Multi.new(), fn {citizen, idx}, multi ->
-    #   town = City.get_town!(citizen.town_id)
+    elem(unhoused_split, 1)
+    |> Enum.chunk_every(100)
+    |> Enum.map(fn chunk ->
+      Enum.with_index(chunk)
+      |> Enum.reduce(Ecto.Multi.new(), fn {citizen, idx}, multi ->
+        town = City.get_town!(citizen.town_id)
 
-    #   log =
-    #     CityHelpersTwo.describe_citizen(citizen) <>
-    #       " has died because of a lack of housing. RIP"
+        log =
+          CityHelpersTwo.describe_citizen(citizen) <>
+            " has died because of a lack of housing. RIP"
 
-    #   limited_log = update_logs(log, town.logs)
+        limited_log = update_logs(log, town.logs)
 
-    #   town_changeset =
-    #     town
-    #     |> City.Town.changeset(%{logs: limited_log})
+        town_changeset =
+          town
+          |> City.Town.changeset(%{logs: limited_log})
 
-    #   Ecto.Multi.delete(multi, {:delete, idx}, citizen)
-    #   |> Ecto.Multi.update({:update, idx}, town_changeset)
-    # end)
-    # |> Repo.transaction()
+        Ecto.Multi.delete(multi, {:delete, idx}, citizen)
+        |> Ecto.Multi.update({:update, idx}, town_changeset)
+      end)
+      |> Repo.transaction()
+    end)
 
     #
 
@@ -579,131 +591,147 @@ defmodule MayorGame.CityCalculator do
     # ——————————————————————————————————————————————————————————————————————————————————
 
     # MULTI UPDATE: update city money/treasury in DB
-    # leftovers.all_cities_new
-    # |> Enum.with_index()
-    # |> Enum.reduce(Ecto.Multi.new(), fn {city, idx}, multi ->
-    #   updated_city_treasury =
-    #     if city.money < 0,
-    #       do: 0,
-    #       else: city.money
+    leftovers.all_cities_new
+    |> Enum.chunk_every(100)
+    |> Enum.map(fn chunk ->
+      Enum.with_index(chunk)
+      |> Enum.reduce(Ecto.Multi.new(), fn {city, idx}, multi ->
+        updated_city_treasury =
+          if city.money < 0,
+            do: 0,
+            else: city.money
 
-    #   details_update_changeset =
-    #     city.details
-    #     |> City.Details.changeset(%{
-    #       city_treasury: updated_city_treasury,
-    #       pollution: city.pollution
-    #     })
+        details_update_changeset =
+          city.details
+          |> City.Details.changeset(%{
+            city_treasury: updated_city_treasury,
+            pollution: city.pollution
+          })
 
-    #   Ecto.Multi.update(multi, {:update_towns, idx}, details_update_changeset)
-    # end)
-    # |> Repo.transaction()
+        Ecto.Multi.update(multi, {:update_towns, idx}, details_update_changeset)
+      end)
+      |> Repo.transaction()
+    end)
 
     # MULTI CHANGESET EDUCATE
 
-    # leftovers.citizens_learning
-    # |> Enum.map(fn {level, list} ->
-    #   list
-    #   |> Enum.with_index()
-    #   |> Enum.reduce(Ecto.Multi.new(), fn {citizen, idx}, multi ->
-    #     town = City.get_town!(citizen.town_id)
+    leftovers.citizens_learning
+    |> Enum.chunk_every(100)
+    |> Enum.map(fn chunk ->
+      Enum.map(chunk, fn {level, list} ->
+        list
+        |> Enum.with_index()
+        |> Enum.reduce(Ecto.Multi.new(), fn {citizen, idx}, multi ->
+          town = City.get_town!(citizen.town_id)
 
-    #     log =
-    #       CityHelpersTwo.describe_citizen(citizen) <>
-    #         " has graduated to level " <> to_string(level)
+          log =
+            CityHelpersTwo.describe_citizen(citizen) <>
+              " has graduated to level " <> to_string(level)
 
-    #     # if list is longer than 50, remove last item
-    #     limited_log = update_logs(log, town.logs)
+          # if list is longer than 50, remove last item
+          limited_log = update_logs(log, town.logs)
 
-    #     citizen_changeset =
-    #       citizen
-    #       |> City.Citizens.changeset(%{education: level})
+          citizen_changeset =
+            citizen
+            |> City.Citizens.changeset(%{education: level})
 
-    #     town_changeset =
-    #       town
-    #       |> City.Town.changeset(%{logs: limited_log})
+          town_changeset =
+            town
+            |> City.Town.changeset(%{logs: limited_log})
 
-    #     Ecto.Multi.update(multi, {:update_citizen_edu, idx}, citizen_changeset)
-    #     |> Ecto.Multi.update({:update_town_log, idx}, town_changeset)
-    #   end)
-    #   |> Repo.transaction()
-    # end)
+          Ecto.Multi.update(multi, {:update_citizen_edu, idx}, citizen_changeset)
+          |> Ecto.Multi.update({:update_town_log, idx}, town_changeset)
+        end)
+        |> Repo.transaction()
+      end)
+    end)
 
-    # # MULTI CHANGESET AGE
-    # Repo.update_all(MayorGame.City.Citizens, inc: [age: 1])
+    # MULTI CHANGESET AGE
+
+    Repo.update_all(MayorGame.City.Citizens, inc: [age: 1])
 
     # MULTI CHANGESET KILL OLD CITIZENS
-    # leftovers.citizens_too_old
-    # |> Enum.with_index()
-    # |> Enum.reduce(Ecto.Multi.new(), fn {citizen, idx}, multi ->
-    #   town = City.get_town!(citizen.town_id)
+    leftovers.citizens_too_old
+    |> Enum.chunk_every(100)
+    |> Enum.map(fn chunk ->
+      Enum.with_index(chunk)
+      |> Enum.reduce(Ecto.Multi.new(), fn {citizen, idx}, multi ->
+        town = City.get_town!(citizen.town_id)
 
-    #   log = CityHelpersTwo.describe_citizen(citizen) <> " has died because of old age. RIP"
+        log = CityHelpersTwo.describe_citizen(citizen) <> " has died because of old age. RIP"
 
-    #   # if list is longer than 50, remove last item
-    #   limited_log = update_logs(log, town.logs)
+        # if list is longer than 50, remove last item
+        limited_log = update_logs(log, town.logs)
 
-    #   town_changeset =
-    #     town
-    #     |> City.Town.changeset(%{logs: limited_log})
+        town_changeset =
+          town
+          |> City.Town.changeset(%{logs: limited_log})
 
-    #   Ecto.Multi.delete(multi, {:delete, idx}, citizen)
-    #   |> Ecto.Multi.update({:update, idx}, town_changeset)
-    # end)
-    # |> Repo.transaction()
+        Ecto.Multi.delete(multi, {:delete, idx}, citizen)
+        |> Ecto.Multi.update({:update, idx}, town_changeset)
+      end)
+      |> Repo.transaction()
+    end)
 
     # MULTI KILL POLLUTED CITIZENS
-    # leftovers.citizens_polluted
-    # |> Enum.with_index()
-    # |> Enum.reduce(Ecto.Multi.new(), fn {citizen, idx}, multi ->
-    #   town = City.get_town!(citizen.town_id)
+    leftovers.citizens_polluted
+    |> Enum.chunk_every(100)
+    |> Enum.map(fn chunk ->
+      Enum.with_index(chunk)
+      |> Enum.reduce(Ecto.Multi.new(), fn {citizen, idx}, multi ->
+        town = City.get_town!(citizen.town_id)
 
-    #   log =
-    #     CityHelpersTwo.describe_citizen(citizen) <>
-    #       " has died because of pollution. RIP"
+        log =
+          CityHelpersTwo.describe_citizen(citizen) <>
+            " has died because of pollution. RIP"
 
-    #   limited_log = update_logs(log, town.logs)
+        limited_log = update_logs(log, town.logs)
 
-    #   town_changeset =
-    #     town
-    #     |> City.Town.changeset(%{logs: limited_log})
+        town_changeset =
+          town
+          |> City.Town.changeset(%{logs: limited_log})
 
-    #   Ecto.Multi.delete(multi, {:delete, idx}, citizen)
-    #   |> Ecto.Multi.update({:update, idx}, town_changeset)
-    # end)
-    # |> Repo.transaction()
+        Ecto.Multi.delete(multi, {:delete, idx}, citizen)
+        |> Ecto.Multi.update({:update, idx}, town_changeset)
+      end)
+      |> Repo.transaction()
+    end)
 
     # MULTI REPRODUCE
-    # leftovers.citizens_to_reproduce
-    # |> Enum.with_index()
-    # |> Enum.reduce(Ecto.Multi.new(), fn {citizen, idx}, multi ->
-    #   town = City.get_town!(citizen.town_id)
+    leftovers.citizens_to_reproduce
+    |> Enum.chunk_every(100)
+    |> Enum.map(fn chunk ->
+      Enum.with_index(chunk)
+      |> Enum.reduce(Ecto.Multi.new(), fn {citizen, idx}, multi ->
+        town = City.get_town!(citizen.town_id)
 
-    #   log =
-    #     CityHelpersTwo.describe_citizen(citizen) <>
-    #       " had a child"
+        log =
+          CityHelpersTwo.describe_citizen(citizen) <>
+            " had a child"
 
-    #   limited_log = update_logs(log, town.logs)
-    #   # if list is longer than 50, remove last item
+        limited_log = update_logs(log, town.logs)
+        # if list is longer than 50, remove last item
 
-    #   changeset =
-    #     City.create_citizens_changeset(%{
-    #       money: 0,
-    #       town_id: citizen.town_id,
-    #       age: 0,
-    #       education: 0,
-    #       has_car: false,
-    #       has_job: false,
-    #       last_moved: db_world.day
-    #     })
+        changeset =
+          City.create_citizens_changeset(%{
+            money: 0,
+            town_id: citizen.town_id,
+            age: 0,
+            education: 0,
+            has_car: false,
+            has_job: false,
+            last_moved: db_world.day
+          })
 
-    #   town_changeset =
-    #     town
-    #     |> City.Town.changeset(%{logs: limited_log})
+        town_changeset =
+          town
+          |> City.Town.changeset(%{logs: limited_log})
 
-    #   Ecto.Multi.insert(multi, {:add_citizen, idx}, changeset)
-    #   |> Ecto.Multi.update({:update, idx}, town_changeset)
-    # end)
-    # |> Repo.transaction()
+        Ecto.Multi.insert(multi, {:add_citizen, idx}, changeset)
+        |> Ecto.Multi.update({:update, idx}, town_changeset)
+      end)
+      |> Repo.transaction()
+    end)
 
     updated_pollution =
       if db_world.pollution + leftovers.new_world_pollution < 0 do

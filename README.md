@@ -73,6 +73,18 @@ world = MayorGame.City.get_world(1)
 MayorGame.City.update_world(world, %{pollution: 1000000})
 ```
 
+to connect to DB:
+`fly postgres connect -a mayorgame-db`
+`select name, setting from pg_settings where name like '%wal_size%' or name like '%checkpoint%' order by name;`
+
+edit db config:
+`fly ssh console -a mayorgame-db`
+cd data
+cd postgres
+
+restart DBs:
+`fly pg restart -a mayorgame-db`
+
 ## Learn more
 
 - Official website: https://www.phoenixframework.org/
