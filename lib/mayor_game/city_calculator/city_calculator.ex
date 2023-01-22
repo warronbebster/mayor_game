@@ -27,7 +27,7 @@ defmodule MayorGame.CityCalculator do
 
     # send message :tax to self process after 5000ms
     # calls `handle_info` function
-    Process.send_after(self(), :tax, 10000)
+    Process.send_after(self(), :tax, 5000)
 
     # returns ok tuple when u start
     {:ok, game_world}
@@ -914,10 +914,10 @@ defmodule MayorGame.CityCalculator do
     %{
       city: city,
       id: city.id,
-      sprawl_normalized: zero_check(city.sprawl, max_sprawl),
-      pollution_normalized: zero_check(city.pollution, max_pollution),
-      fun_normalized: zero_check(city.fun, max_fun),
-      health_normalized: zero_check(city.health, max_health),
+      sprawl_normalized: zero_check(nil_value_check(city, :sprawl), max_sprawl),
+      pollution_normalized: zero_check(nil_value_check(city, :pollution), max_pollution),
+      fun_normalized: zero_check(nil_value_check(city, :fun), max_fun),
+      health_normalized: zero_check(nil_value_check(city, :health), max_health),
       tax_rates: city.tax_rates
     }
   end
