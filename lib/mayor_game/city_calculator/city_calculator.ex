@@ -76,7 +76,10 @@ defmodule MayorGame.CityCalculator do
           housed_employed_looking_citizens: [],
           unhoused_citizens: [],
           housing_slots: %{},
-          housing_raw: %{}
+          sprawl_max: 0,
+          fun_max: 0,
+          pollution_max: 0,
+          health_max: 0
         },
         fn city, acc ->
           # result here is a %Town{} with stats calculated
@@ -125,10 +128,25 @@ defmodule MayorGame.CityCalculator do
                 do: Map.put(acc.housing_slots, city_with_stats2, housing_slots),
                 else: acc.housing_slots
               ),
-            housing_raw:
-              if(city_with_stats2.housing_left > 0,
-                do: Map.put(acc.housing_raw, city_with_stats2, city_with_stats2.housing_left),
-                else: acc.housing_raw
+            sprawl_max:
+              if(Map.has_key?(city_with_stats2, :sprawl),
+                do: max(city_with_stats2.sprawl, acc.sprawl_max),
+                else: acc.sprawl_max
+              ),
+            fun_max:
+              if(Map.has_key?(city_with_stats2, :fun),
+                do: max(city_with_stats2.fun, acc.fun_max),
+                else: acc.fun_max
+              ),
+            pollution_max:
+              if(Map.has_key?(city_with_stats2, :pollution),
+                do: max(city_with_stats2.pollution, acc.pollution_max),
+                else: acc.pollution_max
+              ),
+            health_max:
+              if(Map.has_key?(city_with_stats2, :health),
+                do: max(city_with_stats2.health, acc.health_max),
+                else: acc.health_max
               )
           }
         end
@@ -138,37 +156,7 @@ defmodule MayorGame.CityCalculator do
 
     # ok so here each city has
 
-    pollution_max =
-      Enum.max(
-        leftovers.all_cities_new
-        |> Flow.from_enumerable()
-        |> Flow.map(&nil_value_check(&1, :pollution))
-        |> Enum.to_list()
-      )
-
-    fun_max =
-      Enum.max(
-        leftovers.all_cities_new
-        |> Flow.from_enumerable()
-        |> Flow.map(&nil_value_check(&1, :fun))
-        |> Enum.to_list()
-      )
-
-    health_max =
-      Enum.max(
-        leftovers.all_cities_new
-        |> Flow.from_enumerable()
-        |> Flow.map(&nil_value_check(&1, :health))
-        |> Enum.to_list()
-      )
-
-    sprawl_max =
-      Enum.max(
-        leftovers.all_cities_new
-        |> Flow.from_enumerable()
-        |> Flow.map(&nil_value_check(&1, :sprawl))
-        |> Enum.to_list()
-      )
+    IO.inspect("starting round 1")
 
     # ——————————————————————————————————————————————————————————————————————————————————
     # ————————————————————————————————————————— ROUND 1: MOVE CITIZENS PER JOB LEVEL
@@ -191,7 +179,14 @@ defmodule MayorGame.CityCalculator do
 
     job_and_housing_slots_normalized =
       Enum.reduce(leftovers.housing_slots, level_slots, fn {city, slots_count}, acc ->
-        normalized_city = normalize_city(city, fun_max, health_max, pollution_max, sprawl_max)
+        normalized_city =
+          normalize_city(
+            city,
+            leftovers.fun_max,
+            leftovers.health_max,
+            leftovers.pollution_max,
+            leftovers.sprawl_max
+          )
 
         slots_per_level =
           Enum.reduce(city.jobs, %{slots_count: slots_count}, fn {level, count}, acc2 ->
@@ -266,34 +261,7 @@ defmodule MayorGame.CityCalculator do
         end)
       end)
 
-    # job_and_housing_slots_normalized =
-    #   Enum.map(level_slots, fn {level, map} ->
-    #     total_slots =
-    #       Enum.reduce(leftovers.housing_slots, 0, fn {k, v}, acc ->
-    #         acc + min(v, k.jobs[level])
-    #       end)
-
-    #     normalized_cities =
-    #       Enum.map(leftovers.housing_slots, fn {k, v} ->
-    #         {normalize_city(k, fun_max, health_max, pollution_max, sprawl_max),
-    #          min(v, k.jobs[level])}
-    #       end)
-
-    #     {level,
-    #      map
-    #      |> Map.put(:normalized_cities, normalized_cities)
-    #      |> Map.put(:total_slots, total_slots)
-    #      |> Map.put(
-    #        :slots_expanded,
-    #        Enum.flat_map(normalized_cities, fn {k, v} ->
-    #          # duplicate this score v times (1 for each slot)
-
-    #          for _ <- 1..v,
-    #              do: k
-    #        end)
-    #      )}
-    #   end)
-    #   |> Enum.into(%{})
+    IO.inspect('after job slots per level calculated')
 
     citizens_split =
       Map.new(0..5, fn x ->
@@ -430,7 +398,13 @@ defmodule MayorGame.CityCalculator do
 
     housing_slots_normalized =
       Enum.map(slots_after_job_migrations, fn {k, v} ->
-        {normalize_city(k, fun_max, health_max, pollution_max, sprawl_max), v}
+        {normalize_city(
+           k,
+           leftovers.fun_max,
+           leftovers.health_max,
+           leftovers.pollution_max,
+           leftovers.sprawl_max
+         ), v}
       end)
 
     housing_slots_expanded =
@@ -535,7 +509,13 @@ defmodule MayorGame.CityCalculator do
 
     housing_slots_3_normalized =
       Enum.map(slots_after_housing_migrations, fn {k, v} ->
-        {normalize_city(k, fun_max, health_max, pollution_max, sprawl_max), v}
+        {normalize_city(
+           k,
+           leftovers.fun_max,
+           leftovers.health_max,
+           leftovers.pollution_max,
+           leftovers.sprawl_max
+         ), v}
       end)
 
     housing_slots_3_expanded =
