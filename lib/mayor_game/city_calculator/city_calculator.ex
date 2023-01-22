@@ -208,57 +208,17 @@ defmodule MayorGame.CityCalculator do
 
         # for each level in slots_per_level
         #
-        acc
-        |> Map.update!(0, fn current ->
-          current
-          |> Map.update!(:normalized_cities, &(&1 ++ [slots_per_level[0]]))
-          |> Map.update!(:total_slots, &(&1 + elem(slots_per_level[0], 1)))
-          |> Map.update!(:slots_expanded, fn current_expanded_slots ->
-            current_expanded_slots ++ Enum.map(1..elem(slots_per_level[0], 1), fn _ -> city end)
-          end)
-        end)
-        |> Map.update!(1, fn current ->
-          current
-          |> Map.update!(:normalized_cities, &(&1 ++ [slots_per_level[1]]))
-          |> Map.update!(:total_slots, &(&1 + elem(slots_per_level[1], 1)))
-          |> Map.update!(:slots_expanded, fn current_expanded_slots ->
-            current_expanded_slots ++ Enum.map(1..elem(slots_per_level[1], 1), fn _ -> city end)
-          end)
-        end)
-        |> Map.update!(2, fn current ->
-          current
-          |> Map.update!(:normalized_cities, &(&1 ++ [slots_per_level[2]]))
-          |> Map.update!(:total_slots, &(&1 + elem(slots_per_level[2], 1)))
-          |> Map.update!(:slots_expanded, fn current_expanded_slots ->
-            current_expanded_slots ++ Enum.map(1..elem(slots_per_level[2], 1), fn _ -> city end)
-          end)
-        end)
-        |> Map.update!(3, fn current ->
-          current
-          |> Map.update!(:normalized_cities, &(&1 ++ [slots_per_level[3]]))
-          |> Map.update!(:total_slots, &(&1 + elem(slots_per_level[3], 1)))
-          |> Map.update!(:slots_expanded, fn current_expanded_slots ->
-            current_expanded_slots ++ Enum.map(1..elem(slots_per_level[3], 1), fn _ -> city end)
-          end)
-        end)
-        |> Map.update!(4, fn current ->
-          current
-          |> Map.update!(:normalized_cities, &(&1 ++ [slots_per_level[4]]))
-          |> Map.update!(:total_slots, &(&1 + elem(slots_per_level[4], 1)))
-          |> Map.update!(:slots_expanded, fn current_expanded_slots ->
-            current_expanded_slots ++ Enum.map(1..elem(slots_per_level[4], 1), fn _ -> city end)
-          end)
-        end)
-        |> Map.update!(5, fn current ->
-          current
-          |> Map.update!(:normalized_cities, &(&1 ++ [slots_per_level[5]]))
-          |> Map.update!(:total_slots, &(&1 + elem(slots_per_level[5], 1)))
-          |> Map.update!(:slots_expanded, fn current_expanded_slots ->
-            current_expanded_slots ++ Enum.map(1..elem(slots_per_level[5], 1), fn _ -> city end)
 
-            # duplicate this score v times (1 for each slot)
-          end)
+        Enum.map(0..5, fn x ->
+          {x,
+           %{
+             normalized_cities: acc[x].normalized_cities ++ [slots_per_level[x]],
+             total_slots: acc[x].total_slots + elem(slots_per_level[x], 1),
+             slots_expanded:
+               acc[x].slots_expanded ++ Enum.map(1..elem(slots_per_level[x], 1), fn _ -> city end)
+           }}
         end)
+        |> Enum.into(%{})
       end)
 
     IO.inspect('after job slots per level calculated')
