@@ -176,7 +176,6 @@ defmodule MayorGame.CityCalculator do
     #     slots_expanded: list of slots
     #   }
     # }
-
     job_and_housing_slots_normalized =
       Enum.reduce(leftovers.housing_slots, level_slots, fn {city, slots_count}, acc ->
         normalized_city =
@@ -274,53 +273,53 @@ defmodule MayorGame.CityCalculator do
 
     # MULTI CHANGESET MOVE JOB SEARCHING CITIZENS
     # MOVE CITIZENS
-    Enum.map(0..5, fn x ->
-      if hungarian_results_by_level[x].output != [] do
-        hungarian_results_by_level[x].output
-        |> Enum.reduce(Ecto.Multi.new(), fn {citizen_index, slot_index}, multi ->
-          citizen = Enum.at(elem(citizens_split[x], 0), citizen_index)
-          town_from = City.get_town!(citizen.town_id)
+    # Enum.map(0..5, fn x ->
+    #   if hungarian_results_by_level[x].output != [] do
+    #     hungarian_results_by_level[x].output
+    #     |> Enum.reduce(Ecto.Multi.new(), fn {citizen_index, slot_index}, multi ->
+    #       citizen = Enum.at(elem(citizens_split[x], 0), citizen_index)
+    #       town_from = City.get_town!(citizen.town_id)
 
-          town_to =
-            City.get_town!(
-              Enum.at(job_and_housing_slots_normalized[x].slots_expanded, slot_index).id
-            )
+    #       town_to =
+    #         City.get_town!(
+    #           Enum.at(job_and_housing_slots_normalized[x].slots_expanded, slot_index).id
+    #         )
 
-          if town_from.id != town_to.id do
-            citizen_changeset =
-              citizen
-              |> City.Citizens.changeset(%{town_id: town_to.id, town: town_to})
+    #       if town_from.id != town_to.id do
+    #         citizen_changeset =
+    #           citizen
+    #           |> City.Citizens.changeset(%{town_id: town_to.id, town: town_to})
 
-            log_from =
-              CityHelpersTwo.describe_citizen(citizen) <>
-                " has moved to " <> town_to.title
+    #         log_from =
+    #           CityHelpersTwo.describe_citizen(citizen) <>
+    #             " has moved to " <> town_to.title
 
-            log_to =
-              CityHelpersTwo.describe_citizen(citizen) <>
-                " has moved from " <> town_from.title
+    #         log_to =
+    #           CityHelpersTwo.describe_citizen(citizen) <>
+    #             " has moved from " <> town_from.title
 
-            # if list is longer than 50, remove last item
-            limited_log_from = update_logs(log_from, town_from.logs)
-            limited_log_to = update_logs(log_to, town_to.logs)
+    #         # if list is longer than 50, remove last item
+    #         limited_log_from = update_logs(log_from, town_from.logs)
+    #         limited_log_to = update_logs(log_to, town_to.logs)
 
-            town_from_changeset =
-              town_from
-              |> City.Town.changeset(%{logs: limited_log_from})
+    #         town_from_changeset =
+    #           town_from
+    #           |> City.Town.changeset(%{logs: limited_log_from})
 
-            town_to_changeset =
-              town_to
-              |> City.Town.changeset(%{logs: limited_log_to})
+    #         town_to_changeset =
+    #           town_to
+    #           |> City.Town.changeset(%{logs: limited_log_to})
 
-            Ecto.Multi.update(multi, {:update_citizen_town, citizen_index}, citizen_changeset)
-            |> Ecto.Multi.update({:update_town_from, citizen_index}, town_from_changeset)
-            |> Ecto.Multi.update({:update_town_to, citizen_index}, town_to_changeset)
-          else
-            multi
-          end
-        end)
-        |> Repo.transaction()
-      end
-    end)
+    #         Ecto.Multi.update(multi, {:update_citizen_town, citizen_index}, citizen_changeset)
+    #         |> Ecto.Multi.update({:update_town_from, citizen_index}, town_from_changeset)
+    #         |> Ecto.Multi.update({:update_town_to, citizen_index}, town_to_changeset)
+    #       else
+    #         multi
+    #       end
+    #     end)
+    #     |> Repo.transaction()
+    #   end
+    # end)
 
     IO.inspect("round 1 done")
 
@@ -403,47 +402,47 @@ defmodule MayorGame.CityCalculator do
 
     # MULTI CHANGESET MOVE LOOKING CITIZENS
     # MOVE CITIZENS
-    if hungarian_results.output != [] do
-      hungarian_results.output
-      |> Enum.reduce(Ecto.Multi.new(), fn {citizen_index, slot_index}, multi ->
-        citizen = Enum.at(looking_but_not_in_job_race, citizen_index)
-        town_from = City.get_town!(citizen.town_id)
-        town_to = City.get_town!(Enum.at(housing_slots_expanded, slot_index).id)
+    # if hungarian_results.output != [] do
+    #   hungarian_results.output
+    #   |> Enum.reduce(Ecto.Multi.new(), fn {citizen_index, slot_index}, multi ->
+    #     citizen = Enum.at(looking_but_not_in_job_race, citizen_index)
+    #     town_from = City.get_town!(citizen.town_id)
+    #     town_to = City.get_town!(Enum.at(housing_slots_expanded, slot_index).id)
 
-        if town_from.id != town_to.id do
-          citizen_changeset =
-            citizen
-            |> City.Citizens.changeset(%{town_id: town_to.id, town: town_to})
+    #     if town_from.id != town_to.id do
+    #       citizen_changeset =
+    #         citizen
+    #         |> City.Citizens.changeset(%{town_id: town_to.id, town: town_to})
 
-          log_from =
-            CityHelpersTwo.describe_citizen(citizen) <>
-              " has moved to " <> town_to.title
+    #       log_from =
+    #         CityHelpersTwo.describe_citizen(citizen) <>
+    #           " has moved to " <> town_to.title
 
-          log_to =
-            CityHelpersTwo.describe_citizen(citizen) <>
-              " has moved from " <> town_from.title
+    #       log_to =
+    #         CityHelpersTwo.describe_citizen(citizen) <>
+    #           " has moved from " <> town_from.title
 
-          # if list is longer than 50, remove last item
-          limited_log_from = update_logs(log_from, town_from.logs)
-          limited_log_to = update_logs(log_to, town_to.logs)
+    #       # if list is longer than 50, remove last item
+    #       limited_log_from = update_logs(log_from, town_from.logs)
+    #       limited_log_to = update_logs(log_to, town_to.logs)
 
-          town_from_changeset =
-            town_from
-            |> City.Town.changeset(%{logs: limited_log_from})
+    #       town_from_changeset =
+    #         town_from
+    #         |> City.Town.changeset(%{logs: limited_log_from})
 
-          town_to_changeset =
-            town_to
-            |> City.Town.changeset(%{logs: limited_log_to})
+    #       town_to_changeset =
+    #         town_to
+    #         |> City.Town.changeset(%{logs: limited_log_to})
 
-          Ecto.Multi.update(multi, {:update_citizen_town, citizen_index}, citizen_changeset)
-          |> Ecto.Multi.update({:update_town_from, citizen_index}, town_from_changeset)
-          |> Ecto.Multi.update({:update_town_to, citizen_index}, town_to_changeset)
-        else
-          multi
-        end
-      end)
-      |> Repo.transaction()
-    end
+    #       Ecto.Multi.update(multi, {:update_citizen_town, citizen_index}, citizen_changeset)
+    #       |> Ecto.Multi.update({:update_town_from, citizen_index}, town_from_changeset)
+    #       |> Ecto.Multi.update({:update_town_to, citizen_index}, town_to_changeset)
+    #     else
+    #       multi
+    #     end
+    #   end)
+    #   |> Repo.transaction()
+    # end
 
     IO.inspect("round 2 done")
 
@@ -776,19 +775,7 @@ defmodule MayorGame.CityCalculator do
       normalized_city.health_normalized * citizen_preferences["health"]
   end
 
-  def mindotproduct(a, b), do: dotproduct(Enum.sort(a), Enum.sort(b))
-  defp dotproduct([], []), do: 0
-  defp dotproduct([ah | at] = _a, [bh | bt] = _b), do: ah * bh + dotproduct(at, bt)
-
   def compute_destination([row1 | _] = matrix) do
-    # IO.inspect(
-    #   matrix,
-    #   label: "compute_input_matrix",
-    #   limit: :infinity,
-    #   printable_limit: :infinity,
-    #   pretty: true
-    # )
-
     Enum.reduce(0..(length(matrix) - 1), %{matrix: matrix, output: []}, fn row_index, acc ->
       # find best one
       row = Enum.at(acc.matrix, row_index)

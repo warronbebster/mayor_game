@@ -11,7 +11,7 @@
 # https://community.fly.io/t/need-help-with-postgresql/3971
 # https://community.fly.io/t/increase-diskspace-for-postgresql/8964
 # https://fly.io/blog/volumes-expand-restore/
-# fly postgres connect -a my-db-name connects to prod DB
+# fly postgres connect -a mayorgame-db connects to prod DB
 # fly volumes list --app mayorgame-db gets volumes from the db project thingy
 
 # citizens don't die or leave with 0 housing?
