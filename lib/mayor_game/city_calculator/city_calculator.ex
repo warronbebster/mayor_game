@@ -344,8 +344,6 @@ defmodule MayorGame.CityCalculator do
          )}
       end)
 
-    IO.inspect(hungarian_results_by_level[0].output)
-
     # MULTI CHANGESET MOVE JOB SEARCHING CITIZENS
     # MOVE CITIZENS
     Enum.map(0..5, fn x ->
@@ -395,6 +393,8 @@ defmodule MayorGame.CityCalculator do
         |> Repo.transaction()
       end
     end)
+
+    IO.inspect("round 1 done")
 
     # ——————————————————————————————————————————————————————————————————————————————————
     # ————————————————————————————————————————— ROUND 2: MOVE CITIZENS ANYWHERE THERE IS HOUSING
@@ -510,6 +510,8 @@ defmodule MayorGame.CityCalculator do
       end)
       |> Repo.transaction()
     end
+
+    IO.inspect("round 2 done")
 
     # ——————————————————————————————————————————————————————————————————————————————————
     # ————————————————————————————————————————— ROUND 3: MOVE CITIZENS WITHOUT HOUSING ANYWHERE THERE IS HOUSING
@@ -630,6 +632,8 @@ defmodule MayorGame.CityCalculator do
     #
 
     # unhoused_citizens (no anything)
+
+    IO.inspect("round 3 done")
 
     # ——————————————————————————————————————————————————————————————————————————————————
     # ————————————————————————————————————————— OTHER ECTO UPDATES
@@ -778,6 +782,9 @@ defmodule MayorGame.CityCalculator do
 
     # SEND RESULTS TO CLIENTS
     # send val to liveView process that manages front-end; this basically sends to every client.
+
+    IO.inspect("broadcast again")
+
     MayorGameWeb.Endpoint.broadcast!(
       "cityPubSub",
       "ping",
