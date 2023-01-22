@@ -579,24 +579,24 @@ defmodule MayorGame.CityCalculator do
     # ——————————————————————————————————————————————————————————————————————————————————
 
     # MULTI UPDATE: update city money/treasury in DB
-    leftovers.all_cities_new
-    |> Enum.with_index()
-    |> Enum.reduce(Ecto.Multi.new(), fn {city, idx}, multi ->
-      updated_city_treasury =
-        if city.money < 0,
-          do: 0,
-          else: city.money
+    # leftovers.all_cities_new
+    # |> Enum.with_index()
+    # |> Enum.reduce(Ecto.Multi.new(), fn {city, idx}, multi ->
+    #   updated_city_treasury =
+    #     if city.money < 0,
+    #       do: 0,
+    #       else: city.money
 
-      details_update_changeset =
-        city.details
-        |> City.Details.changeset(%{
-          city_treasury: updated_city_treasury,
-          pollution: city.pollution
-        })
+    #   details_update_changeset =
+    #     city.details
+    #     |> City.Details.changeset(%{
+    #       city_treasury: updated_city_treasury,
+    #       pollution: city.pollution
+    #     })
 
-      Ecto.Multi.update(multi, {:update_towns, idx}, details_update_changeset)
-    end)
-    |> Repo.transaction()
+    #   Ecto.Multi.update(multi, {:update_towns, idx}, details_update_changeset)
+    # end)
+    # |> Repo.transaction()
 
     # MULTI CHANGESET EDUCATE
 
@@ -652,58 +652,58 @@ defmodule MayorGame.CityCalculator do
     # |> Repo.transaction()
 
     # MULTI KILL POLLUTED CITIZENS
-    leftovers.citizens_polluted
-    |> Enum.with_index()
-    |> Enum.reduce(Ecto.Multi.new(), fn {citizen, idx}, multi ->
-      town = City.get_town!(citizen.town_id)
+    # leftovers.citizens_polluted
+    # |> Enum.with_index()
+    # |> Enum.reduce(Ecto.Multi.new(), fn {citizen, idx}, multi ->
+    #   town = City.get_town!(citizen.town_id)
 
-      log =
-        CityHelpersTwo.describe_citizen(citizen) <>
-          " has died because of pollution. RIP"
+    #   log =
+    #     CityHelpersTwo.describe_citizen(citizen) <>
+    #       " has died because of pollution. RIP"
 
-      limited_log = update_logs(log, town.logs)
+    #   limited_log = update_logs(log, town.logs)
 
-      town_changeset =
-        town
-        |> City.Town.changeset(%{logs: limited_log})
+    #   town_changeset =
+    #     town
+    #     |> City.Town.changeset(%{logs: limited_log})
 
-      Ecto.Multi.delete(multi, {:delete, idx}, citizen)
-      |> Ecto.Multi.update({:update, idx}, town_changeset)
-    end)
-    |> Repo.transaction()
+    #   Ecto.Multi.delete(multi, {:delete, idx}, citizen)
+    #   |> Ecto.Multi.update({:update, idx}, town_changeset)
+    # end)
+    # |> Repo.transaction()
 
     # MULTI REPRODUCE
-    leftovers.citizens_to_reproduce
-    |> Enum.with_index()
-    |> Enum.reduce(Ecto.Multi.new(), fn {citizen, idx}, multi ->
-      town = City.get_town!(citizen.town_id)
+    # leftovers.citizens_to_reproduce
+    # |> Enum.with_index()
+    # |> Enum.reduce(Ecto.Multi.new(), fn {citizen, idx}, multi ->
+    #   town = City.get_town!(citizen.town_id)
 
-      log =
-        CityHelpersTwo.describe_citizen(citizen) <>
-          " had a child"
+    #   log =
+    #     CityHelpersTwo.describe_citizen(citizen) <>
+    #       " had a child"
 
-      limited_log = update_logs(log, town.logs)
-      # if list is longer than 50, remove last item
+    #   limited_log = update_logs(log, town.logs)
+    #   # if list is longer than 50, remove last item
 
-      changeset =
-        City.create_citizens_changeset(%{
-          money: 0,
-          town_id: citizen.town_id,
-          age: 0,
-          education: 0,
-          has_car: false,
-          has_job: false,
-          last_moved: db_world.day
-        })
+    #   changeset =
+    #     City.create_citizens_changeset(%{
+    #       money: 0,
+    #       town_id: citizen.town_id,
+    #       age: 0,
+    #       education: 0,
+    #       has_car: false,
+    #       has_job: false,
+    #       last_moved: db_world.day
+    #     })
 
-      town_changeset =
-        town
-        |> City.Town.changeset(%{logs: limited_log})
+    #   town_changeset =
+    #     town
+    #     |> City.Town.changeset(%{logs: limited_log})
 
-      Ecto.Multi.insert(multi, {:add_citizen, idx}, changeset)
-      |> Ecto.Multi.update({:update, idx}, town_changeset)
-    end)
-    |> Repo.transaction()
+    #   Ecto.Multi.insert(multi, {:add_citizen, idx}, changeset)
+    #   |> Ecto.Multi.update({:update, idx}, town_changeset)
+    # end)
+    # |> Repo.transaction()
 
     updated_pollution =
       if db_world.pollution + leftovers.new_world_pollution < 0 do
