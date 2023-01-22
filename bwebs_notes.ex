@@ -14,21 +14,14 @@
 # fly postgres connect -a my-db-name connects to prod DB
 # fly volumes list --app mayorgame-db gets volumes from the db project thingy
 
-# batch DB updates
 # citizens don't die or leave with 0 housing?
-# switch showing each
 
-# add more upgrades
 # balance prices
-# show how many people are working in each buildable
-# don't charge money_required if building is disabled? (DONE)
 # make upgrade prices ridiculous
-# rewrite move_citizen to not need a DB call to get the world
-# add some workers that don't require energy
 # add way to reset
 # remove has_car and some other stuff from DB
-# transition buildables to integer?
 # add way to give other cities money
+# add seasonal and climate multipliers back into generation
 
 # :math.atan(2)*2/:math.pi()
 

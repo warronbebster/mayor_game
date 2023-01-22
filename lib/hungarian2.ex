@@ -1,4 +1,4 @@
-defmodule Hungarian do
+defmodule Hungarian2 do
   @moduledoc """
   Written by Adam Kirk – Jan 18, 2020
   Most helpful resources used:
@@ -11,14 +11,14 @@ defmodule Hungarian do
   # tuples of assigments that minimizes total cost
   def compute([row1 | _] = matrix) do
     matrix
+    |> IO.inspect(
+      label: "hungarian_input_matrix",
+      limit: :infinity,
+      printable_limit: :infinity,
+      pretty: true
+    )
     # add "zero" rows if its not a square matrix
     |> pad()
-    # |> IO.inspect(
-    #   label: "hungarian_input_matrix",
-    #   limit: :infinity,
-    #   printable_limit: :infinity,
-    #   pretty: true
-    # )
     # perform the calculation
     |> step()
     # remove any assignments that are in the padded matrix
@@ -34,7 +34,7 @@ defmodule Hungarian do
   # For each row of the matrix, find the smallest element and
   # subtract it from every element in its row. If no assignments, go step 2
   defp step(matrix, 1, _assignments, _count) do
-    # IO.inspect("step 1")
+    IO.inspect("step 1")
     transformed = rows_to_zero(matrix)
     assigned = assignments(transformed)
     step(transformed, 2, assigned)
@@ -43,12 +43,10 @@ defmodule Hungarian do
   # For each column of the matrix, find the smallest element and
   # subtract it from every element in its column. If no assignments, go step 3
   defp step(matrix, 2, _assignments, _count) do
-    # IO.inspect("step 2")
-
     transformed =
       matrix
       |> transpose()
-      # |> IO.inspect(label: "first transpose done")
+      |> IO.inspect(label: "first transpose done")
       |> rows_to_zero()
       |> transpose()
 
@@ -85,12 +83,11 @@ defmodule Hungarian do
           _ -> val
         end
       end)
-
-    # |> print_matrix()
+      |> print_matrix()
 
     assigned = assignments(transformed)
 
-    if count < 80 do
+    if count < 50 do
       step(transformed, 3, assigned, count + 1)
     else
       raise "There must be a bug in this code that can't handle the input matrix."
@@ -151,6 +148,7 @@ defmodule Hungarian do
   defp rows_to_zero(matrix) do
     Enum.map(matrix, fn row ->
       min = Enum.min(row)
+      # IO.inspect(min, label: "min")
 
       Enum.map(row, fn column ->
         if column - min == 0, do: 0, else: Float.round(column - min, 3)
@@ -160,12 +158,12 @@ defmodule Hungarian do
 
   defp transpose(matrix) do
     transform(matrix, fn {r, c}, _ ->
-      # IO.inspect(r, label: "r ")
-      # IO.inspect(c, label: "c ")
-      # # IO.inspect(matrix)
-      # IO.inspect(matrix |> Enum.at(c), label: "Enum at c")
+      IO.inspect(r, label: "r ")
+      IO.inspect(c, label: "c ")
+      # IO.inspect(matrix)
+      IO.inspect(matrix |> Enum.at(c), label: "Enum at c")
 
-      matrix |> Enum.at(c) |> Enum.at(r)
+      matrix |> Enum.at(r) |> Enum.at(c)
     end)
   end
 
@@ -223,7 +221,7 @@ defmodule Hungarian do
 
       # more columns than rows, add a row of zeros
       diff when diff < 0 ->
-        pad(matrix ++ [Enum.map(1..length(first), fn _ -> 0 end)])
+        matrix ++ [Enum.map(1..length(matrix), fn _ -> 0 end)]
     end
   end
 

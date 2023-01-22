@@ -177,7 +177,8 @@ defmodule MayorGame.CityHelpersTwo do
                       Map.update!(
                         current_jobs_map,
                         individual_buildable.metadata.requires.workers.level,
-                        &(&1 + length(checked_workers))
+                        &(&1 + individual_buildable.metadata.requires.workers.count -
+                            length(checked_workers))
                       )
                     end)
                     |> Map.update!(:total_jobs, fn current_total_jobs_map ->
@@ -226,50 +227,59 @@ defmodule MayorGame.CityHelpersTwo do
     # Iterate through citizens
     # ________________________________________________________________________
     after_citizen_checks =
-      Flow.from_enumerable(all_citizens)
-      |> Flow.partition()
-      |> Flow.reduce(
-        fn ->
-          %{
-            housing_left: results.housing,
-            education_left: results.education,
-            educated_citizens: %{0 => [], 1 => [], 2 => [], 3 => [], 4 => [], 5 => []},
-            housed_unemployed_citizens: [],
-            housed_employed_staying_citizens: [],
-            housed_employed_looking_citizens: [],
-            unhoused_citizens: all_citizens,
-            polluted_citizens: [],
-            old_citizens: [],
-            reproducing_citizens: []
-          }
-        end,
+      all_citizens
+      # Flow.from_enumerable(all_citizens)
+      # |> Flow.partition()
+      |> Enum.reduce(
+        # fn ->
+        %{
+          housing_left: results.housing,
+          education_left: results.education,
+          educated_citizens: %{0 => [], 1 => [], 2 => [], 3 => [], 4 => [], 5 => []},
+          housed_unemployed_citizens: [],
+          housed_employed_staying_citizens: [],
+          housed_employed_looking_citizens: [],
+          unhoused_citizens: [],
+          polluted_citizens: [],
+          old_citizens: [],
+          reproducing_citizens: []
+        },
+        # end,
         fn citizen, acc ->
+          pollution_death = world.pollution > pollution_ceiling and :rand.uniform() > 0.95
+
           housed_unemployed_citizens =
-            if acc.housing_left > 0 && !citizen.has_job && citizen.age < 5000,
+            if acc.housing_left > 0 && !citizen.has_job && citizen.age < 5000 && !pollution_death,
               do: [citizen | acc.housed_unemployed_citizens],
               else: acc.housed_unemployed_citizens
 
           tax_too_high = :rand.uniform() < city.tax_rates[to_string(citizen.education)]
 
           housed_employed_staying_citizens =
-            if acc.housing_left > 0 && citizen.has_job && citizen.age < 5000 && !tax_too_high,
-              do: [citizen | acc.housed_employed_staying_citizens],
-              else: acc.housed_employed_staying_citizens
+            if acc.housing_left > 0 && citizen.has_job && citizen.age < 5000 && !tax_too_high &&
+                 !pollution_death,
+               do: [citizen | acc.housed_employed_staying_citizens],
+               else: acc.housed_employed_staying_citizens
 
           housed_employed_looking_citizens =
-            if acc.housing_left > 0 && citizen.has_job && citizen.age < 5000 && tax_too_high,
-              do: [citizen | acc.housed_employed_looking_citizens],
-              else: acc.housed_employed_looking_citizens
-
-          pollution_death = world.pollution > pollution_ceiling and :rand.uniform() > 0.95
+            if acc.housing_left > 0 && citizen.has_job && citizen.age < 5000 && tax_too_high &&
+                 !pollution_death,
+               do: [citizen | acc.housed_employed_looking_citizens],
+               else: acc.housed_employed_looking_citizens
 
           housing_left =
             if acc.housing_left > 0 and !pollution_death,
               do: acc.housing_left - 1,
               else: acc.housing_left
 
+          # unhoused_citizens =
+          #   if acc.housing_left > 0, do: tl(acc.unhoused_citizens), else: acc.unhoused_citizens
+          #   # could revert this to add only citizens < 5000 and not dying from pollution
+
           unhoused_citizens =
-            if acc.housing_left > 0, do: tl(acc.unhoused_citizens), else: acc.unhoused_citizens
+            if acc.housing_left <= 0 && citizen.age < 5000 && !pollution_death,
+              do: [citizen | acc.unhoused_citizens],
+              else: acc.unhoused_citizens
 
           polluted_citizens =
             if pollution_death && citizen.age < 5000,
@@ -290,7 +300,8 @@ defmodule MayorGame.CityHelpersTwo do
 
           will_citizen_learn =
             rem(world.day, 365) == 0 && citizen.education < 5 &&
-              acc.education_left[citizen.education + 1] > 0
+              acc.education_left[citizen.education + 1] > 0 && citizen.age < 5000 &&
+              !pollution_death
 
           education_left =
             if will_citizen_learn do
@@ -321,7 +332,7 @@ defmodule MayorGame.CityHelpersTwo do
           }
         end
       )
-      |> Enum.to_list()
+      # |> Enum.to_list()
       |> Enum.into(%{})
 
     city_baked_details
@@ -399,14 +410,14 @@ defmodule MayorGame.CityHelpersTwo do
     end
   end
 
-  def kill_citizen(%Citizens{} = citizen, deathReason) do
-    City.update_log(
-      City.get_town!(citizen.town_id),
-      describe_citizen(citizen) <> " has died because of " <> deathReason <> ". RIP"
-    )
+  # def kill_citizen(%Citizens{} = citizen, deathReason) do
+  #   City.update_log(
+  #     City.get_town!(citizen.town_id),
+  #     describe_citizen(citizen) <> " has died because of " <> deathReason <> ". RIP"
+  #   )
 
-    City.delete_citizens(citizen)
-  end
+  #   City.delete_citizens(citizen)
+  # end
 
   @spec find_cities_with_job(list(), integer()) :: list()
   @doc """
@@ -577,8 +588,11 @@ defmodule MayorGame.CityHelpersTwo do
             # e.g. if the edu institutions have capacity
             # otherwise citizens might just keep levelling up
             # oh i guess this is fine, they'll go to a lower job and start looking
+            # if rem(world.day, 365) == 0 && citizen.education < 5 &&
+            IO.inspect(acc.education)
+
             updated_education =
-              if rem(world.day, 365) == 0 && citizen.education < 5 &&
+              if citizen.education < 5 &&
                    acc.education[citizen.education + 1] > 0 do
                 City.update_citizens(citizen, %{education: min(citizen.education + 1, 5)})
 
