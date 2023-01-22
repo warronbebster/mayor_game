@@ -344,16 +344,18 @@ defmodule MayorGame.CityCalculator do
       Map.new(0..5, fn x ->
         {x,
          if(preference_maps_by_level[x] != [],
-           do: Hungarian.compute(preference_maps_by_level[x]),
-           else: []
+           do: compute_destination(preference_maps_by_level[x]),
+           else: %{matrix: [], output: []}
          )}
       end)
+
+    IO.inspect(hungarian_results_by_level[0].output)
 
     # MULTI CHANGESET MOVE JOB SEARCHING CITIZENS
     # MOVE CITIZENS
     Enum.map(0..5, fn x ->
-      if hungarian_results_by_level[x] != [] do
-        hungarian_results_by_level[x]
+      if hungarian_results_by_level[x].output != [] do
+        hungarian_results_by_level[x].output
         |> Enum.reduce(Ecto.Multi.new(), fn {citizen_index, slot_index}, multi ->
           citizen = Enum.at(elem(citizens_split[x], 0), citizen_index)
           town_from = City.get_town!(citizen.town_id)
@@ -406,7 +408,7 @@ defmodule MayorGame.CityCalculator do
     # this produces a list of cities that have been occupied
     occupied_slots =
       Enum.flat_map(hungarian_results_by_level, fn {level, results_list} ->
-        Enum.map(results_list, fn {_citizen_id, city_id} ->
+        Enum.map(results_list.output, fn {_citizen_id, city_id} ->
           Enum.at(job_and_housing_slots_normalized[level].slots_expanded, city_id)
 
           # could also potentially move the citizens here
@@ -456,12 +458,24 @@ defmodule MayorGame.CityCalculator do
         end)
       end)
 
-    hungarian_results = if preference_maps != [], do: Hungarian.compute(preference_maps), else: []
+    hungarian_results =
+      if preference_maps != [],
+        do: compute_destination(preference_maps),
+        else: %{matrix: [], output: []}
+
+    # pass in list of lists
+    # firs tlist index is citizen index
+    # second tier is cities
+    # [
+    #   [.5, .6, .7]
+    # ]
+
+    # returns list of [{citizen_index, city_index}]
 
     # MULTI CHANGESET MOVE LOOKING CITIZENS
     # MOVE CITIZENS
-    if hungarian_results != [] do
-      hungarian_results
+    if hungarian_results.output != [] do
+      hungarian_results.output
       |> Enum.reduce(Ecto.Multi.new(), fn {citizen_index, slot_index}, multi ->
         citizen = Enum.at(looking_but_not_in_job_race, citizen_index)
         town_from = City.get_town!(citizen.town_id)
@@ -507,7 +521,7 @@ defmodule MayorGame.CityCalculator do
     # ——————————————————————————————————————————————————————————————————————————————————
 
     occupied_slots_2 =
-      Enum.map(hungarian_results, fn {_citizen_id, city_id} ->
+      Enum.map(hungarian_results.output, fn {_citizen_id, city_id} ->
         Enum.at(housing_slots_expanded, city_id)
       end)
 
@@ -542,7 +556,7 @@ defmodule MayorGame.CityCalculator do
 
     unhoused_preference_maps =
       Enum.map(elem(unhoused_split, 0), fn citizen ->
-        Enum.flat_map(housing_slots_normalized, fn {k, v} ->
+        Enum.flat_map(housing_slots_3_normalized, fn {k, v} ->
           # duplicate this score v times (1 for each slot)
 
           score = Float.round(1 - citizen_score(citizen.preferences, citizen.education, k), 4)
@@ -553,13 +567,18 @@ defmodule MayorGame.CityCalculator do
       end)
 
     hungarian_results_unhoused =
-      if unhoused_preference_maps != [], do: Hungarian.compute(unhoused_preference_maps), else: []
+      if unhoused_preference_maps != [],
+        do: compute_destination(unhoused_preference_maps),
+        else: %{matrix: [], output: []}
 
-    if hungarian_results_unhoused != [] do
-      hungarian_results_unhoused
+    if hungarian_results_unhoused.output != [] do
+      hungarian_results_unhoused.output
       |> Enum.reduce(Ecto.Multi.new(), fn {citizen_index, slot_index}, multi ->
         citizen = Enum.at(elem(unhoused_split, 0), citizen_index)
         town_from = City.get_town!(citizen.town_id)
+        IO.inspect(slot_index, label: "slot_index")
+        IO.inspect(length(housing_slots_3_expanded), label: "housing_slots_length")
+        # IO.inspect(Enum.at(housing_slots_3_expanded, slot_index))
         town_to = City.get_town!(Enum.at(housing_slots_3_expanded, slot_index).id)
 
         if town_from.id != town_to.id do
@@ -753,120 +772,6 @@ defmodule MayorGame.CityCalculator do
     end)
     |> Repo.transaction()
 
-    # CHECK —————
-    # FOURTH CITIZEN CHECK: LOOKING FOR workers
-
-    # if there are cities with room at all (if a city has room, this list won't be empty):
-    # cities_after_job_search =
-    #   Enum.reduce(leftovers.citizens_looking, leftovers.all_cities, fn citizen, acc_city_list ->
-    #     cities_with_housing_and_workers =
-    #       Enum.filter(acc_city_list, fn city -> city.available_housing > 0 end)
-    #       |> Enum.filter(fn city ->
-    #         Enum.any?(city.workers, fn {_level, number} -> number > 0 end)
-    #       end)
-
-    #     # results are map %{best_city: %{city: city, workers: #, housing: #, etc}, job_level: #}
-    #     best_job = CityHelpers.find_best_job(cities_with_housing_and_workers, citizen)
-
-    #     if !is_nil(best_job) do
-    #       # move citizen to city
-
-    #       # TODO: check last_moved date here
-    #       # although this could result in looking citizens staying in a city even though there's no housing
-    #       # may need to consolidate out of room and looking
-    #       # this is where the stale structs keep getting hit
-    #       CityHelpers.move_citizen(citizen, City.get_town!(best_job.best_city.id), db_world.day)
-
-    #       # find where the city is in the list
-    #       indexx = Enum.find_index(acc_city_list, &(&1.id == best_job.best_city.id))
-
-    #       # make updated list, decrement housing and workers
-    #       updated_acc_city_list =
-    #         List.update_at(acc_city_list, indexx, fn update ->
-    #           update
-    #           |> Map.update!(:available_housing, &(&1 - 1))
-    #           |> update_in([:workers, best_job.job_level], &(&1 - 1))
-    #         end)
-
-    #       updated_acc_city_list
-    #     else
-    #       acc_city_list
-    #     end
-    #   end)
-
-    # # ok, available housing looks right here
-
-    # # CHECK —————
-    # # LAST CITIZEN CHECK: OUT OF ROOM
-    # Enum.reduce(leftovers.citizens_out_of_room, cities_after_job_search, fn citizen_out_of_room,
-    #                                                                         acc_city_list ->
-    #   cities_with_housing = Enum.filter(acc_city_list, fn city -> city.available_housing > 0 end)
-
-    #   best_job = CityHelpers.find_best_job(cities_with_housing, citizen_out_of_room)
-
-    #   if !is_nil(best_job) do
-    #     # move citizen to city
-
-    #     # TODO: check last_moved date here
-    #     # although this could result in looking citizens staying in a city even though there's no housing
-    #     # may need to consolidate out of room and looking
-    #     CityHelpers.move_citizen(
-    #       citizen_out_of_room,
-    #       City.get_town!(best_job.best_city.id),
-    #       db_world.day
-    #     )
-
-    #     # find where the city is in the list
-    #     indexx = Enum.find_index(acc_city_list, &(&1.id == best_job.best_city.id))
-
-    #     # make updated list, decrement housing and workers
-    #     updated_acc_city_list =
-    #       List.update_at(acc_city_list, indexx, fn update ->
-    #         update
-    #         |> Map.update!(:available_housing, &(&1 - 1))
-    #         |> update_in([:workers, best_job.job_level], &(&1 - 1))
-    #       end)
-
-    #     updated_acc_city_list
-
-    #     # if no best job
-    #   else
-    #     # if there's any cities with housing left
-    #     if cities_with_housing != [] do
-    #       CityHelpers.move_citizen(
-    #         citizen_out_of_room,
-    #         City.get_town!(hd(cities_with_housing).id),
-    #         db_world.day
-    #       )
-
-    #       # find where the city is in the list
-    #       indexx = Enum.find_index(acc_city_list, &(&1.id == hd(cities_with_housing).id))
-
-    #       # make updated list, decrement housing and workers
-    #       updated_acc_city_list =
-    #         List.update_at(acc_city_list, indexx, fn update ->
-    #           update
-    #           |> Map.update!(:available_housing, &(&1 - 1))
-    #         end)
-
-    #       updated_acc_city_list
-    #     else
-    #       # find where the city is in the list
-    #       indexx = Enum.find_index(acc_city_list, &(&1.id == citizen_out_of_room.town_id))
-
-    #       # make updated list, decrement housing
-    #       updated_acc_city_list =
-    #         List.update_at(acc_city_list, indexx, fn update ->
-    #           Map.update!(update, :available_housing, &(&1 + 1))
-    #         end)
-
-    #       CityHelpers.kill_citizen(citizen_out_of_room, "no housing available")
-
-    #       updated_acc_city_list
-    #     end
-    #   end
-    # end)
-
     updated_pollution =
       if db_world.pollution + leftovers.new_world_pollution < 0 do
         0
@@ -937,4 +842,34 @@ defmodule MayorGame.CityCalculator do
   def mindotproduct(a, b), do: dotproduct(Enum.sort(a), Enum.sort(b))
   defp dotproduct([], []), do: 0
   defp dotproduct([ah | at] = _a, [bh | bt] = _b), do: ah * bh + dotproduct(at, bt)
+
+  def compute_destination([row1 | _] = matrix) do
+    # IO.inspect(
+    #   matrix,
+    #   label: "compute_input_matrix",
+    #   limit: :infinity,
+    #   printable_limit: :infinity,
+    #   pretty: true
+    # )
+
+    Enum.reduce(0..(length(matrix) - 1), %{matrix: matrix, output: []}, fn row_index, acc ->
+      # find best one
+      row = Enum.at(acc.matrix, row_index)
+
+      max = Enum.max(row)
+      chosen_index = Enum.find_index(row, fn x -> x == max end)
+
+      updated_matrix =
+        Enum.map(acc.matrix, fn row ->
+          List.replace_at(row, chosen_index, -1)
+        end)
+
+      %{
+        matrix: updated_matrix,
+        output: [{row_index, chosen_index} | acc.output]
+      }
+    end)
+
+    # end with list [{index, best option}]
+  end
 end

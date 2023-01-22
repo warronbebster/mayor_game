@@ -13,12 +13,12 @@ defmodule Hungarian do
     matrix
     # add "zero" rows if its not a square matrix
     |> pad()
-    # |> IO.inspect(
-    #   label: "hungarian_input_matrix",
-    #   limit: :infinity,
-    #   printable_limit: :infinity,
-    #   pretty: true
-    # )
+    |> IO.inspect(
+      label: "hungarian_input_matrix",
+      limit: :infinity,
+      printable_limit: :infinity,
+      pretty: true
+    )
     # perform the calculation
     |> step()
     # remove any assignments that are in the padded matrix
@@ -69,7 +69,7 @@ defmodule Hungarian do
       end)
       |> List.flatten()
       |> Enum.filter(&(!is_nil(&1)))
-      |> Enum.min()
+      |> Enum.min(fn -> 0 end)
 
     # |> IO.inspect(label: "min_uncovered")
 
