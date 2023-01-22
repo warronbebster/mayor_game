@@ -90,34 +90,6 @@ defmodule MayorGame.CityCalculator do
               pollution_ceiling
             )
 
-          # city_calculated_values =
-          #   CityHelpers.calculate_stats_based_on_citizens(
-          #     city_with_stats,
-          #     db_world,
-          #     cities_count
-          #   )
-
-          # should i loop through citizens here, instead of in calculate_city_stats?
-          # that way I can use the same function later?
-
-          # updated_city_treasury =
-          #   if city_with_stats2.money < 0,
-          #     do: 0,
-          #     else: city_with_stats2.money
-
-          # # check here for if tax_income - money is less than zero
-          # # TODO: move this outside the enum to a multi update
-          # case City.update_details(city.details, %{
-          #        city_treasury: updated_city_treasury,
-          #        pollution: city_with_stats2.pollution
-          #      }) do
-          #   {:ok, updated_details} ->
-          #     nil
-
-          #   {:error, err} ->
-          #     IO.inspect(err)
-          # end
-
           citizens_looking =
             city_with_stats2.housed_unemployed_citizens ++
               city_with_stats2.housed_employed_looking_citizens
@@ -166,10 +138,37 @@ defmodule MayorGame.CityCalculator do
 
     # ok so here each city has
 
-    pollution_max = Enum.max(Enum.map(leftovers.all_cities_new, &nil_value_check(&1, :pollution)))
-    fun_max = Enum.max(Enum.map(leftovers.all_cities_new, &nil_value_check(&1, :fun)))
-    health_max = Enum.max(Enum.map(leftovers.all_cities_new, &nil_value_check(&1, :health)))
-    sprawl_max = Enum.max(Enum.map(leftovers.all_cities_new, &nil_value_check(&1, :sprawl)))
+    pollution_max =
+      Enum.max(
+        leftovers.all_cities_new
+        |> Flow.from_enumerable()
+        |> Flow.map(&nil_value_check(&1, :pollution))
+        |> Enum.to_list()
+      )
+
+    fun_max =
+      Enum.max(
+        leftovers.all_cities_new
+        |> Flow.from_enumerable()
+        |> Flow.map(&nil_value_check(&1, :fun))
+        |> Enum.to_list()
+      )
+
+    health_max =
+      Enum.max(
+        leftovers.all_cities_new
+        |> Flow.from_enumerable()
+        |> Flow.map(&nil_value_check(&1, :health))
+        |> Enum.to_list()
+      )
+
+    sprawl_max =
+      Enum.max(
+        leftovers.all_cities_new
+        |> Flow.from_enumerable()
+        |> Flow.map(&nil_value_check(&1, :sprawl))
+        |> Enum.to_list()
+      )
 
     # ——————————————————————————————————————————————————————————————————————————————————
     # ————————————————————————————————————————— ROUND 1: MOVE CITIZENS PER JOB LEVEL
@@ -194,10 +193,6 @@ defmodule MayorGame.CityCalculator do
       Enum.reduce(leftovers.housing_slots, level_slots, fn {city, slots_count}, acc ->
         normalized_city = normalize_city(city, fun_max, health_max, pollution_max, sprawl_max)
 
-        # this should look like
-        # %{
-        #   0 => {normalized_city, count}
-        # }
         slots_per_level =
           Enum.reduce(city.jobs, %{slots_count: slots_count}, fn {level, count}, acc2 ->
             if acc2.slots_count > 0 do
@@ -552,8 +547,6 @@ defmodule MayorGame.CityCalculator do
     unhoused_split =
       Enum.shuffle(leftovers.unhoused_citizens) |> Enum.split(length(housing_slots_3_expanded))
 
-    IO.inspect(length(leftovers.unhoused_citizens), label: 'unhoused citizens')
-
     unhoused_preference_maps =
       Enum.map(elem(unhoused_split, 0), fn citizen ->
         Enum.flat_map(housing_slots_3_normalized, fn {k, v} ->
@@ -576,9 +569,6 @@ defmodule MayorGame.CityCalculator do
       |> Enum.reduce(Ecto.Multi.new(), fn {citizen_index, slot_index}, multi ->
         citizen = Enum.at(elem(unhoused_split, 0), citizen_index)
         town_from = City.get_town!(citizen.town_id)
-        IO.inspect(slot_index, label: "slot_index")
-        IO.inspect(length(housing_slots_3_expanded), label: "housing_slots_length")
-        # IO.inspect(Enum.at(housing_slots_3_expanded, slot_index))
         town_to = City.get_town!(Enum.at(housing_slots_3_expanded, slot_index).id)
 
         if town_from.id != town_to.id do

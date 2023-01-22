@@ -104,6 +104,7 @@ defmodule MayorGame.CityHelpersTwo do
 
                 checked_reqs = check_reqs(reqs_minus_workers, acc2)
 
+                # if all reqs are met
                 if checked_reqs == [] do
                   if Map.has_key?(individual_buildable.metadata.requires, :workers) do
                     checked_workers =
@@ -198,6 +199,7 @@ defmodule MayorGame.CityHelpersTwo do
                     # if it's operating fine & doesn't require workers
 
                     update_generated_acc(individual_buildable, length(acc.citizens), acc2)
+                    |> Map.merge(reqs_minus_workers, fn _k, v1, v2 -> v1 - v2 end)
                   end
                 else
                   # if requirements not met
