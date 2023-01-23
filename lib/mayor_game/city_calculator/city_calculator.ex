@@ -232,6 +232,7 @@ defmodule MayorGame.CityCalculator do
       end)
 
     # split looking
+    IO.inspect("Citizen splits done")
 
     preference_maps_by_level =
       Map.new(0..5, fn x ->
@@ -252,6 +253,8 @@ defmodule MayorGame.CityCalculator do
          )}
       end)
 
+    IO.inspect("preference maps generated")
+
     looking_but_not_in_job_race =
       Enum.reduce(citizens_split, [], fn {_k, v}, acc ->
         acc ++ elem(v, 1)
@@ -262,8 +265,12 @@ defmodule MayorGame.CityCalculator do
     # if not empty
     # run hungarian
     #
+    IO.inspect("about to compute results")
+
     hungarian_results_by_level =
       Map.new(0..5, fn x ->
+        IO.inspect(length(preference_maps_by_level[x]))
+
         {x,
          if(preference_maps_by_level[x] != [],
            do: compute_destination(preference_maps_by_level[x]),
