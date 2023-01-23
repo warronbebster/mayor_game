@@ -271,6 +271,8 @@ defmodule MayorGame.CityCalculator do
          )}
       end)
 
+    IO.inspect("round 1 computation done")
+
     # MULTI CHANGESET MOVE JOB SEARCHING CITIZENS
     # MOVE CITIZENS
     Enum.map(0..5, fn x ->
@@ -325,7 +327,7 @@ defmodule MayorGame.CityCalculator do
       end
     end)
 
-    IO.inspect("round 1 done")
+    IO.inspect("round 1 database updates done")
 
     # ——————————————————————————————————————————————————————————————————————————————————
     # ————————————————————————————————————————— ROUND 2: MOVE CITIZENS ANYWHERE THERE IS HOUSING
@@ -406,6 +408,9 @@ defmodule MayorGame.CityCalculator do
 
     # MULTI CHANGESET MOVE LOOKING CITIZENS
     # MOVE CITIZENS
+
+    IO.inspect("round 2 computation done")
+
     if hungarian_results.output != [] do
       hungarian_results.output
       |> Enum.chunk_every(100)
@@ -452,7 +457,7 @@ defmodule MayorGame.CityCalculator do
       end)
     end
 
-    IO.inspect("round 2 done")
+    IO.inspect("round 2 database updates done")
 
     # ——————————————————————————————————————————————————————————————————————————————————
     # ————————————————————————————————————————— ROUND 3: MOVE CITIZENS WITHOUT HOUSING ANYWHERE THERE IS HOUSING
@@ -512,6 +517,8 @@ defmodule MayorGame.CityCalculator do
       if unhoused_preference_maps != [],
         do: compute_destination(unhoused_preference_maps),
         else: %{matrix: [], output: []}
+
+    IO.inspect("round 3 computation done")
 
     if hungarian_results_unhoused.output != [] do
       hungarian_results_unhoused.output
@@ -588,7 +595,7 @@ defmodule MayorGame.CityCalculator do
 
     # unhoused_citizens (no anything)
 
-    IO.inspect("round 3 done")
+    IO.inspect("round 3 database updates done")
 
     # ——————————————————————————————————————————————————————————————————————————————————
     # ————————————————————————————————————————— OTHER ECTO UPDATES
