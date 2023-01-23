@@ -277,7 +277,8 @@ defmodule MayorGame.CityCalculator do
       if hungarian_results_by_level[x].output != [] do
         hungarian_results_by_level[x].output
         |> Enum.chunk_every(100)
-        |> Enum.map(fn chunk ->
+        |> Flow.from_enumerable(max_demand: 20)
+        |> Flow.map(fn chunk ->
           Enum.reduce(chunk, Ecto.Multi.new(), fn {citizen_index, slot_index}, multi ->
             citizen = Enum.at(elem(citizens_split[x], 0), citizen_index)
             town_from = City.get_town!(citizen.town_id)
@@ -408,7 +409,8 @@ defmodule MayorGame.CityCalculator do
     if hungarian_results.output != [] do
       hungarian_results.output
       |> Enum.chunk_every(100)
-      |> Enum.map(fn chunk ->
+      |> Flow.from_enumerable(max_demand: 20)
+      |> Flow.map(fn chunk ->
         Enum.reduce(chunk, Ecto.Multi.new(), fn {citizen_index, slot_index}, multi ->
           citizen = Enum.at(looking_but_not_in_job_race, citizen_index)
           town_from = City.get_town!(citizen.town_id)
@@ -514,7 +516,8 @@ defmodule MayorGame.CityCalculator do
     if hungarian_results_unhoused.output != [] do
       hungarian_results_unhoused.output
       |> Enum.chunk_every(100)
-      |> Enum.map(fn chunk ->
+      |> Flow.from_enumerable(max_demand: 20)
+      |> Flow.map(fn chunk ->
         Enum.reduce(chunk, Ecto.Multi.new(), fn {citizen_index, slot_index}, multi ->
           citizen = Enum.at(elem(unhoused_split, 0), citizen_index)
           town_from = City.get_town!(citizen.town_id)
@@ -559,7 +562,8 @@ defmodule MayorGame.CityCalculator do
     # MULTI KILL REST OF UNHOUSED CITIZENS
     elem(unhoused_split, 1)
     |> Enum.chunk_every(100)
-    |> Enum.map(fn chunk ->
+    |> Flow.from_enumerable(max_demand: 20)
+    |> Flow.map(fn chunk ->
       Enum.with_index(chunk)
       |> Enum.reduce(Ecto.Multi.new(), fn {citizen, idx}, multi ->
         town = City.get_town!(citizen.town_id)
@@ -593,7 +597,8 @@ defmodule MayorGame.CityCalculator do
     # MULTI UPDATE: update city money/treasury in DB
     leftovers.all_cities_new
     |> Enum.chunk_every(100)
-    |> Enum.map(fn chunk ->
+    |> Flow.from_enumerable(max_demand: 20)
+    |> Flow.map(fn chunk ->
       Enum.with_index(chunk)
       |> Enum.reduce(Ecto.Multi.new(), fn {city, idx}, multi ->
         updated_city_treasury =
@@ -617,7 +622,8 @@ defmodule MayorGame.CityCalculator do
 
     leftovers.citizens_learning
     |> Enum.chunk_every(100)
-    |> Enum.map(fn chunk ->
+    |> Flow.from_enumerable(max_demand: 20)
+    |> Flow.map(fn chunk ->
       Enum.map(chunk, fn {level, list} ->
         list
         |> Enum.with_index()
@@ -653,7 +659,8 @@ defmodule MayorGame.CityCalculator do
     # MULTI CHANGESET KILL OLD CITIZENS
     leftovers.citizens_too_old
     |> Enum.chunk_every(100)
-    |> Enum.map(fn chunk ->
+    |> Flow.from_enumerable(max_demand: 20)
+    |> Flow.map(fn chunk ->
       Enum.with_index(chunk)
       |> Enum.reduce(Ecto.Multi.new(), fn {citizen, idx}, multi ->
         town = City.get_town!(citizen.town_id)
@@ -676,7 +683,8 @@ defmodule MayorGame.CityCalculator do
     # MULTI KILL POLLUTED CITIZENS
     leftovers.citizens_polluted
     |> Enum.chunk_every(100)
-    |> Enum.map(fn chunk ->
+    |> Flow.from_enumerable(max_demand: 20)
+    |> Flow.map(fn chunk ->
       Enum.with_index(chunk)
       |> Enum.reduce(Ecto.Multi.new(), fn {citizen, idx}, multi ->
         town = City.get_town!(citizen.town_id)
@@ -700,7 +708,8 @@ defmodule MayorGame.CityCalculator do
     # MULTI REPRODUCE
     leftovers.citizens_to_reproduce
     |> Enum.chunk_every(100)
-    |> Enum.map(fn chunk ->
+    |> Flow.from_enumerable(max_demand: 20)
+    |> Flow.map(fn chunk ->
       Enum.with_index(chunk)
       |> Enum.reduce(Ecto.Multi.new(), fn {citizen, idx}, multi ->
         town = City.get_town!(citizen.town_id)

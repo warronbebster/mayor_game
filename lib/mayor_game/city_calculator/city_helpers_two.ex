@@ -89,9 +89,10 @@ defmodule MayorGame.CityHelpersTwo do
           result_buildables: []
         },
         fn {buildable_type, buildable_array}, acc ->
-          if buildable_array !== [] do
+          if buildable_array == [] do
             # for each set of buildables
-
+            acc
+          else
             # for each individual buildable:
             Enum.reduce(buildable_array, acc, fn individual_buildable, acc2 ->
               # if the building has no requirements
@@ -106,6 +107,7 @@ defmodule MayorGame.CityHelpersTwo do
 
                 # if all reqs are met
                 if checked_reqs == [] do
+                  # if it requires workers
                   if Map.has_key?(individual_buildable.metadata.requires, :workers) do
                     checked_workers =
                       check_workers(individual_buildable.metadata.requires, acc2.citizens)
@@ -156,11 +158,7 @@ defmodule MayorGame.CityHelpersTwo do
                             acc2.daily_cost + money_required
                           )
                           |> Map.put(:money, acc2.money + tax_earned),
-                        else:
-                          acc2
-                          |> Map.update!(:result_buildables, fn current ->
-                            [updated_buildable | current]
-                          end)
+                        else: acc2
 
                     # update acc with disabled buildable
 
@@ -189,6 +187,9 @@ defmodule MayorGame.CityHelpersTwo do
                         &(&1 + individual_buildable.metadata.requires.workers.count)
                       )
                     end)
+                    |> Map.update!(:result_buildables, fn current ->
+                      [updated_buildable | current]
+                    end)
 
                     # if number is less than reqs.workers.count, buildable is disabled, reason workers
                     # add jobs equal to workers.count - length
@@ -200,6 +201,9 @@ defmodule MayorGame.CityHelpersTwo do
 
                     update_generated_acc(individual_buildable, length(acc.citizens), acc2)
                     |> Map.merge(reqs_minus_workers, fn _k, v1, v2 -> v1 - v2 end)
+                    |> Map.update!(:result_buildables, fn current ->
+                      [individual_buildable | current]
+                    end)
                   end
                 else
                   # if requirements not met
@@ -216,9 +220,6 @@ defmodule MayorGame.CityHelpersTwo do
                 # acc2
               end
             end)
-          else
-            # if there are no buildables of that type
-            acc
           end
         end
       )
