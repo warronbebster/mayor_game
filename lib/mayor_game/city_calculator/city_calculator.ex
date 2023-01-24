@@ -738,6 +738,7 @@ defmodule MayorGame.CityCalculator do
             else: city.money + city.income - city.daily_cost
 
         IO.inspect(updated_city_treasury, label: "city_treasury")
+        IO.inspect(city.pollution, label: "city_pollution")
 
         details_update_changeset =
           city.details
@@ -746,14 +747,20 @@ defmodule MayorGame.CityCalculator do
             pollution: city.pollution
           })
 
-        town_struct = struct(Town, city)
+        pollution = city.pollution
+
+        town_struct = struct(Town, Map.put(city, :pollution, 0))
+
+        IO.inspect(town_struct.pollution, label: "town struct pollution")
 
         town_update_changeset =
           town_struct
           |> City.Town.changeset(%{
             treasury: updated_city_treasury,
-            pollution: city.pollution
+            pollution: pollution
           })
+
+        IO.inspect(town_update_changeset)
 
         Ecto.Multi.update(multi, {:update_details, city.id}, details_update_changeset)
         |> Ecto.Multi.update({:update_towns, city.id}, town_update_changeset)
