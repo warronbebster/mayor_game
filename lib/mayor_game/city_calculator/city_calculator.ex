@@ -152,7 +152,12 @@ defmodule MayorGame.CityCalculator do
         end
       )
 
-    IO.inspect(length(Map.keys(leftovers.housing_slots)), label: "housing_left")
+    total_slots =
+      leftovers.housing_slots
+      |> Map.values()
+      |> Enum.sum()
+
+    IO.inspect(total_slots, label: "housing_left")
 
     # ok so here each city has
 
@@ -166,7 +171,6 @@ defmodule MayorGame.CityCalculator do
       Map.new(0..5, fn x -> {x, %{normalized_cities: [], total_slots: 0, slots_expanded: []}} end)
 
     # sets up empty map for below function
-
     # SHAPE OF BELOW:
     # %{
     #   1: %{normalized_cities: [
@@ -176,49 +180,98 @@ defmodule MayorGame.CityCalculator do
     #     slots_expanded: list of slots
     #   }
     # }
-    job_and_housing_slots_normalized =
-      Enum.reduce(leftovers.housing_slots, level_slots, fn {city, slots_count}, acc ->
-        normalized_city =
-          normalize_city(
-            city,
-            leftovers.fun_max,
-            leftovers.health_max,
-            leftovers.pollution_max,
-            leftovers.sprawl_max
-          )
-
-        slots_per_level =
-          Enum.reduce(city.jobs, %{slots_count: slots_count}, fn {level, count}, acc2 ->
-            if acc2.slots_count > 0 do
-              level_slots_count = min(count, slots_count)
-
-              acc2
-              |> Map.update!(
-                :slots_count,
-                &(&1 - level_slots_count)
-              )
-              |> Map.put(level, {normalized_city, level_slots_count})
-            else
-              acc2
-              |> Map.put(level, {normalized_city, 0})
-            end
-          end)
-          |> Map.drop([:slots_count])
-
-        # for each level in slots_per_level
-        #
-
-        Enum.map(0..5, fn x ->
-          {x,
-           %{
-             normalized_cities: acc[x].normalized_cities ++ [slots_per_level[x]],
-             total_slots: acc[x].total_slots + elem(slots_per_level[x], 1),
-             slots_expanded:
-               acc[x].slots_expanded ++ Enum.map(1..elem(slots_per_level[x], 1), fn _ -> city end)
-           }}
-        end)
-        |> Enum.into(%{})
+    # all_cities_by_id = maybe make a map here of city in all_cities_new and their id
+    # or all_cities_new might already be that, by index
+    # or the map is just of the ones with housing slots (e.g. in leftovers.housing_slots)
+    slotted_cities_by_id =
+      Map.keys(leftovers.housing_slots)
+      |> Enum.map(fn city ->
+        normalize_city(
+          city,
+          leftovers.fun_max,
+          leftovers.health_max,
+          leftovers.pollution_max,
+          leftovers.sprawl_max
+        )
       end)
+      |> Map.new(fn city -> {city.id, city} end)
+
+    slotted_cities_with_housing_slots_by_id =
+      leftovers.housing_slots
+      |> Enum.map(fn {city, slots} ->
+        {normalize_city(
+           city,
+           leftovers.fun_max,
+           leftovers.health_max,
+           leftovers.pollution_max,
+           leftovers.sprawl_max
+         ), slots}
+      end)
+      |> Map.new(fn city_pair -> {elem(city_pair, 0).id, city_pair} end)
+
+    # leftovers.housing_slots is a list of {city, number of slots}
+    job_and_housing_slots_normalized =
+      Enum.reduce(
+        Map.values(slotted_cities_with_housing_slots_by_id),
+        %{level_slots: level_slots, total_slots_left: total_slots},
+        fn {normalized_city, housing_slots_count}, acc ->
+          slots_per_level =
+            Enum.reduce(
+              normalized_city.city.jobs,
+              %{housing_slots_left: housing_slots_count},
+              fn {level, count}, acc2 ->
+                IO.inspect(acc2.housing_slots_left,
+                  label: "housing_slots_left at level " <> to_string(level)
+                )
+
+                IO.inspect(count, label: "jobs at level " <> to_string(level))
+
+                if acc2.housing_slots_left > 0 do
+                  level_slots_count = min(count, acc2.housing_slots_left)
+
+                  acc2
+                  |> Map.update!(
+                    :housing_slots_left,
+                    &(&1 - level_slots_count)
+                  )
+                  |> Map.put(level, {normalized_city, level_slots_count})
+                else
+                  acc2
+                  |> Map.put(level, {normalized_city, 0})
+                end
+              end
+            )
+            |> Map.drop([:housing_slots_left])
+
+          # IO.inspect(slots_per_level)
+
+          # each value is [{city, count}]
+          # slots_taken_w_job = Enum.sum(Map.values(slots_per_level))
+          slots_taken_w_job = Enum.sum(Keyword.values(Map.values(slots_per_level)))
+
+          IO.inspect(slots_taken_w_job, label: "slots_taken_per_job")
+
+          # for each level in slots_per_level
+          #
+          level_results =
+            Enum.map(0..5, fn x ->
+              {x,
+               %{
+                 normalized_cities: acc.level_slots[x].normalized_cities ++ [slots_per_level[x]],
+                 total_slots: acc.level_slots[x].total_slots + elem(slots_per_level[x], 1),
+                 slots_expanded:
+                   acc.level_slots[x].slots_expanded ++
+                     Enum.map(1..elem(slots_per_level[x], 1), fn _ -> normalized_city.city end)
+               }}
+            end)
+            |> Enum.into(%{})
+
+          %{
+            level_slots: level_results,
+            total_slots_left: acc.total_slots_left - slots_taken_w_job
+          }
+        end
+      )
 
     IO.inspect('after job slots per level calculated')
 
@@ -227,7 +280,7 @@ defmodule MayorGame.CityCalculator do
         {x,
          Enum.split(
            Enum.filter(leftovers.citizens_looking, fn cit -> cit.education == x end),
-           job_and_housing_slots_normalized[x].total_slots
+           job_and_housing_slots_normalized.level_slots[x].total_slots
          )}
       end)
 
@@ -235,20 +288,28 @@ defmodule MayorGame.CityCalculator do
     IO.inspect("Citizen splits done")
 
     preference_maps_by_level =
-      Map.new(0..5, fn x ->
-        {x,
+      Map.new(0..5, fn level ->
+        IO.inspect(job_and_housing_slots_normalized.level_slots[level].total_slots,
+          label: "job & housing slots for level " <> to_string(level)
+        )
+
+        {level,
          Enum.map(
-           elem(citizens_split[x], 0),
+           elem(citizens_split[level], 0),
            fn citizen ->
-             Enum.flat_map(job_and_housing_slots_normalized[x].normalized_cities, fn {k, v} ->
-               # duplicate this score v times (1 for each slot)
+             Enum.flat_map(
+               job_and_housing_slots_normalized.level_slots[level].normalized_cities,
+               fn {k, v} ->
+                 # duplicate this score v times (1 for each slot)
 
-               score =
-                 Float.round(1 - citizen_score(citizen.preferences, citizen.education, k), 4)
+                 # check if v is 0 here
+                 score =
+                   Float.round(1 - citizen_score(citizen.preferences, citizen.education, k), 4)
 
-               for _ <- 1..v,
-                   do: score
-             end)
+                 for _ <- 1..v,
+                     do: score
+               end
+             )
            end
          )}
       end)
@@ -269,7 +330,9 @@ defmodule MayorGame.CityCalculator do
 
     hungarian_results_by_level =
       Map.new(0..5, fn x ->
-        IO.inspect(length(preference_maps_by_level[x]))
+        IO.inspect(length(preference_maps_by_level[x]),
+          label: "preference map length for level " <> to_string(x)
+        )
 
         {x,
          if(preference_maps_by_level[x] != [],
@@ -344,7 +407,7 @@ defmodule MayorGame.CityCalculator do
     occupied_slots =
       Enum.flat_map(hungarian_results_by_level, fn {level, results_list} ->
         Enum.map(results_list.output, fn {_citizen_id, city_id} ->
-          Enum.at(job_and_housing_slots_normalized[level].slots_expanded, city_id)
+          Enum.at(job_and_housing_slots_normalized.level_slots[level].slots_expanded, city_id)
 
           # could also potentially move the citizens here
           # could move citizens here
