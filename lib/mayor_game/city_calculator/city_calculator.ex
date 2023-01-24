@@ -196,28 +196,30 @@ defmodule MayorGame.CityCalculator do
       end)
       |> Map.new(fn city -> {city.id, city} end)
 
-    slotted_cities_with_housing_slots_by_id =
+    # shape: %{
+    # city_id: {normalized_city, slots},
+    # city_id: {normalized_city, slots}
+    # }
+
+    # shape: %{
+    # city_id: slots
+    # }
+    housing_slots_by_city_id =
       leftovers.housing_slots
       |> Enum.map(fn {city, slots} ->
-        {normalize_city(
-           city,
-           leftovers.fun_max,
-           leftovers.health_max,
-           leftovers.pollution_max,
-           leftovers.sprawl_max
-         ), slots}
+        {city.id, slots}
       end)
-      |> Map.new(fn city_pair -> {elem(city_pair, 0).id, city_pair} end)
+      |> Enum.into(%{})
 
     # leftovers.housing_slots is a list of {city, number of slots}
     job_and_housing_slots_normalized =
       Enum.reduce(
-        Map.values(slotted_cities_with_housing_slots_by_id),
+        housing_slots_by_city_id,
         %{level_slots: level_slots, total_slots_left: total_slots},
-        fn {normalized_city, housing_slots_count}, acc ->
+        fn {normalized_city_id, housing_slots_count}, acc ->
           slots_per_level =
             Enum.reduce(
-              normalized_city.city.jobs,
+              slotted_cities_by_id[normalized_city_id].city.jobs,
               %{housing_slots_left: housing_slots_count},
               fn {level, count}, acc2 ->
                 IO.inspect(acc2.housing_slots_left,
@@ -234,10 +236,10 @@ defmodule MayorGame.CityCalculator do
                     :housing_slots_left,
                     &(&1 - level_slots_count)
                   )
-                  |> Map.put(level, {normalized_city, level_slots_count})
+                  |> Map.put(level, {normalized_city_id, level_slots_count})
                 else
                   acc2
-                  |> Map.put(level, {normalized_city, 0})
+                  |> Map.put(level, {normalized_city_id, 0})
                 end
               end
             )
@@ -261,7 +263,7 @@ defmodule MayorGame.CityCalculator do
                  total_slots: acc.level_slots[x].total_slots + elem(slots_per_level[x], 1),
                  slots_expanded:
                    acc.level_slots[x].slots_expanded ++
-                     Enum.map(1..elem(slots_per_level[x], 1), fn _ -> normalized_city.city end)
+                     Enum.map(1..elem(slots_per_level[x], 1), fn _ -> normalized_city_id end)
                }}
             end)
             |> Enum.into(%{})
@@ -297,17 +299,29 @@ defmodule MayorGame.CityCalculator do
          Enum.map(
            elem(citizens_split[level], 0),
            fn citizen ->
-             Enum.flat_map(
+             Enum.reduce(
                job_and_housing_slots_normalized.level_slots[level].normalized_cities,
-               fn {k, v} ->
+               [],
+               fn {city_id, slots_count}, acc ->
                  # duplicate this score v times (1 for each slot)
 
                  # check if v is 0 here
                  score =
-                   Float.round(1 - citizen_score(citizen.preferences, citizen.education, k), 4)
+                   Float.round(
+                     1 -
+                       citizen_score(
+                         citizen.preferences,
+                         citizen.education,
+                         slotted_cities_by_id[city_id]
+                       ),
+                     4
+                   )
 
-                 for _ <- 1..v,
-                     do: score
+                 if slots_count > 0 do
+                   acc ++ for _ <- 1..slots_count, do: score
+                 else
+                   acc
+                 end
                end
              )
            end
@@ -415,51 +429,85 @@ defmodule MayorGame.CityCalculator do
         end)
       end)
 
+    IO.inspect(occupied_slots, label: "occupied_slots")
+
     # take housing slots, remove any city that was occupied previously
     slots_after_job_migrations =
       if leftovers.housing_slots == %{} do
         %{}
       else
-        Enum.reduce(occupied_slots, leftovers.housing_slots, fn city, acc ->
+        Enum.reduce(occupied_slots, housing_slots_by_city_id, fn city_id, acc ->
           # need to find the right key, these cities are already normalized
-          if is_nil(city) do
+          if is_nil(city_id) do
             acc
           else
-            key = Enum.find(Map.keys(acc), fn x -> x.id == city.id end)
-            Map.update!(acc, key, &(&1 - 1))
+            # key = Enum.find(Map.keys(acc), fn x -> x.id == city.id end)
+            Map.update!(acc, city_id, &(&1 - 1))
           end
         end)
       end
 
-    housing_slots_normalized =
-      Enum.map(slots_after_job_migrations, fn {k, v} ->
-        {normalize_city(
-           k,
-           leftovers.fun_max,
-           leftovers.health_max,
-           leftovers.pollution_max,
-           leftovers.sprawl_max
-         ), v}
-      end)
+    IO.inspect(slots_after_job_migrations)
+
+    # housing_slots_normalized =
+    #   Enum.map(slots_after_job_migrations, fn {k, v} ->
+    #     {normalize_city(
+    #        k,
+    #        leftovers.fun_max,
+    #        leftovers.health_max,
+    #        leftovers.pollution_max,
+    #        leftovers.sprawl_max
+    #      ), v}
+    #   end)
 
     housing_slots_expanded =
-      Enum.flat_map(housing_slots_normalized, fn {k, v} ->
-        # duplicate this score v times (1 for each slot)
+      Enum.reduce(
+        slots_after_job_migrations,
+        [],
+        fn {city_id, slots_count}, acc ->
+          # duplicate this score v times (1 for each slot)
 
-        for _ <- 1..v,
-            do: k
-      end)
+          if slots_count > 0 do
+            acc ++ for _ <- 1..slots_count, do: city_id
+          else
+            acc
+          end
+        end
+      )
+
+    # Enum.flat_map(slots_after_job_migrations, fn {k, v} ->
+    #   # duplicate this score v times (1 for each slot)
+
+    #   for _ <- 1..v,
+    #       do: k
+    # end)
 
     preference_maps =
       Enum.map(looking_but_not_in_job_race, fn citizen ->
-        Enum.flat_map(housing_slots_normalized, fn {k, v} ->
-          # duplicate this score v times (1 for each slot)
+        Enum.reduce(
+          slots_after_job_migrations,
+          [],
+          fn {city_id, slots_count}, acc ->
+            # duplicate this score v times (1 for each slot)
 
-          score = Float.round(1 - citizen_score(citizen.preferences, citizen.education, k), 4)
+            score =
+              Float.round(
+                1 -
+                  citizen_score(
+                    citizen.preferences,
+                    citizen.education,
+                    slotted_cities_by_id[city_id]
+                  ),
+                4
+              )
 
-          for _ <- 1..v,
-              do: score
-        end)
+            if slots_count > 0 do
+              acc ++ for _ <- 1..slots_count, do: score
+            else
+              acc
+            end
+          end
+        )
       end)
 
     hungarian_results =
@@ -538,49 +586,99 @@ defmodule MayorGame.CityCalculator do
         Enum.at(housing_slots_expanded, city_id)
       end)
 
+    # slots_after_housing_migrations =
+    #   if slots_after_job_migrations == %{} do
+    #     %{}
+    #   else
+    #     Enum.reduce(occupied_slots_2, slots_after_job_migrations, fn city, acc ->
+    #       # need to find the right key, these cities are already normalized
+    #       key = Enum.find(Map.keys(acc), fn x -> x.id == city.id end)
+    #       Map.update!(acc, key, &(&1 - 1))
+    #     end)
+    #   end
+
     slots_after_housing_migrations =
       if slots_after_job_migrations == %{} do
         %{}
       else
-        Enum.reduce(occupied_slots_2, slots_after_job_migrations, fn city, acc ->
+        Enum.reduce(occupied_slots_2, slots_after_job_migrations, fn city_id, acc ->
           # need to find the right key, these cities are already normalized
-          key = Enum.find(Map.keys(acc), fn x -> x.id == city.id end)
-          Map.update!(acc, key, &(&1 - 1))
+          if is_nil(city_id) do
+            acc
+          else
+            # key = Enum.find(Map.keys(acc), fn x -> x.id == city.id end)
+            Map.update!(acc, city_id, &(&1 - 1))
+          end
         end)
       end
 
-    housing_slots_3_normalized =
-      Enum.map(slots_after_housing_migrations, fn {k, v} ->
-        {normalize_city(
-           k,
-           leftovers.fun_max,
-           leftovers.health_max,
-           leftovers.pollution_max,
-           leftovers.sprawl_max
-         ), v}
-      end)
+    # housing_slots_3_normalized =
+    #   Enum.map(slots_after_housing_migrations, fn {k, v} ->
+    #     {normalize_city(
+    #        k,
+    #        leftovers.fun_max,
+    #        leftovers.health_max,
+    #        leftovers.pollution_max,
+    #        leftovers.sprawl_max
+    #      ), v}
+    #   end)
 
-    housing_slots_3_expanded =
-      Enum.flat_map(housing_slots_3_normalized, fn {k, v} ->
-        # duplicate this score v times (1 for each slot)
+    housing_slots_2_expanded =
+      Enum.reduce(
+        slots_after_housing_migrations,
+        [],
+        fn {city_id, slots_count}, acc ->
+          # duplicate this score v times (1 for each slot)
 
-        for _ <- 1..v,
-            do: k
-      end)
+          if slots_count > 0 do
+            acc ++ for _ <- 1..slots_count, do: city_id
+          else
+            acc
+          end
+        end
+      )
 
     unhoused_split =
-      Enum.shuffle(leftovers.unhoused_citizens) |> Enum.split(length(housing_slots_3_expanded))
+      Enum.shuffle(leftovers.unhoused_citizens) |> Enum.split(length(housing_slots_2_expanded))
+
+    # unhoused_preference_maps =
+    #   Enum.map(elem(unhoused_split, 0), fn citizen ->
+    #     Enum.flat_map(housing_slots_2_expanded, fn {k, v} ->
+    #       # duplicate this score v times (1 for each slot)
+
+    #       score = Float.round(1 - citizen_score(citizen.preferences, citizen.education, k), 4)
+
+    #       for _ <- 1..v,
+    #           do: score
+    #     end)
+    #   end)
 
     unhoused_preference_maps =
       Enum.map(elem(unhoused_split, 0), fn citizen ->
-        Enum.flat_map(housing_slots_3_normalized, fn {k, v} ->
-          # duplicate this score v times (1 for each slot)
+        Enum.reduce(
+          housing_slots_2_expanded,
+          [],
+          fn {city_id, slots_count}, acc ->
+            # duplicate this score v times (1 for each slot)
 
-          score = Float.round(1 - citizen_score(citizen.preferences, citizen.education, k), 4)
+            score =
+              Float.round(
+                1 -
+                  citizen_score(
+                    citizen.preferences,
+                    citizen.education,
+                    slotted_cities_by_id[city_id]
+                  ),
+                4
+              )
 
-          for _ <- 1..v,
-              do: score
-        end)
+            if slots_count > 0 do
+              acc ++ for _ <- 1..slots_count, do: score
+            else
+              acc
+            end
+          end
+        )
       end)
 
     hungarian_results_unhoused =
@@ -598,7 +696,7 @@ defmodule MayorGame.CityCalculator do
         Enum.reduce(chunk, Ecto.Multi.new(), fn {citizen_index, slot_index}, multi ->
           citizen = Enum.at(elem(unhoused_split, 0), citizen_index)
           town_from = City.get_town!(citizen.town_id)
-          town_to = City.get_town!(Enum.at(housing_slots_3_expanded, slot_index).id)
+          town_to = City.get_town!(Enum.at(housing_slots_2_expanded, slot_index))
 
           if town_from.id != town_to.id do
             citizen_changeset =
