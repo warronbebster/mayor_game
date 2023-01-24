@@ -405,7 +405,7 @@ defmodule MayorGame.CityHelpersTwo do
     results =
       if production_map != nil && Map.has_key?(production_map, :pollution) &&
            !is_integer(production_map.pollution) do
-        Map.replace(production_map, :pollution, production_map.pollution.(citizen_count))
+        Map.replace(production_map, :pollution, production_map.pollution.(citizen_count / 10))
       else
         production_map
       end

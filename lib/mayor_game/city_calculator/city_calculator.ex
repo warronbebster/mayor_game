@@ -745,12 +745,10 @@ defmodule MayorGame.CityCalculator do
             pollution: city.pollution
           })
 
+        IO.inspect(city.pollution, label: "city pollution")
+
         IO.inspect(city.citizen_count, label: "length of citizens")
         town_struct = struct(Town, city |> Map.put(:pollution, 0) |> Map.put(:citizen_count, 0))
-
-        IO.inspect(town_struct.citizen_count, label: "town struct citizen count")
-
-        IO.inspect(city.title, label: "title")
 
         town_update_changeset =
           town_struct
@@ -759,8 +757,6 @@ defmodule MayorGame.CityCalculator do
             pollution: city.pollution,
             citizen_count: city.citizen_count
           })
-
-        IO.inspect(town_update_changeset)
 
         Ecto.Multi.update(multi, {:update_details, city.id}, details_update_changeset)
         |> Ecto.Multi.update({:update_towns, city.id}, town_update_changeset)
@@ -774,8 +770,6 @@ defmodule MayorGame.CityCalculator do
 
     leftovers.citizens_learning
     |> Enum.map(fn {level, list} ->
-      IO.inspect("citizen learning")
-
       list
       |> Enum.reduce(Ecto.Multi.new(), fn citizen, multi ->
         town = struct(Town, all_cities_by_id[citizen.town_id])
@@ -806,8 +800,6 @@ defmodule MayorGame.CityCalculator do
     # MULTI CHANGESET AGE
 
     Repo.update_all(MayorGame.City.Citizens, inc: [age: 1])
-
-    IO.inspect(length(leftovers.citizens_too_old), label: 'too old')
 
     # MULTI CHANGESET KILL OLD CITIZENS ——————————————————————————————————————————————————— DB UPDATE
     leftovers.citizens_too_old
