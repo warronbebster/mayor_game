@@ -111,7 +111,13 @@ defmodule MayorGame.CityHelpersTwo do
 
                 # if all reqs are met
                 if checked_reqs == [] do
+                  money_required =
+                    if Map.has_key?(individual_buildable.metadata.requires, :money),
+                      do: individual_buildable.metadata.requires.money,
+                      else: 0
+
                   # if it requires workers
+
                   if Map.has_key?(individual_buildable.metadata.requires, :workers) do
                     checked_workers =
                       check_workers(individual_buildable.metadata.requires, acc2.citizens)
@@ -145,11 +151,6 @@ defmodule MayorGame.CityHelpersTwo do
                           ] /
                           10
                       )
-
-                    money_required =
-                      if Map.has_key?(individual_buildable.metadata.requires, :money),
-                        do: individual_buildable.metadata.requires.money,
-                        else: 0
 
                     acc_after_workers =
                       if enough_workers,
@@ -208,6 +209,10 @@ defmodule MayorGame.CityHelpersTwo do
                     |> Map.update!(:result_buildables, fn current ->
                       [individual_buildable | current]
                     end)
+                    |> Map.put(
+                      :daily_cost,
+                      acc2.daily_cost + money_required
+                    )
                   end
                 else
                   # if requirements not met
