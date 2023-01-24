@@ -1190,9 +1190,10 @@ defmodule MayorGame.CityHelpersTwo do
     Map.merge(acc, generated, fn k, v1, v2 ->
       recurse_merge(k, v1, v2)
     end)
-    |> Map.update!(:result_buildables, fn current ->
-      [buildable | current]
-    end)
+
+    # |> Map.update!(:result_buildables, fn current ->
+    #   [buildable | current]
+    # end)
   end
 
   def recurse_merge(k, v1, v2) do
