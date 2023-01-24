@@ -80,6 +80,9 @@ defmodule MayorGameWeb.DashboardLive do
         MayorGame.Repo.preload(city, :details)
       end)
 
+    # should move pollution out of details
+    # and maybe citizen count?
+
     # MayorGame.Repo.preload(city, details: [:pollution])
 
     assign(socket, :cities, cities_preloaded)
