@@ -249,14 +249,48 @@
               <h3 class="text-l first-letter:uppercase decoration-1	underline underline-offset-4 decoration-neutral-800/40 decoration-dotted	">
                 <%= building_type %>
               </h3>
-              <div class="tooltip">
+              <div class="tooltip w-40">
                 <%= for {building_stat, value} <- building_stats do %>
-                  <%= if !String.contains?(Atom.to_string(building_stat), ["multipliers", "price", "purchasable", "upgrades", "produces", "requires"]) && value != nil do %>
+                  <%= if !String.contains?(Atom.to_string(building_stat), ["multipliers", "price", "purchasable", "upgrades", "produces", "requires", "health", "title", "area_required", "area", "energy_required", "energy", "pollution", "jobs", "sprawl", "money_required", "job_priority", "workers_required", "job_level", "fits"]) && value != nil do %>
                     <div class="flex items-center gap-1">
                       <div class=""><%= building_stat %></div>
                       <hr class="border-neutral-800 flex-1" />
                       <%= value %>
                     </div>
+                  <% end %>
+                <% end %>
+                <%= if building_stats.requires != nil do %>
+                  <span class="font-semibold">Requires:</span>
+                  <%= for {requires_type, value} <- building_stats.requires do %>
+                    <%= if is_number(value) do %>
+                      <div class="flex items-center gap-1">
+                        <div class=""><%= to_string(requires_type) %></div>
+                        <hr class="border-neutral-800 flex-1" />
+                        <%= to_string(value) %>
+                      </div>
+                    <% else %>
+                      <%= if requires_type == :workers do %>
+                        <div class="flex items-center gap-1">
+                          <div class="">
+                            lvl <%= to_string(value.level) <> " " <> to_string(requires_type) %>
+                          </div>
+                          <hr class="border-neutral-800 flex-1" />
+                          <%= to_string(value.count) %>
+                        </div>
+                      <% end %>
+                    <% end %>
+                  <% end %>
+                <% end %>
+                <%= if building_stats.produces != nil do %>
+                  <span class="font-semibold">Produces:</span>
+                  <%= for {produces_type, value} <- building_stats.produces do %>
+                    <%= if is_number(value) do %>
+                      <div class="flex items-center gap-1">
+                        <div class=""><%= to_string(produces_type) %></div>
+                        <hr class="border-neutral-800 flex-1" />
+                        <%= to_string(value) %>
+                      </div>
+                    <% end %>
                   <% end %>
                 <% end %>
               </div>
@@ -324,7 +358,7 @@
                         </p>
 
                         <%= for requirement <- @building_requirements do %>
-                          <%= if building_stats[String.to_existing_atom(requirement <> "_required")] != nil && building_stats[String.to_existing_atom(requirement <> "_required")] > 0 && !Enum.member?(operation_type, String.to_existing_atom(requirement)) do %>
+                          <%= if building_stats.requires[String.to_existing_atom(requirement)] != nil && building_stats.requires[String.to_existing_atom(requirement)] > 0 && !Enum.member?(operation_type, String.to_existing_atom(requirement)) do %>
                             <img
                               src={"/images/#{to_string(requirement)}-fulfilled.svg"}
                               alt={"has enough #{to_string(requirement)} to operate"}

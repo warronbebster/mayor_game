@@ -433,7 +433,6 @@ defmodule MayorGame.City.Buildable do
         purchasable_reason: "valid",
         requires: %{
           workers: %{count: 10, level: 0},
-          energy: 10000,
           money: 40
         },
         produces: %{
@@ -1134,6 +1133,7 @@ defmodule MayorGame.City.Buildable do
       needs_nothing,
       get_requirements_keys([:area]),
       get_requirements_keys([:money]),
+      get_requirements_keys([:money, :energy]),
       get_requirements_keys([:money, :area]),
       get_requirements_keys([:money, :workers]),
       get_requirements_keys([:area, :workers]),
