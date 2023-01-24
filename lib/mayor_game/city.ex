@@ -19,7 +19,7 @@ defmodule MayorGame.City do
 
   """
   def list_cities do
-    Repo.all(Town) |> Repo.preload([:citizens, :user])
+    Repo.all(Town) |> Repo.preload([:user])
   end
 
   @doc """
@@ -78,6 +78,8 @@ defmodule MayorGame.City do
     # TODO: remove this when creating cities from token
     resourceMap = %{resources: Map.new(MayorGame.City.Town.resources(), fn x -> {x, 0} end)}
 
+    intro_attrs = %{treasury: 5000, pollution: 0, citizen_count: 0}
+
     # make sure keys are atoms, helps with input from phoenix forms
     attrsWithAtomKeys =
       Map.new(attrs, fn {k, v} ->
@@ -86,9 +88,7 @@ defmodule MayorGame.City do
           v
         }
       end)
-      |> Map.merge(%{treasury: 5000, pollution: 0})
-
-    # intro_attrs = %{treasury: 5000, pollution: 0}
+      |> Map.merge(intro_attrs)
 
     %Town{}
     |> Town.changeset(Map.merge(attrsWithAtomKeys, resourceMap))

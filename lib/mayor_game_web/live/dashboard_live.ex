@@ -34,9 +34,25 @@ defmodule MayorGameWeb.DashboardLive do
      |> assign_cities()}
   end
 
-  def handle_info(%{event: "ping", payload: world}, socket) do
-    {:noreply, socket |> assign_cities()}
+  def handle_info(%{event: "ping", payload: _world}, socket) do
+    if Map.has_key?(socket.assigns, :current_user) do
+      {:noreply,
+       socket
+       |> assign(
+         current_user:
+           socket.assigns.current_user |> MayorGame.Repo.preload(town: [:details, :citizens])
+       )
+       |> assign_cities()}
+    else
+      {:noreply,
+       socket
+       |> assign_cities()}
+    end
   end
+
+  # def handle_info(%{event: "ping", :payload _world, "current_user" => current_user}, socket) do
+  #   {:noreply, socket |> assign_cities()}
+  # end
 
   # this handles different events
   def handle_event(
@@ -72,7 +88,7 @@ defmodule MayorGameWeb.DashboardLive do
   # Assign all cities as the cities list. Maybe I should figure out a way to only show cities for that user.
   # at some point should sort by number of citizens
   defp assign_cities(socket) do
-    cities = City.list_cities() |> Enum.sort(&(&1.id <= &2.id))
+    cities = City.list_cities() |> Enum.sort_by(& &1.id)
     world = MayorGame.Repo.get!(MayorGame.City.World, 1)
 
     # cities_preloaded =

@@ -60,7 +60,7 @@
                 class="inline"
               />
               <span>
-                <%= Number.Delimit.number_to_delimited(Enum.count(@current_user.town.citizens)) %>
+                <%= Number.Delimit.number_to_delimited(@current_user.town.citizen_count) %>
               </span>
               <hr class="border-neutral-300 flex-1" />
             </div>
@@ -114,7 +114,10 @@
                 height="12"
                 width="12"
                 class="inline"
-              /> <span><%= Number.Delimit.number_to_delimited(Enum.count(city.citizens)) %></span>
+              />
+              <span>
+                <%= Number.Delimit.number_to_delimited(city.citizen_count) %>
+              </span>
               <hr class="border-neutral-300 flex-1" />
             </div>
             <%= if assigns[:current_user] && @current_user.id == 1 do %>

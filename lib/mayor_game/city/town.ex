@@ -47,7 +47,8 @@ defmodule MayorGame.City.Town do
           citizens: list(Citizens.t()),
           details: Details.t(),
           pollution: integer,
-          treasury: integer
+          treasury: integer,
+          citizen_count: integer
         }
 
   schema "cities" do
@@ -57,6 +58,7 @@ defmodule MayorGame.City.Town do
     field :resources, :map
     field :pollution, :integer
     field :treasury, :integer
+    field :citizen_count, :integer
 
     # this corresponds to an elixir list
     field :logs, {:array, :string}
@@ -120,6 +122,7 @@ defmodule MayorGame.City.Town do
     |> cast(attrs, [
       :title,
       :pollution,
+      :citizen_count,
       :treasury,
       :region,
       :climate,

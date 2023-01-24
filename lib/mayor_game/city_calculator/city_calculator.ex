@@ -727,7 +727,8 @@ defmodule MayorGame.CityCalculator do
     # ——————————————————————————————————————————————————————————————————————————————————
 
     IO.inspect(length(leftovers.all_cities_new))
-    # MULTI UPDATE: update city money/treasury in DB
+
+    # MULTI UPDATE: update city money/treasury in DB ——————————————————————————————————————————————————— DB UPDATE
     leftovers.all_cities_new
     |> Enum.chunk_every(100)
     |> Enum.map(fn chunk ->
@@ -737,9 +738,6 @@ defmodule MayorGame.CityCalculator do
             do: 0,
             else: city.money + city.income - city.daily_cost
 
-        IO.inspect(updated_city_treasury, label: "city_treasury")
-        IO.inspect(city.pollution, label: "city_pollution")
-
         details_update_changeset =
           city.details
           |> City.Details.changeset(%{
@@ -747,17 +745,19 @@ defmodule MayorGame.CityCalculator do
             pollution: city.pollution
           })
 
-        pollution = city.pollution
+        IO.inspect(city.citizen_count, label: "length of citizens")
+        town_struct = struct(Town, city |> Map.put(:pollution, 0) |> Map.put(:citizen_count, 0))
 
-        town_struct = struct(Town, Map.put(city, :pollution, 0))
+        IO.inspect(town_struct.citizen_count, label: "town struct citizen count")
 
-        IO.inspect(town_struct.pollution, label: "town struct pollution")
+        IO.inspect(city.title, label: "title")
 
         town_update_changeset =
           town_struct
           |> City.Town.changeset(%{
             treasury: updated_city_treasury,
-            pollution: pollution
+            pollution: city.pollution,
+            citizen_count: city.citizen_count
           })
 
         IO.inspect(town_update_changeset)
@@ -770,7 +770,7 @@ defmodule MayorGame.CityCalculator do
 
     # end)
 
-    # MULTI CHANGESET EDUCATE
+    # MULTI CHANGESET EDUCATE ——————————————————————————————————————————————————— DB UPDATE
 
     leftovers.citizens_learning
     |> Enum.map(fn {level, list} ->
@@ -809,7 +809,7 @@ defmodule MayorGame.CityCalculator do
 
     IO.inspect(length(leftovers.citizens_too_old), label: 'too old')
 
-    # MULTI CHANGESET KILL OLD CITIZENS
+    # MULTI CHANGESET KILL OLD CITIZENS ——————————————————————————————————————————————————— DB UPDATE
     leftovers.citizens_too_old
     |> Enum.chunk_every(100)
     |> Enum.map(fn chunk ->
@@ -833,7 +833,7 @@ defmodule MayorGame.CityCalculator do
 
     # end)
 
-    # MULTI KILL POLLUTED CITIZENS
+    # MULTI KILL POLLUTED CITIZENS ——————————————————————————————————————————————————— DB UPDATE
     leftovers.citizens_polluted
     |> Enum.chunk_every(100)
     |> Enum.map(fn chunk ->
@@ -856,7 +856,7 @@ defmodule MayorGame.CityCalculator do
       |> Repo.transaction()
     end)
 
-    # MULTI REPRODUCE
+    # MULTI REPRODUCE ——————————————————————————————————————————————————— DB UPDATE
     leftovers.citizens_to_reproduce
     |> Enum.chunk_every(100)
     |> Enum.map(fn chunk ->

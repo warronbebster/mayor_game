@@ -71,6 +71,7 @@ defmodule MayorGame.CityHelpersTwo do
           money: city_baked_details.details.city_treasury,
           income: 0,
           daily_cost: 0,
+          citizen_count: length(sorted_citizens),
           citizens: sorted_citizens,
           employed_citizens: [],
           fun: 0,
