@@ -913,7 +913,9 @@ defmodule MayorGame.CityCalculator do
   end
 
   def update_logs(log, existing_logs) do
-    updated_log = [log | existing_logs]
+    updated_log = if !is_nil(existing_logs), do: [log | existing_logs], else: [log]
+
+    # updated_log = [log | existing_logs]
 
     if length(updated_log) > 50 do
       updated_log |> Enum.reverse() |> tl() |> Enum.reverse()
