@@ -726,8 +726,6 @@ defmodule MayorGame.CityCalculator do
     # ————————————————————————————————————————— OTHER ECTO UPDATES
     # ——————————————————————————————————————————————————————————————————————————————————
 
-    IO.inspect(length(leftovers.all_cities_new))
-
     # MULTI UPDATE: update city money/treasury in DB ——————————————————————————————————————————————————— DB UPDATE
     leftovers.all_cities_new
     |> Enum.chunk_every(100)
@@ -745,9 +743,6 @@ defmodule MayorGame.CityCalculator do
             pollution: city.pollution
           })
 
-        IO.inspect(city.pollution, label: "city pollution")
-
-        IO.inspect(city.citizen_count, label: "length of citizens")
         town_struct = struct(Town, city |> Map.put(:pollution, 0) |> Map.put(:citizen_count, 0))
 
         town_update_changeset =
