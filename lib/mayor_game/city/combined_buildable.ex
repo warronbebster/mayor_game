@@ -31,18 +31,20 @@ defmodule MayorGame.City.CombinedBuildable do
       But also applies the upgrades from %Buildable
   """
   def combine_and_apply_upgrades(buildable, metadata) do
-    upgraded_metadata =
-      if buildable.upgrades != [] do
-        Enum.reduce(buildable.upgrades, metadata, fn buildable_upgrade, metadata_acc ->
-          upgrade = Map.get(metadata_acc.upgrades, String.to_existing_atom(buildable_upgrade))
-          # reduce over function map — each update each key by the function
-          Enum.reduce(upgrade.function, metadata_acc, fn {key, function}, metadata_acc_2 ->
-            Map.update!(metadata_acc_2, key, function)
-          end)
-        end)
-      else
-        metadata
-      end
+    # upgraded_metadata =
+    #   if buildable.upgrades != [] do
+    #     Enum.reduce(buildable.upgrades, metadata, fn buildable_upgrade, metadata_acc ->
+    #       upgrade = Map.get(metadata_acc.upgrades, String.to_existing_atom(buildable_upgrade))
+    #       # reduce over function map — each update each key by the function
+    #       Enum.reduce(upgrade.function, metadata_acc, fn {key, function}, metadata_acc_2 ->
+    #         Map.update!(metadata_acc_2, key, function)
+    #       end)
+    #     end)
+    #   else
+    #     metadata
+    #   end
+
+    upgraded_metadata = metadata
 
     %__MODULE__{
       buildable: buildable,
