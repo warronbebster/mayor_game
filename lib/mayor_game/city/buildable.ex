@@ -1139,9 +1139,9 @@ defmodule MayorGame.City.Buildable do
       get_requirements_keys([:area, :workers]),
       get_requirements_keys([:area, :money, :workers]),
       get_requirements_keys([:energy, :area]),
-      get_requirements_keys([:energy, :area, :money]),
       get_requirements_keys([:energy, :workers]),
       get_requirements_keys([:energy, :money, :workers]),
+      get_requirements_keys([:energy, :area, :money]),
       get_requirements_keys([:energy, :area, :workers]),
       get_requirements_keys([:energy, :area, :money, :workers])
     ]

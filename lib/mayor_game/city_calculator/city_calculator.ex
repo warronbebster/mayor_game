@@ -222,12 +222,6 @@ defmodule MayorGame.CityCalculator do
               slotted_cities_by_id[normalized_city_id].city.jobs,
               %{housing_slots_left: housing_slots_count},
               fn {level, count}, acc2 ->
-                IO.inspect(acc2.housing_slots_left,
-                  label: "housing_slots_left at level " <> to_string(level)
-                )
-
-                IO.inspect(count, label: "jobs at level " <> to_string(level))
-
                 if acc2.housing_slots_left > 0 do
                   level_slots_count = min(count, acc2.housing_slots_left)
 
@@ -250,8 +244,6 @@ defmodule MayorGame.CityCalculator do
           # each value is [{city, count}]
           # slots_taken_w_job = Enum.sum(Map.values(slots_per_level))
           slots_taken_w_job = Enum.sum(Keyword.values(Map.values(slots_per_level)))
-
-          IO.inspect(slots_taken_w_job, label: "slots_taken_per_job")
 
           # for each level in slots_per_level
           #
