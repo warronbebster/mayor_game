@@ -180,6 +180,10 @@ defmodule MayorGame.CityCalculator do
     # all_cities_by_id = maybe make a map here of city in all_cities_new and their id
     # or all_cities_new might already be that, by index
     # or the map is just of the ones with housing slots (e.g. in leftovers.housing_slots)
+    all_cities_by_id =
+      leftovers.all_cities_new
+      |> Map.new(fn city -> {city.id, city} end)
+
     slotted_cities_by_id =
       Map.keys(leftovers.housing_slots)
       |> Enum.map(fn city ->
@@ -357,8 +361,8 @@ defmodule MayorGame.CityCalculator do
         |> Enum.chunk_every(100)
         |> Enum.map(fn chunk ->
           Enum.reduce(chunk, Ecto.Multi.new(), fn {citizen, city_id}, multi ->
-            town_from = struct(Town, slotted_cities_by_id[citizen.town_id])
-            town_to = struct(Town, slotted_cities_by_id[city_id])
+            town_from = struct(Town, all_cities_by_id[citizen.town_id])
+            town_to = struct(Town, all_cities_by_id[city_id])
 
             if town_from.id != town_to.id do
               citizen_changeset =
@@ -508,8 +512,8 @@ defmodule MayorGame.CityCalculator do
       |> Flow.from_enumerable(max_demand: 100)
       |> Flow.map(fn chunk ->
         Enum.reduce(chunk, Ecto.Multi.new(), fn {citizen, city_id}, multi ->
-          town_from = struct(Town, slotted_cities_by_id[citizen.town_id])
-          town_to = struct(Town, slotted_cities_by_id[city_id])
+          town_from = struct(Town, all_cities_by_id[citizen.town_id])
+          town_to = struct(Town, all_cities_by_id[city_id])
 
           if town_from.id != town_to.id do
             citizen_changeset =
@@ -653,8 +657,8 @@ defmodule MayorGame.CityCalculator do
       |> Enum.map(fn chunk ->
         Enum.reduce(chunk, Ecto.Multi.new(), fn {citizen, city_id}, multi ->
           # citizen = Enum.at(elem(unhoused_split, 0), citizen_index)
-          town_from = struct(Town, slotted_cities_by_id[citizen.town_id])
-          town_to = struct(Town, slotted_cities_by_id[city_id])
+          town_from = struct(Town, all_cities_by_id[citizen.town_id])
+          town_to = struct(Town, all_cities_by_id[city_id])
 
           if town_from.id != town_to.id do
             citizen_changeset =
@@ -698,7 +702,7 @@ defmodule MayorGame.CityCalculator do
     |> Enum.chunk_every(100)
     |> Enum.map(fn chunk ->
       Enum.reduce(chunk, Ecto.Multi.new(), fn citizen, multi ->
-        town = struct(Town, slotted_cities_by_id[citizen.town_id])
+        town = struct(Town, all_cities_by_id[citizen.town_id])
 
         log =
           CityHelpersTwo.describe_citizen(citizen) <>
@@ -767,7 +771,7 @@ defmodule MayorGame.CityCalculator do
 
       list
       |> Enum.reduce(Ecto.Multi.new(), fn citizen, multi ->
-        town = struct(Town, slotted_cities_by_id[citizen.town_id])
+        town = struct(Town, all_cities_by_id[citizen.town_id])
 
         log =
           CityHelpersTwo.describe_citizen(citizen) <>
@@ -803,7 +807,7 @@ defmodule MayorGame.CityCalculator do
     |> Enum.chunk_every(100)
     |> Enum.map(fn chunk ->
       Enum.reduce(chunk, Ecto.Multi.new(), fn citizen, multi ->
-        town = struct(Town, slotted_cities_by_id[citizen.town_id])
+        town = struct(Town, all_cities_by_id[citizen.town_id])
 
         log = CityHelpersTwo.describe_citizen(citizen) <> " has died because of old age. RIP"
 
@@ -827,7 +831,7 @@ defmodule MayorGame.CityCalculator do
     |> Enum.chunk_every(100)
     |> Enum.map(fn chunk ->
       Enum.reduce(chunk, Ecto.Multi.new(), fn citizen, multi ->
-        town = struct(Town, slotted_cities_by_id[citizen.town_id])
+        town = struct(Town, all_cities_by_id[citizen.town_id])
 
         log =
           CityHelpersTwo.describe_citizen(citizen) <>
@@ -850,7 +854,7 @@ defmodule MayorGame.CityCalculator do
     |> Enum.chunk_every(100)
     |> Enum.map(fn chunk ->
       Enum.reduce(chunk, Ecto.Multi.new(), fn citizen, multi ->
-        town = struct(Town, slotted_cities_by_id[citizen.town_id])
+        town = struct(Town, all_cities_by_id[citizen.town_id])
 
         log =
           CityHelpersTwo.describe_citizen(citizen) <>
