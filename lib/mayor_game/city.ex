@@ -494,23 +494,30 @@ defmodule MayorGame.City do
       {:ok, %Details{}}
 
   """
-  def purchase_buildable(%Details{} = details, field_to_purchase, purchase_price) do
-    detail_attrs = %{city_treasury: details.city_treasury - purchase_price}
+  def purchase_buildable(%Town{} = city, field_to_purchase, purchase_price) do
+    detail_attrs = %{city_treasury: city.details.city_treasury - purchase_price}
+    city_attrs = %{treasury: city.treasury - purchase_price}
 
     # purchased buildings start enabled and with no upgrades
     buildable_attrs = %{enabled: true, reason: [], upgrades: []}
 
     uhhh =
-      details
+      city.details
       |> Ecto.build_assoc(field_to_purchase, buildable_attrs)
 
-    purchase =
-      details
+    purchase_details =
+      city.details
       |> Details.changeset(detail_attrs)
       |> Ecto.Changeset.validate_number(:city_treasury, greater_than: 0)
       |> Repo.update()
 
-    case purchase do
+    purchase_city =
+      city
+      |> Town.changeset(city_attrs)
+      |> Ecto.Changeset.validate_number(:treasury, greater_than: 0)
+      |> Repo.update()
+
+    case purchase_details do
       {:ok, _result} -> Repo.insert(uhhh)
       {:error} -> IO.puts("uh oh, purchase error inside purchase_buildabble")
       _ -> nil

@@ -160,11 +160,15 @@ defmodule MayorGameWeb.CityLive do
     # get exponential price — don't want to set price on front-end for cheating reasons
     initial_purchase_price = get_in(Buildable.buildables_flat(), [building_to_buy_atom, :price])
     buildable_count = length(city.details[building_to_buy_atom])
-    purchase_price = MayorGame.CityHelpers.building_price(initial_purchase_price, buildable_count)
+
+    purchase_price =
+      MayorGame.CityHelpersTwo.building_price(initial_purchase_price, buildable_count)
+
+    city_struct = struct(City.Town, city)
 
     # check for upgrade requirements?
 
-    case City.purchase_buildable(city.details, building_to_buy_atom, purchase_price) do
+    case City.purchase_buildable(city_struct, building_to_buy_atom, purchase_price) do
       {:ok, _updated_details} ->
         IO.puts("purchase success")
 
