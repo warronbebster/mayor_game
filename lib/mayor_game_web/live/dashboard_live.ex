@@ -75,17 +75,17 @@ defmodule MayorGameWeb.DashboardLive do
     cities = City.list_cities() |> Enum.sort(&(&1.id <= &2.id))
     world = MayorGame.Repo.get!(MayorGame.City.World, 1)
 
-    cities_preloaded =
-      Enum.map(cities, fn city ->
-        MayorGame.Repo.preload(city, :details)
-      end)
+    # cities_preloaded =
+    #   Enum.map(cities, fn city ->
+    #     MayorGame.Repo.preload(city, :details)
+    #   end)
 
     # should move pollution out of details
     # and maybe citizen count?
 
     # MayorGame.Repo.preload(city, details: [:pollution])
 
-    assign(socket, :cities, cities_preloaded)
+    assign(socket, :cities, cities)
     |> assign(:world, world)
   end
 end

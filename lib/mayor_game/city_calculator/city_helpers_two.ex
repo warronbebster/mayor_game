@@ -100,6 +100,9 @@ defmodule MayorGame.CityHelpersTwo do
               if individual_buildable.metadata.requires == nil do
                 # generate final production map
                 update_generated_acc(individual_buildable, length(acc.citizens), acc2)
+                |> Map.update!(:result_buildables, fn current ->
+                  [individual_buildable | current]
+                end)
               else
                 reqs_minus_workers = Map.drop(individual_buildable.metadata.requires, [:workers])
 

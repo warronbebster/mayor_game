@@ -47,7 +47,7 @@
                 class="inline"
               />
               <span class="text-violet-600 ">
-                <%= Number.Delimit.number_to_delimited(@current_user.town.details.pollution) %>
+                <%= Number.Delimit.number_to_delimited(@current_user.town.pollution) %>
               </span>
               <hr class="border-neutral-300 flex-1" />
             </div>
@@ -103,7 +103,7 @@
                 class="inline"
               />
               <span class="text-violet-600 ">
-                <%= Number.Delimit.number_to_delimited(city.details.pollution) %>
+                <%= Number.Delimit.number_to_delimited(city.pollution) %>
               </span>
               <hr class="border-neutral-300 flex-1" />
             </div>

@@ -86,6 +86,9 @@ defmodule MayorGame.City do
           v
         }
       end)
+      |> Map.merge(%{treasury: 5000, pollution: 0})
+
+    # intro_attrs = %{treasury: 5000, pollution: 0}
 
     %Town{}
     |> Town.changeset(Map.merge(attrsWithAtomKeys, resourceMap))

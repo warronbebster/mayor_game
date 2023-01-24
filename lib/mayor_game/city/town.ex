@@ -14,7 +14,9 @@ defmodule MayorGame.City.Town do
       tax_rates: map,
       user: %MayorGame.Auth.User{},
       citizens: list(Citizens.t()),
-      details: Details.t()
+      details: Details.t(),
+      pollution: integer,
+      treasury: integer
   """
 
   use Ecto.Schema
@@ -43,7 +45,9 @@ defmodule MayorGame.City.Town do
           tax_rates: map,
           user: %MayorGame.Auth.User{},
           citizens: list(Citizens.t()),
-          details: Details.t()
+          details: Details.t(),
+          pollution: integer,
+          treasury: integer
         }
 
   schema "cities" do
@@ -51,6 +55,8 @@ defmodule MayorGame.City.Town do
     field :region, :string
     field :climate, :string
     field :resources, :map
+    field :pollution, :integer
+    field :treasury, :integer
 
     # this corresponds to an elixir list
     field :logs, {:array, :string}
@@ -111,7 +117,17 @@ defmodule MayorGame.City.Town do
   def changeset(%MayorGame.City.Town{} = town, attrs) do
     town
     # add a validation here to limit the types of regions
-    |> cast(attrs, [:title, :region, :climate, :resources, :user_id, :logs, :tax_rates])
+    |> cast(attrs, [
+      :title,
+      :pollution,
+      :treasury,
+      :region,
+      :climate,
+      :resources,
+      :user_id,
+      :logs,
+      :tax_rates
+    ])
     |> validate_required([:title, :region, :climate, :resources, :user_id])
     |> validate_length(:title, min: 1, max: 20)
     |> validate_inclusion(:region, regions())

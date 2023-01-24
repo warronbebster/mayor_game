@@ -1,5 +1,6 @@
 defmodule MayorGame.CityCalculator do
   use GenServer, restart: :permanent
+  alias MayorGame.City.Town
   alias MayorGame.{City, CityHelpersTwo, Repo}
   # alias MayorGame.City.Details
 
@@ -356,9 +357,8 @@ defmodule MayorGame.CityCalculator do
         |> Enum.chunk_every(100)
         |> Enum.map(fn chunk ->
           Enum.reduce(chunk, Ecto.Multi.new(), fn {citizen, city_id}, multi ->
-            # citizen = Enum.at(elem(citizens_split[x], 0), citizen_index)
-            town_from = City.get_town!(citizen.town_id)
-            town_to = City.get_town!(city_id)
+            town_from = struct(Town, slotted_cities_by_id[citizen.town_id])
+            town_to = struct(Town, slotted_cities_by_id[city_id])
 
             if town_from.id != town_to.id do
               citizen_changeset =
@@ -508,9 +508,8 @@ defmodule MayorGame.CityCalculator do
       |> Flow.from_enumerable(max_demand: 100)
       |> Flow.map(fn chunk ->
         Enum.reduce(chunk, Ecto.Multi.new(), fn {citizen, city_id}, multi ->
-          # citizen = Enum.at(looking_but_not_in_job_race, citizen_index)
-          town_from = City.get_town!(citizen.town_id)
-          town_to = City.get_town!(city_id)
+          town_from = struct(Town, slotted_cities_by_id[citizen.town_id])
+          town_to = struct(Town, slotted_cities_by_id[city_id])
 
           if town_from.id != town_to.id do
             citizen_changeset =
@@ -654,8 +653,8 @@ defmodule MayorGame.CityCalculator do
       |> Enum.map(fn chunk ->
         Enum.reduce(chunk, Ecto.Multi.new(), fn {citizen, city_id}, multi ->
           # citizen = Enum.at(elem(unhoused_split, 0), citizen_index)
-          town_from = City.get_town!(citizen.town_id)
-          town_to = City.get_town!(city_id)
+          town_from = struct(Town, slotted_cities_by_id[citizen.town_id])
+          town_to = struct(Town, slotted_cities_by_id[city_id])
 
           if town_from.id != town_to.id do
             citizen_changeset =
@@ -699,7 +698,7 @@ defmodule MayorGame.CityCalculator do
     |> Enum.chunk_every(100)
     |> Enum.map(fn chunk ->
       Enum.reduce(chunk, Ecto.Multi.new(), fn citizen, multi ->
-        town = City.get_town!(citizen.town_id)
+        town = struct(Town, slotted_cities_by_id[citizen.town_id])
 
         log =
           CityHelpersTwo.describe_citizen(citizen) <>
@@ -743,7 +742,17 @@ defmodule MayorGame.CityCalculator do
             pollution: city.pollution
           })
 
-        Ecto.Multi.update(multi, {:update_towns, city.id}, details_update_changeset)
+        town_struct = struct(Town, city)
+
+        town_update_changeset =
+          town_struct
+          |> City.Town.changeset(%{
+            treasury: updated_city_treasury,
+            pollution: city.pollution
+          })
+
+        Ecto.Multi.update(multi, {:update_details, city.id}, details_update_changeset)
+        |> Ecto.Multi.update({:update_towns, city.id}, town_update_changeset)
       end)
       |> Repo.transaction()
     end)
@@ -758,7 +767,7 @@ defmodule MayorGame.CityCalculator do
 
       list
       |> Enum.reduce(Ecto.Multi.new(), fn citizen, multi ->
-        town = City.get_town!(citizen.town_id)
+        town = struct(Town, slotted_cities_by_id[citizen.town_id])
 
         log =
           CityHelpersTwo.describe_citizen(citizen) <>
@@ -794,7 +803,7 @@ defmodule MayorGame.CityCalculator do
     |> Enum.chunk_every(100)
     |> Enum.map(fn chunk ->
       Enum.reduce(chunk, Ecto.Multi.new(), fn citizen, multi ->
-        town = City.get_town!(citizen.town_id)
+        town = struct(Town, slotted_cities_by_id[citizen.town_id])
 
         log = CityHelpersTwo.describe_citizen(citizen) <> " has died because of old age. RIP"
 
@@ -818,7 +827,7 @@ defmodule MayorGame.CityCalculator do
     |> Enum.chunk_every(100)
     |> Enum.map(fn chunk ->
       Enum.reduce(chunk, Ecto.Multi.new(), fn citizen, multi ->
-        town = City.get_town!(citizen.town_id)
+        town = struct(Town, slotted_cities_by_id[citizen.town_id])
 
         log =
           CityHelpersTwo.describe_citizen(citizen) <>
@@ -841,7 +850,7 @@ defmodule MayorGame.CityCalculator do
     |> Enum.chunk_every(100)
     |> Enum.map(fn chunk ->
       Enum.reduce(chunk, Ecto.Multi.new(), fn citizen, multi ->
-        town = City.get_town!(citizen.town_id)
+        town = struct(Town, slotted_cities_by_id[citizen.town_id])
 
         log =
           CityHelpersTwo.describe_citizen(citizen) <>
