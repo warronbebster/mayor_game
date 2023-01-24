@@ -1134,7 +1134,6 @@ defmodule MayorGame.City.Buildable do
       get_requirements_keys([:area]),
       get_requirements_keys([:money]),
       get_requirements_keys([:money, :energy]),
-      get_requirements_keys([:money, :area]),
       get_requirements_keys([:money, :workers]),
       get_requirements_keys([:area, :workers]),
       # this is basically all energy gen
@@ -1143,6 +1142,8 @@ defmodule MayorGame.City.Buildable do
       get_requirements_keys([:energy, :money, :workers]),
       get_requirements_keys([:energy, :area]),
       get_requirements_keys([:energy, :workers]),
+      # parks
+      get_requirements_keys([:money, :area]),
       get_requirements_keys([:energy, :area, :money]),
       get_requirements_keys([:energy, :area, :workers]),
       get_requirements_keys([:energy, :area, :money, :workers])
