@@ -814,7 +814,9 @@ defmodule MayorGame.CityCalculator do
 
     # MULTI CHANGESET AGE
 
-    Repo.update_all(MayorGame.City.Citizens, inc: [age: 1])
+    Repo.checkout(fn -> Repo.update_all(MayorGame.City.Citizens, inc: [age: 1]) end,
+      timeout: 30_000
+    )
 
     # MULTI CHANGESET KILL OLD CITIZENS ——————————————————————————————————————————————————— DB UPDATE
     Repo.checkout(
