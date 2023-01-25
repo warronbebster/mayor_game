@@ -91,8 +91,10 @@ defmodule MayorGameWeb.CityLive do
         _value,
         %{assigns: %{city2: city}} = socket
       ) do
+    city_struct = struct(City.Town, city)
+
     if socket.assigns.current_user.id == 1 do
-      case City.update_details(city.details, %{city_treasury: city.details.city_treasury + 1000}) do
+      case City.update_town(city_struct, %{treasury: city.treasury + 1000}) do
         {:ok, _updated_town} ->
           IO.puts("money gabe")
 
@@ -154,6 +156,8 @@ defmodule MayorGameWeb.CityLive do
         %{assigns: %{city2: city}} = socket
       ) do
     # check if user is mayor here?
+
+    IO.inspect("PURCHASE STARTED")
 
     building_to_buy_atom = String.to_existing_atom(building_to_buy)
 
@@ -226,50 +230,6 @@ defmodule MayorGameWeb.CityLive do
     # this is all ya gotta do to update, baybee
     {:noreply, socket |> update_city_by_title()}
   end
-
-  # def handle_event(
-  #       "buy_upgrade",
-  #       %{
-  #         "building" => buildable_to_upgrade,
-  #         "buildable_id" => buildable_id,
-  #         "upgrade" => upgrade_name,
-  #         "upgrade_cost" => upgrade_cost,
-  #         "value" => _value
-  #       },
-  #       %{assigns: %{city2: city}} = socket
-  #     ) do
-  #   # check if user is mayor here?
-
-  #   buildable_to_upgrade_atom =
-  #     if is_atom(buildable_to_upgrade),
-  #       do: buildable_to_upgrade,
-  #       else: String.to_existing_atom(buildable_to_upgrade)
-
-  #   buildable_to_upgrade =
-  #     Repo.get_by!(Ecto.assoc(city.details, buildable_to_upgrade_atom), id: buildable_id)
-
-  #   case City.update_buildable(city.details, buildable_to_upgrade_atom, buildable_id, %{
-  #          # updates the upgrades map in the specific buildable
-  #          upgrades: [to_string(upgrade_name) | buildable_to_upgrade.upgrades]
-  #        }) do
-  #     {:ok, _updated_details} ->
-  #       IO.puts("buildable upgraded successfully")
-
-  #       # then charges from the treasury
-  #       City.update_details(city.details, %{
-  #         city_treasury: city.details.city_treasury - String.to_integer(upgrade_cost)
-  #       })
-
-  #     {:error, err} ->
-  #       Logger.error(inspect(err))
-
-  #     nil ->
-  #       IO.puts('wat nil')
-  #   end
-
-  #   # this is all ya gotta do to update, baybee
-  #   {:noreply, socket |> update_city_by_title()}
-  # end
 
   def handle_event(
         "update_tax_rates",
@@ -356,8 +316,8 @@ defmodule MayorGameWeb.CityLive do
     buildables_with_status = calculate_buildables_statuses(city_with_stats2)
     # IO.inspect(city_with_stats.details.airports)
 
-    mapped_details =
-      Map.from_struct(city_with_stats2.details) |> Map.take(Buildable.buildables_list())
+    # mapped_details =
+    #   Map.from_struct(city_with_stats2.details) |> Map.take(Buildable.buildables_list())
 
     empty_buildable_map = Map.new(Buildable.buildables_list(), fn x -> {x, []} end)
 
@@ -378,17 +338,6 @@ defmodule MayorGameWeb.CityLive do
 
     citizen_edu_count =
       Enum.frequencies_by(city_with_stats2.all_citizens, fn x -> x.education end)
-
-    # city_without_citizens =
-    #   Map.drop(city_with_stats, [
-    #     :citizens,
-    #     :citizens_looking,
-    #     :citizens_to_reproduce,
-    #     :citizens_polluted,
-    #     :resources,
-    #     :citizens_looking,
-    #     :education
-    #   ])
 
     city2_without_citizens =
       Map.drop(city_with_stats2, [
@@ -435,7 +384,7 @@ defmodule MayorGameWeb.CityLive do
   defp calculate_buildable_status(buildable, city_with_stats, buildable_count) do
     updated_price = buildable.price * round(:math.pow(buildable_count, 2) + 1)
 
-    if city_with_stats.details.city_treasury > updated_price do
+    if city_with_stats.money > updated_price do
       cond do
         # enough energy AND enough area
 

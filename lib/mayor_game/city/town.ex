@@ -131,7 +131,7 @@ defmodule MayorGame.City.Town do
       :logs,
       :tax_rates
     ])
-    |> validate_required([:title, :region, :climate, :resources, :user_id])
+    |> validate_required([:title, :region, :climate, :user_id])
     |> validate_length(:title, min: 1, max: 20)
     |> validate_inclusion(:region, regions())
     |> validate_inclusion(:climate, climates())

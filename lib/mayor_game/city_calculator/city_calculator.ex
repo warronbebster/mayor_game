@@ -736,13 +736,6 @@ defmodule MayorGame.CityCalculator do
             do: 0,
             else: city.money + city.income - city.daily_cost
 
-        details_update_changeset =
-          city.details
-          |> City.Details.changeset(%{
-            city_treasury: updated_city_treasury,
-            pollution: city.pollution
-          })
-
         town_struct = struct(Town, city |> Map.put(:pollution, 0) |> Map.put(:citizen_count, 0))
 
         town_update_changeset =
@@ -750,16 +743,14 @@ defmodule MayorGame.CityCalculator do
           |> City.Town.changeset(%{
             treasury: updated_city_treasury,
             pollution: city.pollution,
-            citizen_count: city.citizen_count
+            citizen_count: length(city.all_citizens)
           })
 
-        Ecto.Multi.update(multi, {:update_details, city.id}, details_update_changeset)
-        |> Ecto.Multi.update({:update_towns, city.id}, town_update_changeset)
+        # Ecto.Multi.update(multi, {:update_details, city.id}, details_update_changeset)
+        Ecto.Multi.update(multi, {:update_towns, city.id}, town_update_changeset)
       end)
       |> Repo.transaction()
     end)
-
-    # end)
 
     # MULTI CHANGESET EDUCATE ——————————————————————————————————————————————————— DB UPDATE
 

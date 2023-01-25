@@ -168,6 +168,7 @@ defmodule MayorGame.City.Buildable do
   def buildables_flat do
     %{
       huts: %BuildableMetadata{
+        priority: 2,
         title: :huts,
         price: 5,
         purchasable: true,
@@ -181,6 +182,7 @@ defmodule MayorGame.City.Buildable do
       },
       # single family homes ————————————————————————————————————
       single_family_homes: %BuildableMetadata{
+        priority: 2,
         title: :single_family_homes,
         price: 20,
         purchasable: true,
@@ -207,6 +209,7 @@ defmodule MayorGame.City.Buildable do
       },
       # multi family homes ————————————————————————————————————
       multi_family_homes: %BuildableMetadata{
+        priority: 1,
         title: :multi_family_homes,
         price: 60,
         purchasable: true,
@@ -221,6 +224,7 @@ defmodule MayorGame.City.Buildable do
       },
       # homeless shelters ————————————————————————————————————
       homeless_shelters: %BuildableMetadata{
+        priority: 1,
         title: :homeless_shelters,
         price: 60,
         purchasable: true,
@@ -236,6 +240,7 @@ defmodule MayorGame.City.Buildable do
       },
       # apartments ————————————————————————————————————
       apartments: %BuildableMetadata{
+        priority: 1,
         title: :apartments,
         price: 60,
         purchasable: true,
@@ -250,6 +255,7 @@ defmodule MayorGame.City.Buildable do
       },
       # micro apartments ————————————————————————————————————
       micro_apartments: %BuildableMetadata{
+        priority: 1,
         title: :micro_apartments,
         price: 80,
         purchasable: true,
@@ -264,6 +270,7 @@ defmodule MayorGame.City.Buildable do
       },
       # high rises ————————————————————————————————————
       high_rises: %BuildableMetadata{
+        priority: 1,
         title: :high_rises,
         price: 200,
         purchasable: true,
@@ -279,6 +286,7 @@ defmodule MayorGame.City.Buildable do
       },
       # roads ————————————————————————————————————
       roads: %BuildableMetadata{
+        priority: 0,
         title: :roads,
         price: 200,
         purchasable: true,
@@ -293,6 +301,7 @@ defmodule MayorGame.City.Buildable do
       },
       # highways ————————————————————————————————————
       highways: %BuildableMetadata{
+        priority: 0,
         title: :highways,
         price: 400,
         region_health_multipliers: %{forest: 0.7, mountain: 0.7, desert: 0.9, lake: 0.7},
@@ -308,6 +317,7 @@ defmodule MayorGame.City.Buildable do
       },
       # Airports —————————————————————————————————————
       airports: %BuildableMetadata{
+        priority: 1,
         title: :airports,
         price: 200,
         purchasable: true,
@@ -325,6 +335,7 @@ defmodule MayorGame.City.Buildable do
       },
       # Bus Lines ————————————————————————————————————
       bus_lines: %BuildableMetadata{
+        priority: 1,
         title: :bus_lines,
         price: 70,
         purchasable: true,
@@ -341,6 +352,7 @@ defmodule MayorGame.City.Buildable do
       },
       # Subway Lines ————————————————————————————————————
       subway_lines: %BuildableMetadata{
+        priority: 1,
         title: :subway_lines,
         price: 2000,
         purchasable: true,
@@ -356,6 +368,7 @@ defmodule MayorGame.City.Buildable do
       },
       # Bike lanes ————————————————————————————————————
       bike_lanes: %BuildableMetadata{
+        priority: 1,
         title: :bike_lanes,
         price: 60,
         region_health_multipliers: %{
@@ -392,6 +405,7 @@ defmodule MayorGame.City.Buildable do
       },
       # Bikeshare Stations ————————————————————————————————————
       bikeshare_stations: %BuildableMetadata{
+        priority: 1,
         title: :bikeshare_stations,
         price: 70,
         upgrades: %{
@@ -426,6 +440,7 @@ defmodule MayorGame.City.Buildable do
       },
       # Coal Plants ————————————————————————————————————
       coal_plants: %BuildableMetadata{
+        priority: 2,
         title: :coal_plants,
         price: 500,
         region_health_multipliers: %{
@@ -459,6 +474,7 @@ defmodule MayorGame.City.Buildable do
       },
       # wind turbines ————————————————————————————————————
       wind_turbines: %BuildableMetadata{
+        priority: 2,
         title: :wind_turbines,
         price: 1000,
         region_health_multipliers: %{ocean: 1.2, desert: 1.2},
@@ -491,6 +507,7 @@ defmodule MayorGame.City.Buildable do
       },
       # Solar Plants ————————————————————————————————————
       solar_plants: %BuildableMetadata{
+        priority: 2,
         title: :solar_plants,
         price: 2000,
         region_energy_multipliers: %{desert: 1.5, ocean: 1.2, forest: 0.7},
@@ -524,6 +541,7 @@ defmodule MayorGame.City.Buildable do
       },
       # Nuclear Plants ————————————————————————————————————
       nuclear_plants: %BuildableMetadata{
+        priority: 2,
         title: :nuclear_plants,
         price: 5000,
         region_energy_multipliers: %{},
@@ -541,6 +559,7 @@ defmodule MayorGame.City.Buildable do
       },
       # Dams ————————————————————————————————————
       dams: %BuildableMetadata{
+        priority: 2,
         title: :dams,
         price: 5000,
         region_energy_multipliers: %{mountain: 1.5},
@@ -571,6 +590,7 @@ defmodule MayorGame.City.Buildable do
       },
       # Carbon Capture Plants ————————————————————————————————————
       carbon_capture_plants: %BuildableMetadata{
+        priority: 2,
         title: :carbon_capture_plants,
         price: 10000,
         region_energy_multipliers: %{},
@@ -588,6 +608,7 @@ defmodule MayorGame.City.Buildable do
       },
       # PARKS ————————————————————————————————————
       parks: %BuildableMetadata{
+        priority: 0,
         title: :parks,
         price: 20,
         region_health_multipliers: %{
@@ -630,6 +651,7 @@ defmodule MayorGame.City.Buildable do
       },
       # LIBRARIES ————————————————————————————————————
       libraries: %BuildableMetadata{
+        priority: 0,
         title: :libraries,
         price: 200,
         purchasable: true,
@@ -643,6 +665,7 @@ defmodule MayorGame.City.Buildable do
       },
       # SCHOOLS ————————————————————————————————————
       schools: %BuildableMetadata{
+        priority: 2,
         title: :schools,
         price: 200,
         education_level: 1,
@@ -669,6 +692,7 @@ defmodule MayorGame.City.Buildable do
       },
       # MIDDLE SCHOOLS ————————————————————————————————————
       middle_schools: %BuildableMetadata{
+        priority: 1,
         title: :middle_schools,
         price: 300,
         education_level: 2,
@@ -687,6 +711,7 @@ defmodule MayorGame.City.Buildable do
       },
       # HIGH SCHOOLS ————————————————————————————————————
       high_schools: %BuildableMetadata{
+        priority: 1,
         title: :high_schools,
         price: 400,
         education_level: 3,
@@ -705,6 +730,7 @@ defmodule MayorGame.City.Buildable do
       },
       # UNIVERSITIES ————————————————————————————————————
       universities: %BuildableMetadata{
+        priority: 1,
         title: :universities,
         price: 650,
         education_level: 4,
@@ -723,6 +749,7 @@ defmodule MayorGame.City.Buildable do
       },
       # RESEARCH LABS ————————————————————————————————————
       research_labs: %BuildableMetadata{
+        priority: 1,
         title: :research_labs,
         price: 900,
         education_level: 5,
@@ -741,6 +768,7 @@ defmodule MayorGame.City.Buildable do
       },
       # RETAIL SHOPS ————————————————————————————————————
       retail_shops: %BuildableMetadata{
+        priority: 1,
         title: :retail_shops,
         price: 200,
         purchasable: true,
@@ -754,6 +782,7 @@ defmodule MayorGame.City.Buildable do
       },
       # FACTORIES ————————————————————————————————————
       factories: %BuildableMetadata{
+        priority: 1,
         title: :factories,
         price: 500,
         upgrades: %{
@@ -777,6 +806,7 @@ defmodule MayorGame.City.Buildable do
       },
       # OFFICE BUILDINGS ————————————————————————————————————
       office_buildings: %BuildableMetadata{
+        priority: 0,
         title: :office_buildings,
         price: 400,
         purchasable: true,
@@ -790,6 +820,7 @@ defmodule MayorGame.City.Buildable do
       },
       # THEATRES ————————————————————————————————————
       theatres: %BuildableMetadata{
+        priority: 0,
         title: :theatres,
         price: 300,
         purchasable: true,
@@ -806,6 +837,7 @@ defmodule MayorGame.City.Buildable do
       },
       # ARENAS ————————————————————————————————————
       arenas: %BuildableMetadata{
+        priority: 0,
         title: :arenas,
         price: 600,
         purchasable: true,
@@ -822,6 +854,7 @@ defmodule MayorGame.City.Buildable do
       },
       # HOSPITALS ————————————————————————————————————
       hospitals: %BuildableMetadata{
+        priority: 1,
         title: :hospitals,
         price: 600,
         purchasable: true,
@@ -838,6 +871,7 @@ defmodule MayorGame.City.Buildable do
       },
       # DOCTOR OFFICES ————————————————————————————————————
       doctor_offices: %BuildableMetadata{
+        priority: 1,
         title: :doctor_offices,
         price: 300,
         purchasable: true,
@@ -909,6 +943,7 @@ defmodule MayorGame.City.Buildable do
       check_requirements(stats.requires, list_of_reqs)
     end)
     |> Map.keys()
+    |> Enum.sort_by(&buildables_flat()[&1].priority, :desc)
   end
 
   def sorted_buildables do

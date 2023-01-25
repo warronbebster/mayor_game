@@ -104,8 +104,7 @@ defmodule MayorGame.City do
       {:ok, created_city} ->
         buildables = Map.new(Buildable.buildables_list(), fn buildable -> {buildable, []} end)
 
-        details =
-          Map.merge(buildables, %{city_treasury: 5000, town_id: created_city.id, pollution: 0})
+        details = Map.merge(buildables, %{town_id: created_city.id})
 
         # and create a detail in the DB, tied to this city
         case create_details(details) do
@@ -495,7 +494,8 @@ defmodule MayorGame.City do
 
   """
   def purchase_buildable(%Town{} = city, field_to_purchase, purchase_price) do
-    detail_attrs = %{city_treasury: city.details.city_treasury - purchase_price}
+    IO.inspect('internal purchase started')
+
     city_attrs = %{treasury: city.treasury - purchase_price}
 
     # purchased buildings start enabled and with no upgrades
@@ -505,21 +505,15 @@ defmodule MayorGame.City do
       city.details
       |> Ecto.build_assoc(field_to_purchase, buildable_attrs)
 
-    purchase_details =
-      city.details
-      |> Details.changeset(detail_attrs)
-      |> Ecto.Changeset.validate_number(:city_treasury, greater_than: 0)
-      |> Repo.update()
-
     purchase_city =
       city
       |> Town.changeset(city_attrs)
       |> Ecto.Changeset.validate_number(:treasury, greater_than: 0)
       |> Repo.update()
 
-    case purchase_details do
+    case purchase_city do
       {:ok, _result} -> Repo.insert(uhhh)
-      {:error} -> IO.puts("uh oh, purchase error inside purchase_buildabble")
+      {:error, _} -> IO.puts("uh oh, purchase error inside purchase_buildabble")
       _ -> nil
     end
   end

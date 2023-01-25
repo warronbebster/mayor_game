@@ -42,6 +42,8 @@ Auth.create_user(%{
 {:ok, %Town{id: madeTown_id}} =
   City.create_city(%{
     region: "mountain",
+    pollution: 0,
+    treasury: 5000,
     climate: "arctic",
     resources: Map.new(MayorGame.City.Town.resources(), fn x -> {x, 0} end),
     title: cityName,
