@@ -355,7 +355,7 @@ defmodule MayorGame.CityCalculator do
         Enum.map(0..5, fn x ->
           if preferred_locations_by_level[x].choices != [] do
             preferred_locations_by_level[x].choices
-            |> Enum.chunk_every(200)
+            |> Enum.chunk_every(20)
             |> Enum.map(fn chunk ->
               Enum.reduce(chunk, Ecto.Multi.new(), fn {citizen, city_id}, multi ->
                 town_from = struct(Town, all_cities_by_id[citizen.town_id])
@@ -510,7 +510,7 @@ defmodule MayorGame.CityCalculator do
       fn ->
         if preferred_locations.choices != [] do
           preferred_locations.choices
-          # |> Enum.chunk_every(200)
+          # |> Enum.chunk_every(20)
           |> Flow.from_enumerable(max_demand: 100)
           |> Flow.map(fn chunk ->
             Enum.reduce(chunk, Ecto.Multi.new(), fn {citizen, city_id}, multi ->
@@ -663,7 +663,7 @@ defmodule MayorGame.CityCalculator do
       fn ->
         if unhoused_locations.choices != [] do
           unhoused_locations.choices
-          |> Enum.chunk_every(200)
+          |> Enum.chunk_every(20)
           |> Enum.map(fn chunk ->
             Enum.reduce(chunk, Ecto.Multi.new(), fn {citizen, city_id}, multi ->
               # citizen = Enum.at(elem(unhoused_split, 0), citizen_index)
@@ -713,8 +713,8 @@ defmodule MayorGame.CityCalculator do
     Repo.checkout(
       fn ->
         elem(unhoused_split, 1)
-        # |> Enum.chunk_every(200)
-        |> Enum.chunk_every(200)
+        # |> Enum.chunk_every(20)
+        |> Enum.chunk_every(20)
         |> Enum.map(fn chunk ->
           Enum.reduce(chunk, Ecto.Multi.new(), fn citizen, multi ->
             town = struct(Town, all_cities_by_id[citizen.town_id])
@@ -748,7 +748,7 @@ defmodule MayorGame.CityCalculator do
     Repo.checkout(
       fn ->
         leftovers.all_cities_new
-        |> Enum.chunk_every(200)
+        |> Enum.chunk_every(20)
         |> Enum.map(fn chunk ->
           Enum.reduce(chunk, Ecto.Multi.new(), fn city, multi ->
             updated_city_treasury =
@@ -820,7 +820,7 @@ defmodule MayorGame.CityCalculator do
     Repo.checkout(
       fn ->
         leftovers.citizens_too_old
-        |> Enum.chunk_every(200)
+        |> Enum.chunk_every(20)
         |> Enum.map(fn chunk ->
           Enum.reduce(chunk, Ecto.Multi.new(), fn citizen, multi ->
             town = struct(Town, all_cities_by_id[citizen.town_id])
@@ -849,7 +849,7 @@ defmodule MayorGame.CityCalculator do
     Repo.checkout(
       fn ->
         leftovers.citizens_polluted
-        |> Enum.chunk_every(200)
+        |> Enum.chunk_every(20)
         |> Enum.map(fn chunk ->
           Enum.reduce(chunk, Ecto.Multi.new(), fn citizen, multi ->
             town = struct(Town, all_cities_by_id[citizen.town_id])
@@ -877,7 +877,7 @@ defmodule MayorGame.CityCalculator do
     Repo.checkout(
       fn ->
         leftovers.citizens_to_reproduce
-        |> Enum.chunk_every(200)
+        |> Enum.chunk_every(20)
         |> Enum.map(fn chunk ->
           Enum.reduce(chunk, Ecto.Multi.new(), fn citizen, multi ->
             town = struct(Town, all_cities_by_id[citizen.town_id])
