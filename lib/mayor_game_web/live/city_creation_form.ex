@@ -42,7 +42,6 @@ defmodule MayorGameWeb.CityCreationForm do
         } = socket
       ) do
     city_form = Map.put(city_form, "user_id", current_user.id)
-    IO.inspect(city_form, label: "city_form")
 
     # ok this needs to give attributes of user, title, region?
     case City.create_city(city_form) do
@@ -81,8 +80,6 @@ defmodule MayorGameWeb.CityCreationForm do
   # Build a changeset for the newly created city,
   # We'll use the changeset to drive a form to be displayed in the rendered template.
   defp assign_new_city_changeset(socket) do
-    IO.inspect(socket.assigns[:current_user].id, label: "user id from socket")
-
     changeset =
       %Town{}
       |> Town.changeset(%{

@@ -4,7 +4,7 @@ defmodule MayorGame.City do
   """
 
   # THIS IS WHAT TALKS TO ECTO
-
+  require Logger
   import Ecto.Query, warn: false
   alias MayorGame.Repo
   alias MayorGame.City.{Details, Town, Citizens, World, Buildable}
@@ -116,7 +116,6 @@ defmodule MayorGame.City do
         case create_details(details) do
           {:ok, created_details} ->
             # return the city created
-            IO.inspect(created_details, label: "created_details")
             {:ok, created_city}
 
           {:error, err} ->
@@ -519,9 +518,14 @@ defmodule MayorGame.City do
       |> Repo.update()
 
     case purchase_city do
-      {:ok, _result} -> Repo.insert(uhhh)
-      {:error, _} -> IO.puts("uh oh, purchase error inside purchase_buildabble")
-      _ -> nil
+      {:ok, _result} ->
+        Repo.insert(uhhh)
+
+      {:error, err} ->
+        Logger.error(inspect(err))
+
+      _ ->
+        nil
     end
   end
 

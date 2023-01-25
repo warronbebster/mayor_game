@@ -633,10 +633,14 @@ defmodule MayorGame.CityCalculator do
           end)
 
         updated_slots =
-          if acc.slots[chosen_city.chosen_id] > 0 do
-            Map.update!(acc.slots, chosen_city.chosen_id, &(&1 - 1))
+          if chosen_city.chosen_id > 0 do
+            if acc.slots[chosen_city.chosen_id] > 0 do
+              Map.update!(acc.slots, chosen_city.chosen_id, &(&1 - 1))
+            else
+              Map.drop(acc.slots, [chosen_city.chosen_id])
+            end
           else
-            Map.drop(acc.slots, [chosen_city.chosen_id])
+            acc.slots
           end
 
         %{
