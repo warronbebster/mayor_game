@@ -90,6 +90,10 @@ defmodule MayorGame.City do
       end)
       |> Map.merge(intro_attrs)
 
+    IO.inspect(Town.changeset(%Town{}, Map.merge(attrsWithAtomKeys, resourceMap)),
+      label: "in_create_town"
+    )
+
     %Town{}
     |> Town.changeset(Map.merge(attrsWithAtomKeys, resourceMap))
     |> Repo.insert()
@@ -98,6 +102,8 @@ defmodule MayorGame.City do
   # hmm. I should probably figure out a way to make this return the city, not the details.
   # currently this returns the %Details struct
   def create_city(attrs \\ %{}) do
+    IO.inspect(attrs)
+
     case create_town(attrs) do
       # if city built successfully, automatically build Details with it's id
       # update this so these fields are automatically generated
@@ -108,8 +114,9 @@ defmodule MayorGame.City do
 
         # and create a detail in the DB, tied to this city
         case create_details(details) do
-          {:ok, _} ->
+          {:ok, created_details} ->
             # return the city created
+            IO.inspect(created_details, label: "created_details")
             {:ok, created_city}
 
           {:error, err} ->

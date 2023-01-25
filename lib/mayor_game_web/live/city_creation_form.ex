@@ -42,20 +42,14 @@ defmodule MayorGameWeb.CityCreationForm do
         } = socket
       ) do
     city_form = Map.put(city_form, "user_id", current_user.id)
+    IO.inspect(city_form, label: "city_form")
 
     # ok this needs to give attributes of user, title, region?
     case City.create_city(city_form) do
       # if city built successfully
       {:ok, _} ->
-        {:noreply,
-         push_redirect(
-           assign(
-             socket,
-             :cities,
-             City.list_cities()
-           ),
-           to: "/city/" <> city_form["title"]
-         )}
+        IO.inspect('city_created')
+        {:noreply, redirect(socket, to: "/city/" <> city_form["title"])}
 
       # {:error, err} ->
       #   Logger.error(inspect(err))
@@ -73,7 +67,9 @@ defmodule MayorGameWeb.CityCreationForm do
         socket
       ) do
     # new changeset from the form changes
-    new_changeset = change_town(%Town{}, city_form)
+    new_changeset =
+      change_town(%Town{}, Map.put(city_form, "user_id", socket.assigns[:current_user].id))
+
     IO.inspect(socket.assigns.current_user)
     IO.inspect(socket.assigns.city_changeset)
     IO.inspect(new_changeset)
@@ -85,10 +81,12 @@ defmodule MayorGameWeb.CityCreationForm do
   # Build a changeset for the newly created city,
   # We'll use the changeset to drive a form to be displayed in the rendered template.
   defp assign_new_city_changeset(socket) do
+    IO.inspect(socket.assigns[:current_user].id, label: "user id from socket")
+
     changeset =
       %Town{}
       |> Town.changeset(%{
-        "user" => [%{user_id: socket.assigns[:current_user].id}]
+        user_id: socket.assigns[:current_user].id
       })
 
     assign(socket, :city_changeset, changeset)
