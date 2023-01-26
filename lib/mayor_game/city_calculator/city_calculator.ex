@@ -354,7 +354,7 @@ defmodule MayorGame.CityCalculator do
     Enum.map(0..5, fn x ->
       if preferred_locations_by_level[x].choices != [] do
         preferred_locations_by_level[x].choices
-        |> Enum.chunk_every(20)
+        |> Enum.chunk_every(100)
         |> Enum.map(fn chunk ->
           Repo.checkout(
             fn ->
@@ -511,7 +511,7 @@ defmodule MayorGame.CityCalculator do
       fn ->
         if preferred_locations.choices != [] do
           preferred_locations.choices
-          # |> Enum.chunk_every(20)
+          # |> Enum.chunk_every(100)
           |> Flow.from_enumerable(max_demand: 100)
           |> Flow.map(fn chunk ->
             Enum.reduce(chunk, Ecto.Multi.new(), fn {citizen, city_id}, multi ->
@@ -664,7 +664,7 @@ defmodule MayorGame.CityCalculator do
       fn ->
         if unhoused_locations.choices != [] do
           unhoused_locations.choices
-          |> Enum.chunk_every(20)
+          |> Enum.chunk_every(100)
           |> Enum.map(fn chunk ->
             Enum.reduce(chunk, Ecto.Multi.new(), fn {citizen, city_id}, multi ->
               # citizen = Enum.at(elem(unhoused_split, 0), citizen_index)
@@ -714,8 +714,8 @@ defmodule MayorGame.CityCalculator do
     Repo.checkout(
       fn ->
         elem(unhoused_split, 1)
-        # |> Enum.chunk_every(20)
-        |> Enum.chunk_every(20)
+        # |> Enum.chunk_every(100)
+        |> Enum.chunk_every(100)
         |> Enum.map(fn chunk ->
           Enum.reduce(chunk, Ecto.Multi.new(), fn citizen, multi ->
             town = struct(Town, all_cities_by_id[citizen.town_id])
@@ -749,7 +749,7 @@ defmodule MayorGame.CityCalculator do
     Repo.checkout(
       fn ->
         leftovers.all_cities_new
-        |> Enum.chunk_every(20)
+        |> Enum.chunk_every(100)
         |> Enum.map(fn chunk ->
           Enum.reduce(chunk, Ecto.Multi.new(), fn city, multi ->
             updated_city_treasury =
@@ -779,37 +779,40 @@ defmodule MayorGame.CityCalculator do
 
     # MULTI CHANGESET EDUCATE ——————————————————————————————————————————————————— DB UPDATE
 
-    Repo.checkout(
-      fn ->
-        leftovers.citizens_learning
-        |> Enum.map(fn {level, list} ->
-          list
-          |> Enum.reduce(Ecto.Multi.new(), fn citizen, multi ->
-            town = struct(Town, all_cities_by_id[citizen.town_id])
+    leftovers.citizens_learning
+    |> Enum.map(fn {level, list} ->
+      list
+      |> Enum.chunk_every(100)
+      |> Enum.map(fn chunk ->
+        Repo.checkout(
+          fn ->
+            Enum.reduce(chunk, Ecto.Multi.new(), fn citizen, multi ->
+              town = struct(Town, all_cities_by_id[citizen.town_id])
 
-            log =
-              CityHelpersTwo.describe_citizen(citizen) <>
-                " has graduated to level " <> to_string(level)
+              log =
+                CityHelpersTwo.describe_citizen(citizen) <>
+                  " has graduated to level " <> to_string(level)
 
-            # if list is longer than 50, remove last item
-            limited_log = update_logs(log, town.logs)
+              # if list is longer than 50, remove last item
+              limited_log = update_logs(log, town.logs)
 
-            citizen_changeset =
-              citizen
-              |> City.Citizens.changeset(%{education: level})
+              citizen_changeset =
+                citizen
+                |> City.Citizens.changeset(%{education: level})
 
-            town_changeset =
-              town
-              |> City.Town.changeset(%{logs: limited_log})
+              town_changeset =
+                town
+                |> City.Town.changeset(%{logs: limited_log})
 
-            Ecto.Multi.update(multi, {:update_citizen_edu, citizen.id}, citizen_changeset)
-            |> Ecto.Multi.update({:update_town_log, citizen.id}, town_changeset)
-          end)
-          |> Repo.transaction(timeout: 20_000)
-        end)
-      end,
-      timeout: 29_995
-    )
+              Ecto.Multi.update(multi, {:update_citizen_edu, citizen.id}, citizen_changeset)
+              |> Ecto.Multi.update({:update_town_log, citizen.id}, town_changeset)
+            end)
+            |> Repo.transaction(timeout: 20_000)
+          end,
+          timeout: 29_995
+        )
+      end)
+    end)
 
     # end)
 
@@ -823,7 +826,7 @@ defmodule MayorGame.CityCalculator do
     Repo.checkout(
       fn ->
         leftovers.citizens_too_old
-        |> Enum.chunk_every(20)
+        |> Enum.chunk_every(100)
         |> Enum.map(fn chunk ->
           Enum.reduce(chunk, Ecto.Multi.new(), fn citizen, multi ->
             town = struct(Town, all_cities_by_id[citizen.town_id])
@@ -852,7 +855,7 @@ defmodule MayorGame.CityCalculator do
     Repo.checkout(
       fn ->
         leftovers.citizens_polluted
-        |> Enum.chunk_every(20)
+        |> Enum.chunk_every(100)
         |> Enum.map(fn chunk ->
           Enum.reduce(chunk, Ecto.Multi.new(), fn citizen, multi ->
             town = struct(Town, all_cities_by_id[citizen.town_id])
@@ -880,7 +883,7 @@ defmodule MayorGame.CityCalculator do
     Repo.checkout(
       fn ->
         leftovers.citizens_to_reproduce
-        |> Enum.chunk_every(20)
+        |> Enum.chunk_every(100)
         |> Enum.map(fn chunk ->
           Enum.reduce(chunk, Ecto.Multi.new(), fn citizen, multi ->
             town = struct(Town, all_cities_by_id[citizen.town_id])
