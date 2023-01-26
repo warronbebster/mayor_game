@@ -314,7 +314,7 @@ defmodule MayorGame.CityCalculator do
                end)
 
              updated_slots =
-               if acc.slots != %{} do
+               if acc.slots != %{} && chosen_city.chosen_id != 0 do
                  if acc.slots[chosen_city.chosen_id] > 0 do
                    Map.update!(acc.slots, chosen_city.chosen_id, &(&1 - 1))
                  else
@@ -349,14 +349,15 @@ defmodule MayorGame.CityCalculator do
     #
 
     # MULTI CHANGESET MOVE JOB SEARCHING CITIZENS
-    Repo.checkout(
-      fn ->
-        # MOVE CITIZENS
-        Enum.map(0..5, fn x ->
-          if preferred_locations_by_level[x].choices != [] do
-            preferred_locations_by_level[x].choices
-            |> Enum.chunk_every(20)
-            |> Enum.map(fn chunk ->
+
+    # MOVE CITIZENS
+    Enum.map(0..5, fn x ->
+      if preferred_locations_by_level[x].choices != [] do
+        preferred_locations_by_level[x].choices
+        |> Enum.chunk_every(20)
+        |> Enum.map(fn chunk ->
+          Repo.checkout(
+            fn ->
               Enum.reduce(chunk, Ecto.Multi.new(), fn {citizen, city_id}, multi ->
                 town_from = struct(Town, all_cities_by_id[citizen.town_id])
                 town_to = struct(Town, all_cities_by_id[city_id])
@@ -394,12 +395,12 @@ defmodule MayorGame.CityCalculator do
                 end
               end)
               |> Repo.transaction(timeout: 20_000)
-            end)
-          end
+            end,
+            timeout: 30_000
+          )
         end)
-      end,
-      timeout: 30_000
-    )
+      end
+    end)
 
     # ——————————————————————————————————————————————————————————————————————————————————
     # ————————————————————————————————————————— ROUND 2: MOVE CITIZENS ANYWHERE THERE IS HOUSING
@@ -484,7 +485,7 @@ defmodule MayorGame.CityCalculator do
             end)
 
           updated_slots =
-            if acc.slots != %{} do
+            if acc.slots != %{} && chosen_city.chosen_id != 0 do
               if acc.slots[chosen_city.chosen_id] > 0 do
                 Map.update!(acc.slots, chosen_city.chosen_id, &(&1 - 1))
               else
@@ -553,7 +554,7 @@ defmodule MayorGame.CityCalculator do
           end)
         end
       end,
-      timeout: 30_000
+      timeout: 29_999
     )
 
     # ——————————————————————————————————————————————————————————————————————————————————
@@ -706,7 +707,7 @@ defmodule MayorGame.CityCalculator do
           end)
         end
       end,
-      timeout: 30_000
+      timeout: 29_998
     )
 
     # MULTI KILL REST OF UNHOUSED CITIZENS
@@ -735,7 +736,7 @@ defmodule MayorGame.CityCalculator do
           |> Repo.transaction(timeout: 20_000)
         end)
       end,
-      timeout: 30_000
+      timeout: 29_997
     )
 
     #
@@ -773,7 +774,7 @@ defmodule MayorGame.CityCalculator do
           |> Repo.transaction(timeout: 20_000)
         end)
       end,
-      timeout: 30_000
+      timeout: 29_996
     )
 
     # MULTI CHANGESET EDUCATE ——————————————————————————————————————————————————— DB UPDATE
@@ -807,7 +808,7 @@ defmodule MayorGame.CityCalculator do
           |> Repo.transaction(timeout: 20_000)
         end)
       end,
-      timeout: 30_000
+      timeout: 29_995
     )
 
     # end)
@@ -815,7 +816,7 @@ defmodule MayorGame.CityCalculator do
     # MULTI CHANGESET AGE
 
     Repo.checkout(fn -> Repo.update_all(MayorGame.City.Citizens, inc: [age: 1]) end,
-      timeout: 30_000
+      timeout: 29_994
     )
 
     # MULTI CHANGESET KILL OLD CITIZENS ——————————————————————————————————————————————————— DB UPDATE
@@ -842,7 +843,7 @@ defmodule MayorGame.CityCalculator do
           |> Repo.transaction(timeout: 20_000)
         end)
       end,
-      timeout: 30_000
+      timeout: 29_993
     )
 
     # end)
@@ -872,7 +873,7 @@ defmodule MayorGame.CityCalculator do
           |> Repo.transaction(timeout: 20_000)
         end)
       end,
-      timeout: 30_000
+      timeout: 29_992
     )
 
     # MULTI REPRODUCE ——————————————————————————————————————————————————— DB UPDATE
@@ -912,7 +913,7 @@ defmodule MayorGame.CityCalculator do
           |> Repo.transaction(timeout: 20_000)
         end)
       end,
-      timeout: 30_000
+      timeout: 29_991
     )
 
     updated_pollution =
