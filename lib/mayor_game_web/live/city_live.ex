@@ -157,8 +157,6 @@ defmodule MayorGameWeb.CityLive do
       ) do
     # check if user is mayor here?
 
-    IO.inspect("PURCHASE STARTED")
-
     building_to_buy_atom = String.to_existing_atom(building_to_buy)
 
     # get exponential price — don't want to set price on front-end for cheating reasons
@@ -174,7 +172,7 @@ defmodule MayorGameWeb.CityLive do
 
     case City.purchase_buildable(city_struct, building_to_buy_atom, purchase_price) do
       {:ok, _updated_details} ->
-        IO.puts("purchase success")
+        nil
 
       {:error, err} ->
         Logger.error(inspect(err))

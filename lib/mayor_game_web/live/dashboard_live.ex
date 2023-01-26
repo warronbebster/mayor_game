@@ -21,7 +21,7 @@ defmodule MayorGameWeb.DashboardLive do
 
     {:ok,
      socket
-     |> assign(current_user: current_user |> MayorGame.Repo.preload(town: [:details, :citizens]))
+     |> assign(current_user: current_user |> MayorGame.Repo.preload(:town))
      |> assign_cities()}
   end
 
@@ -36,11 +36,19 @@ defmodule MayorGameWeb.DashboardLive do
 
   def handle_info(%{event: "ping", payload: _world}, socket) do
     if Map.has_key?(socket.assigns, :current_user) do
+      IO.inspect('pinged in dashboard')
+
+      IO.inspect(
+        MayorGame.Auth.get_user!(socket.assigns.current_user.id)
+        |> MayorGame.Repo.preload(:town)
+      )
+
       {:noreply,
        socket
        |> assign(
          current_user:
-           socket.assigns.current_user |> MayorGame.Repo.preload(town: [:details, :citizens])
+           MayorGame.Auth.get_user!(socket.assigns.current_user.id)
+           |> MayorGame.Repo.preload(:town)
        )
        |> assign_cities()}
     else
@@ -100,8 +108,8 @@ defmodule MayorGameWeb.DashboardLive do
     # and maybe citizen count?
 
     # MayorGame.Repo.preload(city, details: [:pollution])
-
-    assign(socket, :cities, cities)
+    socket
+    |> assign(:cities, cities)
     |> assign(:world, world)
   end
 end

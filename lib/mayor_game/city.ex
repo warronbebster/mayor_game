@@ -500,8 +500,6 @@ defmodule MayorGame.City do
 
   """
   def purchase_buildable(%Town{} = city, field_to_purchase, purchase_price) do
-    IO.inspect('internal purchase started')
-
     city_attrs = %{treasury: city.treasury - purchase_price}
 
     # purchased buildings start enabled and with no upgrades
