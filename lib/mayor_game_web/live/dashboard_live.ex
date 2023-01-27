@@ -36,13 +36,6 @@ defmodule MayorGameWeb.DashboardLive do
 
   def handle_info(%{event: "ping", payload: _world}, socket) do
     if Map.has_key?(socket.assigns, :current_user) do
-      IO.inspect('pinged in dashboard')
-
-      IO.inspect(
-        MayorGame.Auth.get_user!(socket.assigns.current_user.id)
-        |> MayorGame.Repo.preload(:town)
-      )
-
       {:noreply,
        socket
        |> assign(

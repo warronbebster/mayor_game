@@ -503,7 +503,7 @@ defmodule MayorGame.City do
     city_attrs = %{treasury: city.treasury - purchase_price}
 
     # purchased buildings start enabled and with no upgrades
-    buildable_attrs = %{enabled: true, reason: [], upgrades: []}
+    buildable_attrs = %{enabled: true, reason: []}
 
     uhhh =
       city.details

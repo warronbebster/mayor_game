@@ -163,8 +163,7 @@ defmodule MayorGameWeb.CityLive do
     initial_purchase_price = get_in(Buildable.buildables_flat(), [building_to_buy_atom, :price])
     buildable_count = length(city.details[building_to_buy_atom])
 
-    purchase_price =
-      MayorGame.CityHelpersTwo.building_price(initial_purchase_price, buildable_count)
+    purchase_price = MayorGame.CityHelpers.building_price(initial_purchase_price, buildable_count)
 
     city_struct = struct(City.Town, city)
 
@@ -300,7 +299,7 @@ defmodule MayorGameWeb.CityLive do
     # city_with_stats = MayorGame.CityHelpers.calculate_city_stats(city, world)
 
     city_with_stats2 =
-      MayorGame.CityHelpersTwo.calculate_city_stats(
+      MayorGame.CityHelpers.calculate_city_stats(
         city,
         world,
         cities_count,

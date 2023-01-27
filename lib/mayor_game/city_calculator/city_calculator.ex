@@ -1,7 +1,7 @@
 defmodule MayorGame.CityCalculator do
   use GenServer, restart: :permanent
   alias MayorGame.City.Town
-  alias MayorGame.{City, CityHelpersTwo, Repo}
+  alias MayorGame.{City, CityHelpers, Repo}
   # alias MayorGame.City.Details
 
   def start_link(initial_val) do
@@ -87,7 +87,7 @@ defmodule MayorGame.CityCalculator do
           # city_with_stats = MayorGame.CityHelpers.calculate_city_stats(city, db_world)
 
           city_with_stats2 =
-            CityHelpersTwo.calculate_city_stats(
+            CityHelpers.calculate_city_stats(
               city,
               db_world,
               cities_count,
@@ -344,10 +344,6 @@ defmodule MayorGame.CityCalculator do
 
     # array of citizens who are still looking, that didn't make it into the level-specific comparisons
 
-    # if not empty
-    # run hungarian
-    #
-
     # MULTI CHANGESET MOVE JOB SEARCHING CITIZENS
 
     # MOVE CITIZENS
@@ -368,11 +364,11 @@ defmodule MayorGame.CityCalculator do
                     |> City.Citizens.changeset(%{town_id: town_to.id, town: town_to})
 
                   log_from =
-                    CityHelpersTwo.describe_citizen(citizen) <>
+                    CityHelpers.describe_citizen(citizen) <>
                       " has moved to " <> town_to.title
 
                   log_to =
-                    CityHelpersTwo.describe_citizen(citizen) <>
+                    CityHelpers.describe_citizen(citizen) <>
                       " has moved from " <> town_from.title
 
                   # if list is longer than 50, remove last item
@@ -524,11 +520,11 @@ defmodule MayorGame.CityCalculator do
                   |> City.Citizens.changeset(%{town_id: town_to.id, town: town_to})
 
                 log_from =
-                  CityHelpersTwo.describe_citizen(citizen) <>
+                  CityHelpers.describe_citizen(citizen) <>
                     " has moved to " <> town_to.title
 
                 log_to =
-                  CityHelpersTwo.describe_citizen(citizen) <>
+                  CityHelpers.describe_citizen(citizen) <>
                     " has moved from " <> town_from.title
 
                 # if list is longer than 50, remove last item
@@ -677,11 +673,11 @@ defmodule MayorGame.CityCalculator do
                   |> City.Citizens.changeset(%{town_id: town_to.id, town: town_to})
 
                 log_from =
-                  CityHelpersTwo.describe_citizen(citizen) <>
+                  CityHelpers.describe_citizen(citizen) <>
                     " has moved to " <> town_to.title
 
                 log_to =
-                  CityHelpersTwo.describe_citizen(citizen) <>
+                  CityHelpers.describe_citizen(citizen) <>
                     " has moved from " <> town_from.title
 
                 # if list is longer than 50, remove last item
@@ -721,7 +717,7 @@ defmodule MayorGame.CityCalculator do
             town = struct(Town, all_cities_by_id[citizen.town_id])
 
             log =
-              CityHelpersTwo.describe_citizen(citizen) <>
+              CityHelpers.describe_citizen(citizen) <>
                 " has died because of a lack of housing. RIP"
 
             limited_log = update_logs(log, town.logs)
@@ -790,7 +786,7 @@ defmodule MayorGame.CityCalculator do
               town = struct(Town, all_cities_by_id[citizen.town_id])
 
               log =
-                CityHelpersTwo.describe_citizen(citizen) <>
+                CityHelpers.describe_citizen(citizen) <>
                   " has graduated to level " <> to_string(level)
 
               # if list is longer than 50, remove last item
@@ -831,7 +827,7 @@ defmodule MayorGame.CityCalculator do
           Enum.reduce(chunk, Ecto.Multi.new(), fn citizen, multi ->
             town = struct(Town, all_cities_by_id[citizen.town_id])
 
-            log = CityHelpersTwo.describe_citizen(citizen) <> " has died because of old age. RIP"
+            log = CityHelpers.describe_citizen(citizen) <> " has died because of old age. RIP"
 
             # if list is longer than 50, remove last item
             limited_log = update_logs(log, town.logs)
@@ -861,7 +857,7 @@ defmodule MayorGame.CityCalculator do
             town = struct(Town, all_cities_by_id[citizen.town_id])
 
             log =
-              CityHelpersTwo.describe_citizen(citizen) <>
+              CityHelpers.describe_citizen(citizen) <>
                 " has died because of pollution. RIP"
 
             limited_log = update_logs(log, town.logs)
@@ -889,7 +885,7 @@ defmodule MayorGame.CityCalculator do
             town = struct(Town, all_cities_by_id[citizen.town_id])
 
             log =
-              CityHelpersTwo.describe_citizen(citizen) <>
+              CityHelpers.describe_citizen(citizen) <>
                 " had a child"
 
             limited_log = update_logs(log, town.logs)
@@ -935,8 +931,6 @@ defmodule MayorGame.CityCalculator do
 
     # SEND RESULTS TO CLIENTS
     # send val to liveView process that manages front-end; this basically sends to every client.
-
-    IO.inspect("broadcast again")
 
     MayorGameWeb.Endpoint.broadcast!(
       "cityPubSub",

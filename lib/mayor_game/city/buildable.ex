@@ -9,9 +9,6 @@ defmodule MayorGame.City.Buildable do
 
   @timestamps_opts [type: :utc_datetime]
 
-  # ignore upgrades when printing?
-  @derive {Jason.Encoder, except: [:upgrades]}
-
   @typedoc """
       this makes a type for %Buildable{} that's callable with MayorGame.City.Buildable.t()
   """
@@ -21,7 +18,6 @@ defmodule MayorGame.City.Buildable do
           enabled: boolean,
           reason: list(String.t()),
           details: Details.t(),
-          upgrades: list(map),
           inserted_at: DateTime.t() | nil,
           updated_at: DateTime.t() | nil
         }
@@ -34,7 +30,6 @@ defmodule MayorGame.City.Buildable do
     # what's the reason it's enabled or not
     field :reason, {:array, :string}
     # what are the upgrades the buildable currently possesses
-    field :upgrades, {:array, :string}
     belongs_to :details, MayorGame.City.Details
 
     timestamps()
@@ -42,7 +37,7 @@ defmodule MayorGame.City.Buildable do
     @doc false
     def changeset(buildable, attrs \\ %{}) do
       buildable
-      |> cast(attrs, [:enabled, :reason, :upgrades])
+      |> cast(attrs, [:enabled, :reason])
     end
   end
 
@@ -186,18 +181,6 @@ defmodule MayorGame.City.Buildable do
         title: :single_family_homes,
         price: 20,
         purchasable: true,
-        upgrades: %{
-          more_room: %{
-            cost: 5,
-            description: "+1 fit",
-            requirements: []
-          },
-          solar_panels: %{
-            cost: 10,
-            description: "-5 Energy required ",
-            requirements: [:more_room]
-          }
-        },
         purchasable_reason: "valid",
         requires: %{
           area: 1,
@@ -304,7 +287,11 @@ defmodule MayorGame.City.Buildable do
         priority: 0,
         title: :highways,
         price: 400,
-        region_health_multipliers: %{forest: 0.7, mountain: 0.7, desert: 0.9, lake: 0.7},
+        multipliers: %{
+          region: %{
+            health: %{forest: 0.7, mountain: 0.7, desert: 0.9, lake: 0.7}
+          }
+        },
         purchasable: true,
         purchasable_reason: "valid",
         produces: %{
@@ -371,14 +358,6 @@ defmodule MayorGame.City.Buildable do
         priority: 1,
         title: :bike_lanes,
         price: 60,
-        region_health_multipliers: %{
-          forest: 1.3,
-          mountain: 1.4,
-          lake: 1.1,
-          desert: 1.1,
-          ocean: 1.1
-        },
-        region_fun_multipliers: %{ocean: 1.5, mountain: 0.7, desert: 0.6},
         purchasable: true,
         purchasable_reason: "valid",
         requires: nil,
@@ -408,16 +387,6 @@ defmodule MayorGame.City.Buildable do
         priority: 1,
         title: :bikeshare_stations,
         price: 70,
-        upgrades: %{
-          more_stations: %{
-            cost: 5,
-            description: "+5 area",
-            requirements: [],
-            function: %{area: &(&1 + 5)}
-          }
-        },
-        region_health_multipliers: %{forest: 1.3, mountain: 1.4},
-        region_fun_multipliers: %{ocean: 1.5, mountain: 0.7, desert: 0.6},
         purchasable: true,
         purchasable_reason: "valid",
         multipliers: %{
@@ -443,15 +412,6 @@ defmodule MayorGame.City.Buildable do
         priority: 2,
         title: :coal_plants,
         price: 500,
-        region_health_multipliers: %{
-          forest: 0.7,
-          mountain: 0.5,
-          lake: 0.7,
-          desert: 0.7,
-          ocean: 0.7
-        },
-        region_energy_multipliers: %{mountain: 1.3},
-        season_energy_multipliers: %{},
         purchasable: true,
         purchasable_reason: "valid",
         multipliers: %{
@@ -477,9 +437,6 @@ defmodule MayorGame.City.Buildable do
         priority: 2,
         title: :wind_turbines,
         price: 1000,
-        region_health_multipliers: %{ocean: 1.2, desert: 1.2},
-        region_energy_multipliers: %{ocean: 1.3, desert: 1.5},
-        season_energy_multipliers: %{spring: 1.2, fall: 1.2},
         purchasable: true,
         purchasable_reason: "valid",
         multipliers: %{
@@ -510,8 +467,6 @@ defmodule MayorGame.City.Buildable do
         priority: 2,
         title: :solar_plants,
         price: 2000,
-        region_energy_multipliers: %{desert: 1.5, ocean: 1.2, forest: 0.7},
-        season_energy_multipliers: %{spring: 1.2, summer: 1.5, winter: 0.7},
         purchasable: true,
         purchasable_reason: "valid",
         multipliers: %{
@@ -544,8 +499,6 @@ defmodule MayorGame.City.Buildable do
         priority: 2,
         title: :nuclear_plants,
         price: 5000,
-        region_energy_multipliers: %{},
-        season_energy_multipliers: %{},
         purchasable: true,
         purchasable_reason: "valid",
         requires: %{
@@ -562,8 +515,6 @@ defmodule MayorGame.City.Buildable do
         priority: 2,
         title: :dams,
         price: 5000,
-        region_energy_multipliers: %{mountain: 1.5},
-        season_energy_multipliers: %{winter: 0.7, spring: 1.3},
         purchasable: true,
         purchasable_reason: "valid",
         multipliers: %{
@@ -593,8 +544,6 @@ defmodule MayorGame.City.Buildable do
         priority: 2,
         title: :carbon_capture_plants,
         price: 10000,
-        region_energy_multipliers: %{},
-        season_energy_multipliers: %{},
         purchasable: true,
         purchasable_reason: "valid",
         requires: %{
@@ -611,14 +560,6 @@ defmodule MayorGame.City.Buildable do
         priority: 0,
         title: :parks,
         price: 20,
-        region_health_multipliers: %{
-          ocean: 1.1,
-          mountain: 1.4,
-          desert: 1.1,
-          forest: 1.3,
-          lake: 1.1
-        },
-        region_fun_multipliers: %{ocean: 1.5, mountain: 0.7, desert: 1.1, forest: 1.2, lake: 1.2},
         purchasable: true,
         purchasable_reason: "valid",
         multipliers: %{
@@ -670,14 +611,6 @@ defmodule MayorGame.City.Buildable do
         price: 200,
         education_level: 1,
         capacity: 10,
-        upgrades: %{
-          extra_classroom: %{
-            cost: 5,
-            description: "+5 capacity",
-            requirements: [],
-            function: %{capacity: &(&1 + 5)}
-          }
-        },
         purchasable: true,
         purchasable_reason: "valid",
         requires: %{
@@ -785,12 +718,6 @@ defmodule MayorGame.City.Buildable do
         priority: 1,
         title: :factories,
         price: 500,
-        upgrades: %{
-          solar_panel: %{
-            cost: 25,
-            requirements: []
-          }
-        },
         purchasable: true,
         purchasable_reason: "valid",
         requires: %{

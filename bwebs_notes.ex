@@ -14,15 +14,11 @@
 # fly postgres connect -a mayorgame-db connects to prod DB
 # fly volumes list --app mayorgame-db gets volumes from the db project thingy
 
-# citizens don't die or leave with 0 housing?
-
 # balance prices
-# make upgrade prices ridiculous
-# add way to reset
 # remove has_car and some other stuff from DB
 # add way to give other cities money
-# add seasonal and climate multipliers back into generation
-
+# add combat
+# fix logs only showing last update
 # :math.atan(2)*2/:math.pi()
 
 
