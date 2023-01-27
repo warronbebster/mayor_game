@@ -141,8 +141,8 @@ defmodule MayorGame.CityHelpers do
                     updated_buildable =
                       if !enough_workers do
                         individual_buildable
-                        |> put_in([:buildable, :reason], [:workers])
-                        |> put_in([:buildable, :enabled], false)
+                        |> put_in([:metadata, :reason], [:workers])
+                        |> put_in([:metadata, :enabled], false)
                         |> put_in(
                           [:metadata, :jobs],
                           individual_buildable.metadata.requires.workers.count -
@@ -241,8 +241,8 @@ defmodule MayorGame.CityHelpers do
                 else
                   # if requirements not met
                   updated_buildable =
-                    put_in(individual_buildable, [:buildable, :reason], checked_reqs)
-                    |> put_in([:buildable, :enabled], false)
+                    put_in(individual_buildable, [:metadata, :reason], checked_reqs)
+                    |> put_in([:metadata, :enabled], false)
 
                   # update acc with disabled buildable
                   Map.update!(acc2, :result_buildables, fn current ->
@@ -291,7 +291,8 @@ defmodule MayorGame.CityHelpers do
               do: [citizen | acc.housed_unemployed_citizens],
               else: acc.housed_unemployed_citizens
 
-          tax_too_high = :rand.uniform() < city.tax_rates[to_string(citizen.education)]
+          tax_too_high =
+            :rand.uniform() < :math.pow(city.tax_rates[to_string(citizen.education)], 2)
 
           housed_employed_staying_citizens =
             if acc.housing_left > 0 && citizen.has_job && citizen.age < 5000 && !tax_too_high &&

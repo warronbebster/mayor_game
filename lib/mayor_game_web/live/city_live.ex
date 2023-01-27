@@ -329,7 +329,7 @@ defmodule MayorGameWeb.CityLive do
 
     operating_count =
       Enum.map(mapped_details_2, fn {category, list} ->
-        {category, Enum.frequencies_by(list, fn x -> x.buildable.reason end)}
+        {category, Enum.frequencies_by(list, fn x -> x.metadata.reason end)}
       end)
       |> Enum.into(%{})
 

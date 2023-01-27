@@ -16,6 +16,8 @@ defmodule MayorGame.City.BuildableMetadata do
     :requires,
     :produces,
     :multipliers,
+    reason: [],
+    enabled: false,
     purchasable: true
   ]
 
@@ -35,6 +37,8 @@ defmodule MayorGame.City.BuildableMetadata do
           purchasable: boolean,
           produces: map | nil,
           requires: map | nil,
-          multipliers: map | nil
+          multipliers: map | nil,
+          enabled: boolean,
+          reason: list(String.t())
         }
 end

@@ -15,8 +15,6 @@ defmodule MayorGame.City.Buildable do
   @type t :: %__MODULE__{
           __meta__: Ecto.Schema.Metadata.t(),
           id: integer | nil,
-          enabled: boolean,
-          reason: list(String.t()),
           details: Details.t(),
           inserted_at: DateTime.t() | nil,
           updated_at: DateTime.t() | nil
@@ -25,10 +23,6 @@ defmodule MayorGame.City.Buildable do
   # schemas make elixir structs (in this case, %Buildable{})
   schema "buildable" do
     # has an id built-in?
-    # is the buildable enabled
-    field :enabled, :boolean
-    # what's the reason it's enabled or not
-    field :reason, {:array, :string}
     # what are the upgrades the buildable currently possesses
     belongs_to :details, MayorGame.City.Details
 
@@ -37,7 +31,7 @@ defmodule MayorGame.City.Buildable do
     @doc false
     def changeset(buildable, attrs \\ %{}) do
       buildable
-      |> cast(attrs, [:enabled, :reason])
+      |> cast(attrs, [])
     end
   end
 

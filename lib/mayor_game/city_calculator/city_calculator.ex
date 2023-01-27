@@ -507,9 +507,9 @@ defmodule MayorGame.CityCalculator do
       fn ->
         if preferred_locations.choices != [] do
           preferred_locations.choices
-          # |> Enum.chunk_every(100)
-          |> Flow.from_enumerable(max_demand: 100)
-          |> Flow.map(fn chunk ->
+          |> Enum.chunk_every(100)
+          # |> Flow.from_enumerable(max_demand: 100)
+          |> Enum.map(fn chunk ->
             Enum.reduce(chunk, Ecto.Multi.new(), fn {citizen, city_id}, multi ->
               town_from = struct(Town, all_cities_by_id[citizen.town_id])
               town_to = struct(Town, all_cities_by_id[city_id])

@@ -16,8 +16,9 @@
 
 # balance prices
 # remove has_car and some other stuff from DB
-# add way to give other cities money
+# fix weird bug with housing and coal plants like lost angeles
 # add combat
+# have citizens work at lower level if they want
 # fix logs only showing last update
 # :math.atan(2)*2/:math.pi()
 
