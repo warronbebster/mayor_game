@@ -382,93 +382,97 @@ defmodule MayorGameWeb.CityLive do
     updated_price = buildable.price * round(:math.pow(buildable_count, 2) + 1)
 
     if city_with_stats.money > updated_price do
-      cond do
-        # enough energy AND enough area
+      if is_nil(buildable.requires) do
+        %{buildable | purchasable: true, purchasable_reason: "valid", price: updated_price}
+      else
+        cond do
+          # enough energy AND enough area
 
-        (buildable.energy_required != nil || buildable.energy_required > 0) and
-          city_with_stats.energy >= buildable.energy_required &&
-            (buildable.area_required != nil and
-               city_with_stats.area >= buildable.area_required) ->
-          %{buildable | purchasable: true, purchasable_reason: "valid", price: updated_price}
+          Map.has_key?(buildable.requires, :energy) and
+            city_with_stats.energy >= buildable.requires.energy &&
+              (Map.has_key?(buildable.requires, :area) and
+                 city_with_stats.area >= buildable.requires.area) ->
+            %{buildable | purchasable: true, purchasable_reason: "valid", price: updated_price}
 
-        # not enough energy, enough area
-        buildable.energy_required != nil && buildable.energy_required > 0 and
-          city_with_stats.energy < buildable.energy_required &&
-            (buildable.area_required != nil and
-               city_with_stats.area >= buildable.area_required) ->
-          %{
-            buildable
-            | purchasable: false,
-              purchasable_reason: "not enough energy to build",
-              price: updated_price
-          }
+          # not enough energy, enough area
+          Map.has_key?(buildable.requires, :energy) and
+            city_with_stats.energy < buildable.requires.energy &&
+              (Map.has_key?(buildable.requires, :area) and
+                 city_with_stats.area >= buildable.requires.area) ->
+            %{
+              buildable
+              | purchasable: false,
+                purchasable_reason: "not enough energy to build",
+                price: updated_price
+            }
 
-        # enough energy, not enough area
-        buildable.energy_required != nil && buildable.energy_required > 0 and
-          city_with_stats.energy >= buildable.energy_required &&
-            (buildable.area_required != nil and
-               city_with_stats.area < buildable.area_required) ->
-          %{
-            buildable
-            | purchasable: false,
-              purchasable_reason: "not enough area to build",
-              price: updated_price
-          }
+          # enough energy, not enough area
+          Map.has_key?(buildable.requires, :energy) and
+            city_with_stats.energy >= buildable.requires.energy &&
+              (Map.has_key?(buildable.requires, :area) and
+                 city_with_stats.area < buildable.requires.area) ->
+            %{
+              buildable
+              | purchasable: false,
+                purchasable_reason: "not enough area to build",
+                price: updated_price
+            }
 
-        # not enough energy AND not enough area
-        buildable.energy_required != nil && buildable.energy_required > 0 and
-          city_with_stats.energy < buildable.energy_required &&
-            (buildable.area_required != nil and
-               city_with_stats.area < buildable.area_required) ->
-          %{
-            buildable
-            | purchasable: false,
-              purchasable_reason: "not enough area or energy to build",
-              price: updated_price
-          }
+          # not enough energy AND not enough area
+          Map.has_key?(buildable.requires, :energy) and
+            city_with_stats.energy < buildable.requires.energy &&
+              (Map.has_key?(buildable.requires, :area) and
+                 city_with_stats.area < buildable.requires.area) ->
+            %{
+              buildable
+              | purchasable: false,
+                purchasable_reason: "not enough area or energy to build",
+                price: updated_price
+            }
 
-        # no energy needed, enough area
-        buildable.energy_required != nil && buildable.energy_required > 0 &&
-            (buildable.area_required != nil and
-               city_with_stats.area >= buildable.area_required) ->
-          %{buildable | purchasable: true, purchasable_reason: "valid", price: updated_price}
+          # no energy needed, enough area
+          Map.has_key?(buildable.requires, :energy) &&
+              (Map.has_key?(buildable.requires, :area) and
+                 city_with_stats.area >= buildable.requires.area) ->
+            %{buildable | purchasable: true, purchasable_reason: "valid", price: updated_price}
 
-        # no energy needed, not enough area
-        buildable.energy_required != nil && buildable.energy_required > 0 &&
-            (buildable.area_required != nil and
-               city_with_stats.area < buildable.area_required) ->
-          %{
-            buildable
-            | purchasable: false,
-              purchasable_reason: "not enough area to build",
-              price: updated_price
-          }
+          # no energy needed, not enough area
+          Map.has_key?(buildable.requires, :energy) &&
+              (Map.has_key?(buildable.requires, :area) and
+                 city_with_stats.area < buildable.requires.area) ->
+            %{
+              buildable
+              | purchasable: false,
+                purchasable_reason: "not enough area to build",
+                price: updated_price
+            }
 
-        # no area needed, enough energy
-        buildable.area_required == nil &&
-            (buildable.energy_required != nil && buildable.energy_required > 0 and
-               city_with_stats.energy >= buildable.energy_required) ->
-          %{buildable | purchasable: true, purchasable_reason: "valid", price: updated_price}
+          # no area needed, enough energy
+          !Map.has_key?(buildable.requires, :area) &&
+              (Map.has_key?(buildable.requires, :energy) and
+                 city_with_stats.energy >= buildable.requires.energy) ->
+            %{buildable | purchasable: true, purchasable_reason: "valid", price: updated_price}
 
-        # no area needed, not enough energy
-        buildable.area_required == nil &&
-            (buildable.energy_required != nil && buildable.energy_required > 0 and
-               city_with_stats.energy < buildable.energy_required) ->
-          %{
-            buildable
-            | purchasable: false,
-              purchasable_reason: "not enough energy to build",
-              price: updated_price
-          }
+          # no area needed, not enough energy
+          !Map.has_key?(buildable.requires, :area) &&
+              (Map.has_key?(buildable.requires, :energy) and
+                 city_with_stats.energy < buildable.requires.energy) ->
+            %{
+              buildable
+              | purchasable: false,
+                purchasable_reason: "not enough energy to build",
+                price: updated_price
+            }
 
-        # no area needed, no energy needed
-        (buildable.energy_required == nil || buildable.energy_required == 0) and
-            buildable.area_required == nil ->
-          %{buildable | purchasable: true, purchasable_reason: "valid", price: updated_price}
+          # no area needed, no energy needed
+          !Map.has_key?(buildable.requires, :energy) and
+              !Map.has_key?(buildable.requires, :energy) ->
+            %{buildable | purchasable: true, purchasable_reason: "valid", price: updated_price}
 
-        # catch-all
-        true ->
-          %{buildable | purchasable: true, purchasable_reason: "valid", price: updated_price}
+          # catch-all
+          true ->
+            %{buildable | purchasable: true, purchasable_reason: "valid", price: updated_price}
+        end
       end
     else
       %{
