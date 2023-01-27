@@ -402,7 +402,7 @@
             <div class="flex flex-row gap-1 items-center">
               <%= if Map.has_key?(@operating_count[building_type], []) do %>
                 <!-- area -->
-                <%= if Map.has_key?(building_stats.produces, :area) do %>
+                <%= if !is_nil(building_stats.produces) && Map.has_key?(building_stats.produces, :area) do %>
                   <div class=" group relative flex flex-row items-center text-cyan-700 gap-1 w-20">
                     <img src="/images/area.svg" alt="total area" height="12" width="12" />
                     <%= Number.Delimit.number_to_delimited(
@@ -414,7 +414,7 @@
                   </div>
                 <% end %>
                 <!-- housing -->
-                <%= if Map.has_key?(building_stats.produces, :housing) do %>
+                <%= if !is_nil(building_stats.produces) && Map.has_key?(building_stats.produces, :housing) do %>
                   <div class=" group relative flex flex-row items-center text-amber-700 gap-1 w-20">
                     <img src="/images/housing.svg" alt="total area" height="12" width="12" />
                     <%= @operating_count[building_type][[]] * building_stats.produces.housing %>
@@ -424,7 +424,7 @@
                   </div>
                 <% end %>
                 <!-- energy -->
-                <%= if Map.has_key?(building_stats.produces, :energy) do %>
+                <%= if !is_nil(building_stats.produces) && Map.has_key?(building_stats.produces, :energy) do %>
                   <div class="group relative flex flex-row items-center text-yellow-700 gap-1 w-20">
                     <img src="/images/energy.svg" alt="total area" height="12" width="12" />
                     <%= Number.Delimit.number_to_delimited(
@@ -441,7 +441,7 @@
                 <% end %>
                 <!-- pollution -->
                 <div class="group relative flex flex-row items-center text-violet-700 gap-1 w-20">
-                  <%= if Map.has_key?(building_stats.produces, :produces) do %>
+                  <%= if !is_nil(building_stats.produces) && Map.has_key?(building_stats.produces, :produces) do %>
                     <img src="/images/pollution.svg" alt="total area" height="12" width="12" />
                     <%= if building_stats.requires.area != nil do %>
                       <%= Number.Delimit.number_to_delimited(
@@ -458,7 +458,7 @@
                     <% end %>
 
                     <div class="pointer-events-none group-hover:opacity-100 transition-opacity bg-amber-50 border border-neutral-800 z-10 p-2 absolute top-8 right-0 opacity-0 max-w-sm ">
-                      <%= if Map.has_key?(building_stats.requires, :area) do %>
+                      <%= !is_nil(building_stats.requires) && if Map.has_key?(building_stats.requires, :area) do %>
                         <%= building_stats.produces.pollution %> pollution generated per building per 10 citizens
                       <% else %>
                         <%= Number.Delimit.number_to_delimited(
