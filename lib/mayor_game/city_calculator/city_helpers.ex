@@ -287,21 +287,22 @@ defmodule MayorGame.CityHelpers do
           pollution_death = world.pollution > pollution_ceiling and :rand.uniform() > 0.95
 
           housed_unemployed_citizens =
-            if acc.housing_left > 0 && !citizen.has_job && citizen.age < 5000 && !pollution_death,
-              do: [citizen | acc.housed_unemployed_citizens],
-              else: acc.housed_unemployed_citizens
+            if acc.housing_left > 0 && !citizen.has_job && citizen.age < 10000 &&
+                 !pollution_death,
+               do: [citizen | acc.housed_unemployed_citizens],
+               else: acc.housed_unemployed_citizens
 
           tax_too_high =
             :rand.uniform() < :math.pow(city.tax_rates[to_string(citizen.education)], 2)
 
           housed_employed_staying_citizens =
-            if acc.housing_left > 0 && citizen.has_job && citizen.age < 5000 && !tax_too_high &&
+            if acc.housing_left > 0 && citizen.has_job && citizen.age < 10000 && !tax_too_high &&
                  !pollution_death,
                do: [citizen | acc.housed_employed_staying_citizens],
                else: acc.housed_employed_staying_citizens
 
           housed_employed_looking_citizens =
-            if acc.housing_left > 0 && citizen.has_job && citizen.age < 5000 && tax_too_high &&
+            if acc.housing_left > 0 && citizen.has_job && citizen.age < 10000 && tax_too_high &&
                  !pollution_death,
                do: [citizen | acc.housed_employed_looking_citizens],
                else: acc.housed_employed_looking_citizens
@@ -313,33 +314,33 @@ defmodule MayorGame.CityHelpers do
 
           # unhoused_citizens =
           #   if acc.housing_left > 0, do: tl(acc.unhoused_citizens), else: acc.unhoused_citizens
-          #   # could revert this to add only citizens < 5000 and not dying from pollution
+          #   # could revert this to add only citizens < 10000 and not dying from pollution
 
           unhoused_citizens =
-            if acc.housing_left <= 0 && citizen.age < 5000 && !pollution_death,
+            if acc.housing_left <= 0 && citizen.age < 10000 && !pollution_death,
               do: [citizen | acc.unhoused_citizens],
               else: acc.unhoused_citizens
 
           polluted_citizens =
-            if pollution_death && citizen.age < 5000,
+            if pollution_death && citizen.age < 10000,
               do: [citizen | acc.polluted_citizens],
               else: acc.polluted_citizens
 
           old_citizens =
-            if citizen.age > 5000,
+            if citizen.age > 10000,
               do: [citizen | acc.old_citizens],
               else: acc.old_citizens
 
           # spawn new citizens if conditions are right; age, random, housing exists
           reproducing_citizens =
             if citizen.age > 500 and citizen.age < 2000 and
-                 :rand.uniform(length(city_baked_details.citizens) + 100) == 1,
+                 :rand.uniform(length(city_baked_details.citizens) + 1) == 1,
                do: [citizen | acc.reproducing_citizens],
                else: acc.reproducing_citizens
 
           will_citizen_learn =
             rem(world.day, 365) == 0 && citizen.education < 5 &&
-              acc.education_left[citizen.education + 1] > 0 && citizen.age < 5000 &&
+              acc.education_left[citizen.education + 1] > 0 && citizen.age < 10000 &&
               !pollution_death
 
           education_left =

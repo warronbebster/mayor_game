@@ -129,6 +129,8 @@ defmodule MayorGameWeb.CityLive do
         end
       end
 
+      city_struct = struct(City.Town, city)
+
       # case City.demolish_buildable(city.details, building_to_demolish, buildable_id) do
       #   {:ok, _updated_details} ->
       #     IO.puts("demolition success")
@@ -137,7 +139,7 @@ defmodule MayorGameWeb.CityLive do
       #     Logger.error(inspect(err))
       # end
 
-      case City.update_details(city.details, %{city_treasury: 5000}) do
+      case City.update_town(city_struct, %{treasury: 5000}) do
         {:ok, updated_town} ->
           IO.puts("city_reset")
 
