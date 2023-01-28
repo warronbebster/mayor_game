@@ -347,13 +347,13 @@ defmodule MayorGame.CityCalculator do
     # MULTI CHANGESET MOVE JOB SEARCHING CITIZENS
 
     # MOVE CITIZENS
-    Enum.map(0..5, fn x ->
-      if preferred_locations_by_level[x].choices != [] do
-        preferred_locations_by_level[x].choices
-        |> Enum.chunk_every(100)
-        |> Enum.map(fn chunk ->
-          Repo.checkout(
-            fn ->
+    Repo.checkout(
+      fn ->
+        Enum.map(0..5, fn x ->
+          if preferred_locations_by_level[x].choices != [] do
+            preferred_locations_by_level[x].choices
+            |> Enum.chunk_every(100)
+            |> Enum.map(fn chunk ->
               Enum.reduce(chunk, Ecto.Multi.new(), fn {citizen, city_id}, multi ->
                 town_from = struct(Town, all_cities_by_id[citizen.town_id])
                 town_to = struct(Town, all_cities_by_id[city_id])
@@ -391,120 +391,116 @@ defmodule MayorGame.CityCalculator do
                 end
               end)
               |> Repo.transaction(timeout: 20_000)
-            end,
-            timeout: 30_000
-          )
-        end)
-      end
-    end)
-
-    # ——————————————————————————————————————————————————————————————————————————————————
-    # ————————————————————————————————————————— ROUND 2: MOVE CITIZENS ANYWHERE THERE IS HOUSING
-    # ——————————————————————————————————————————————————————————————————————————————————
-
-    # this produces a list of cities that have been occupied
-    occupied_slots =
-      Enum.flat_map(preferred_locations_by_level, fn {_level, preferred_locations} ->
-        Enum.map(preferred_locations.choices, fn {_citizen_id, city_id} ->
-          city_id
-
-          # could also potentially move the citizens here
-          # could move citizens here
-          # COULD MOVE CITIZENS HERE ———————————————————————————————————
-        end)
-      end)
-
-    # take housing slots, remove any city that was occupied previously
-    slots_after_job_migrations =
-      if leftovers.housing_slots == %{} do
-        %{}
-      else
-        Enum.reduce(occupied_slots, housing_slots_by_city_id, fn city_id, acc ->
-          # need to find the right key, these cities are already normalized
-          if is_nil(city_id) do
-            acc
-          else
-            # key = Enum.find(Map.keys(acc), fn x -> x.id == city.id end)
-            Map.update!(acc, city_id, &(&1 - 1))
+            end)
           end
         end)
-      end
 
-    housing_slots_expanded =
-      Enum.reduce(
-        slots_after_job_migrations,
-        [],
-        fn {city_id, slots_count}, acc ->
-          # duplicate this score v times (1 for each slot)
+        # ——————————————————————————————————————————————————————————————————————————————————
+        # ————————————————————————————————————————— ROUND 2: MOVE CITIZENS ANYWHERE THERE IS HOUSING
+        # ——————————————————————————————————————————————————————————————————————————————————
 
-          if slots_count > 0 do
-            acc ++ for _ <- 1..slots_count, do: city_id
+        # this produces a list of cities that have been occupied
+        occupied_slots =
+          Enum.flat_map(preferred_locations_by_level, fn {_level, preferred_locations} ->
+            Enum.map(preferred_locations.choices, fn {_citizen_id, city_id} ->
+              city_id
+
+              # could also potentially move the citizens here
+              # could move citizens here
+              # COULD MOVE CITIZENS HERE ———————————————————————————————————
+            end)
+          end)
+
+        # take housing slots, remove any city that was occupied previously
+        slots_after_job_migrations =
+          if leftovers.housing_slots == %{} do
+            %{}
           else
-            acc
-          end
-        end
-      )
-
-    slots_after_job_filtered =
-      Enum.filter(slots_after_job_migrations, fn {_k, v} -> v > 0 end) |> Enum.into(%{})
-
-    # SHAPE OF unhoused_locations.choices is an array of {citizen, city_id}
-    preferred_locations =
-      Enum.reduce(
-        looking_but_not_in_job_race,
-        %{choices: [], slots: slots_after_job_filtered},
-        fn citizen, acc ->
-          chosen_city =
-            Enum.reduce(acc.slots, %{chosen_id: 0, top_score: -1}, fn {city_id, count}, acc2 ->
-              score =
-                if count > 0 do
-                  Float.round(
-                    citizen_score(
-                      citizen.preferences,
-                      citizen.education,
-                      slotted_cities_by_id[city_id]
-                    ),
-                    4
-                  )
-                else
-                  0
-                end
-
-              if score > acc2.top_score do
-                %{
-                  chosen_id: city_id,
-                  top_score: score
-                }
+            Enum.reduce(occupied_slots, housing_slots_by_city_id, fn city_id, acc ->
+              # need to find the right key, these cities are already normalized
+              if is_nil(city_id) do
+                acc
               else
-                acc2
+                # key = Enum.find(Map.keys(acc), fn x -> x.id == city.id end)
+                Map.update!(acc, city_id, &(&1 - 1))
               end
             end)
+          end
 
-          updated_slots =
-            if acc.slots != %{} && chosen_city.chosen_id != 0 do
-              if acc.slots[chosen_city.chosen_id] > 0 do
-                Map.update!(acc.slots, chosen_city.chosen_id, &(&1 - 1))
-              else
-                Map.drop(acc.slots, [chosen_city.chosen_id])
-              end
-            else
-              acc.slots
+        # housing_slots_expanded =
+        #   Enum.reduce(
+        #     slots_after_job_migrations,
+        #     [],
+        #     fn {city_id, slots_count}, acc ->
+        #       # duplicate this score v times (1 for each slot)
+
+        #       if slots_count > 0 do
+        #         acc ++ for _ <- 1..slots_count, do: city_id
+        #       else
+        #         acc
+        #       end
+        #     end
+        #   )
+
+        slots_after_job_filtered =
+          Enum.filter(slots_after_job_migrations, fn {_k, v} -> v > 0 end) |> Enum.into(%{})
+
+        # SHAPE OF unhoused_locations.choices is an array of {citizen, city_id}
+        preferred_locations =
+          Enum.reduce(
+            looking_but_not_in_job_race,
+            %{choices: [], slots: slots_after_job_filtered},
+            fn citizen, acc ->
+              chosen_city =
+                Enum.reduce(acc.slots, %{chosen_id: 0, top_score: -1}, fn {city_id, count},
+                                                                          acc2 ->
+                  score =
+                    if count > 0 do
+                      Float.round(
+                        citizen_score(
+                          citizen.preferences,
+                          citizen.education,
+                          slotted_cities_by_id[city_id]
+                        ),
+                        4
+                      )
+                    else
+                      0
+                    end
+
+                  if score > acc2.top_score do
+                    %{
+                      chosen_id: city_id,
+                      top_score: score
+                    }
+                  else
+                    acc2
+                  end
+                end)
+
+              updated_slots =
+                if acc.slots != %{} && chosen_city.chosen_id != 0 do
+                  if acc.slots[chosen_city.chosen_id] > 0 do
+                    Map.update!(acc.slots, chosen_city.chosen_id, &(&1 - 1))
+                  else
+                    Map.drop(acc.slots, [chosen_city.chosen_id])
+                  end
+                else
+                  acc.slots
+                end
+
+              %{
+                choices:
+                  if chosen_city.chosen_id == 0 do
+                    acc.choices
+                  else
+                    acc.choices ++ [{citizen, chosen_city.chosen_id}]
+                  end,
+                slots: updated_slots
+              }
             end
+          )
 
-          %{
-            choices:
-              if chosen_city.chosen_id == 0 do
-                acc.choices
-              else
-                acc.choices ++ [{citizen, chosen_city.chosen_id}]
-              end,
-            slots: updated_slots
-          }
-        end
-      )
-
-    Repo.checkout(
-      fn ->
         if preferred_locations.choices != [] do
           preferred_locations.choices
           |> Enum.chunk_every(100)
@@ -549,115 +545,111 @@ defmodule MayorGame.CityCalculator do
             |> Repo.transaction(timeout: 20_000)
           end)
         end
-      end,
-      timeout: 29_999
-    )
 
-    # ——————————————————————————————————————————————————————————————————————————————————
-    # ————————————————————————————————————————— ROUND 3: MOVE CITIZENS WITHOUT HOUSING ANYWHERE THERE IS HOUSING
-    # ——————————————————————————————————————————————————————————————————————————————————
+        # ——————————————————————————————————————————————————————————————————————————————————
+        # ————————————————————————————————————————— ROUND 3: MOVE CITIZENS WITHOUT HOUSING ANYWHERE THERE IS HOUSING
+        # ——————————————————————————————————————————————————————————————————————————————————
 
-    occupied_slots_2 =
-      Enum.map(preferred_locations.choices, fn {_citizen_id, city_id} ->
-        city_id
-      end)
-
-    slots_after_housing_migrations =
-      if slots_after_job_migrations == %{} do
-        %{}
-      else
-        Enum.reduce(occupied_slots_2, slots_after_job_migrations, fn city_id, acc ->
-          # need to find the right key, these cities are already normalized
-          if is_nil(city_id) do
-            acc
-          else
-            # key = Enum.find(Map.keys(acc), fn x -> x.id == city.id end)
-            Map.update!(acc, city_id, &(&1 - 1))
-          end
-        end)
-      end
-
-    housing_slots_2_expanded =
-      Enum.reduce(
-        slots_after_housing_migrations,
-        [],
-        fn {city_id, slots_count}, acc ->
-          # duplicate this score v times (1 for each slot)
-
-          if slots_count > 0 do
-            acc ++ for _ <- 1..slots_count, do: city_id
-          else
-            acc
-          end
-        end
-      )
-
-    unhoused_split =
-      Enum.shuffle(leftovers.unhoused_citizens) |> Enum.split(length(housing_slots_2_expanded))
-
-    # could reduce for each citizen
-    # acc is slots (e.g. housing_slots_2_expanded)
-    # calc score per city
-    # get max
-    # id is good
-    # filter slots_after_housing_migrations by
-    slots_filtered =
-      Enum.filter(slots_after_housing_migrations, fn {_k, v} -> v > 0 end) |> Enum.into(%{})
-
-    # SHAPE OF unhoused_locations.choices is an array of {citizen, city_id}
-    unhoused_locations =
-      Enum.reduce(elem(unhoused_split, 0), %{choices: [], slots: slots_filtered}, fn citizen,
-                                                                                     acc ->
-        chosen_city =
-          Enum.reduce(acc.slots, %{chosen_id: 0, top_score: 0}, fn {city_id, count}, acc2 ->
-            score =
-              if count > 0 do
-                Float.round(
-                  citizen_score(
-                    citizen.preferences,
-                    citizen.education,
-                    slotted_cities_by_id[city_id]
-                  ),
-                  4
-                )
-              else
-                0
-              end
-
-            if score > acc2.top_score do
-              %{
-                chosen_id: city_id,
-                top_score: score
-              }
-            else
-              acc2
-            end
+        occupied_slots_2 =
+          Enum.map(preferred_locations.choices, fn {_citizen_id, city_id} ->
+            city_id
           end)
 
-        updated_slots =
-          if chosen_city.chosen_id > 0 do
-            if acc.slots[chosen_city.chosen_id] > 0 do
-              Map.update!(acc.slots, chosen_city.chosen_id, &(&1 - 1))
-            else
-              Map.drop(acc.slots, [chosen_city.chosen_id])
-            end
+        slots_after_housing_migrations =
+          if slots_after_job_migrations == %{} do
+            %{}
           else
-            acc.slots
+            Enum.reduce(occupied_slots_2, slots_after_job_migrations, fn city_id, acc ->
+              # need to find the right key, these cities are already normalized
+              if is_nil(city_id) do
+                acc
+              else
+                # key = Enum.find(Map.keys(acc), fn x -> x.id == city.id end)
+                Map.update!(acc, city_id, &(&1 - 1))
+              end
+            end)
           end
 
-        %{
-          choices:
-            if chosen_city.chosen_id == 0 do
-              acc.choices
-            else
-              acc.choices ++ [{citizen, chosen_city.chosen_id}]
-            end,
-          slots: updated_slots
-        }
-      end)
+        housing_slots_2_expanded =
+          Enum.reduce(
+            slots_after_housing_migrations,
+            [],
+            fn {city_id, slots_count}, acc ->
+              # duplicate this score v times (1 for each slot)
 
-    Repo.checkout(
-      fn ->
+              if slots_count > 0 do
+                acc ++ for _ <- 1..slots_count, do: city_id
+              else
+                acc
+              end
+            end
+          )
+
+        unhoused_split =
+          Enum.shuffle(leftovers.unhoused_citizens)
+          |> Enum.split(length(housing_slots_2_expanded))
+
+        # could reduce for each citizen
+        # acc is slots (e.g. housing_slots_2_expanded)
+        # calc score per city
+        # get max
+        # id is good
+        # filter slots_after_housing_migrations by
+        slots_filtered =
+          Enum.filter(slots_after_housing_migrations, fn {_k, v} -> v > 0 end) |> Enum.into(%{})
+
+        # SHAPE OF unhoused_locations.choices is an array of {citizen, city_id}
+        unhoused_locations =
+          Enum.reduce(elem(unhoused_split, 0), %{choices: [], slots: slots_filtered}, fn citizen,
+                                                                                         acc ->
+            chosen_city =
+              Enum.reduce(acc.slots, %{chosen_id: 0, top_score: 0}, fn {city_id, count}, acc2 ->
+                score =
+                  if count > 0 do
+                    Float.round(
+                      citizen_score(
+                        citizen.preferences,
+                        citizen.education,
+                        slotted_cities_by_id[city_id]
+                      ),
+                      4
+                    )
+                  else
+                    0
+                  end
+
+                if score > acc2.top_score do
+                  %{
+                    chosen_id: city_id,
+                    top_score: score
+                  }
+                else
+                  acc2
+                end
+              end)
+
+            updated_slots =
+              if chosen_city.chosen_id > 0 do
+                if acc.slots[chosen_city.chosen_id] > 0 do
+                  Map.update!(acc.slots, chosen_city.chosen_id, &(&1 - 1))
+                else
+                  Map.drop(acc.slots, [chosen_city.chosen_id])
+                end
+              else
+                acc.slots
+              end
+
+            %{
+              choices:
+                if chosen_city.chosen_id == 0 do
+                  acc.choices
+                else
+                  acc.choices ++ [{citizen, chosen_city.chosen_id}]
+                end,
+              slots: updated_slots
+            }
+          end)
+
         if unhoused_locations.choices != [] do
           unhoused_locations.choices
           |> Enum.chunk_every(100)
@@ -702,13 +694,9 @@ defmodule MayorGame.CityCalculator do
             |> Repo.transaction(timeout: 20_000)
           end)
         end
-      end,
-      timeout: 29_998
-    )
 
-    # MULTI KILL REST OF UNHOUSED CITIZENS
-    Repo.checkout(
-      fn ->
+        # MULTI KILL REST OF UNHOUSED CITIZENS
+
         elem(unhoused_split, 1)
         # |> Enum.chunk_every(100)
         |> Enum.chunk_every(100)
@@ -731,19 +719,15 @@ defmodule MayorGame.CityCalculator do
           end)
           |> Repo.transaction(timeout: 20_000)
         end)
-      end,
-      timeout: 29_997
-    )
 
-    #
+        #
 
-    # ——————————————————————————————————————————————————————————————————————————————————
-    # ————————————————————————————————————————— OTHER ECTO UPDATES
-    # ——————————————————————————————————————————————————————————————————————————————————
+        # ——————————————————————————————————————————————————————————————————————————————————
+        # ————————————————————————————————————————— OTHER ECTO UPDATES
+        # ——————————————————————————————————————————————————————————————————————————————————
 
-    # MULTI UPDATE: update city money/treasury in DB ——————————————————————————————————————————————————— DB UPDATE
-    Repo.checkout(
-      fn ->
+        # MULTI UPDATE: update city money/treasury in DB ——————————————————————————————————————————————————— DB UPDATE
+
         leftovers.all_cities_new
         |> Enum.chunk_every(100)
         |> Enum.map(fn chunk ->
@@ -769,19 +753,14 @@ defmodule MayorGame.CityCalculator do
           end)
           |> Repo.transaction(timeout: 20_000)
         end)
-      end,
-      timeout: 29_996
-    )
 
-    # MULTI CHANGESET EDUCATE ——————————————————————————————————————————————————— DB UPDATE
+        # MULTI CHANGESET EDUCATE ——————————————————————————————————————————————————— DB UPDATE
 
-    leftovers.citizens_learning
-    |> Enum.map(fn {level, list} ->
-      list
-      |> Enum.chunk_every(100)
-      |> Enum.map(fn chunk ->
-        Repo.checkout(
-          fn ->
+        leftovers.citizens_learning
+        |> Enum.map(fn {level, list} ->
+          list
+          |> Enum.chunk_every(100)
+          |> Enum.map(fn chunk ->
             Enum.reduce(chunk, Ecto.Multi.new(), fn citizen, multi ->
               town = struct(Town, all_cities_by_id[citizen.town_id])
 
@@ -804,23 +783,17 @@ defmodule MayorGame.CityCalculator do
               |> Ecto.Multi.update({:update_town_log, citizen.id}, town_changeset)
             end)
             |> Repo.transaction(timeout: 20_000)
-          end,
-          timeout: 29_995
-        )
-      end)
-    end)
+          end)
+        end)
 
-    # end)
+        # end)
 
-    # MULTI CHANGESET AGE
+        # MULTI CHANGESET AGE
 
-    Repo.checkout(fn -> Repo.update_all(MayorGame.City.Citizens, inc: [age: 1]) end,
-      timeout: 29_994
-    )
+        Repo.update_all(MayorGame.City.Citizens, inc: [age: 1])
 
-    # MULTI CHANGESET KILL OLD CITIZENS ——————————————————————————————————————————————————— DB UPDATE
-    Repo.checkout(
-      fn ->
+        # MULTI CHANGESET KILL OLD CITIZENS ——————————————————————————————————————————————————— DB UPDATE
+
         leftovers.citizens_too_old
         |> Enum.chunk_every(100)
         |> Enum.map(fn chunk ->
@@ -841,15 +814,10 @@ defmodule MayorGame.CityCalculator do
           end)
           |> Repo.transaction(timeout: 20_000)
         end)
-      end,
-      timeout: 29_993
-    )
 
-    # end)
+        # end)
 
-    # MULTI KILL POLLUTED CITIZENS ——————————————————————————————————————————————————— DB UPDATE
-    Repo.checkout(
-      fn ->
+        # MULTI KILL POLLUTED CITIZENS ——————————————————————————————————————————————————— DB UPDATE
         leftovers.citizens_polluted
         |> Enum.chunk_every(100)
         |> Enum.map(fn chunk ->
@@ -871,13 +839,9 @@ defmodule MayorGame.CityCalculator do
           end)
           |> Repo.transaction(timeout: 20_000)
         end)
-      end,
-      timeout: 29_992
-    )
 
-    # MULTI REPRODUCE ——————————————————————————————————————————————————— DB UPDATE
-    Repo.checkout(
-      fn ->
+        # MULTI REPRODUCE ——————————————————————————————————————————————————— DB UPDATE
+
         leftovers.citizens_to_reproduce
         |> Enum.chunk_every(100)
         |> Enum.map(fn chunk ->
@@ -912,7 +876,7 @@ defmodule MayorGame.CityCalculator do
           |> Repo.transaction(timeout: 20_000)
         end)
       end,
-      timeout: 29_991
+      timeout: 240_000
     )
 
     updated_pollution =
