@@ -15,8 +15,6 @@
 # fly volumes list --app mayorgame-db gets volumes from the db project thingy
 
 # balance prices
-# remove has_car and some other stuff from DB
-# fix weird bug with housing and coal plants like lost angeles
 # add combat
 # have citizens work at lower level if they want
 # fix logs only showing last update

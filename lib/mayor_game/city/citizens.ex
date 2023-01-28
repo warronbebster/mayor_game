@@ -12,12 +12,9 @@ defmodule MayorGame.City.Citizens do
           id: integer | nil,
           inserted_at: DateTime.t() | nil,
           updated_at: DateTime.t() | nil,
-          money: integer,
           name: String.t(),
           age: integer,
           education: 1..5,
-          job: 1..5,
-          has_car: boolean,
           has_job: boolean,
           last_moved: integer | nil,
           preferences: map,
@@ -25,12 +22,9 @@ defmodule MayorGame.City.Citizens do
         }
 
   schema "citizens" do
-    field :money, :integer
     field :name, :string
     field :age, :integer
     field :education, :integer
-    field :job, :integer
-    field :has_car, :boolean
     field :has_job, :boolean
     # probably can get rid of this and just rely on lastUpdated in the DB
     field :last_moved, :integer
@@ -44,11 +38,9 @@ defmodule MayorGame.City.Citizens do
 
   def attributes do
     [
-      :money,
       :name,
       :age,
       :education,
-      :has_car,
       :has_job,
       :last_moved,
       :preferences

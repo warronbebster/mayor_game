@@ -857,11 +857,9 @@ defmodule MayorGame.CityCalculator do
 
             changeset =
               City.create_citizens_changeset(%{
-                money: 0,
                 town_id: citizen.town_id,
                 age: 0,
                 education: 0,
-                has_car: false,
                 has_job: false,
                 last_moved: db_world.day
               })

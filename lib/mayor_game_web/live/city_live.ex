@@ -66,11 +66,9 @@ defmodule MayorGameWeb.CityLive do
     if socket.assigns.current_user.id == 1 do
       case City.create_citizens(%{
              town_id: city.id,
-             money: 5,
              education: 0,
              age: 0,
              has_job: false,
-             has_car: false,
              last_moved: socket.assigns.world.day
            }) do
         # pattern match to assign new_citizen to what's returned from City.create_citizens

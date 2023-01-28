@@ -68,6 +68,7 @@ defmodule MayorGame.CityHelpers do
       Enum.map(Buildable.buildables_ordered_flat(), fn x -> {x, all_buildables[x]} end)
 
     sorted_citizens = Enum.sort_by(city_baked_details.citizens, & &1.education, :desc)
+    citizen_count = length(sorted_citizens)
 
     # buildables_ordered is in order
     results =
@@ -77,7 +78,7 @@ defmodule MayorGame.CityHelpers do
           money: city_baked_details.treasury,
           income: 0,
           daily_cost: 0,
-          citizen_count: length(sorted_citizens),
+          citizen_count: citizen_count,
           citizens: sorted_citizens,
           employed_citizens: [],
           fun: 0,
@@ -97,7 +98,6 @@ defmodule MayorGame.CityHelpers do
         },
         fn {buildable_type, buildable_array}, acc ->
           if buildable_array == [] do
-            # for each set of buildables
             acc
           else
             # for each individual buildable:
@@ -131,6 +131,10 @@ defmodule MayorGame.CityHelpers do
                   # if it requires workers
 
                   if Map.has_key?(individual_buildable.metadata.requires, :workers) do
+                    # here I could just mark that buildable as "enabled pre_workers" or "ready_for_workers" I think?
+                    # then loop through jobs outside this loop
+                    # could also just look through the jobs not taken outside the loop and check citizens there?
+
                     checked_workers =
                       check_workers(individual_buildable.metadata.requires, acc2.citizens)
 
@@ -179,8 +183,7 @@ defmodule MayorGame.CityHelpers do
                           |> Map.put(
                             :daily_cost,
                             acc2.daily_cost + money_required
-                          )
-                          |> Map.put(:money, acc2.money + tax_earned),
+                          ),
                         else: acc2
 
                     # update acc with disabled buildable
@@ -249,17 +252,104 @@ defmodule MayorGame.CityHelpers do
                     [updated_buildable | current]
                   end)
                 end
-
-                # acc2
               end
             end)
           end
         end
       )
 
+    # ————————————————————————————————————————————————————————————————
+    # FILL LOWER LEVEL JOBS
+
+    jobs_left = Enum.sum(Map.values(results.jobs))
+
+    citizens_available = Enum.take(results.citizens, jobs_left)
+
+    results_after_2nd_round_jobs =
+      if citizens_available == [] do
+        results
+      else
+        # shape: {[list of buildables with jobs], [list of the rest of the buildables]}
+        buildables_split_by_jobs =
+          Enum.split_with(results.result_buildables, fn y ->
+            !is_nil(y.metadata.jobs) && y.metadata.jobs > 0
+          end)
+
+        buildables_with_jobs = elem(buildables_split_by_jobs, 0)
+
+        results_updated =
+          Enum.reduce(
+            buildables_with_jobs,
+            %{results: results, citizens_available: citizens_available, buildables_after: []},
+            fn buildable, acc ->
+              job_level = buildable.metadata.requires.workers.level
+
+              qualified_workers =
+                Enum.filter(acc.citizens_available, fn cit -> cit.education >= job_level end)
+
+              newly_employed_workers = Enum.take(qualified_workers, buildable.metadata.jobs)
+              enough_workers = length(newly_employed_workers) >= buildable.metadata.jobs
+
+              money_required =
+                if Map.has_key?(buildable.metadata.requires, :money),
+                  do: buildable.metadata.requires.money,
+                  else: 0
+
+              updated_buildable =
+                if !enough_workers do
+                  buildable
+                else
+                  # if all conditions are met
+                  buildable
+                  |> put_in([:metadata, :jobs], 0)
+                  |> put_in([:metadata, :reason], [])
+                end
+
+              tax_earned =
+                round(
+                  length(qualified_workers) * (1 + job_level) * 100 *
+                    city.tax_rates[to_string(job_level)] / 10
+                )
+
+              acc_results =
+                if enough_workers,
+                  do:
+                    update_generated_acc(
+                      updated_buildable,
+                      citizen_count,
+                      city.region,
+                      season,
+                      acc.results
+                    )
+                    |> Map.put(:income, acc.results.income + tax_earned)
+                    |> Map.put(
+                      :daily_cost,
+                      acc.results.daily_cost + money_required
+                    ),
+                  else: acc.results
+
+              %{
+                citizens_available: acc.citizens_available -- newly_employed_workers,
+                buildables_after: [updated_buildable | acc.buildables_after],
+                results:
+                  acc_results
+                  |> Map.update!(:jobs, fn jobs_map ->
+                    Map.update!(jobs_map, job_level, fn v ->
+                      v - length(newly_employed_workers)
+                    end)
+                  end)
+              }
+            end
+          )
+
+        results_updated.results
+        |> Map.put(
+          :result_buildables,
+          elem(buildables_split_by_jobs, 1) ++ results_updated.buildables_after
+        )
+      end
+
     all_citizens = results.employed_citizens ++ results.citizens
-    # IO.inspect(length(all_citizens), label: "all_citizens")
-    # IO.inspect(results.citizen_count, label: "citizen_count")
 
     # ________________________________________________________________________
     # Iterate through citizens
@@ -271,8 +361,8 @@ defmodule MayorGame.CityHelpers do
       |> Enum.reduce(
         # fn ->
         %{
-          housing_left: results.housing,
-          education_left: results.education,
+          housing_left: results_after_2nd_round_jobs.housing,
+          education_left: results_after_2nd_round_jobs.education,
           educated_citizens: %{0 => [], 1 => [], 2 => [], 3 => [], 4 => [], 5 => []},
           housed_unemployed_citizens: [],
           housed_employed_staying_citizens: [],
@@ -340,6 +430,7 @@ defmodule MayorGame.CityHelpers do
 
           will_citizen_learn =
             rem(world.day, 365) == 0 && citizen.education < 5 &&
+              citizen.education < 5 &&
               acc.education_left[citizen.education + 1] > 0 && citizen.age < 10000 &&
               !pollution_death
 
@@ -372,12 +463,11 @@ defmodule MayorGame.CityHelpers do
           }
         end
       )
-      # |> Enum.to_list()
       |> Enum.into(%{})
 
     city_baked_details
     |> Map.from_struct()
-    |> Map.merge(results)
+    |> Map.merge(results_after_2nd_round_jobs)
     |> Map.put(:all_citizens, all_citizens)
     |> Map.merge(after_citizen_checks)
   end
@@ -574,6 +664,35 @@ defmodule MayorGame.CityHelpers do
     end
   end
 
+  defp check_workers_loose(%{} = reqs, citizens) do
+    filtered_citizens = Enum.filter(citizens, fn cit -> cit.education == reqs.workers.level end)
+
+    if length(filtered_citizens) == 0 or hd(filtered_citizens).education < reqs.workers.level do
+      []
+    else
+      count_to_check = min(reqs.workers.count, length(filtered_citizens))
+
+      Enum.reduce_while(0..(count_to_check - 1), [], fn x, acc ->
+        cond do
+          # Enum.at(citizens, x).education > reqs.workers.level ->
+          #   {:cont, [Map.put(Enum.at(citizens, x), :has_job, true) | acc]}
+
+          Enum.at(filtered_citizens, x).education == reqs.workers.level ->
+            {:cont, [Enum.at(filtered_citizens, x) | acc]}
+
+          Enum.at(filtered_citizens, x).education < reqs.workers.level ->
+            {:halt, acc}
+
+            # true ->
+            #   {:cond, acc}
+        end
+      end)
+    end
+  end
+
+  @doc """
+   Takes (buildable, citizen_count, region, season, acc), returns acc with production rendered
+  """
   defp update_generated_acc(buildable, citizen_count, region, season, acc) do
     # eventually could optimize this just to run the calc once and then multiply by total enabled buildables
 

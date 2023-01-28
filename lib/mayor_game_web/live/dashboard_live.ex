@@ -67,10 +67,8 @@ defmodule MayorGameWeb.DashboardLive do
     if socket.assigns.current_user.id == 1 do
       case City.create_citizens(%{
              town_id: city_id,
-             money: 5,
              education: 0,
              age: 0,
-             has_car: false,
              has_job: false,
              last_moved: socket.assigns.world.day
            }) do
