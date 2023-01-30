@@ -6,6 +6,7 @@ defmodule MayorGameWeb.CityLive do
   use Phoenix.HTML
 
   alias MayorGame.{Auth, City, Repo}
+  alias MayorGame.City.Town
   # import MayorGame.CityHelpers
   alias MayorGame.City.Buildable
 
@@ -37,10 +38,11 @@ defmodule MayorGameWeb.CityLive do
       work: "Work buildings have lots of jobs to attract citizens to your city",
       entertainment: "Entertainment buildings have jobs, and add other intangibles to your city.",
       health:
-        "Health buildings increase the health of your citizens, and make them less likely to die"
+        "Health buildings increase the health of your citizens, and make them less likely to die",
+      combat: "Combat buildings let you attack other cities, or defend your city from attack."
     }
 
-    production_categories = [:energy, :area, :housing]
+    # production_categories = [:energy, :area, :housing]
 
     {
       :ok,
@@ -48,10 +50,12 @@ defmodule MayorGameWeb.CityLive do
       # put the title and day in assigns
       |> assign(:title, title)
       |> assign(:world, world)
-      |> assign(:building_requirements, ["workers", "energy", "area", "money"])
+      |> assign(:building_requirements, ["workers", "energy", "area", "money", "steel", "sulfur"])
       |> assign(:category_explanations, explanations)
+      |> mount_city_by_title()
       |> update_city_by_title()
       |> assign_auth(session)
+      |> update_current_user()
       # run helper function to get the stuff from the DB for those things
     }
   end
@@ -92,7 +96,7 @@ defmodule MayorGameWeb.CityLive do
     city_struct = struct(City.Town, city)
 
     if socket.assigns.current_user.id == 1 do
-      case City.update_town(city_struct, %{treasury: city.treasury + 1000}) do
+      case City.update_town(city_struct, %{treasury: city.treasury + 10_000}) do
         {:ok, _updated_town} ->
           IO.puts("money gabe")
 
@@ -107,11 +111,11 @@ defmodule MayorGameWeb.CityLive do
 
   def handle_event(
         "reset_city",
-        %{"userid" => user_id},
+        %{"userid" => _user_id},
         %{assigns: %{city2: city}} = socket
       ) do
     if socket.assigns.current_user.id == city.user_id do
-      reset = Map.new(Buildable.buildables_list(), fn x -> {x, []} end)
+      # reset = Map.new(Buildable.buildables_list(), fn x -> {x, []} end)
 
       for building_type <- Buildable.buildables_list() do
         if city.details[building_type] != [] do
@@ -138,7 +142,7 @@ defmodule MayorGameWeb.CityLive do
       # end
 
       case City.update_town(city_struct, %{treasury: 5000}) do
-        {:ok, updated_town} ->
+        {:ok, _updated_town} ->
           IO.puts("city_reset")
 
         {:error, err} ->
@@ -184,28 +188,8 @@ defmodule MayorGameWeb.CityLive do
     {:noreply, socket |> update_city_by_title()}
   end
 
-  # def handle_event(
-  #       "demolish_building",
-  #       %{"building" => building_to_demolish, "buildable_id" => buildable_id},
-  #       %{assigns: %{city: city}} = socket
-  #     ) do
-  #   # check if user is mayor here?
-  #   buildable_to_demolish_atom = String.to_existing_atom(building_to_demolish)
-
-  #   case City.demolish_buildable(city.details, buildable_to_demolish_atom, buildable_id) do
-  #     {:ok, _updated_details} ->
-  #       IO.puts("demolition success")
-
-  #     {:error, err} ->
-  #       Logger.error(inspect(err))
-  #   end
-
-  #   # this is all ya gotta do to update, baybee
-  #   {:noreply, socket |> update_city_by_title()}
-  # end
-
   def handle_event(
-        "demolish_building_2",
+        "demolish_building",
         %{"building" => building_to_demolish},
         %{assigns: %{city2: city}} = socket
       ) do
@@ -219,6 +203,47 @@ defmodule MayorGameWeb.CityLive do
     case City.demolish_buildable(city.details, buildable_to_demolish_atom, buildable_id) do
       {:ok, _updated_details} ->
         IO.puts("demolition success")
+
+      {:error, err} ->
+        Logger.error(inspect(err))
+    end
+
+    # this is all ya gotta do to update, baybee
+    {:noreply, socket |> update_city_by_title()}
+  end
+
+  def handle_event(
+        "attack_building",
+        %{"building" => building_to_attack},
+        %{assigns: %{city2: city, current_user: current_user}} = socket
+      ) do
+    # check if user is mayor here?
+    building_to_attack_atom = String.to_existing_atom(building_to_attack)
+
+    # sometimes this is empty?
+    buildable_to_id = hd(city.details[building_to_attack_atom])
+    buildable_id = buildable_to_id.buildable.id
+
+    buildable_to_delete =
+      Repo.get_by!(Ecto.assoc(city.details, building_to_attack_atom), id: buildable_id)
+
+    town_struct = Repo.get!(Town, current_user.town.id)
+
+    town_update_changeset =
+      town_struct
+      |> City.Town.changeset(%{
+        missiles: town_struct.missiles - 1
+      })
+
+    attack_building =
+      Ecto.Multi.new()
+      |> Ecto.Multi.update({:update_towns, town_struct.id}, town_update_changeset)
+      |> Ecto.Multi.delete({:delete_buildable, buildable_id}, buildable_to_delete)
+      |> Repo.transaction(timeout: 10_000)
+
+    case attack_building do
+      {:ok, _updated_details} ->
+        IO.puts("attack success")
 
       {:error, err} ->
         Logger.error(inspect(err))
@@ -294,15 +319,12 @@ defmodule MayorGameWeb.CityLive do
       |> MayorGame.CityHelpers.preload_city_check()
 
     # grab whole user struct
-    user = Auth.get_user!(city.user_id)
-
-    # city_with_stats = MayorGame.CityHelpers.calculate_city_stats(city, world)
+    # city_user = Auth.get_user!(city.user_id)
 
     city_with_stats2 =
       MayorGame.CityHelpers.calculate_city_stats(
         city,
         world,
-        cities_count,
         pollution_ceiling
       )
 
@@ -311,7 +333,6 @@ defmodule MayorGameWeb.CityLive do
     # have to have this separate from the actual city because the city might not have some buildables, but they're still purchasable
     # this status is for the whole category
     buildables_with_status = calculate_buildables_statuses(city_with_stats2)
-    # IO.inspect(city_with_stats.details.airports)
 
     # mapped_details =
     #   Map.from_struct(city_with_stats2.details) |> Map.take(Buildable.buildables_list())
@@ -333,6 +354,8 @@ defmodule MayorGameWeb.CityLive do
       end)
       |> Enum.into(%{})
 
+    # IO.inspect(operating_count, pretty: true)
+
     citizen_edu_count =
       Enum.frequencies_by(city_with_stats2.all_citizens, fn x -> x.education end)
 
@@ -350,12 +373,36 @@ defmodule MayorGameWeb.CityLive do
     socket
     |> assign(:season, season)
     |> assign(:buildables, buildables_with_status)
-    |> assign(:user_id, user.id)
-    |> assign(:username, user.nickname)
+    # |> assign(:user_id, city_user.id)
+    # |> assign(:username, city_user.nickname)
     |> assign(:city2, city2_without_citizens)
     |> assign(:operating_count, operating_count)
     |> assign(:citizens_by_edu, citizen_edu_count)
     |> assign(:total_citizens, length(city_with_stats2.all_citizens))
+  end
+
+  # function to mount city
+  defp mount_city_by_title(%{assigns: %{title: title, world: world}} = socket) do
+    # this shouuuuld be fresh…
+    city = City.get_town_by_title!(title)
+
+    # grab whole user struct
+    city_user = Auth.get_user!(city.user_id)
+
+    socket
+    |> assign(:user_id, city_user.id)
+    |> assign(:username, city_user.nickname)
+  end
+
+  # function to update city
+  # maybe i should make one just for "updating" — e.g. only pull details and citizens from DB
+  defp update_current_user(socket) do
+    current_user_updated = socket.assigns.current_user |> Repo.preload([:town])
+
+    # get_town!(town_id)
+
+    socket
+    |> assign(:current_user, current_user_updated)
   end
 
   # this takes the generic buildables map and builds the status (enabled, etc) for each buildable
@@ -490,7 +537,10 @@ defmodule MayorGameWeb.CityLive do
 
   defp assign_auth(socket, session) do
     # add an assign :current_user to the socket
-    socket = assign_new(socket, :current_user, fn -> get_user(socket, session) end)
+    socket =
+      assign_new(socket, :current_user, fn ->
+        get_user(socket, session) |> Repo.preload([:town])
+      end)
 
     if socket.assigns.current_user do
       # if there's a user logged in

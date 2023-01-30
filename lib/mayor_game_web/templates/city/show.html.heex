@@ -34,16 +34,16 @@
 
   <table class="self-start mr-auto align-bottom flex-shrink">
     <tr>
-      <td class="text-purple-600 top_td align-middle">
+      <!-- <td class="text-purple-600 top_td align-middle">
         <div class="flex gap-1 items-center pr-2">
           <img src="/images/pollution.svg" alt="total area" height="12" width="12" class="inline" />
-          Global&nbsp;Pollution
+          Global&thinsp;Pollution
         </div>
-      </td>
+      </td> -->
       <td class="text-purple-600 top_td">
         <div class="flex gap-1 items-center pr-2">
           <img src="/images/pollution.svg" alt="total area" height="12" width="12" class="inline" />
-          City&nbsp;Pollution
+          &thinsp;Pollution
         </div>
       </td>
 
@@ -61,12 +61,12 @@
             height="12"
             width="12"
             class="inline"
-          />&nbsp;Income
+          />&thinsp;Income
         </div>
       </td>
       <td class="top_td text-red-600">
         <div class="flex items-center pr-2">
-          <img src="/images/money-off.svg" alt="total area" height="12" width="12" class="inline" />&nbsp;Expenses
+          <img src="/images/money-off.svg" alt="total area" height="12" width="12" class="inline" />&thinsp;Cost
         </div>
       </td>
       <td class="top_td text-green-600">
@@ -77,32 +77,53 @@
             height="12"
             width="12"
             class="inline"
-          />&nbsp;Money
+          />&thinsp;Money
         </div>
       </td>
       <td class="top_td text-yellow-600">
         <div class="flex items-center pr-2">
-          <img src="/images/energy.svg" alt="total energy" height="12" width="12" class="inline" />&nbsp;Energy
+          <img src="/images/energy.svg" alt="total energy" height="12" width="12" class="inline" />&thinsp;Energy
         </div>
       </td>
       <td class="top_td text-cyan-600">
         <div class="flex gap-1 items-center pr-2">
-          <img src="/images/area.svg" alt="total energy" height="12" width="12" class="inline" />&nbsp;Area
+          <img src="/images/area.svg" alt="total energy" height="12" width="12" class="inline" />&thinsp;Area
         </div>
       </td>
-      <td class="top_td">
-        Fun
+      <td class="top_td text-fuchsia-600">
+        <div class="flex gap-1 items-center pr-2">
+          <img src="/images/fun.svg" alt="total area" height="12" width="12" class="inline" />&thinsp;Fun
+        </div>
       </td>
-      <td class="top_td">
-        Health
+      <td class="top_td text-rose-600">
+        <div class="flex gap-1 items-center pr-2">
+          <img src="/images/health.svg" alt="total health" height="12" width="12" class="inline" />&thinsp;Health
+        </div>
+      </td>
+      <td class="top_td text-slate-600">
+        <div class="flex gap-1 items-center pr-2">
+          <img src="/images/steel.svg" alt="total steel" height="12" width="12" class="inline" />&thinsp;Steel
+        </div>
+      </td>
+      <td class="top_td text-orange-600">
+        <div class="flex gap-1 items-center pr-2">
+          <img src="/images/sulfur.svg" alt="total sulfur" height="12" width="12" class="inline" />&thinsp;Sulfur
+        </div>
+      </td>
+      <td class="top_td text-red-600">
+        <div class="flex gap-1 items-center pr-2">
+          <img src="/images/might.svg" alt="total might" height="12" width="12" class="inline" />&thinsp;Missiles
+        </div>
       </td>
     </tr>
     <tr>
-      <td class="top_td">
+      <!-- <td class="top_td">
         <span class="text-purple-800">
-          <%= Number.Delimit.number_to_delimited(@world.pollution) %>
+          <%= Number.Delimit.number_to_delimited(
+  @world.pollution
+) %>
         </span>
-      </td>
+      </td> -->
       <td class="top_td">
         <span class="text-purple-800">
           <%= Number.Delimit.number_to_delimited(@city2.pollution) %>/day
@@ -143,11 +164,28 @@
           ) %>
         </span>
       </td>
-      <td class="top_td">
+      <td class="top_td text-fuchsia-800">
         <%= Number.Delimit.number_to_delimited(@city2.fun) %>
       </td>
       <td class="top_td">
-        <%= Number.Delimit.number_to_delimited(@city2.health) %>
+        <span class="text-rose-800">
+          <%= Number.Delimit.number_to_delimited(@city2.health) %>
+        </span>
+      </td>
+      <td class="top_td">
+        <span class="text-slate-800">
+          <%= Number.Delimit.number_to_delimited(@city2.steel) %>
+        </span>
+      </td>
+      <td class="top_td">
+        <span class="text-orange-800">
+          <%= Number.Delimit.number_to_delimited(@city2.sulfur) %>
+        </span>
+      </td>
+      <td class="top_td">
+        <span class="text-red-800">
+          <%= Number.Delimit.number_to_delimited(@city2.missiles) %>
+        </span>
       </td>
     </tr>
   </table>
@@ -179,7 +217,9 @@
   <!--Taxes-->
 
   <!--All building details-->
-  <h2 class="text-base pt-2 pb-1">Job levels</h2>
+  <h2 class="text-base pt-2 pb-1">
+    Job levels
+  </h2>
   <div class="flex flex-row flex-wrap gap-x-8 gap-y-4 divide-solid leading-none">
     <%= for {job_level, rate} <- @city2.tax_rates do %>
       <div class="flex flex-col gap-1">
@@ -233,7 +273,7 @@
 
   <%= for {category, buildings} <- @buildables do %>
     <div class="group relative flex-shrink self-start">
-      <h2 class="text-base pt-2 first-letter:uppercase underline underline-offset-4 decoration-neutral-800/40 decoration-dotted	">
+      <h2 class="text-base pt-2 first-letter:uppercase underline underline-offset-4 decoration-neutral-800/40 decoration-dotted	cursor-help">
         <%= category %>
       </h2>
       <div class="tooltip min-w-[240px]">
@@ -246,12 +286,12 @@
           <div class="basis-full md:basis-72 flex flex-row items-center justify-between">
             <!-- building title -->
             <div class="group relative inline-block">
-              <h3 class="text-l first-letter:uppercase decoration-1	underline underline-offset-4 decoration-neutral-800/40 decoration-dotted	">
+              <h3 class="text-l first-letter:uppercase decoration-1	underline underline-offset-4 cursor-help decoration-neutral-800/40 decoration-dotted	">
                 <%= building_type %>
               </h3>
               <div class="tooltip w-40">
                 <%= for {building_stat, value} <- building_stats do %>
-                  <%= if !String.contains?(Atom.to_string(building_stat), ["multipliers", "price", "purchasable", "produces", "requires", "title"]) && value != nil do %>
+                  <%= if !String.contains?(Atom.to_string(building_stat), ["multipliers", "price", "purchasable", "produces", "requires", "enabled","priority", "reason", "title"]) && value != nil do %>
                     <div class="flex items-center gap-1">
                       <div class=""><%= building_stat %></div>
                       <hr class="border-neutral-800 flex-1" />
@@ -320,7 +360,7 @@
                 <% end %>
                 <%= if not Enum.empty?(Map.get(@operating_count, building_type)) do %>
                   <button
-                    phx-click="demolish_building_2"
+                    phx-click="demolish_building"
                     class="btn m-0 rounded-none border border-l-0 border-neutral-800/25 leading-none h-6"
                     phx-throttle="300"
                     phx-value-building={building_type}
@@ -334,6 +374,43 @@
                   >
                     -1
                   </button>
+                <% end %>
+              <% end %>
+              <%= if @current_user && !@is_user_mayor do %>
+                <%= if !Enum.empty?(Map.get(@operating_count, building_type)) && @current_user.town.missiles > 0 do %>
+                  <div class="relative group">
+                    <button
+                      phx-click="attack_building"
+                      class="btn m-0 rounded-none border border-neutral-800/25 leading-none h-6"
+                      phx-throttle="300"
+                      phx-value-building={building_type}
+                    >
+                      <img
+                        src="/images/might-text.svg"
+                        alt="has enough missiles to attack"
+                        height="12"
+                        width="12"
+                      />
+                    </button>
+                    <div class="tooltip w-32">
+                      Attack this building (1 / <%= @current_user.town.missiles %> missiles left)
+                    </div>
+                  </div>
+                <% else %>
+                  <div class="relative group">
+                    <button
+                      disabled
+                      class="opacity-50 m-0 rounded-none border border-neutral-800/25 leading-none h-6"
+                    >
+                      <img
+                        src="/images/might-text.svg"
+                        alt="not enough missiles to attack"
+                        height="12"
+                        width="12"
+                      />
+                    </button>
+                    <div class="tooltip w-32">not enough missiles</div>
+                  </div>
                 <% end %>
               <% end %>
             </div>
@@ -350,7 +427,7 @@
                     <td class={
                       "group cell #{if operation_type == [], do: 'bg-green-100', else: 'bg-red-50'}"
                     }>
-                      <div class="flex flex-row items-center gap-x-1">
+                      <div class="flex flex-row items-center gap-x-1 cursor-help">
                         <p class={
                           "#{if operation_type == [], do: 'text-green-700', else: 'text-red-700'}"
                         }>
@@ -403,7 +480,7 @@
               <%= if Map.has_key?(@operating_count[building_type], []) do %>
                 <!-- area -->
                 <%= if !is_nil(building_stats.produces) && Map.has_key?(building_stats.produces, :area) do %>
-                  <div class=" group relative flex flex-row items-center text-cyan-700 gap-1 w-20">
+                  <div class=" group relative flex flex-row items-center text-cyan-700 gap-1 w-20 cursor-help">
                     <img src="/images/area.svg" alt="total area" height="12" width="12" />
                     <%= Number.Delimit.number_to_delimited(
                       @operating_count[building_type][[]] * building_stats.produces.area
@@ -415,7 +492,7 @@
                 <% end %>
                 <!-- housing -->
                 <%= if !is_nil(building_stats.produces) && Map.has_key?(building_stats.produces, :housing) do %>
-                  <div class=" group relative flex flex-row items-center text-amber-700 gap-1 w-20">
+                  <div class=" group relative flex flex-row items-center text-amber-700 gap-1 w-20 cursor-help">
                     <img src="/images/housing.svg" alt="total area" height="12" width="12" />
                     <%= @operating_count[building_type][[]] * building_stats.produces.housing %>
                     <div class="pointer-events-none group-hover:opacity-100 transition-opacity bg-amber-50 border border-neutral-800 z-10 p-2 absolute top-8 right-0 opacity-0 max-w-sm ">
@@ -425,7 +502,7 @@
                 <% end %>
                 <!-- energy -->
                 <%= if !is_nil(building_stats.produces) && Map.has_key?(building_stats.produces, :energy) do %>
-                  <div class="group relative flex flex-row items-center text-yellow-700 gap-1 w-20">
+                  <div class="group relative flex flex-row items-center text-yellow-700 gap-1 w-20 cursor-help">
                     <img src="/images/energy.svg" alt="total area" height="12" width="12" />
                     <%= Number.Delimit.number_to_delimited(
                       round(@operating_count[building_type][[]] * building_stats.produces.energy)
@@ -440,14 +517,14 @@
                   </div>
                 <% end %>
                 <!-- pollution -->
-                <div class="group relative flex flex-row items-center text-violet-700 gap-1 w-20">
-                  <%= if !is_nil(building_stats.produces) && Map.has_key?(building_stats.produces, :produces) do %>
+                <div class="group relative flex flex-row items-center text-violet-700 gap-1 w-20 cursor-help">
+                  <%= if !is_nil(building_stats.produces) && Map.has_key?(building_stats.produces, :pollution) do %>
                     <img src="/images/pollution.svg" alt="total area" height="12" width="12" />
-                    <%= if building_stats.requires.area != nil do %>
+                    <%= if !is_number(building_stats.produces.pollution) do %>
                       <%= Number.Delimit.number_to_delimited(
                         @operating_count[
                           building_type
-                        ][[]] * building_stats.produces.pollution * round(@total_citizens / 100)
+                        ][[]] * building_stats.produces.pollution.(@total_citizens)
                       ) %>
                     <% else %>
                       <%= Number.Delimit.number_to_delimited(
@@ -458,8 +535,8 @@
                     <% end %>
 
                     <div class="pointer-events-none group-hover:opacity-100 transition-opacity bg-amber-50 border border-neutral-800 z-10 p-2 absolute top-8 right-0 opacity-0 max-w-sm ">
-                      <%= !is_nil(building_stats.requires) && if Map.has_key?(building_stats.requires, :area) do %>
-                        <%= building_stats.produces.pollution %> pollution generated per building per 10 citizens
+                      <%= if !is_number(building_stats.produces.pollution) do %>
+                        <%= round(building_stats.produces.pollution.(100)) %> pollution generated per building per 100 citizens
                       <% else %>
                         <%= Number.Delimit.number_to_delimited(
                           @operating_count[
@@ -471,7 +548,7 @@
                   <% end %>
                 </div>
                 <!-- workers -->
-                <div class=" group relative flex flex-row items-center text-green-700 gap-1 w-20">
+                <div class=" group relative flex flex-row items-center text-green-700 gap-1 w-20 cursor-help">
                   <%= if !is_nil(building_stats.requires) && Map.has_key?(building_stats.requires, :workers) do %>
                     <img
                       src="/images/workers-fulfilled.svg"

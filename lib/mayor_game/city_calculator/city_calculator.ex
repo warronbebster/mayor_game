@@ -84,13 +84,11 @@ defmodule MayorGame.CityCalculator do
         },
         fn city, acc ->
           # result here is a %Town{} with stats calculated
-          # city_with_stats = MayorGame.CityHelpers.calculate_city_stats(city, db_world)
 
           city_with_stats2 =
             CityHelpers.calculate_city_stats(
               city,
               db_world,
-              cities_count,
               pollution_ceiling
             )
 
@@ -698,7 +696,6 @@ defmodule MayorGame.CityCalculator do
         # MULTI KILL REST OF UNHOUSED CITIZENS
 
         elem(unhoused_split, 1)
-        # |> Enum.chunk_every(100)
         |> Enum.chunk_every(100)
         |> Enum.map(fn chunk ->
           Enum.reduce(chunk, Ecto.Multi.new(), fn citizen, multi ->
@@ -733,18 +730,34 @@ defmodule MayorGame.CityCalculator do
         |> Enum.map(fn chunk ->
           Enum.reduce(chunk, Ecto.Multi.new(), fn city, multi ->
             updated_city_treasury =
-              if city.money < 0,
+              if city.treasury + city.income - city.daily_cost < 0,
                 do: 0,
-                else: city.money + city.income - city.daily_cost
+                else: city.treasury + city.income - city.daily_cost
 
             town_struct =
-              struct(Town, city |> Map.put(:pollution, 0) |> Map.put(:citizen_count, 0))
+              struct(
+                Town,
+                city
+                |> Map.put(:pollution, 0)
+                |> Map.put(:citizen_count, 0)
+                |> Map.put(:steel, 0)
+                |> Map.put(:treasury, 0)
+                |> Map.put(:missiles, 0)
+                |> Map.put(:sulfur, 0)
+                |> Map.put(:gold, 0)
+                |> Map.put(:uranium, 0)
+              )
 
             town_update_changeset =
               town_struct
               |> City.Town.changeset(%{
                 treasury: updated_city_treasury,
+                steel: city.steel,
+                missiles: city.missiles,
+                sulfur: city.sulfur,
+                gold: city.gold,
                 pollution: city.pollution,
+                uranium: city.uranium,
                 citizen_count: length(city.all_citizens)
               })
 
@@ -893,12 +906,6 @@ defmodule MayorGame.CityCalculator do
 
     # SEND RESULTS TO CLIENTS
     # send val to liveView process that manages front-end; this basically sends to every client.
-
-    MayorGameWeb.Endpoint.broadcast!(
-      "cityPubSub",
-      "ping",
-      updated_world
-    )
 
     # recurse, do it again
     Process.send_after(self(), :tax, 5000)

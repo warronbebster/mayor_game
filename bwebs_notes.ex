@@ -16,7 +16,7 @@
 
 # balance prices
 # add combat
-# have citizens work at lower level if they want
+# I could have strength just "generate" like "protection" — if the buildings stop working you don't get any anymore
 # fix logs only showing last update
 # :math.atan(2)*2/:math.pi()
 

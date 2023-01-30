@@ -48,7 +48,13 @@ defmodule MayorGame.City.Town do
           details: Details.t(),
           pollution: integer,
           treasury: integer,
-          citizen_count: integer
+          citizen_count: integer,
+          steel: integer,
+          missiles: integer,
+          # protection: integer,
+          sulfur: integer,
+          gold: integer,
+          uranium: integer
         }
 
   schema "cities" do
@@ -59,6 +65,12 @@ defmodule MayorGame.City.Town do
     field :pollution, :integer
     field :treasury, :integer
     field :citizen_count, :integer
+    field :steel, :integer
+    field :missiles, :integer
+    # field :protection, :integer
+    field :sulfur, :integer
+    field :gold, :integer
+    field :uranium, :integer
 
     # this corresponds to an elixir list
     field :logs, {:array, :string}
@@ -71,14 +83,6 @@ defmodule MayorGame.City.Town do
     has_one :details, Details
 
     timestamps()
-
-    # # additional fields
-    # field :total_energy, :integer
-    # field :available_energy, :integer
-    # field :total_area, :integer
-    # field :available_area, :integer
-    # field :available_money, :integer
-    # field :cost, :integer
   end
 
   def regions do
@@ -129,7 +133,13 @@ defmodule MayorGame.City.Town do
       :resources,
       :user_id,
       :logs,
-      :tax_rates
+      :tax_rates,
+      :steel,
+      :missiles,
+      # :protection,
+      :sulfur,
+      :gold,
+      :uranium
     ])
     |> validate_required([:title, :region, :climate, :user_id])
     |> validate_length(:title, min: 1, max: 20)

@@ -1,5 +1,4 @@
 defmodule MayorGame.CityHelpers do
-  alias MayorGame.City
   alias MayorGame.City.{Citizens, Town, Buildable, Details, CombinedBuildable, World}
 
   @doc """
@@ -41,7 +40,7 @@ defmodule MayorGame.CityHelpers do
     },
     ```
   """
-  def calculate_city_stats(%Town{} = city, %World{} = world, cities_count, pollution_ceiling) do
+  def calculate_city_stats(%Town{} = city, %World{} = world, pollution_ceiling) do
     city_preloaded = preload_city_check(city)
 
     season =
@@ -76,6 +75,11 @@ defmodule MayorGame.CityHelpers do
         ordered_buildables,
         %{
           money: city_baked_details.treasury,
+          steel: city_baked_details.steel,
+          uranium: city_baked_details.uranium,
+          gold: city_baked_details.uranium,
+          sulfur: city_baked_details.sulfur,
+          missiles: city_baked_details.missiles,
           income: 0,
           daily_cost: 0,
           citizen_count: citizen_count,
@@ -96,7 +100,7 @@ defmodule MayorGame.CityHelpers do
           buildables: ordered_buildables,
           result_buildables: []
         },
-        fn {buildable_type, buildable_array}, acc ->
+        fn {_buildable_type, buildable_array}, acc ->
           if buildable_array == [] do
             acc
           else
@@ -383,7 +387,7 @@ defmodule MayorGame.CityHelpers do
                else: acc.housed_unemployed_citizens
 
           tax_too_high =
-            :rand.uniform() < :math.pow(city.tax_rates[to_string(citizen.education)], 2)
+            :rand.uniform() < :math.pow(city.tax_rates[to_string(citizen.education)], 3)
 
           housed_employed_staying_citizens =
             if acc.housing_left > 0 && citizen.has_job && citizen.age < 10000 && !tax_too_high &&
@@ -509,7 +513,7 @@ defmodule MayorGame.CityHelpers do
     results =
       if !prod_nil && Map.has_key?(prod_map_mult, :pollution) &&
            !is_integer(prod_map_mult.pollution) do
-        Map.replace(prod_map_mult, :pollution, prod_map_mult.pollution.(citizen_count / 10))
+        Map.replace(prod_map_mult, :pollution, prod_map_mult.pollution.(citizen_count))
       else
         prod_map_mult
       end
@@ -619,7 +623,7 @@ defmodule MayorGame.CityHelpers do
   @doc """
    Returns a list of requirements — empty if all reqs are met, otherwise atoms of reqs not met
   """
-  defp check_reqs(%{} = reqs, %{} = checkee) do
+  def check_reqs(%{} = reqs, %{} = checkee) do
     # reqs_minus_workers = Map.drop(reqs, [:workers])
 
     required_values = Enum.map(reqs, fn {k, v} -> {k, checkee[k] - v} end)
@@ -664,36 +668,10 @@ defmodule MayorGame.CityHelpers do
     end
   end
 
-  defp check_workers_loose(%{} = reqs, citizens) do
-    filtered_citizens = Enum.filter(citizens, fn cit -> cit.education == reqs.workers.level end)
-
-    if length(filtered_citizens) == 0 or hd(filtered_citizens).education < reqs.workers.level do
-      []
-    else
-      count_to_check = min(reqs.workers.count, length(filtered_citizens))
-
-      Enum.reduce_while(0..(count_to_check - 1), [], fn x, acc ->
-        cond do
-          # Enum.at(citizens, x).education > reqs.workers.level ->
-          #   {:cont, [Map.put(Enum.at(citizens, x), :has_job, true) | acc]}
-
-          Enum.at(filtered_citizens, x).education == reqs.workers.level ->
-            {:cont, [Enum.at(filtered_citizens, x) | acc]}
-
-          Enum.at(filtered_citizens, x).education < reqs.workers.level ->
-            {:halt, acc}
-
-            # true ->
-            #   {:cond, acc}
-        end
-      end)
-    end
-  end
-
   @doc """
    Takes (buildable, citizen_count, region, season, acc), returns acc with production rendered
   """
-  defp update_generated_acc(buildable, citizen_count, region, season, acc) do
+  def update_generated_acc(buildable, citizen_count, region, season, acc) do
     # eventually could optimize this just to run the calc once and then multiply by total enabled buildables
 
     generated =
@@ -710,7 +688,7 @@ defmodule MayorGame.CityHelpers do
     end)
   end
 
-  def recurse_merge(k, v1, v2) do
+  def recurse_merge(_k, v1, v2) do
     if is_number(v1) && is_number(v2) do
       round(v1 + v2)
     else

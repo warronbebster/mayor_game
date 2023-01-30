@@ -86,6 +86,7 @@ defmodule MayorGame.City.Buildable do
       work: %{
         retail_shops: buildables_flat().retail_shops,
         factories: buildables_flat().factories,
+        mines: buildables_flat().mines,
         office_buildings: buildables_flat().office_buildings
       },
       entertainment: %{
@@ -95,6 +96,10 @@ defmodule MayorGame.City.Buildable do
       health: %{
         hospitals: buildables_flat().hospitals,
         doctor_offices: buildables_flat().doctor_offices
+      },
+      combat: %{
+        air_bases: buildables_flat().air_bases,
+        defense_bases: buildables_flat().defense_bases
       }
     }
   end
@@ -141,6 +146,7 @@ defmodule MayorGame.City.Buildable do
       work: [
         retail_shops: buildables_flat().retail_shops,
         factories: buildables_flat().factories,
+        mines: buildables_flat().mines,
         office_buildings: buildables_flat().office_buildings
       ],
       entertainment: [
@@ -150,6 +156,10 @@ defmodule MayorGame.City.Buildable do
       health: [
         hospitals: buildables_flat().hospitals,
         doctor_offices: buildables_flat().doctor_offices
+      ],
+      combat: [
+        air_bases: buildables_flat().air_bases,
+        defense_bases: buildables_flat().defense_bases
       ]
     ]
   end
@@ -273,7 +283,7 @@ defmodule MayorGame.City.Buildable do
           sprawl: 10,
           area: 10,
           # todo: some of these could be functions?
-          pollution: &(&1 * 0.1)
+          pollution: &(&1 * 0.01)
         }
       },
       # highways ————————————————————————————————————
@@ -293,7 +303,7 @@ defmodule MayorGame.City.Buildable do
           sprawl: 20,
           area: 20,
           # todo: some of these could be functions?
-          pollution: &(&1 * 0.2)
+          pollution: &(&1 * 0.02)
         }
       },
       # Airports —————————————————————————————————————
@@ -311,7 +321,7 @@ defmodule MayorGame.City.Buildable do
           health: -2,
           area: 10,
           # todo: some of these could be functions?
-          pollution: &(&1 * 0.2)
+          pollution: &(&1 * 0.03)
         }
       },
       # Bus Lines ————————————————————————————————————
@@ -722,7 +732,29 @@ defmodule MayorGame.City.Buildable do
         },
         produces: %{
           health: -3,
-          pollution: 1
+          pollution: 1,
+          steel: 10
+        }
+      },
+      # MINES ————————————————————————————————————
+      mines: %BuildableMetadata{
+        priority: 1,
+        title: :mines,
+        price: 5000,
+        purchasable: true,
+        purchasable_reason: "valid",
+        requires: %{
+          money: 500,
+          energy: 1900,
+          area: 25,
+          workers: %{count: 20, level: 0}
+        },
+        produces: %{
+          health: -5,
+          pollution: 10,
+          sulfur: 1
+          # uranium: 1,
+          # gold: 1,
         }
       },
       # OFFICE BUILDINGS ————————————————————————————————————
@@ -806,6 +838,42 @@ defmodule MayorGame.City.Buildable do
         produces: %{
           health: 15
         }
+      },
+      # AIR BASES ————————————————————————————————————
+      air_bases: %BuildableMetadata{
+        priority: 1,
+        title: :air_bases,
+        price: 100_000_000,
+        purchasable: true,
+        purchasable_reason: "valid",
+        requires: %{
+          money: 5000,
+          steel: 50,
+          sulfur: 5,
+          energy: 5000,
+          area: 500,
+          workers: %{count: 10, level: 0}
+        },
+        produces: %{
+          missiles: 1
+        }
+      },
+      # AIR BASES ————————————————————————————————————
+      defense_bases: %BuildableMetadata{
+        priority: 1,
+        title: :defense_bases,
+        price: 50_000_000,
+        purchasable: true,
+        purchasable_reason: "valid",
+        requires: %{
+          money: 2000,
+          energy: 2500,
+          area: 100,
+          workers: %{count: 10, level: 2}
+        },
+        produces: %{
+          protection: 1
+        }
       }
     }
   end
@@ -844,7 +912,8 @@ defmodule MayorGame.City.Buildable do
       get_requirements_keys([:money, :area]),
       get_requirements_keys([:energy, :area, :money]),
       get_requirements_keys([:energy, :area, :workers]),
-      get_requirements_keys([:energy, :area, :money, :workers])
+      get_requirements_keys([:energy, :area, :money, :workers]),
+      get_requirements_keys([:energy, :area, :money, :workers, :steel, :sulfur])
     ]
   end
 

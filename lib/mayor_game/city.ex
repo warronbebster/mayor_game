@@ -78,15 +78,21 @@ defmodule MayorGame.City do
     # TODO: remove this when creating cities from token
     resourceMap = %{resources: Map.new(MayorGame.City.Town.resources(), fn x -> {x, 0} end)}
 
-    intro_attrs = %{treasury: 5000, pollution: 0, citizen_count: 0}
+    intro_attrs = %{
+      treasury: 5000,
+      pollution: 0,
+      citizen_count: 0,
+      missiles: 0,
+      protection: 0,
+      gold: 0,
+      sulfur: 0,
+      uranium: 0
+    }
 
     # make sure keys are atoms, helps with input from phoenix forms
     attrsWithAtomKeys =
       Map.new(attrs, fn {k, v} ->
-        {
-          if(!is_atom(k), do: String.to_existing_atom(k), else: k),
-          v
-        }
+        {if(!is_atom(k), do: String.to_existing_atom(k), else: k), v}
       end)
       |> Map.merge(intro_attrs)
 
