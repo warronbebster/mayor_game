@@ -1,4 +1,4 @@
-defmodule MayorGame.Repo.Migrations.AddProtectionToCities do
+defmodule MayorGame.Repo.Migrations.AddSulfurGoldUranium do
   use Ecto.Migration
 
   def change do
