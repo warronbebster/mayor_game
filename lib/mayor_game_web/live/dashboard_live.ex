@@ -9,7 +9,6 @@ defmodule MayorGameWeb.DashboardLive do
   # alias MayorGame.City.Town
   alias MayorGameWeb.DashboardView
   # alias MayorGame.Repo
-  # alias Ecto.Changeset
 
   def render(assigns) do
     DashboardView.render("show.html", assigns)
@@ -51,10 +50,6 @@ defmodule MayorGameWeb.DashboardLive do
     end
   end
 
-  # def handle_info(%{event: "ping", :payload _world, "current_user" => current_user}, socket) do
-  #   {:noreply, socket |> assign_cities()}
-  # end
-
   # this handles different events
   def handle_event(
         "add_citizen",
@@ -90,15 +85,6 @@ defmodule MayorGameWeb.DashboardLive do
     cities = City.list_cities() |> Enum.sort_by(& &1.id)
     world = MayorGame.Repo.get!(MayorGame.City.World, 1)
 
-    # cities_preloaded =
-    #   Enum.map(cities, fn city ->
-    #     MayorGame.Repo.preload(city, :details)
-    #   end)
-
-    # should move pollution out of details
-    # and maybe citizen count?
-
-    # MayorGame.Repo.preload(city, details: [:pollution])
     socket
     |> assign(:cities, cities)
     |> assign(:world, world)
