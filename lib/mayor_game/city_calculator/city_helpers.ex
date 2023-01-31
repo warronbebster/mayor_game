@@ -80,6 +80,7 @@ defmodule MayorGame.CityHelpers do
           gold: city_baked_details.uranium,
           sulfur: city_baked_details.sulfur,
           missiles: city_baked_details.missiles,
+          shields: city_baked_details.shields,
           income: 0,
           daily_cost: 0,
           citizen_count: citizen_count,
@@ -387,7 +388,7 @@ defmodule MayorGame.CityHelpers do
                else: acc.housed_unemployed_citizens
 
           tax_too_high =
-            :rand.uniform() < :math.pow(city.tax_rates[to_string(citizen.education)], 3)
+            :rand.uniform() < :math.pow(city.tax_rates[to_string(citizen.education)], 4)
 
           housed_employed_staying_citizens =
             if acc.housing_left > 0 && citizen.has_job && citizen.age < 10000 && !tax_too_high &&

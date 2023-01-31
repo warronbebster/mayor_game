@@ -83,7 +83,7 @@ defmodule MayorGame.City do
       pollution: 0,
       citizen_count: 0,
       missiles: 0,
-      protection: 0,
+      shields: 0,
       gold: 0,
       sulfur: 0,
       uranium: 0

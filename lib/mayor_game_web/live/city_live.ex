@@ -235,22 +235,69 @@ defmodule MayorGameWeb.CityLive do
         missiles: town_struct.missiles - 1
       })
 
-    attack_building =
-      Ecto.Multi.new()
-      |> Ecto.Multi.update({:update_towns, town_struct.id}, town_update_changeset)
-      |> Ecto.Multi.delete({:delete_buildable, buildable_id}, buildable_to_delete)
-      |> Repo.transaction(timeout: 10_000)
+    if city.shields <= 0 && town_struct.missiles > 0 do
+      attack_building =
+        Ecto.Multi.new()
+        |> Ecto.Multi.update({:update_towns, town_struct.id}, town_update_changeset)
+        |> Ecto.Multi.delete({:delete_buildable, buildable_id}, buildable_to_delete)
+        |> Repo.transaction(timeout: 10_000)
 
-    case attack_building do
-      {:ok, _updated_details} ->
-        IO.puts("attack success")
+      case attack_building do
+        {:ok, _updated_details} ->
+          IO.puts("attack success")
 
-      {:error, err} ->
-        Logger.error(inspect(err))
+        {:error, err} ->
+          Logger.error(inspect(err))
+      end
     end
 
     # this is all ya gotta do to update, baybee
-    {:noreply, socket |> update_city_by_title()}
+    {:noreply, socket |> update_city_by_title() |> update_current_user()}
+  end
+
+  def handle_event(
+        "attack_shields",
+        _value,
+        %{assigns: %{city2: city, current_user: current_user}} = socket
+      ) do
+    # check if user is mayor here?
+
+    attacking_town_struct = Repo.get!(Town, current_user.town.id)
+    shielded_town_struct = struct(City.Town, city)
+
+    town_update_changeset =
+      attacking_town_struct
+      |> City.Town.changeset(%{
+        missiles: attacking_town_struct.missiles - 1
+      })
+
+    shields_update_changeset =
+      shielded_town_struct
+      |> City.Town.changeset(%{
+        shields: city.shields - 1
+      })
+
+    if city.shields > 0 && attacking_town_struct.missiles > 0 do
+      attack_shields =
+        Ecto.Multi.new()
+        |> Ecto.Multi.update(
+          {:update_attacking_town, attacking_town_struct.id},
+          town_update_changeset
+        )
+        |> Ecto.Multi.update({:update_attacked_town, city.id}, shields_update_changeset)
+        |> Repo.transaction(timeout: 10_000)
+
+      case attack_shields do
+        {:ok, _updated_details} ->
+          IO.puts("attack success")
+
+        {:error, err} ->
+          Logger.error(inspect(err))
+      end
+    end
+
+    # this is all ya gotta do to update, baybee
+    {:noreply, socket |> update_city_by_title() |> update_current_user()}
   end
 
   def handle_event(
@@ -399,10 +446,11 @@ defmodule MayorGameWeb.CityLive do
   defp update_current_user(socket) do
     current_user_updated = socket.assigns.current_user |> Repo.preload([:town])
 
-    # get_town!(town_id)
+    updated_town = City.get_town!(current_user_updated.town.id)
+    # IO.inspect(Map.put(current_user_updated, :town, updated_town))
 
     socket
-    |> assign(:current_user, current_user_updated)
+    |> assign(:current_user, Map.put(current_user_updated, :town, updated_town))
   end
 
   # this takes the generic buildables map and builds the status (enabled, etc) for each buildable

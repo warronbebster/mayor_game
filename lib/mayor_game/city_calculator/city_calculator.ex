@@ -587,12 +587,6 @@ defmodule MayorGame.CityCalculator do
           Enum.shuffle(leftovers.unhoused_citizens)
           |> Enum.split(length(housing_slots_2_expanded))
 
-        # could reduce for each citizen
-        # acc is slots (e.g. housing_slots_2_expanded)
-        # calc score per city
-        # get max
-        # id is good
-        # filter slots_after_housing_migrations by
         slots_filtered =
           Enum.filter(slots_after_housing_migrations, fn {_k, v} -> v > 0 end) |> Enum.into(%{})
 
@@ -734,35 +728,57 @@ defmodule MayorGame.CityCalculator do
                 do: 0,
                 else: city.treasury + city.income - city.daily_cost
 
+            # check citizens length and spawn citizens?
+
             town_struct =
               struct(
                 Town,
                 city
                 |> Map.put(:pollution, 0)
-                |> Map.put(:citizen_count, 0)
+                |> Map.put(:citizen_count, -1)
                 |> Map.put(:steel, 0)
                 |> Map.put(:treasury, 0)
                 |> Map.put(:missiles, 0)
                 |> Map.put(:sulfur, 0)
                 |> Map.put(:gold, 0)
                 |> Map.put(:uranium, 0)
+                |> Map.put(:shields, 0)
               )
 
-            town_update_changeset =
-              town_struct
-              |> City.Town.changeset(%{
-                treasury: updated_city_treasury,
-                steel: city.steel,
-                missiles: city.missiles,
-                sulfur: city.sulfur,
-                gold: city.gold,
-                pollution: city.pollution,
-                uranium: city.uranium,
-                citizen_count: length(city.all_citizens)
-              })
+            updated_attrs = %{
+              treasury: updated_city_treasury,
+              steel: city.steel,
+              missiles: city.missiles,
+              sulfur: city.sulfur,
+              gold: city.gold,
+              pollution: city.pollution,
+              uranium: city.uranium,
+              shields: city.shields,
+              citizen_count: city.citizen_count
+            }
 
-            # Ecto.Multi.update(multi, {:update_details, city.id}, details_update_changeset)
-            Ecto.Multi.update(multi, {:update_towns, city.id}, town_update_changeset)
+            if :rand.uniform() > city.citizen_count + 1 / 10 do
+              town_update_changeset =
+                City.Town.changeset(
+                  town_struct,
+                  Map.put(updated_attrs, :log, update_logs("A citizen has moved here", city.logs))
+                )
+
+              create_citizen_changeset =
+                City.create_citizens_changeset(%{
+                  town_id: city.id,
+                  age: 0,
+                  education: 0,
+                  has_job: false,
+                  last_moved: db_world.day
+                })
+
+              Ecto.Multi.insert(multi, {:add_citizen, city.id + 1}, create_citizen_changeset)
+              |> Ecto.Multi.update({:update_towns, city.id}, town_update_changeset)
+            else
+              town_update_changeset = City.Town.changeset(town_struct, updated_attrs)
+              Ecto.Multi.update(multi, {:update_towns, city.id}, town_update_changeset)
+            end
           end)
           |> Repo.transaction(timeout: 20_000)
         end)
@@ -887,7 +903,7 @@ defmodule MayorGame.CityCalculator do
           |> Repo.transaction(timeout: 20_000)
         end)
       end,
-      timeout: 240_000
+      timeout: 600_000
     )
 
     updated_pollution =
@@ -906,6 +922,11 @@ defmodule MayorGame.CityCalculator do
 
     # SEND RESULTS TO CLIENTS
     # send val to liveView process that manages front-end; this basically sends to every client.
+    MayorGameWeb.Endpoint.broadcast!(
+      "cityPubSub",
+      "ping",
+      updated_world
+    )
 
     # recurse, do it again
     Process.send_after(self(), :tax, 5000)

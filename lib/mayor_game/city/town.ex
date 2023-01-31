@@ -51,7 +51,7 @@ defmodule MayorGame.City.Town do
           citizen_count: integer,
           steel: integer,
           missiles: integer,
-          # protection: integer,
+          shields: integer,
           sulfur: integer,
           gold: integer,
           uranium: integer
@@ -67,7 +67,7 @@ defmodule MayorGame.City.Town do
     field :citizen_count, :integer
     field :steel, :integer
     field :missiles, :integer
-    # field :protection, :integer
+    field :shields, :integer
     field :sulfur, :integer
     field :gold, :integer
     field :uranium, :integer
@@ -136,7 +136,7 @@ defmodule MayorGame.City.Town do
       :tax_rates,
       :steel,
       :missiles,
-      # :protection,
+      :shields,
       :sulfur,
       :gold,
       :uranium

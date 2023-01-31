@@ -115,6 +115,11 @@
           <img src="/images/might.svg" alt="total might" height="12" width="12" class="inline" />&thinsp;Missiles
         </div>
       </td>
+      <td class="top_td text-blue-600">
+        <div class="flex gap-1 items-center pr-2">
+          <img src="/images/shields.svg" alt="total might" height="12" width="12" class="inline" />&thinsp;Shields
+        </div>
+      </td>
     </tr>
     <tr>
       <!-- <td class="top_td">
@@ -187,6 +192,11 @@
           <%= Number.Delimit.number_to_delimited(@city2.missiles) %>
         </span>
       </td>
+      <td class="top_td">
+        <span class="text-blue-800">
+          <%= Number.Delimit.number_to_delimited(@city2.shields) %>
+        </span>
+      </td>
     </tr>
   </table>
 
@@ -215,7 +225,6 @@
 
 <div class="px-4 my-0 flex flex-col relative h-full overflow-y-scroll ">
   <!--Taxes-->
-
   <!--All building details-->
   <h2 class="text-base pt-2 pb-1">
     Job levels
@@ -270,6 +279,55 @@
       </div>
     <% end %>
   </div>
+
+  <%= if !@is_user_mayor > 0 do %>
+    <div class="py-4 flex flex-row items-center gap-2">
+      <%= if @city2.shields > 0 && @current_user.town.missiles > 0 do %>
+        <button
+          class="btn m-0 rounded-none border border-neutral-800/25 leading-none h-6"
+          phx-click="attack_shields"
+          phx-throttle="200"
+        >
+          <img
+            src="/images/might-text.svg"
+            alt="has enough missiles to attack"
+            height="12"
+            width="12"
+            class="inline"
+          /> Attack city shields (1/<%= @current_user.town.missiles %> missiles left)
+        </button>
+        <div class="flex gap-1 flex-row items-center text-blue-600">
+          <img src="/images/shields.svg" alt="total might" height="12" width="12" class="inline" />
+          <span><%= @city2.shields %></span>
+        </div>
+      <% else %>
+        <%= if @city2.shields <= 0 do %>
+          <button
+            disabled
+            class="opacity-50 btn m-0 rounded-none border border-neutral-800/25 leading-none h-6"
+            phx-throttle="200"
+          >
+            City has no shields
+          </button>
+        <% else %>
+          <button
+            disabled
+            class="opacity-50 btn m-0 rounded-none border border-neutral-800/25 leading-none h-6"
+            phx-throttle="200"
+          >
+            <img
+              src="/images/might-text.svg"
+              alt="has enough missiles to attack"
+              height="12"
+              width="12"
+              class="inline"
+            /> Attack city shields |
+          </button>
+          <%= @city2.shields %>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
 
   <%= for {category, buildings} <- @buildables do %>
     <div class="group relative flex-shrink self-start">
@@ -378,24 +436,43 @@
               <% end %>
               <%= if @current_user && !@is_user_mayor do %>
                 <%= if !Enum.empty?(Map.get(@operating_count, building_type)) && @current_user.town.missiles > 0 do %>
-                  <div class="relative group">
-                    <button
-                      phx-click="attack_building"
-                      class="btn m-0 rounded-none border border-neutral-800/25 leading-none h-6"
-                      phx-throttle="300"
-                      phx-value-building={building_type}
-                    >
-                      <img
-                        src="/images/might-text.svg"
-                        alt="has enough missiles to attack"
-                        height="12"
-                        width="12"
-                      />
-                    </button>
-                    <div class="tooltip w-32">
-                      Attack this building (1 / <%= @current_user.town.missiles %> missiles left)
+                  <%= if @city2.shields == 0 do %>
+                    <div class="relative group">
+                      <button
+                        phx-click="attack_building"
+                        class="btn m-0 rounded-none border border-neutral-800/25 leading-none h-6"
+                        phx-throttle="300"
+                        phx-value-building={building_type}
+                      >
+                        <img
+                          src="/images/might-text.svg"
+                          alt="has enough missiles to attack"
+                          height="12"
+                          width="12"
+                        />
+                      </button>
+                      <div class="tooltip w-32">
+                        Attack this building (1/<%= @current_user.town.missiles %> missiles left)
+                      </div>
                     </div>
-                  </div>
+                  <% else %>
+                    <div class="relative group">
+                      <button
+                        disabled
+                        class="opacity-50 m-0 rounded-none border border-neutral-800/25 leading-none h-6"
+                      >
+                        <img
+                          src="/images/might-text.svg"
+                          alt="still has shields"
+                          height="12"
+                          width="12"
+                        />
+                      </button>
+                      <div class="tooltip w-32">
+                        You need to take down the city's shields first
+                      </div>
+                    </div>
+                  <% end %>
                 <% else %>
                   <div class="relative group">
                     <button

@@ -15,10 +15,12 @@
 # fly volumes list --app mayorgame-db gets volumes from the db project thingy
 
 # balance prices
-# add combat
-# I could have strength just "generate" like "protection" — if the buildings stop working you don't get any anymore
 # fix logs only showing last update
+# add different defense weights for each buildable
+# add shields count
+# maybe make pubsub for each city when it's opened to subscribe to updates?
 # :math.atan(2)*2/:math.pi()
+# add random spawning in small cities
 
 
 

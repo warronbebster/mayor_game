@@ -852,7 +852,7 @@ defmodule MayorGame.City.Buildable do
           sulfur: 5,
           energy: 5000,
           area: 500,
-          workers: %{count: 10, level: 0}
+          workers: %{count: 10, level: 5}
         },
         produces: %{
           missiles: 1
@@ -872,7 +872,7 @@ defmodule MayorGame.City.Buildable do
           workers: %{count: 10, level: 2}
         },
         produces: %{
-          protection: 1
+          shields: 1
         }
       }
     }
