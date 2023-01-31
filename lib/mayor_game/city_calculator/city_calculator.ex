@@ -753,7 +753,7 @@ defmodule MayorGame.CityCalculator do
               gold: city.gold,
               pollution: city.pollution,
               uranium: city.uranium,
-              shields: city.shields,
+              shields: city.uranium,
               citizen_count: city.citizen_count
             }
 
@@ -761,8 +761,14 @@ defmodule MayorGame.CityCalculator do
               town_update_changeset =
                 City.Town.changeset(
                   town_struct,
-                  Map.put(updated_attrs, :log, update_logs("A citizen has moved here", city.logs))
+                  Map.put(
+                    updated_attrs,
+                    :logs,
+                    update_logs("A citizen has moved here", city.logs)
+                  )
                 )
+
+              IO.inspect(town_update_changeset)
 
               create_citizen_changeset =
                 City.create_citizens_changeset(%{
@@ -941,7 +947,7 @@ defmodule MayorGame.CityCalculator do
     # updated_log = [log | existing_logs]
 
     if length(updated_log) > 50 do
-      updated_log |> Enum.reverse() |> tl() |> Enum.reverse()
+      updated_log |> Enum.take(50)
     else
       updated_log
     end
