@@ -443,14 +443,22 @@ defmodule MayorGameWeb.CityLive do
 
   # function to update city
   # maybe i should make one just for "updating" — e.g. only pull details and citizens from DB
+  defp update_current_user(%{assigns: %{current_user: current_user}} = socket) do
+    if !is_nil(current_user) do
+      current_user_updated = current_user |> Repo.preload([:town])
+
+      updated_town = City.get_town!(current_user_updated.town.id)
+
+      socket
+      |> assign(:current_user, Map.put(current_user_updated, :town, updated_town))
+    else
+      socket
+    end
+  end
+
+  # maybe i should make one just for "updating" — e.g. only pull details and citizens from DB
   defp update_current_user(socket) do
-    current_user_updated = socket.assigns.current_user |> Repo.preload([:town])
-
-    updated_town = City.get_town!(current_user_updated.town.id)
-    # IO.inspect(Map.put(current_user_updated, :town, updated_town))
-
     socket
-    |> assign(:current_user, Map.put(current_user_updated, :town, updated_town))
   end
 
   # this takes the generic buildables map and builds the status (enabled, etc) for each buildable
