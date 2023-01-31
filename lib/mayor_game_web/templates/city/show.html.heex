@@ -280,7 +280,7 @@
     <% end %>
   </div>
 
-  <%= if !@is_user_mayor > 0 do %>
+  <%= if !@is_user_mayor && !is_nil(@current_user) do %>
     <div class="py-4 flex flex-row items-center gap-2">
       <%= if @city2.shields > 0 && @current_user.town.missiles > 0 do %>
         <button
