@@ -434,7 +434,7 @@
                   </button>
                 <% end %>
               <% end %>
-              <%= if @current_user && !@is_user_mayor do %>
+              <%= if @current_user && !is_nil(@current_user.town) && !@is_user_mayor do %>
                 <%= if !Enum.empty?(Map.get(@operating_count, building_type)) && @current_user.town.missiles > 0 do %>
                   <%= if @city2.shields == 0 do %>
                     <div class="relative group">
