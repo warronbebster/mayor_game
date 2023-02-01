@@ -43,3 +43,5 @@ npm-debug.log
 priv/repo/.DS_Store
 priv/.DS_Store
 priv/static/.DS_Store
+priv/repo/migrations/20230131034418_add_protection_to_cities.exs
+priv/repo/migrations/20230129185639_add_sulfur_gold_uranium.exs
