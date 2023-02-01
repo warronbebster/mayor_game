@@ -5,6 +5,7 @@ defmodule MayorGameWeb.CityLive do
   use Phoenix.LiveView, container: {:div, class: "liveview-container"}
   use Phoenix.HTML
 
+  alias MayorGame.CityCalculator
   alias MayorGame.{Auth, City, Repo}
   alias MayorGame.City.Town
   # import MayorGame.CityHelpers
@@ -229,16 +230,26 @@ defmodule MayorGameWeb.CityLive do
 
     town_struct = Repo.get!(Town, current_user.town.id)
 
-    town_update_changeset =
+    log = town_struct.title <> " attacked one of your " <> building_to_attack
+    limited_log = CityCalculator.update_logs(log, city.logs)
+
+    attacking_town_changeset =
       town_struct
       |> City.Town.changeset(%{
         missiles: town_struct.missiles - 1
       })
 
+    attacked_town_changeset =
+      city
+      |> City.Town.changeset(%{
+        logs: limited_log
+      })
+
     if city.shields <= 0 && town_struct.missiles > 0 do
       attack_building =
         Ecto.Multi.new()
-        |> Ecto.Multi.update({:update_towns, town_struct.id}, town_update_changeset)
+        |> Ecto.Multi.update({:update_attacking_town, town_struct.id}, attacking_town_changeset)
+        |> Ecto.Multi.update({:update_attacked_town, city.id}, attacked_town_changeset)
         |> Ecto.Multi.delete({:delete_buildable, buildable_id}, buildable_to_delete)
         |> Repo.transaction(timeout: 10_000)
 
@@ -265,6 +276,9 @@ defmodule MayorGameWeb.CityLive do
     attacking_town_struct = Repo.get!(Town, current_user.town.id)
     shielded_town_struct = struct(City.Town, city)
 
+    log = attacking_town_struct.title <> " attacked your shields"
+    limited_log = CityCalculator.update_logs(log, city.logs)
+
     town_update_changeset =
       attacking_town_struct
       |> City.Town.changeset(%{
@@ -274,7 +288,8 @@ defmodule MayorGameWeb.CityLive do
     shields_update_changeset =
       shielded_town_struct
       |> City.Town.changeset(%{
-        shields: city.shields - 1
+        shields: city.shields - 1,
+        logs: limited_log
       })
 
     if city.shields > 0 && attacking_town_struct.missiles > 0 do

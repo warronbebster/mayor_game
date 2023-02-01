@@ -768,8 +768,6 @@ defmodule MayorGame.CityCalculator do
                   )
                 )
 
-              IO.inspect(town_update_changeset)
-
               create_citizen_changeset =
                 City.create_citizens_changeset(%{
                   town_id: city.id,

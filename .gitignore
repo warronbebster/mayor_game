@@ -40,3 +40,4 @@ npm-debug.log
 /.env
 /.envrc
 /config/config.exs
+priv/repo/.DS_Store
