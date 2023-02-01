@@ -76,6 +76,7 @@ MayorGame.City.update_world(world, %{pollution: 1000000})
 to connect to DB:
 `fly postgres connect -a mayorgame-db`
 `select name, setting from pg_settings where name like '%wal_size%' or name like '%checkpoint%' order by name;`
+`\c mayorgame;`
 
 edit db config:
 `fly ssh console -a mayorgame-db`
