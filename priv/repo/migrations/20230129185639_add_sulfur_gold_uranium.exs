@@ -1,4 +1,4 @@
-defmodule MayorGame.Repo.Migrations.TrySteelAgain do
+defmodule MayorGame.Repo.Migrations.AddSulfurGoldUraniumSteel do
   use Ecto.Migration
 
   def change do
