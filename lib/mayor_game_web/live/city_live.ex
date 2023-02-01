@@ -462,10 +462,15 @@ defmodule MayorGameWeb.CityLive do
     if !is_nil(current_user) do
       current_user_updated = current_user |> Repo.preload([:town])
 
-      updated_town = City.get_town!(current_user_updated.town.id)
+      if is_nil(current_user_updated.town) do
+        socket
+        |> assign(:current_user, current_user_updated)
+      else
+        updated_town = City.get_town!(current_user_updated.town.id)
 
-      socket
-      |> assign(:current_user, Map.put(current_user_updated, :town, updated_town))
+        socket
+        |> assign(:current_user, Map.put(current_user_updated, :town, updated_town))
+      end
     else
       socket
     end
