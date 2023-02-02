@@ -77,7 +77,7 @@ defmodule MayorGame.CityHelpers do
           money: city_baked_details.treasury,
           steel: city_baked_details.steel,
           uranium: city_baked_details.uranium,
-          gold: city_baked_details.uranium,
+          gold: city_baked_details.gold,
           sulfur: city_baked_details.sulfur,
           missiles: city_baked_details.missiles,
           shields: city_baked_details.shields,

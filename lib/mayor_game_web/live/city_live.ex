@@ -228,28 +228,35 @@ defmodule MayorGameWeb.CityLive do
     buildable_to_delete =
       Repo.get_by!(Ecto.assoc(city.details, building_to_attack_atom), id: buildable_id)
 
-    town_struct = Repo.get!(Town, current_user.town.id)
+    attacking_town_struct = Repo.get!(Town, current_user.town.id)
+    attacked_town_struct = struct(City.Town, city)
 
-    log = town_struct.title <> " attacked one of your " <> building_to_attack
+    log = attacking_town_struct.title <> " attacked one of your " <> building_to_attack
     limited_log = CityCalculator.update_logs(log, city.logs)
 
     attacking_town_changeset =
-      town_struct
+      attacking_town_struct
       |> City.Town.changeset(%{
-        missiles: town_struct.missiles - 1
+        missiles: attacking_town_struct.missiles - 1
       })
 
     attacked_town_changeset =
-      city
+      attacked_town_struct
       |> City.Town.changeset(%{
         logs: limited_log
       })
 
-    if city.shields <= 0 && town_struct.missiles > 0 do
+    if city.shields <= 0 && attacking_town_struct.missiles > 0 do
       attack_building =
         Ecto.Multi.new()
-        |> Ecto.Multi.update({:update_attacking_town, town_struct.id}, attacking_town_changeset)
-        |> Ecto.Multi.update({:update_attacked_town, city.id}, attacked_town_changeset)
+        |> Ecto.Multi.update(
+          {:update_attacking_town, attacking_town_struct.id},
+          attacking_town_changeset
+        )
+        |> Ecto.Multi.update(
+          {:update_attacked_town, attacked_town_struct.id},
+          attacked_town_changeset
+        )
         |> Ecto.Multi.delete({:delete_buildable, buildable_id}, buildable_to_delete)
         |> Repo.transaction(timeout: 10_000)
 
@@ -326,8 +333,6 @@ defmodule MayorGameWeb.CityLive do
     if updated_value_float != :error do
       updated_value_constrained =
         elem(updated_value_float, 0) |> max(0.0) |> min(1.0) |> Float.round(2)
-
-      IO.puts(to_string(updated_value_constrained))
 
       # check if it's below 0 or above 1 or not a number
 
@@ -415,8 +420,6 @@ defmodule MayorGameWeb.CityLive do
         {category, Enum.frequencies_by(list, fn x -> x.metadata.reason end)}
       end)
       |> Enum.into(%{})
-
-    # IO.inspect(operating_count, pretty: true)
 
     citizen_edu_count =
       Enum.frequencies_by(city_with_stats2.all_citizens, fn x -> x.education end)
