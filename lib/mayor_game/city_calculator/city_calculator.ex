@@ -195,6 +195,23 @@ defmodule MayorGame.CityCalculator do
       end)
       |> Map.new(fn city -> {city.id, city} end)
 
+    slotted_cities_by_id_flow =
+      Map.keys(leftovers.housing_slots)
+      |> Flow.from_enumerable(max_demand: 100)
+      |> Flow.map(fn city ->
+        normalize_city(
+          city,
+          leftovers.fun_max,
+          leftovers.health_max,
+          leftovers.pollution_max,
+          leftovers.sprawl_max
+        )
+      end)
+      |> Enum.to_list()
+      |> Map.new(fn city -> {city.id, city} end)
+
+    IO.inspect(slotted_cities_by_id_flow == slotted_cities_by_id, label: 'flow match?')
+
     # shape: %{
     # city_id: {normalized_city, slots},
     # city_id: {normalized_city, slots}
@@ -723,10 +740,12 @@ defmodule MayorGame.CityCalculator do
         |> Enum.chunk_every(100)
         |> Enum.map(fn chunk ->
           Enum.reduce(chunk, Ecto.Multi.new(), fn city, multi ->
+            updated_treasury = City.get_town!(city.id).treasury
+
             updated_city_treasury =
-              if city.treasury + city.income - city.daily_cost < 0,
+              if updated_treasury + city.income - city.daily_cost < 0,
                 do: 0,
-                else: city.treasury + city.income - city.daily_cost
+                else: updated_treasury + city.income - city.daily_cost
 
             # check citizens length and spawn citizens?
 
@@ -734,6 +753,7 @@ defmodule MayorGame.CityCalculator do
               struct(
                 Town,
                 city
+                |> Map.put(:treasury, 0)
                 |> Map.put(:pollution, 0)
                 |> Map.put(:citizen_count, -1)
                 |> Map.put(:steel, 0)
@@ -753,7 +773,7 @@ defmodule MayorGame.CityCalculator do
               gold: city.gold,
               pollution: city.pollution,
               uranium: city.uranium,
-              shields: city.uranium,
+              shields: city.shields,
               citizen_count: city.citizen_count
             }
 
@@ -979,26 +999,26 @@ defmodule MayorGame.CityCalculator do
       normalized_city.health_normalized * citizen_preferences["health"]
   end
 
-  def compute_destination([row1 | _] = matrix) do
-    Enum.reduce(0..(length(matrix) - 1), %{matrix: matrix, output: []}, fn row_index, acc ->
-      # find best one
-      row = Enum.at(acc.matrix, row_index)
+  # def compute_destination([row1 | _] = matrix) do
+  #   Enum.reduce(0..(length(matrix) - 1), %{matrix: matrix, output: []}, fn row_index, acc ->
+  #     # find best one
+  #     row = Enum.at(acc.matrix, row_index)
 
-      max = Enum.max(row)
-      chosen_index = Enum.find_index(row, fn x -> x == max end)
-      # chosen_index = Enum.find(row, fn x -> x == max end)
+  #     max = Enum.max(row)
+  #     chosen_index = Enum.find_index(row, fn x -> x == max end)
+  #     # chosen_index = Enum.find(row, fn x -> x == max end)
 
-      updated_matrix =
-        Enum.map(acc.matrix, fn row ->
-          List.replace_at(row, chosen_index, -1)
-        end)
+  #     updated_matrix =
+  #       Enum.map(acc.matrix, fn row ->
+  #         List.replace_at(row, chosen_index, -1)
+  #       end)
 
-      %{
-        matrix: updated_matrix,
-        output: [{row_index, chosen_index} | acc.output]
-      }
-    end)
+  #     %{
+  #       matrix: updated_matrix,
+  #       output: [{row_index, chosen_index} | acc.output]
+  #     }
+  #   end)
 
-    # end with list [{index, best option}]
-  end
+  #   # end with list [{index, best option}]
+  # end
 end

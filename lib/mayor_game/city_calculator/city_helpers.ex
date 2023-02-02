@@ -584,12 +584,23 @@ defmodule MayorGame.CityHelpers do
           | price: updated_price
         }
 
-        # I Could add a jobs count here to each buildable
+        # NO FLOW
+        # combined_array =
+        #   Enum.map(buildable_array, fn x ->
+        #     CombinedBuildable.combine_and_apply_upgrades(x, buildable_metadata_price_updated)
+        #   end)
 
         combined_array =
-          Enum.map(buildable_array, fn x ->
-            CombinedBuildable.combine_and_apply_upgrades(x, buildable_metadata_price_updated)
+          buildable_array
+          |> Flow.from_enumerable(max_demand: 200)
+          |> Flow.map(fn x ->
+            # %CombinedBuildable.combine_and_apply_upgrades(x, buildable_metadata_price_updated)
+            %CombinedBuildable{
+              buildable: x,
+              metadata: buildable_metadata_price_updated
+            }
           end)
+          |> Enum.to_list()
 
         %{details_struct_acc | buildable_list_item => combined_array}
       else

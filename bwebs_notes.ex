@@ -16,8 +16,8 @@
 
 # balance prices
 # fix logs only showing last update
-# add different defense weights for each buildable
-# add shields count
+# flow some more calculations for optimization
+# add different defense weights for each buildable?
 # maybe make pubsub for each city when it's opened to subscribe to updates?
 # :math.atan(2)*2/:math.pi()
 # add random spawning in small cities
