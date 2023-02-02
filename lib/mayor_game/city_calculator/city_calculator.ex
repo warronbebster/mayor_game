@@ -740,12 +740,12 @@ defmodule MayorGame.CityCalculator do
         |> Enum.chunk_every(100)
         |> Enum.map(fn chunk ->
           Enum.reduce(chunk, Ecto.Multi.new(), fn city, multi ->
-            updated_treasury = City.get_town!(city.id).treasury
+            # updated_treasury = City.get_town!(city.id).treasury
 
             updated_city_treasury =
-              if updated_treasury + city.income - city.daily_cost < 0,
+              if city.treasury + city.income - city.daily_cost < 0,
                 do: 0,
-                else: updated_treasury + city.income - city.daily_cost
+                else: city.treasury + city.income - city.daily_cost
 
             # check citizens length and spawn citizens?
 
@@ -753,7 +753,6 @@ defmodule MayorGame.CityCalculator do
               struct(
                 Town,
                 city
-                |> Map.put(:treasury, 0)
                 |> Map.put(:pollution, 0)
                 |> Map.put(:citizen_count, -1)
                 |> Map.put(:steel, 0)
