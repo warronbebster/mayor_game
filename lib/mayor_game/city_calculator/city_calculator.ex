@@ -183,23 +183,9 @@ defmodule MayorGame.CityCalculator do
       |> Map.new(fn city -> {city.id, city} end)
 
     # NO FLOW
-    # slotted_cities_by_id =
-    #   Map.keys(leftovers.housing_slots)
-    #   |> Enum.map(fn city ->
-    #     normalize_city(
-    #       city,
-    #       leftovers.fun_max,
-    #       leftovers.health_max,
-    #       leftovers.pollution_max,
-    #       leftovers.sprawl_max
-    #     )
-    #   end)
-    #   |> Map.new(fn city -> {city.id, city} end)
-
     slotted_cities_by_id =
       Map.keys(leftovers.housing_slots)
-      |> Flow.from_enumerable(max_demand: 100)
-      |> Flow.map(fn city ->
+      |> Enum.map(fn city ->
         normalize_city(
           city,
           leftovers.fun_max,
@@ -208,8 +194,22 @@ defmodule MayorGame.CityCalculator do
           leftovers.sprawl_max
         )
       end)
-      |> Enum.to_list()
       |> Map.new(fn city -> {city.id, city} end)
+
+    # slotted_cities_by_id =
+    #   Map.keys(leftovers.housing_slots)
+    #   |> Flow.from_enumerable(max_demand: 100)
+    #   |> Flow.map(fn city ->
+    #     normalize_city(
+    #       city,
+    #       leftovers.fun_max,
+    #       leftovers.health_max,
+    #       leftovers.pollution_max,
+    #       leftovers.sprawl_max
+    #     )
+    #   end)
+    #   |> Enum.to_list()
+    #   |> Map.new(fn city -> {city.id, city} end)
 
     # shape: %{
     # city_id: {normalized_city, slots},
