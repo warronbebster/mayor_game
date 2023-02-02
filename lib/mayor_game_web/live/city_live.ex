@@ -507,7 +507,7 @@ defmodule MayorGameWeb.CityLive do
   defp calculate_buildable_status(buildable, city_with_stats, buildable_count) do
     updated_price = MayorGame.CityHelpers.building_price(buildable.price, buildable_count)
 
-    if city_with_stats.money > updated_price do
+    if city_with_stats.treasury > updated_price do
       if is_nil(buildable.requires) do
         %{buildable | purchasable: true, purchasable_reason: "valid", price: updated_price}
       else
