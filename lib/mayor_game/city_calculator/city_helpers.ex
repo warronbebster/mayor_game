@@ -398,7 +398,7 @@ defmodule MayorGame.CityHelpers do
 
           housed_employed_looking_citizens =
             if acc.housing_left > 0 && citizen.has_job && citizen.education > 0 &&
-                 citizen.age < 10000 && tax_too_high &&
+                 citizen.age < 10000 && tax_too_high && citizen.last_moved < world.day - 10 &&
                  !pollution_death,
                do: [citizen | acc.housed_employed_looking_citizens],
                else: acc.housed_employed_looking_citizens
