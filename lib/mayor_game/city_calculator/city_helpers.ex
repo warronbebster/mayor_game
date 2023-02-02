@@ -674,8 +674,8 @@ defmodule MayorGame.CityHelpers do
           Enum.at(filtered_citizens, x).education < reqs.workers.level ->
             {:halt, acc}
 
-            # true ->
-            #   {:cond, acc}
+          true ->
+            {:cond, acc}
         end
       end)
     end
