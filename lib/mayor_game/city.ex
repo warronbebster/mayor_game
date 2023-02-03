@@ -542,7 +542,6 @@ defmodule MayorGame.City do
       Repo.get_by!(Ecto.assoc(city.details, buildable_to_demolish), id: buildable_id)
 
     refund_price = Buildable.buildables_flat()[buildable_to_demolish].price
-    IO.inspect(refund_price)
 
     from(t in Town,
       where: [id: ^city.id],
