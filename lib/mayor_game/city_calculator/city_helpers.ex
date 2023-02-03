@@ -363,10 +363,11 @@ defmodule MayorGame.CityHelpers do
     # ________________________________________________________________________
     # Iterate through citizens
     # ________________________________________________________________________
+    pollution_reached = world.pollution > pollution_ceiling
+    time_to_learn = rem(world.day, 365) == 0
+    
     after_citizen_checks =
       all_citizens
-      # Flow.from_enumerable(all_citizens)
-      # |> Flow.partition()
       |> Enum.reduce(
         # fn ->
         %{
@@ -378,100 +379,42 @@ defmodule MayorGame.CityHelpers do
           housed_employed_looking_citizens: [],
           unhoused_citizens: [],
           polluted_citizens: [],
-          old_citizens: [],
+          old_citizens: Enum.filter(all_citizens, &(&1.age > 10000)),
           reproducing_citizens: []
         },
         # end,
-        fn citizen, acc ->
-          pollution_death = world.pollution > pollution_ceiling and :rand.uniform() > 0.95
-
-          housed_unemployed_citizens =
-            if acc.housing_left > 0 && !citizen.has_job && citizen.age < 10000 &&
-                 !pollution_death,
-               do: [citizen | acc.housed_unemployed_citizens],
-               else: acc.housed_unemployed_citizens
-
-          tax_too_high =
-            :rand.uniform() <
-              :math.pow(city.tax_rates[to_string(citizen.education)], 6 - citizen.education)
-
-          housed_employed_staying_citizens =
-            if acc.housing_left > 0 && citizen.has_job && citizen.age < 10000 && !tax_too_high &&
-                 !pollution_death,
-               do: [citizen | acc.housed_employed_staying_citizens],
-               else: acc.housed_employed_staying_citizens
-
-          housed_employed_looking_citizens =
-            if acc.housing_left > 0 && citizen.has_job &&
-                 citizen.age < 10000 && tax_too_high && citizen.last_moved < world.day - 10 &&
-                 !pollution_death,
-               do: [citizen | acc.housed_employed_looking_citizens],
-               else: acc.housed_employed_looking_citizens
-
-          housing_left =
-            if acc.housing_left > 0 and !pollution_death,
-              do: acc.housing_left - 1,
-              else: acc.housing_left
-
-          # unhoused_citizens =
-          #   if acc.housing_left > 0, do: tl(acc.unhoused_citizens), else: acc.unhoused_citizens
-          #   # could revert this to add only citizens < 10000 and not dying from pollution
-
-          unhoused_citizens =
-            if acc.housing_left <= 0 && citizen.age < 10000 && !pollution_death,
-              do: [citizen | acc.unhoused_citizens],
-              else: acc.unhoused_citizens
-
-          polluted_citizens =
-            if pollution_death && citizen.age < 10000,
-              do: [citizen | acc.polluted_citizens],
-              else: acc.polluted_citizens
-
-          old_citizens =
-            if citizen.age > 10000,
-              do: [citizen | acc.old_citizens],
-              else: acc.old_citizens
-
-          # spawn new citizens if conditions are right; age, random, housing exists
-          reproducing_citizens =
-            if citizen.age > 500 and citizen.age < 2000 and
-                 :rand.uniform(length(city_baked_details.citizens) + 1) == 1,
-               do: [citizen | acc.reproducing_citizens],
-               else: acc.reproducing_citizens
-
-          will_citizen_learn =
-            rem(world.day, 365) == 0 && citizen.education < 5 &&
-              citizen.education < 5 &&
-              acc.education_left[citizen.education + 1] > 0 && citizen.age < 10000 &&
-              !pollution_death
-
-          education_left =
-            if will_citizen_learn do
-              Map.update!(acc.education_left, citizen.education + 1, &(&1 - 1))
-            else
-              acc.education_left
-            end
-
-          educated_citizens =
-            if will_citizen_learn do
-              Map.update!(acc.educated_citizens, citizen.education + 1, &[citizen | &1])
-            else
-              acc.educated_citizens
-            end
-
-          # return
-          %{
-            housing_left: housing_left,
-            education_left: education_left,
-            educated_citizens: educated_citizens,
-            housed_unemployed_citizens: housed_unemployed_citizens,
-            unhoused_citizens: unhoused_citizens,
-            housed_employed_staying_citizens: housed_employed_staying_citizens,
-            housed_employed_looking_citizens: housed_employed_looking_citizens,
-            polluted_citizens: polluted_citizens,
-            old_citizens: old_citizens,
-            reproducing_citizens: reproducing_citizens
-          }
+        if !pollution_reached do # so much we can skip if we don't do this check every time
+          fn citizen, acc ->
+            tax_too_high = :rand.uniform() < :math.pow(city.tax_rates[to_string(citizen.education)], 6 - citizen.education)
+            employable = acc.housing_left > 0 && citizen.has_job && citizen.age < 10000
+            will_citizen_learn = time_to_learn && citizen.education < 5 && acc.education_left[citizen.education + 1] > 0 && citizen.age < 10000
+            
+            acc |> Map.update!(housing_left:, if acc.housing_left > 0 do &(&1 - 1) else identity end)
+            |> Map.update!(education_left:, if will_citizen_learn do Map.update!(acc.education_left, citizen.education + 1,  &(&1 - 1)) else identity end)
+            |> Map.update!(educated_citizens:, if will_citizen_learn do Map.update!(acc.educated_citizens, citizen.education + 1, &[citizen | &1]) else identity end)
+            |> Map.update!(housed_unemployed_citizens:, if acc.housing_left > 0 && !citizen.has_job && citizen.age < 10000 do &[citizen | &1] else identity end)
+            |> Map.update!(unhoused_citizens:, if acc.housing_left <= 0 && citizen.age < 10000 do &[citizen | &1] else identity end)
+            |> Map.update!(housed_employed_staying_citizens:, if employable && !tax_too_high do &[citizen | &1] else identity end)
+            |> Map.update!(housed_employed_looking_citizens:, if employable && tax_too_high && citizen.last_moved < world.day - 10 do &[citizen | &1] else identity end)
+            |> Map.update!(reproducing_citizens:, if citizen.age > 500 and citizen.age < 2000 and :rand.uniform(length(city_baked_details.citizens) + 1) == 1 do &[citizen | &1] else identity end)
+          end
+        else
+          fn citizen, acc ->
+            pollution_death = pollution_reached and :rand.uniform() > 0.95
+            tax_too_high = :rand.uniform() < :math.pow(city.tax_rates[to_string(citizen.education)], 6 - citizen.education)
+            employable = acc.housing_left > 0 && citizen.has_job && citizen.age < 10000
+            will_citizen_learn = time_to_learn && citizen.education < 5 && acc.education_left[citizen.education + 1] > 0 && citizen.age < 10000 && !pollution_death
+            
+            acc |> Map.update!(housing_left:, if acc.housing_left > 0 and !pollution_death do &(&1 - 1) else identity end)
+            |> Map.update!(education_left:, if will_citizen_learn do Map.update!(acc.education_left, citizen.education + 1,  &(&1 - 1)) else identity end)
+            |> Map.update!(educated_citizens:, if will_citizen_learn do Map.update!(acc.educated_citizens, citizen.education + 1, &[citizen | &1]) else identity end)
+            |> Map.update!(housed_unemployed_citizens:, if acc.housing_left > 0 && !citizen.has_job && citizen.age < 10000 && !pollution_death do &[citizen | &1] else identity end)
+            |> Map.update!(unhoused_citizens:, if acc.housing_left <= 0 && citizen.age < 10000 && !pollution_death do &[citizen | &1] else identity end)
+            |> Map.update!(housed_employed_staying_citizens:, if employable && !tax_too_high && !pollution_death do &[citizen | &1] else identity end)
+            |> Map.update!(housed_employed_looking_citizens:, if employable && tax_too_high && citizen.last_moved < world.day - 10 && !pollution_death do &[citizen | &1] else identity end)
+            |> Map.update!(polluted_citizens:, if pollution_death && citizen.age < 10000 do &[citizen | &1] else identity end)
+            |> Map.update!(reproducing_citizens:, if citizen.age > 500 and citizen.age < 2000 and :rand.uniform(length(city_baked_details.citizens) + 1) == 1 do &[citizen | &1] else identity end)
+          end
         end
       )
       |> Enum.into(%{})
