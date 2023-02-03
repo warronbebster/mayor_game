@@ -117,11 +117,12 @@ defmodule MayorGameWeb.CityLive do
       ) do
     if socket.assigns.current_user.id == city.user_id do
       # reset = Map.new(Buildable.buildables_list(), fn x -> {x, []} end)
+      city_struct = struct(City.Town, city)
 
       for building_type <- Buildable.buildables_list() do
         if city.details[building_type] != [] do
           for buildable <- city.details[building_type] do
-            case City.demolish_buildable(city.details, building_type, buildable.buildable.id) do
+            case City.demolish_buildable(city_struct, building_type, buildable.buildable.id) do
               {:ok, _updated_details} ->
                 IO.puts("demolition success")
 
