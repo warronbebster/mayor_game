@@ -201,7 +201,9 @@ defmodule MayorGameWeb.CityLive do
     buildable_to_id = hd(city.details[String.to_existing_atom(building_to_demolish)])
     buildable_id = buildable_to_id.buildable.id
 
-    case City.demolish_buildable(city.details, buildable_to_demolish_atom, buildable_id) do
+    city_struct = struct(City.Town, city)
+
+    case City.demolish_buildable(city_struct, buildable_to_demolish_atom, buildable_id) do
       {:ok, _updated_details} ->
         IO.puts("demolition success")
 

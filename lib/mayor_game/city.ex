@@ -114,7 +114,7 @@ defmodule MayorGame.City do
 
         # and create a detail in the DB, tied to this city
         case create_details(details) do
-          {:ok, created_details} ->
+          {:ok, _created_details} ->
             # return the city created
             {:ok, created_city}
 
@@ -537,9 +537,22 @@ defmodule MayorGame.City do
       {:ok, %Details{}}
 
   """
-  def demolish_buildable(%Details{} = details, buildable_to_demolish, buildable_id) do
+  def demolish_buildable(%Town{} = city, buildable_to_demolish, buildable_id) do
     buildable_to_delete =
-      Repo.get_by!(Ecto.assoc(details, buildable_to_demolish), id: buildable_id)
+      Repo.get_by!(Ecto.assoc(city.details, buildable_to_demolish), id: buildable_id)
+
+    refund_price = Buildable.buildables_flat()[buildable_to_demolish].price
+    IO.inspect(refund_price)
+
+    from(t in Town, where: [id: ^city.id], update: [inc: [treasury: ^refund_price]])
+    |> Repo.update_all([])
+
+    # city_attrs = %{treasury: city.treasury + refund_price}
+    # refund_city =
+    #   city
+    #   |> Town.changeset(city_attrs)
+    #   |> Ecto.Changeset.validate_number(:treasury, greater_than: 0)
+    #   |> Repo.update()
 
     Repo.delete(buildable_to_delete)
   end
