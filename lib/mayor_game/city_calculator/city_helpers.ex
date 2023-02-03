@@ -188,6 +188,10 @@ defmodule MayorGame.CityHelpers do
                           |> Map.put(
                             :daily_cost,
                             acc2.daily_cost + money_required
+                          )
+                          |> Map.put(
+                            :money,
+                            acc2.money + tax_earned - money_required
                           ),
                         else: acc2
 
