@@ -557,7 +557,7 @@ defmodule MayorGame.CityCalculator do
                 multi
               end
             end)
-            |> Repo.transaction(timeout: 20_000)
+            |> Repo.transaction(timeout: 23_000)
           end)
         end
 
@@ -700,7 +700,7 @@ defmodule MayorGame.CityCalculator do
                 multi
               end
             end)
-            |> Repo.transaction(timeout: 20_000)
+            |> Repo.transaction(timeout: 22_000)
           end)
         end
 
@@ -830,7 +830,7 @@ defmodule MayorGame.CityCalculator do
               Ecto.Multi.update(multi, {:update_towns, city.id}, town_update_changeset)
             end
           end)
-          |> Repo.transaction(timeout: 20_000)
+          |> Repo.transaction(timeout: 21_000)
         end)
 
         # MULTI CHANGESET EDUCATE ——————————————————————————————————————————————————— DB UPDATE
@@ -858,30 +858,7 @@ defmodule MayorGame.CityCalculator do
               where: t.id in ^town_ids,
               update: [push: [logs: ^"A citizen graduated to level #{level}"]]
             )
-            |> Repo.update_all(timeout: 20_000)
-
-            # Enum.reduce(chunk, Ecto.Multi.new(), fn citizen, multi ->
-            #   town = struct(Town, all_cities_by_id[citizen.town_id])
-
-            #   log =
-            #     CityHelpers.describe_citizen(citizen) <>
-            #       " has graduated to level " <> to_string(level)
-
-            #   # if list is longer than 50, remove last item
-            #   limited_log = update_logs(log, town.logs)
-
-            #   citizen_changeset =
-            #     citizen
-            #     |> City.Citizens.changeset(%{education: level})
-
-            #   town_changeset =
-            #     town
-            #     |> City.Town.changeset(%{logs: limited_log})
-
-            #   Ecto.Multi.update(multi, {:update_citizen_edu, citizen.id}, citizen_changeset)
-            #   |> Ecto.Multi.update({:update_town_log, citizen.id}, town_changeset)
-            # end)
-            # |> Repo.transaction(timeout: 20_000)
+            |> Repo.update_all([])
           end)
         end)
 
