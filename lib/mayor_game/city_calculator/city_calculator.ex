@@ -852,7 +852,7 @@ defmodule MayorGame.CityCalculator do
             town_ids = Enum.map(chunk, fn citizen -> citizen.town_id end)
 
             from(c in Citizens, where: c.id in ^citizen_ids)
-            |> Repo.update_all(inc: [education: 1]
+            |> Repo.update_all(inc: [education: 1])
 
             from(t in Town,
               where: t.id in ^town_ids,
