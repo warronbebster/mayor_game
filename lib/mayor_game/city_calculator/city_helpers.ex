@@ -413,10 +413,6 @@ defmodule MayorGame.CityHelpers do
               do: acc.housing_left - 1,
               else: acc.housing_left
 
-          # unhoused_citizens =
-          #   if acc.housing_left > 0, do: tl(acc.unhoused_citizens), else: acc.unhoused_citizens
-          #   # could revert this to add only citizens < 10000 and not dying from pollution
-
           unhoused_citizens =
             if acc.housing_left <= 0 && citizen.age < 10000 && !pollution_death,
               do: [citizen | acc.unhoused_citizens],
