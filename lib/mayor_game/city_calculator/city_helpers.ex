@@ -388,7 +388,8 @@ defmodule MayorGame.CityHelpers do
                else: acc.housed_unemployed_citizens
 
           tax_too_high =
-            :rand.uniform() < :math.pow(city.tax_rates[to_string(citizen.education)], 4)
+            :rand.uniform() <
+              :math.pow(city.tax_rates[to_string(citizen.education)], 6 - citizen.education)
 
           housed_employed_staying_citizens =
             if acc.housing_left > 0 && citizen.has_job && citizen.age < 10000 && !tax_too_high &&
@@ -397,7 +398,7 @@ defmodule MayorGame.CityHelpers do
                else: acc.housed_employed_staying_citizens
 
           housed_employed_looking_citizens =
-            if acc.housing_left > 0 && citizen.has_job && citizen.education > 0 &&
+            if acc.housing_left > 0 && citizen.has_job &&
                  citizen.age < 10000 && tax_too_high && citizen.last_moved < world.day - 10 &&
                  !pollution_death,
                do: [citizen | acc.housed_employed_looking_citizens],
@@ -483,6 +484,26 @@ defmodule MayorGame.CityHelpers do
   """
   def describe_citizen(%Citizens{} = citizen) do
     "#{to_string(citizen.name)} (edu lvl #{citizen.education})"
+  end
+
+  @doc """
+  returns a preference map for citizens
+  """
+  def create_citizen_preference_map() do
+    random_preferences =
+      Enum.reduce(Citizens.decision_factors(), %{preference_map: %{}, room_taken: 0}, fn x, acc ->
+        value =
+          if x == List.last(Citizens.decision_factors()),
+            do: (1 - acc.room_taken) |> Float.round(2),
+            else: (:rand.uniform() * (1 - acc.room_taken)) |> Float.round(2)
+
+        %{
+          preference_map: Map.put(acc.preference_map, to_string(x), value),
+          room_taken: acc.room_taken + value
+        }
+      end)
+
+    random_preferences.preference_map
   end
 
   def render_production(production_map, multiplier_map, citizen_count, region, season) do
