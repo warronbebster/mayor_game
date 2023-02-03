@@ -544,7 +544,10 @@ defmodule MayorGame.City do
     refund_price = Buildable.buildables_flat()[buildable_to_demolish].price
     IO.inspect(refund_price)
 
-    from(t in Town, where: [id: ^city.id], update: [inc: [treasury: ^refund_price]])
+    from(t in Town,
+      where: [id: ^city.id],
+      update: [inc: [treasury: ^refund_price]]
+    )
     |> Repo.update_all([])
 
     # city_attrs = %{treasury: city.treasury + refund_price}

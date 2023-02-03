@@ -405,7 +405,7 @@ defmodule MayorGame.CityCalculator do
                   multi
                 end
               end)
-              |> Repo.transaction(timeout: 20_000)
+              |> Repo.transaction([])
             end)
           end
         end)
@@ -852,13 +852,13 @@ defmodule MayorGame.CityCalculator do
             town_ids = Enum.map(chunk, fn citizen -> citizen.town_id end)
 
             from(c in Citizens, where: c.id in ^citizen_ids)
-            |> Repo.update_all(inc: [education: 1])
+            |> Repo.update_all(inc: [education: 1], timeout: 20_000)
 
             from(t in Town,
               where: t.id in ^town_ids,
               update: [push: [logs: ^"A citizen graduated to level #{level}"]]
             )
-            |> Repo.update_all([])
+            |> Repo.update_all(timeout: 20_000)
 
             # Enum.reduce(chunk, Ecto.Multi.new(), fn citizen, multi ->
             #   town = struct(Town, all_cities_by_id[citizen.town_id])
