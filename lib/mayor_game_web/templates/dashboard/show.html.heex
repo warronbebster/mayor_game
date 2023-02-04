@@ -1,5 +1,6 @@
 <div class="p-4 flex flex-row flex-wrap gap-x-8 gap-y-4">
   <section class="basis-full max-w-sm">
+    <div class="pb-6">
     <div class="flex flex-row items-center space-x-1 max-w-sm">
       <span>Year</span>
       <hr class="border-neutral-300 flex-1" />
@@ -10,6 +11,13 @@
       <hr class="border-neutral-300 flex-1" />
       <span><%= rem(@world.day, 365) %></span>
     </div>
+        <div class="flex flex-row items-center space-x-1 max-w-sm">
+      <span>Cities</span>
+      <hr class="border-neutral-300 flex-1" />
+      <span >
+        <%= Number.Delimit.number_to_delimited(length(@cities)) %>
+      </span>
+    </div>
     <div class="flex flex-row items-center space-x-1 max-w-sm">
       <span>Global pollution</span>
       <hr class="border-neutral-300 flex-1" />
@@ -18,7 +26,7 @@
         <%= Number.Delimit.number_to_delimited(@world.pollution) %>
       </span>
     </div>
-    <div class="flex flex-row items-center space-x-1 max-w-sm pb-4">
+    <div class="flex flex-row items-center space-x-1 max-w-sm">
       <span>Pollution ceiling</span>
       <hr class="border-neutral-300 flex-1" />
       <img src="/images/pollution.svg" alt="pollution logo" height="12" width="12" class="inline" />
@@ -26,11 +34,13 @@
         <%= Number.Delimit.number_to_delimited(10_000_000_000) %>
       </span>
     </div>
+    </div>
+
 
     <article>
       <%= if assigns[:current_user] && @current_user.town != nil do %>
         My City
-        <div class="flex flex-row items-center space-x-1 pb-4">
+        <div class="flex flex-row items-center space-x-1 pb-6">
           <span class="hover:underline">
             <%= link(@current_user.town.title,
               to: Routes.city_path(@socket, MayorGameWeb.CityLive, @current_user.town.title)
