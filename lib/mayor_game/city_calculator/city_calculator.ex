@@ -767,7 +767,9 @@ defmodule MayorGame.CityCalculator do
           Enum.reduce(chunk, Ecto.Multi.new(), fn city, multi ->
             # updated_city = City.get_town!(city.id)
             newest_treasury = all_cities_recent_by_id[city.id].treasury
-            newest_shields = min(city.shields, all_cities_recent_by_id[city.id].shields)
+            # newest_shields = min(city.shields, all_cities_recent_by_id[city.id].shields)
+            newest_shields =
+              city.shields - city.loaded_shields + all_cities_recent_by_id[city.id].shields
 
             updated_city_treasury =
               if newest_treasury + city.income - city.daily_cost < 0,

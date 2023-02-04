@@ -84,8 +84,7 @@
   font-weight: 300;
   font-stretch: normal;
   font-style: normal;
-  src: url("/fonts/ttf/iosevka-etoile-light.ttf") format("truetype"),
-    url("/fonts/woff2/iosevka-etoile-light.woff2") format("woff2");
+  src: url("/fonts/ttf/iosevka-etoile-light.ttf") format("truetype"), url("/fonts/woff2/iosevka-etoile-light.woff2") format("woff2");
 }
 
 /*
@@ -106,8 +105,7 @@
   font-weight: 400;
   font-stretch: normal;
   font-style: normal;
-  src: url("/fonts/ttf/iosevka-etoile-regular.ttf") format("truetype"),
-    url("/fonts/woff2/iosevka-etoile-regular.woff2") format("woff2");
+  src: url("/fonts/ttf/iosevka-etoile-regular.ttf") format("truetype"), url("/fonts/woff2/iosevka-etoile-regular.woff2") format("woff2");
 }
 /*
 @font-face {
@@ -127,8 +125,7 @@
   font-weight: 500;
   font-stretch: normal;
   font-style: normal;
-  src: url("/fonts/ttf/iosevka-etoile-medium.ttf") format("truetype"),
-    url("/fonts/woff2/iosevka-etoile-medium.woff2") format("woff2");
+  src: url("/fonts/ttf/iosevka-etoile-medium.ttf") format("truetype"), url("/fonts/woff2/iosevka-etoile-medium.woff2") format("woff2");
 }
 
 /*
@@ -149,8 +146,7 @@
   font-weight: 600;
   font-stretch: normal;
   font-style: normal;
-  src: url("/fonts/ttf/iosevka-etoile-semibold.ttf") format("truetype"),
-    url("/fonts/woff2/iosevka-etoile-semibold.woff2") format("woff2");
+  src: url("/fonts/ttf/iosevka-etoile-semibold.ttf") format("truetype"), url("/fonts/woff2/iosevka-etoile-semibold.woff2") format("woff2");
 }
 
 /*
@@ -284,6 +280,10 @@
 */
 
 /* This file is for your main application css. */
+
+:root {
+  --tooltop-width: 150px;
+}
 
 @tailwind base;
 

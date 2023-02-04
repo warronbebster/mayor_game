@@ -80,6 +80,7 @@ defmodule MayorGame.CityHelpers do
           gold: city_baked_details.gold,
           sulfur: city_baked_details.sulfur,
           missiles: city_baked_details.missiles,
+          loaded_shields: city_baked_details.shields,
           shields: city_baked_details.shields,
           income: 0,
           daily_cost: 0,

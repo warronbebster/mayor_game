@@ -11,6 +11,8 @@ defmodule MayorGameWeb.CityLive do
   # import MayorGame.CityHelpers
   alias MayorGame.City.Buildable
 
+  import Ecto.Query, warn: false
+
   alias MayorGameWeb.CityView
 
   alias Pow.Store.CredentialsCache
@@ -295,12 +297,17 @@ defmodule MayorGameWeb.CityLive do
         missiles: attacking_town_struct.missiles - 1
       })
 
+    IO.inspect(city.shields)
+
     shields_update_changeset =
       shielded_town_struct
       |> City.Town.changeset(%{
-        shields: city.shields - 1,
+        # shields: city.shields - 1,
         logs: limited_log
       })
+
+    from(t in Town, where: [id: ^city.id])
+    |> Repo.update_all(inc: [shields: -1])
 
     if city.shields > 0 && attacking_town_struct.missiles > 0 do
       attack_shields =
