@@ -26,6 +26,7 @@
             <li class="hover:underline mr-auto"><a href="<%= Routes.static_path(@conn, "/") %>">fragile.city</a></li>
 
             <%= if Pow.Plug.current_user(@conn) do %>
+              <li class="hover:underline"><a href="https://www.notion.so/fragile-city/Intro-25d07a8aade7459a9b2a93429170b29b7" target="_blank">Rules/FAQ</a></li>
               <li class="hover:underline"><a href="https://discord.gg/mnVnRdV3k7" target="_blank">Discord</a></li>
               <li class="hover:underline"><%= link "Profile", to: Routes.pow_registration_path(@conn, :edit) %></li>
               <li class="hover:underline"><%= link "Sign out", to: Routes.pow_session_path(@conn, :delete), method: :delete %></li>
