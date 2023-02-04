@@ -411,14 +411,14 @@ defmodule MayorGame.CityHelpers do
           |> Map.update!(
             :education_left,
             if(will_citizen_learn,
-              do: Map.update!(acc.education_left, citizen.education + 1, &(&1 - 1)),
+              do: fn current -> Map.update!(current, citizen.education + 1, &(&1 - 1)) end,
               else: & &1
             )
           )
           |> Map.update!(
             :educated_citizens,
             if(will_citizen_learn,
-              do: Map.update!(acc.educated_citizens, citizen.education + 1, &[citizen | &1]),
+              do: fn current -> Map.update!(current, citizen.education + 1, &[citizen | &1]) end,
               else: & &1
             )
           )
