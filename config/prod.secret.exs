@@ -16,6 +16,7 @@ config :mayor_game, MayorGame.Repo,
   url: database_url,
   pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10"),
   queue_target: 20_000,
+  queue_interval: 30_000,
 
 secret_key_base =
   System.get_env("SECRET_KEY_BASE") ||

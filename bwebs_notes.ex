@@ -17,11 +17,9 @@
 # balance prices
 # fix logs only showing last update
 # flow some more calculations for optimization
-# turn buildables into a count, not a bunch of indivudal structs
+# turn buildables into ints, not a bunch of indivudal structs
 # add different defense weights for each buildable?
 # maybe make pubsub for each city when it's opened to subscribe to updates?
-# :math.atan(2)*2/:math.pi()
-# add random spawning in small cities
 # switch most logs to just counts: births, deaths for different reasons. Some can be text: moved_to, moved_from, attacks
 # better tooltips
 
