@@ -239,25 +239,18 @@ defmodule MayorGameWeb.CityLive do
     log = attacking_town_struct.title <> " attacked one of your " <> building_to_attack
     limited_log = CityCalculator.update_logs(log, city.logs)
 
-    attacking_town_changeset =
-      attacking_town_struct
-      |> City.Town.changeset(%{
-        missiles: attacking_town_struct.missiles - 1
-      })
-
     attacked_town_changeset =
       attacked_town_struct
       |> City.Town.changeset(%{
         logs: limited_log
       })
 
+    from(t in Town, where: [id: ^current_user.town.id])
+    |> Repo.update_all(inc: [missiles: -1])
+
     if city.shields <= 0 && attacking_town_struct.missiles > 0 do
       attack_building =
         Ecto.Multi.new()
-        |> Ecto.Multi.update(
-          {:update_attacking_town, attacking_town_struct.id},
-          attacking_town_changeset
-        )
         |> Ecto.Multi.update(
           {:update_attacked_town, attacked_town_struct.id},
           attacked_town_changeset
@@ -291,14 +284,6 @@ defmodule MayorGameWeb.CityLive do
     log = attacking_town_struct.title <> " attacked your shields"
     limited_log = CityCalculator.update_logs(log, city.logs)
 
-    town_update_changeset =
-      attacking_town_struct
-      |> City.Town.changeset(%{
-        missiles: attacking_town_struct.missiles - 1
-      })
-
-    IO.inspect(city.shields)
-
     shields_update_changeset =
       shielded_town_struct
       |> City.Town.changeset(%{
@@ -309,13 +294,12 @@ defmodule MayorGameWeb.CityLive do
     from(t in Town, where: [id: ^city.id])
     |> Repo.update_all(inc: [shields: -1])
 
+    from(t in Town, where: [id: ^current_user.town.id])
+    |> Repo.update_all(inc: [missiles: -1])
+
     if city.shields > 0 && attacking_town_struct.missiles > 0 do
       attack_shields =
         Ecto.Multi.new()
-        |> Ecto.Multi.update(
-          {:update_attacking_town, attacking_town_struct.id},
-          town_update_changeset
-        )
         |> Ecto.Multi.update({:update_attacked_town, city.id}, shields_update_changeset)
         |> Repo.transaction(timeout: 10_000)
 
