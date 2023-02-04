@@ -15,13 +15,12 @@
 # fly volumes list --app mayorgame-db gets volumes from the db project thingy
 
 # balance prices
-# fix logs only showing last update
 # flow some more calculations for optimization
 # turn buildables into ints, not a bunch of indivudal structs
 # add different defense weights for each buildable?
 # maybe make pubsub for each city when it's opened to subscribe to updates?
 # switch most logs to just counts: births, deaths for different reasons. Some can be text: moved_to, moved_from, attacks
-# better tooltips
+# consider separating money/resource generation ticks from movement ticks?
 
 
 

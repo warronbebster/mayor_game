@@ -1,7 +1,9 @@
 <div class="top-0 p-1 px-2 z-20 bg-amber-50 border-b border-neutral-800 flex space-x-3 w-screen overflow-x-scroll shrink-0 leading-tight">
   <table class="self-end mr-auto align-bottom">
     <tr>
-      <td class="top_td"><%= @city2.title %></td>
+      <td class="top_td">
+        <%= @city2.title %>
+      </td>
       <td class="top_td">
         Year
       </td>
@@ -32,92 +34,125 @@
     </tr>
   </table>
 
-  <table class="self-start mr-auto align-bottom flex-shrink">
+  <table class="self-start mr-auto align-bottom flex-shrink overflow-visible">
     <tr>
-      <!-- <td class="text-purple-600 top_td align-middle">
-        <div class="flex gap-1 items-center pr-2">
+      <td class="group relative h-4 top_td text-purple-600 ">
+        <div class="flex gap-1 items-center w-full pr-2">
           <img src="/images/pollution.svg" alt="total area" height="12" width="12" class="inline" />
-          Global&thinsp;Pollution
         </div>
-      </td> -->
-      <td class="text-purple-600 top_td">
-        <div class="flex gap-1 items-center pr-2">
-          <img src="/images/pollution.svg" alt="total area" height="12" width="12" class="inline" />
-          &thinsp;Pollution
+        <div class="tooltip top-0 left-0 -translate-x-full text-purple-600">
+          Pollution
         </div>
       </td>
 
-      <td class="top_td text-amber-600">
-        <div class="flex gap-1 items-center pr-2">
+      <td class="group relative h-4 top_td text-amber-600">
+        <div class="flex gap-1 items-center w-full pr-2">
           <img src="/images/housing.svg" alt="total area" height="12" width="12" class="inline" />
+        </div>
+        <div class="tooltip top-0 left-0 -translate-x-full text-amber-600">
           Housing
         </div>
       </td>
-      <td class="top_td text-green-600">
-        <div class="flex items-center pr-2">
+      <td class="group relative h-4 top_td text-green-600">
+        <div class="flex items-center w-full pr-2">
+          <img src="/images/plus.svg" alt="plus" height="12" width="12" class="inline" />
           <img
             src="/images/money-fulfilled.svg"
             alt="total area"
             height="12"
             width="12"
             class="inline"
-          />&thinsp;Income
+          />
+        </div>
+        <div class="tooltip top-0 left-0 w-32 -translate-x-full text-green-600">
+          Daily Tax Income
         </div>
       </td>
-      <td class="top_td text-red-600">
-        <div class="flex items-center pr-2">
-          <img src="/images/money-off.svg" alt="total area" height="12" width="12" class="inline" />&thinsp;Cost
+      <td class="group relative h-4 top_td text-red-600">
+        <div class="flex items-center w-full pr-2">
+          <img src="/images/minus.svg" alt="minus" height="12" width="12" class="inline" />
+          <img src="/images/money-off.svg" alt="daily cost" height="12" width="12" class="inline" />
+        </div>
+        <div class="tooltip top-0 left-0 w-24 -translate-x-full text-red-600">
+          Daily Cost
         </div>
       </td>
-      <td class="top_td text-green-600">
-        <div class="flex items-center pr-2">
+      <td class="group relative h-4 top_td text-green-600">
+        <div class="flex items-center w-full pr-2">
           <img
             src="/images/money-fulfilled.svg"
             alt="total area"
             height="12"
             width="12"
             class="inline"
-          />&thinsp;Money
+          />
+        </div>
+        <div class="tooltip top-0 left-0 -translate-x-full text-green-600">
+          Money
         </div>
       </td>
-      <td class="top_td text-yellow-600">
-        <div class="flex items-center pr-2">
-          <img src="/images/energy.svg" alt="total energy" height="12" width="12" class="inline" />&thinsp;Energy
+      <td class="group relative h-4 top_td text-yellow-600">
+        <div class="flex items-center w-full pr-2">
+          <img src="/images/energy.svg" alt="total energy" height="12" width="12" class="inline" />
+        </div>
+        <div class="tooltip top-0 left-0 -translate-x-full text-yellow-600">
+          Energy
         </div>
       </td>
-      <td class="top_td text-cyan-600">
-        <div class="flex gap-1 items-center pr-2">
-          <img src="/images/area.svg" alt="total energy" height="12" width="12" class="inline" />&thinsp;Area
+      <td class="group relative h-4 top_td text-cyan-600">
+        <div class="flex gap-1 items-center w-full pr-2">
+          <img src="/images/area.svg" alt="total area" height="12" width="12" class="inline" />
+        </div>
+        <div class="tooltip top-0 left-0 -translate-x-full text-cyan-600">
+          Area
         </div>
       </td>
-      <td class="top_td text-fuchsia-600">
-        <div class="flex gap-1 items-center pr-2">
-          <img src="/images/fun.svg" alt="total area" height="12" width="12" class="inline" />&thinsp;Fun
+      <td class="group relative h-4 top_td text-fuchsia-600">
+        <div class="flex gap-1 items-center w-full pr-2">
+          <img src="/images/fun.svg" alt="total fun" height="12" width="12" class="inline" />
+        </div>
+        <div class="tooltip top-0 left-0 -translate-x-full text-fuchsia-600">
+          Fun
         </div>
       </td>
-      <td class="top_td text-rose-600">
-        <div class="flex gap-1 items-center pr-2">
-          <img src="/images/health.svg" alt="total health" height="12" width="12" class="inline" />&thinsp;Health
+      <td class="group relative h-4 top_td text-rose-600">
+        <div class="flex gap-1 items-center w-full pr-2">
+          <img src="/images/health.svg" alt="total health" height="12" width="12" class="inline" />
+        </div>
+        <div class="tooltip top-0 left-0 -translate-x-full text-rose-600">
+          Health
         </div>
       </td>
-      <td class="top_td text-slate-600">
-        <div class="flex gap-1 items-center pr-2">
-          <img src="/images/steel.svg" alt="total steel" height="12" width="12" class="inline" />&thinsp;Steel
+      <td class="group relative h-4 top_td text-slate-600">
+        <div class="flex gap-1 items-center w-full pr-2">
+          <img src="/images/steel.svg" alt="total steel" height="12" width="12" class="inline" />
+        </div>
+        <div class="tooltip top-0 left-0 -translate-x-full text-steel-600">
+          Steel
         </div>
       </td>
-      <td class="top_td text-orange-600">
-        <div class="flex gap-1 items-center pr-2">
-          <img src="/images/sulfur.svg" alt="total sulfur" height="12" width="12" class="inline" />&thinsp;Sulfur
+      <td class="group relative h-4 top_td text-orange-600">
+        <div class="flex gap-1 items-center w-full pr-2">
+          <img src="/images/sulfur.svg" alt="total sulfur" height="12" width="12" class="inline" />
+        </div>
+        <div class="tooltip top-0 left-0 -translate-x-full text-orange-600">
+          Sulfur
         </div>
       </td>
-      <td class="top_td text-red-600">
-        <div class="flex gap-1 items-center pr-2">
-          <img src="/images/might.svg" alt="total might" height="12" width="12" class="inline" />&thinsp;Missiles
+      <td class="group relative h-4 top_td text-red-600">
+        <div class="flex gap-1 items-center w-full pr-2">
+          <img src="/images/might.svg" alt="total missiles" height="12" width="12" class="inline" />
+        </div>
+        <div class="tooltip top-0 left-0 -translate-x-full text-red-600">
+          Missiles
         </div>
       </td>
-      <td class="top_td text-blue-600">
-        <div class="flex gap-1 items-center pr-2">
-          <img src="/images/shields.svg" alt="total might" height="12" width="12" class="inline" />&thinsp;Shields
+      <td class="group relative h-4 top_td text-blue-600">
+        <div class="flex gap-1 items-center w-full pr-2">
+          <img src="/images/shields.svg" alt="total might" height="12" width="12" class="inline" />
+        </div>
+        <div class="tooltip top-0 left-0 -translate-x-full text-blue-600">
+          Shields
         </div>
       </td>
     </tr>
@@ -169,7 +204,7 @@
           ) %>
         </span>
       </td>
-      <td class="top_td text-fuchsia-800">
+      <td class="group relative h-4 top_td text-fuchsia-800">
         <%= Number.Delimit.number_to_delimited(@city2.fun) %>
       </td>
       <td class="top_td">
@@ -555,6 +590,20 @@
             <!-- for each operating building, multiply by energy, workers_required, area -->
             <div class="flex flex-row gap-1 items-center">
               <%= if Map.has_key?(@operating_count[building_type], []) do %>
+                <!-- health -->
+                <%= if !is_nil(building_stats.produces) && Map.has_key?(building_stats.produces, :health) do %>
+                  <div class="group relative flex flex-row items-center text-rose-700 gap-1 w-20 cursor-help">
+                    <img src="/images/health.svg" alt="total health" height="12" width="12" />
+                    <%= Number.Delimit.number_to_delimited(
+                      round(@operating_count[building_type][[]] * building_stats.produces.health)
+                    ) %>
+                    <div class="tooltip">
+                      <%= Number.Delimit.number_to_delimited(
+                        round(@operating_count[building_type][[]] * building_stats.produces.health)
+                      ) %> health generated
+                    </div>
+                  </div>
+                <% end %>
                 <!-- area -->
                 <%= if !is_nil(building_stats.produces) && Map.has_key?(building_stats.produces, :area) do %>
                   <div class=" group relative flex flex-row items-center text-cyan-700 gap-1 w-20 cursor-help">
@@ -593,6 +642,79 @@
                     </div>
                   </div>
                 <% end %>
+                <!-- sulfur -->
+                <%= if !is_nil(building_stats.produces) && Map.has_key?(building_stats.produces, :sulfur) do %>
+                  <div class="group relative flex flex-row items-center text-orange-700 gap-1 w-20 cursor-help">
+                    <img src="/images/sulfur.svg" alt="total sulfur" height="12" width="12" />
+                    <%= Number.Delimit.number_to_delimited(
+                      round(@operating_count[building_type][[]] * building_stats.produces.sulfur)
+                    ) %>
+                    <div class="tooltip ">
+                      <%= Number.Delimit.number_to_delimited(
+                        round(
+                          @operating_count[building_type][[]] * building_stats.produces.sulfur
+                        )
+                      ) %> sulfur generated
+                    </div>
+                  </div>
+                <% end %>
+                <!-- steel -->
+                <%= if !is_nil(building_stats.produces) && Map.has_key?(building_stats.produces, :steel) do %>
+                  <div class="group relative flex flex-row items-center text-slate-700 gap-1 w-20 cursor-help">
+                    <img src="/images/steel.svg" alt="total steel" height="12" width="12" />
+                    <%= Number.Delimit.number_to_delimited(
+                      round(@operating_count[building_type][[]] * building_stats.produces.steel)
+                    ) %>
+                    <div class="tooltip">
+                      <%= Number.Delimit.number_to_delimited(
+                        round(@operating_count[building_type][[]] * building_stats.produces.steel)
+                      ) %> steel generated
+                    </div>
+                  </div>
+                <% end %>
+
+                <!-- fun -->
+                <%= if !is_nil(building_stats.produces) && Map.has_key?(building_stats.produces, :fun) do %>
+                  <div class="group relative flex flex-row items-center text-fuchsia-700 gap-1 w-20 cursor-help">
+                    <img src="/images/fun.svg" alt="total fun" height="12" width="12" />
+                    <%= Number.Delimit.number_to_delimited(
+                      round(@operating_count[building_type][[]] * building_stats.produces.fun)
+                    ) %>
+                    <div class="tooltip">
+                      <%= Number.Delimit.number_to_delimited(
+                        round(@operating_count[building_type][[]] * building_stats.produces.fun)
+                      ) %> fun generated
+                    </div>
+                  </div>
+                <% end %>
+                <!-- missiles -->
+                <%= if !is_nil(building_stats.produces) && Map.has_key?(building_stats.produces, :missiles) do %>
+                  <div class="group relative flex flex-row items-center text-slate-700 gap-1 w-20 cursor-help">
+                    <img src="/images/might.svg" alt="total missiles" height="12" width="12" />
+                    <%= Number.Delimit.number_to_delimited(
+                      round(@operating_count[building_type][[]] * building_stats.produces.missiles)
+                    ) %>
+                    <div class="tooltip">
+                      <%= Number.Delimit.number_to_delimited(
+                        round(@operating_count[building_type][[]] * building_stats.produces.missiles)
+                      ) %> missiles generated
+                    </div>
+                  </div>
+                <% end %>
+                <!-- shields -->
+                <%= if !is_nil(building_stats.produces) && Map.has_key?(building_stats.produces, :shields) do %>
+                  <div class="group relative flex flex-row items-center text-slate-700 gap-1 w-20 cursor-help">
+                    <img src="/images/shields.svg" alt="total shields" height="12" width="12" />
+                    <%= Number.Delimit.number_to_delimited(
+                      round(@operating_count[building_type][[]] * building_stats.produces.shields)
+                    ) %>
+                    <div class="tooltip">
+                      <%= Number.Delimit.number_to_delimited(
+                        round(@operating_count[building_type][[]] * building_stats.produces.shields)
+                      ) %> shields generated
+                    </div>
+                  </div>
+                <% end %>
                 <!-- pollution -->
                 <div class="group relative flex flex-row items-center text-violet-700 gap-1 w-20 cursor-help">
                   <%= if !is_nil(building_stats.produces) && Map.has_key?(building_stats.produces, :pollution) do %>
@@ -611,7 +733,7 @@
                       ) %>
                     <% end %>
 
-                    <div class="pointer-events-none group-hover:opacity-100 transition-opacity bg-amber-50 border border-neutral-800 z-10 p-2 absolute top-8 right-0 opacity-0 max-w-sm ">
+                    <div class="tooltip">
                       <%= if !is_number(building_stats.produces.pollution) do %>
                         <%= round(building_stats.produces.pollution.(100)) %> pollution generated per building per 100 citizens
                       <% else %>
@@ -635,7 +757,7 @@
                     />
                     <%= @operating_count[building_type][[]] *
                       building_stats.requires.workers.count %>/<%= building_stats.requires.workers.level %>
-                    <div class="pointer-events-none group-hover:opacity-100 transition-opacity bg-amber-50 border border-neutral-800 z-10 p-2 absolute top-8 right-0 opacity-0 max-w-sm ">
+                    <div class="tooltip max-w-sm ">
                       <%= @operating_count[building_type][[]] *
                         building_stats.requires.workers.count %> workers employed at level <%= building_stats.requires.workers.level %>
                     </div>
@@ -655,7 +777,7 @@
           <div class="text-base ">
             Log
           </div>
-          <hr class="border-neutral-800/25flex-1" />
+          <hr class="border-neutral-800/25 flex-1" />
         </div>
 
         <%= for log_item <- @city2.logs do %>

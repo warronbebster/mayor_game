@@ -89,8 +89,7 @@
 
   font-style: normal;
 
-  src: url("/fonts/ttf/iosevka-etoile-light.ttf") format("truetype"),
-    url("/fonts/woff2/iosevka-etoile-light.woff2") format("woff2");
+  src: url("/fonts/ttf/iosevka-etoile-light.ttf") format("truetype"), url("/fonts/woff2/iosevka-etoile-light.woff2") format("woff2");
 }
 
 /*
@@ -116,8 +115,7 @@
 
   font-style: normal;
 
-  src: url("/fonts/ttf/iosevka-etoile-regular.ttf") format("truetype"),
-    url("/fonts/woff2/iosevka-etoile-regular.woff2") format("woff2");
+  src: url("/fonts/ttf/iosevka-etoile-regular.ttf") format("truetype"), url("/fonts/woff2/iosevka-etoile-regular.woff2") format("woff2");
 }
 
 /*
@@ -143,8 +141,7 @@
 
   font-style: normal;
 
-  src: url("/fonts/ttf/iosevka-etoile-medium.ttf") format("truetype"),
-    url("/fonts/woff2/iosevka-etoile-medium.woff2") format("woff2");
+  src: url("/fonts/ttf/iosevka-etoile-medium.ttf") format("truetype"), url("/fonts/woff2/iosevka-etoile-medium.woff2") format("woff2");
 }
 
 /*
@@ -170,8 +167,7 @@
 
   font-style: normal;
 
-  src: url("/fonts/ttf/iosevka-etoile-semibold.ttf") format("truetype"),
-    url("/fonts/woff2/iosevka-etoile-semibold.woff2") format("woff2");
+  src: url("/fonts/ttf/iosevka-etoile-semibold.ttf") format("truetype"), url("/fonts/woff2/iosevka-etoile-semibold.woff2") format("woff2");
 }
 
 /*
@@ -305,6 +301,10 @@
 */
 
 /* This file is for your main application css. */
+
+:root {
+  --tooltop-width: 150px;
+}
 
 /*
 ! tailwindcss v3.2.4 | MIT License | https://tailwindcss.com
@@ -1117,6 +1117,10 @@ select {
   top: 0px;
 }
 
+.left-0 {
+  left: 0px;
+}
+
 .top-8 {
   top: 2rem;
 }
@@ -1183,8 +1187,16 @@ select {
   height: 100vh;
 }
 
+.h-4 {
+  height: 1rem;
+}
+
 .w-screen {
   width: 100vw;
+}
+
+.w-full {
+  width: 100%;
 }
 
 .w-40 {
@@ -1201,6 +1213,18 @@ select {
 
 .w-20 {
   width: 5rem;
+}
+
+.w-8 {
+  width: 2rem;
+}
+
+.w-16 {
+  width: 4rem;
+}
+
+.w-24 {
+  width: 6rem;
 }
 
 .min-w-\[240px\] {
@@ -1237,6 +1261,11 @@ select {
 
 .border-collapse {
   border-collapse: collapse;
+}
+
+.-translate-x-full {
+  --tw-translate-x: -100%;
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
 }
 
 .cursor-help {
@@ -1335,6 +1364,10 @@ select {
 
 .self-end {
   align-self: flex-end;
+}
+
+.overflow-visible {
+  overflow: visible;
 }
 
 .overflow-x-scroll {
@@ -1653,6 +1686,31 @@ select {
 .text-violet-600 {
   --tw-text-opacity: 1;
   color: rgb(124 58 237 / var(--tw-text-opacity));
+}
+
+.text-slate-700 {
+  --tw-text-opacity: 1;
+  color: rgb(51 65 85 / var(--tw-text-opacity));
+}
+
+.text-purple-700 {
+  --tw-text-opacity: 1;
+  color: rgb(126 34 206 / var(--tw-text-opacity));
+}
+
+.text-orange-700 {
+  --tw-text-opacity: 1;
+  color: rgb(194 65 12 / var(--tw-text-opacity));
+}
+
+.text-fuchsia-700 {
+  --tw-text-opacity: 1;
+  color: rgb(162 28 175 / var(--tw-text-opacity));
+}
+
+.text-rose-700 {
+  --tw-text-opacity: 1;
+  color: rgb(190 18 60 / var(--tw-text-opacity));
 }
 
 .underline {

@@ -40,9 +40,7 @@ defmodule MayorGame.CityCalculator do
     cities = City.list_cities_preload()
     cities_count = Enum.count(cities)
 
-    pollution_ceiling =
-      cities_count * 10000_000 +
-        10000_000 * Random.gammavariate(7.5, 1)
+    pollution_ceiling = 2_000_000_000 * Random.gammavariate(7.5, 1)
 
     db_world = City.get_world!(1)
 
