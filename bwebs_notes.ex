@@ -18,7 +18,7 @@
 # flow some more calculations for optimization
 # turn buildables into ints, not a bunch of indivudal structs
 # add different defense weights for each buildable?
-# maybe make pubsub for each city when it's opened to subscribe to updates?
+# maybe make pubsub for each city when it's opened to subscribe to updates from other cities attacking u?
 # switch most logs to just counts: births, deaths for different reasons. Some can be text: moved_to, moved_from, attacks
 # consider separating money/resource generation ticks from movement ticks?
 

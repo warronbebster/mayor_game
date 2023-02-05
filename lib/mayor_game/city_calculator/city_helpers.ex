@@ -1,5 +1,5 @@
 defmodule MayorGame.CityHelpers do
-  alias MayorGame.City.{Citizens, Town, Buildable, Details, CombinedBuildable, World}
+  alias MayorGame.City.{Citizens, Town, Buildable, CombinedBuildable, World}
 
   @doc """
     takes a %Town{} struct and %World{} struct
@@ -51,22 +51,18 @@ defmodule MayorGame.CityHelpers do
         true -> :fall
       end
 
-    # ayyy this is successfully combining the buildables
-    # next step is applying the upgrades (done)
-    # and putting it in city_preloaded
-    city_baked_details = %{city_preloaded | details: bake_details(city_preloaded.details)}
+    city_baked_direct = bake_details_int(city_preloaded)
 
-    all_buildables = city_baked_details.details |> Map.take(Buildable.buildables_list())
+    all_buildables = city_baked_direct |> Map.take(Buildable.buildables_list())
 
     # this is a map
-    # I can either re-order this (JK, maps are unordered)
 
     # I think this looks like a keyword list with {type of buildable, list of actual buildables}
 
     ordered_buildables =
       Enum.map(Buildable.buildables_ordered_flat(), fn x -> {x, all_buildables[x]} end)
 
-    sorted_citizens = Enum.sort_by(city_baked_details.citizens, & &1.education, :desc)
+    sorted_citizens = Enum.sort_by(city_baked_direct.citizens, & &1.education, :desc)
     citizen_count = length(sorted_citizens)
 
     # buildables_ordered is in order
@@ -74,14 +70,14 @@ defmodule MayorGame.CityHelpers do
       Enum.reduce(
         ordered_buildables,
         %{
-          money: city_baked_details.treasury,
-          steel: city_baked_details.steel,
-          uranium: city_baked_details.uranium,
-          gold: city_baked_details.gold,
-          sulfur: city_baked_details.sulfur,
-          missiles: city_baked_details.missiles,
-          loaded_shields: city_baked_details.shields,
-          shields: city_baked_details.shields,
+          money: city_baked_direct.treasury,
+          steel: city_baked_direct.steel,
+          uranium: city_baked_direct.uranium,
+          gold: city_baked_direct.gold,
+          sulfur: city_baked_direct.sulfur,
+          missiles: city_baked_direct.missiles,
+          loaded_shields: city_baked_direct.shields,
+          shields: city_baked_direct.shields,
           income: 0,
           daily_cost: 0,
           citizen_count: citizen_count,
@@ -110,7 +106,7 @@ defmodule MayorGame.CityHelpers do
             Enum.reduce(buildable_array, acc, fn individual_buildable, acc2 ->
               # if the building has no requirements
               # if building has requirements
-              if individual_buildable.metadata.requires == nil do
+              if individual_buildable.requires == nil do
                 # generate final production map
                 update_generated_acc(
                   individual_buildable,
@@ -123,53 +119,52 @@ defmodule MayorGame.CityHelpers do
                   [individual_buildable | current]
                 end)
               else
-                reqs_minus_workers = Map.drop(individual_buildable.metadata.requires, [:workers])
+                reqs_minus_workers = Map.drop(individual_buildable.requires, [:workers])
 
                 checked_reqs = check_reqs(reqs_minus_workers, acc2)
 
                 # if all reqs are met
                 if checked_reqs == [] do
                   money_required =
-                    if Map.has_key?(individual_buildable.metadata.requires, :money),
-                      do: individual_buildable.metadata.requires.money,
+                    if Map.has_key?(individual_buildable.requires, :money),
+                      do: individual_buildable.requires.money,
                       else: 0
 
                   # if it requires workers
 
-                  if Map.has_key?(individual_buildable.metadata.requires, :workers) do
+                  if Map.has_key?(individual_buildable.requires, :workers) do
                     # here I could just mark that buildable as "enabled pre_workers" or "ready_for_workers" I think?
                     # then loop through jobs outside this loop
                     # could also just look through the jobs not taken outside the loop and check citizens there?
 
-                    checked_workers =
-                      check_workers(individual_buildable.metadata.requires, acc2.citizens)
+                    checked_workers = check_workers(individual_buildable.requires, acc2.citizens)
 
                     enough_workers =
                       length(checked_workers) >=
-                        individual_buildable.metadata.requires.workers.count
+                        individual_buildable.requires.workers.count
 
                     updated_buildable =
                       if !enough_workers do
                         individual_buildable
-                        |> put_in([:metadata, :reason], [:workers])
-                        |> put_in([:metadata, :enabled], false)
-                        |> put_in(
-                          [:metadata, :jobs],
-                          individual_buildable.metadata.requires.workers.count -
+                        |> Map.put(:reason, [:workers])
+                        |> Map.put(:enabled, false)
+                        |> Map.put(
+                          :jobs,
+                          individual_buildable.requires.workers.count -
                             length(checked_workers)
                         )
                       else
                         # if all conditions are met
                         individual_buildable
-                        |> put_in([:metadata, :jobs], 0)
+                        |> Map.put(:jobs, 0)
                       end
 
                     tax_earned =
                       round(
                         length(checked_workers) *
-                          (1 + individual_buildable.metadata.requires.workers.level) * 100 *
+                          (1 + individual_buildable.requires.workers.level) * 100 *
                           city.tax_rates[
-                            to_string(individual_buildable.metadata.requires.workers.level)
+                            to_string(individual_buildable.requires.workers.level)
                           ] /
                           10
                       )
@@ -211,16 +206,16 @@ defmodule MayorGame.CityHelpers do
                     |> Map.update!(:jobs, fn current_jobs_map ->
                       Map.update!(
                         current_jobs_map,
-                        individual_buildable.metadata.requires.workers.level,
-                        &(&1 + individual_buildable.metadata.requires.workers.count -
+                        individual_buildable.requires.workers.level,
+                        &(&1 + individual_buildable.requires.workers.count -
                             length(checked_workers))
                       )
                     end)
                     |> Map.update!(:total_jobs, fn current_total_jobs_map ->
                       Map.update!(
                         current_total_jobs_map,
-                        individual_buildable.metadata.requires.workers.level,
-                        &(&1 + individual_buildable.metadata.requires.workers.count)
+                        individual_buildable.requires.workers.level,
+                        &(&1 + individual_buildable.requires.workers.count)
                       )
                     end)
                     |> Map.update!(:result_buildables, fn current ->
@@ -254,8 +249,9 @@ defmodule MayorGame.CityHelpers do
                 else
                   # if requirements not met
                   updated_buildable =
-                    put_in(individual_buildable, [:metadata, :reason], checked_reqs)
-                    |> put_in([:metadata, :enabled], false)
+                    individual_buildable
+                    |> Map.put(:reason, checked_reqs)
+                    |> Map.put(:enabled, false)
 
                   # update acc with disabled buildable
                   Map.update!(acc2, :result_buildables, fn current ->
@@ -282,7 +278,7 @@ defmodule MayorGame.CityHelpers do
         # shape: {[list of buildables with jobs], [list of the rest of the buildables]}
         buildables_split_by_jobs =
           Enum.split_with(results.result_buildables, fn y ->
-            !is_nil(y.metadata.jobs) && y.metadata.jobs > 0
+            !is_nil(y.jobs) && y.jobs > 0
           end)
 
         buildables_with_jobs = elem(buildables_split_by_jobs, 0)
@@ -292,17 +288,17 @@ defmodule MayorGame.CityHelpers do
             buildables_with_jobs,
             %{results: results, citizens_available: citizens_available, buildables_after: []},
             fn buildable, acc ->
-              job_level = buildable.metadata.requires.workers.level
+              job_level = buildable.requires.workers.level
 
               qualified_workers =
                 Enum.filter(acc.citizens_available, fn cit -> cit.education >= job_level end)
 
-              newly_employed_workers = Enum.take(qualified_workers, buildable.metadata.jobs)
-              enough_workers = length(newly_employed_workers) >= buildable.metadata.jobs
+              newly_employed_workers = Enum.take(qualified_workers, buildable.jobs)
+              enough_workers = length(newly_employed_workers) >= buildable.jobs
 
               money_required =
-                if Map.has_key?(buildable.metadata.requires, :money),
-                  do: buildable.metadata.requires.money,
+                if Map.has_key?(buildable.requires, :money),
+                  do: buildable.requires.money,
                   else: 0
 
               updated_buildable =
@@ -311,8 +307,8 @@ defmodule MayorGame.CityHelpers do
                 else
                   # if all conditions are met
                   buildable
-                  |> put_in([:metadata, :jobs], 0)
-                  |> put_in([:metadata, :reason], [])
+                  |> Map.put(:jobs, 0)
+                  |> Map.put(:reason, [])
                 end
 
               tax_earned =
@@ -456,7 +452,7 @@ defmodule MayorGame.CityHelpers do
             :reproducing_citizens,
             if(
               citizen.age > 500 and citizen.age < 2000 and
-                :rand.uniform(length(city_baked_details.citizens) + 1) == 1,
+                :rand.uniform(length(city_baked_direct.citizens) + 1) == 1,
               do: &[citizen | &1],
               else: & &1
             )
@@ -465,7 +461,7 @@ defmodule MayorGame.CityHelpers do
       )
       |> Enum.into(%{})
 
-    city_baked_details
+    city_baked_direct
     |> Map.from_struct()
     |> Map.merge(results_after_2nd_round_jobs)
     |> Map.put(:all_citizens, all_citizens)
@@ -564,83 +560,64 @@ defmodule MayorGame.CityHelpers do
 
   @spec preload_city_check(Town.t()) :: Town.t()
   @doc """
-      Take a %Town{}, return the %Town{} with citizens, user, details preloaded
+      Take a %Town{}, return the %Town{} with citizens, user preloaded
   """
   def preload_city_check(%Town{} = town) do
-    if !Ecto.assoc_loaded?(town.details) do
-      town |> MayorGame.Repo.preload([:citizens, :user, details: Buildable.buildables_list()])
+    if !Ecto.assoc_loaded?(town.citizens) do
+      town |> MayorGame.Repo.preload([:citizens, :user])
     else
       town
     end
   end
 
-  @spec bake_details(Details.t()) :: Details.t()
+  @spec bake_details_int(Town.t()) :: Town.t()
   @doc """
-      Takes a %Details{} struct
+      Takes a %Town{} struct
 
       returns the %Details{} with each buildable listing %CombinedBuildable{}s instead of raw %Buildable{}s
   """
-  def bake_details(%Details{} = details) do
-    Enum.reduce(Buildable.buildables_list(), details, fn buildable_list_item,
-                                                         details_struct_acc ->
-      buildable_count = length(Map.get(details_struct_acc, buildable_list_item))
-      has_buildable = Enum.empty?(Map.get(details_struct_acc, buildable_list_item))
+  def bake_details_int(%Town{} = town) do
+    Enum.reduce(Buildable.buildables_list(), town, fn buildable_list_item, town_acc ->
+      buildable_count = Map.get(town_acc, buildable_list_item)
 
-      if Map.has_key?(details_struct_acc, buildable_list_item) && !has_buildable do
-        buildable_array = Map.get(details_struct_acc, buildable_list_item)
+      # if Map.has_key?(town_acc, buildable_list_item) && buildable_count > 0 do
 
-        buildable_metadata = Map.get(Buildable.buildables_flat(), buildable_list_item)
+      buildable_metadata = Map.get(Buildable.buildables_flat(), buildable_list_item)
 
-        updated_price = building_price(buildable_metadata.price, buildable_count)
+      updated_price = building_price(buildable_metadata.price, buildable_count)
 
-        buildable_metadata_price_updated = %MayorGame.City.BuildableMetadata{
-          buildable_metadata
-          | price: updated_price
-        }
+      buildable_metadata_price_updated = %MayorGame.City.BuildableMetadata{
+        buildable_metadata
+        | price: updated_price
+      }
 
-        # NO FLOW
-        combined_array =
-          Enum.map(buildable_array, fn x ->
-            CombinedBuildable.combine_and_apply_upgrades(x, buildable_metadata_price_updated)
-          end)
-
-        # combined_array =
-        #   buildable_array
-        #   |> Flow.from_enumerable(max_demand: 200)
-        #   |> Flow.map(fn x ->
-        #     # %CombinedBuildable.combine_and_apply_upgrades(x, buildable_metadata_price_updated)
-        #     %CombinedBuildable{
-        #       buildable: x,
-        #       metadata: buildable_metadata_price_updated
-        #     }
-        #   end)
-        #   |> Enum.to_list()
-
-        %{details_struct_acc | buildable_list_item => combined_array}
-      else
-        details_struct_acc
-      end
-    end)
-  end
-
-  # @spec sum_details_metadata(list(BuildableMetadata.t()), atom) :: integer | float
-  @doc """
-      takes a list of CombinedBuildables (usually held by details) and returns the sum of the metadata
-  """
-  def sum_details_metadata(baked_buildable_list, metadata_to_sum) do
-    unless Enum.empty?(baked_buildable_list) do
-      Enum.reduce(baked_buildable_list, 0, fn x, acc ->
-        metadata_value = Map.get(x.metadata, metadata_to_sum)
-
-        unless metadata_value == nil do
-          metadata_value + acc
+      # NO FLOW
+      combined_array =
+        if buildable_count == 0 do
+          []
         else
-          acc
+          Enum.map(1..buildable_count, fn _x ->
+            buildable_metadata_price_updated
+          end)
         end
-      end)
-    else
-      0
-    end
+
+      # combined_array =
+      #   buildable_array
+      #   |> Flow.from_enumerable(max_demand: 200)
+      #   |> Flow.map(fn x ->
+      #     # %CombinedBuildable.combine_and_apply_upgrades(x, buildable_metadata_price_updated)
+      #     %CombinedBuildable{
+      #       buildable: x,
+      #       metadata: buildable_metadata_price_updated
+      #     }
+      #   end)
+      #   |> Enum.to_list()
+
+      %{town_acc | buildable_list_item => combined_array}
+      # else
+      # town_acc
+      # end
+    end)
   end
 
   def building_price(initial_price, buildable_count) do
@@ -703,8 +680,8 @@ defmodule MayorGame.CityHelpers do
 
     generated =
       render_production(
-        buildable.metadata.produces,
-        buildable.metadata.multipliers,
+        buildable.produces,
+        buildable.multipliers,
         citizen_count,
         region,
         season

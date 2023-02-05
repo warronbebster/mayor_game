@@ -7,7 +7,7 @@ defmodule MayorGame.City do
   require Logger
   import Ecto.Query, warn: false
   alias MayorGame.Repo
-  alias MayorGame.City.{Details, Town, Citizens, World, Buildable}
+  alias MayorGame.City.{Town, Citizens, World, Buildable}
 
   @doc """
   Returns the list of cities.
@@ -38,9 +38,7 @@ defmodule MayorGame.City do
 
   """
   def list_cities_preload do
-    Repo.all(Town) |> Repo.preload([:citizens, :user, details: Buildable.buildables_list()])
-
-    # city |> MayorGame.Repo.preload([:citizens, :user, details: Buildable.buildables_list()])
+    Repo.all(Town) |> Repo.preload([:citizens, :user])
   end
 
   @doc """
@@ -116,19 +114,21 @@ defmodule MayorGame.City do
       # if city built successfully, automatically build Details with it's id
       # update this so these fields are automatically generated
       {:ok, created_city} ->
-        buildables = Map.new(Buildable.buildables_list(), fn buildable -> {buildable, []} end)
+        IO.puts("city created!")
 
-        details = Map.merge(buildables, %{town_id: created_city.id})
+      # buildables = Map.new(Buildable.buildables_list(), fn buildable -> {buildable, []} end)
 
-        # and create a detail in the DB, tied to this city
-        case create_details(details) do
-          {:ok, _created_details} ->
-            # return the city created
-            {:ok, created_city}
+      # details = Map.merge(buildables, %{town_id: created_city.id})
 
-          {:error, err} ->
-            {:error, err}
-        end
+      # # and create a detail in the DB, tied to this city
+      # case create_details(details) do
+      #   {:ok, _created_details} ->
+      #     # return the city created
+      #     {:ok, created_city}
+
+      #   {:error, err} ->
+      #     {:error, err}
+      # end
 
       {:error, err} ->
         {:error, err}
@@ -396,104 +396,6 @@ defmodule MayorGame.City do
   end
 
   # ###############################################
-  # DETAILS DETAILS DETAILS DETAILS DETAILS DETAILS DETAILS
-  # ###############################################
-
-  @doc """
-  Returns the list of details.
-
-  ## Examples
-
-      iex> list_details()
-      [%Details{}, ...]
-
-  """
-  def list_details do
-    Repo.all(Details)
-  end
-
-  @doc """
-  Gets a single details.
-
-  Raises `Ecto.NoResultsError` if the Details does not exist.
-
-  ## Examples
-
-      iex> get_details!(123)
-      %Details{}
-
-      iex> get_details!(456)
-      ** (Ecto.NoResultsError)
-
-  """
-  def get_details!(id), do: Repo.get!(Details, id)
-
-  @doc """
-  Creates a details.
-
-  ## Examples
-
-      iex> create_details(%{field: value})
-      {:ok, %Details{}}
-
-      iex> create_details(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def create_details(attrs \\ %{}) do
-    %Details{}
-    |> Details.changeset(attrs)
-    |> Repo.insert()
-  end
-
-  @doc """
-  Updates a details.
-
-  ## Examples
-
-      iex> update_details(details, %{field: new_value})
-      {:ok, %Details{}}
-
-      iex> update_details(details, %{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def update_details(%Details{} = details, attrs \\ %{}) do
-    details
-    |> Details.changeset(attrs)
-    |> Repo.update()
-  end
-
-  @doc """
-  Deletes a details.
-
-  ## Examples
-
-      iex> delete_details(details)
-      {:ok, %Details{}}
-
-      iex> delete_details(details)
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def delete_details(%Details{} = details) do
-    Repo.delete(details)
-  end
-
-  @doc """
-  Returns an `%Ecto.Changeset{}` for tracking details changes.
-
-  ## Examples
-
-      iex> change_details(details)
-      %Ecto.Changeset{data: %Details{}}
-
-  """
-  def change_details(%Details{} = details, attrs \\ %{}) do
-    Details.changeset(details, attrs)
-  end
-
-  # ###############################################
   # BUILDABLES
   # ###############################################
 
@@ -510,18 +412,6 @@ defmodule MayorGame.City do
   def purchase_buildable(%Town{} = city, field_to_purchase, purchase_price) do
     city_attrs = %{treasury: city.treasury - purchase_price}
 
-    # purchased buildings start with nothing
-    buildable_attrs = %{}
-
-    uhhh =
-      city.details
-      |> Ecto.build_assoc(field_to_purchase, buildable_attrs)
-
-    from(t in Town,
-      where: [id: ^city.id]
-    )
-    |> Repo.update_all(inc: [{field_to_purchase, 1}])
-
     purchase_city =
       city
       |> Town.changeset(city_attrs)
@@ -530,7 +420,10 @@ defmodule MayorGame.City do
 
     case purchase_city do
       {:ok, _result} ->
-        Repo.insert(uhhh)
+        from(t in Town,
+          where: [id: ^city.id]
+        )
+        |> Repo.update_all(inc: [{field_to_purchase, 1}])
 
       {:error, err} ->
         Logger.error(inspect(err))
@@ -550,62 +443,13 @@ defmodule MayorGame.City do
       {:ok, %Details{}}
 
   """
-  def demolish_buildable(%Town{} = city, buildable_to_demolish, buildable_id) do
-    buildable_to_delete =
-      Repo.get_by!(Ecto.assoc(city.details, buildable_to_demolish), id: buildable_id)
-
+  def demolish_buildable(%Town{} = city, buildable_to_demolish) do
     refund_price = Buildable.buildables_flat()[buildable_to_demolish].price
 
     Town
     |> where(id: ^city.id)
     |> update(inc: [treasury: ^refund_price])
-    # |> update(inc: [{buildable_to_delete, -1}])
     |> Repo.update_all(inc: [{buildable_to_demolish, -1}])
-
-    Repo.delete(buildable_to_delete)
-  end
-
-  @doc """
-  adjust a buildable
-  expects (%Details struct, :atom of type of building, building id, map of attributes to adjust)
-
-  ## Examples
-
-      iex> update_buildable(city.detail, :schools, buildable_id, %{enabled: false})
-      {:ok, %Details{}}
-
-  """
-  def update_buildable(
-        %Details{} = details,
-        buildable_to_update,
-        buildable_id,
-        attrs_to_update \\ %{}
-      ) do
-    buildable_to_update_atom =
-      if is_atom(buildable_to_update),
-        do: buildable_to_update,
-        else: String.to_existing_atom(buildable_to_update)
-
-    # this causes some bugs
-    buildable_to_change =
-      Repo.get_by!(Ecto.assoc(details, buildable_to_update_atom), id: buildable_id)
-
-    results =
-      buildable_to_change
-      |> Buildable.changeset(attrs_to_update)
-      |> Repo.update()
-
-    case results do
-      {:ok, result} ->
-        {:ok, result}
-
-      {:error, result} ->
-        IO.inspect(result, label: "error in " <> to_string(buildable_to_update))
-        IO.inspect(attrs_to_update, label: "attrs_to_update")
-
-      _ ->
-        nil
-    end
   end
 
   # WORLD

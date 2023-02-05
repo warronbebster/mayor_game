@@ -4,7 +4,6 @@ defmodule MayorGame.CityCalculator do
   alias MayorGame.City.{Town, Citizens}
   alias MayorGame.{City, CityHelpers, Repo}
   import Ecto.Query
-  # alias MayorGame.City.Details
 
   def start_link(initial_val) do
     IO.puts('start_city_calculator_link')
@@ -811,7 +810,7 @@ defmodule MayorGame.CityCalculator do
 
             synced_count =
               Enum.map(Buildable.buildables_ordered_flat(), fn k ->
-                {k, length(city.details[k])}
+                {k, length(city[k])}
               end)
               |> Enum.into(%{})
 

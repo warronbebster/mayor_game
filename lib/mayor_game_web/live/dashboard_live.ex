@@ -6,9 +6,7 @@ defmodule MayorGameWeb.DashboardLive do
   # use Phoenix.HTML
 
   alias MayorGame.City
-  # alias MayorGame.City.Town
   alias MayorGameWeb.DashboardView
-  # alias MayorGame.Repo
 
   def render(assigns) do
     DashboardView.render("show.html", assigns)

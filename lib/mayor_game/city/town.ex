@@ -14,7 +14,6 @@ defmodule MayorGame.City.Town do
       tax_rates: map,
       user: %MayorGame.Auth.User{},
       citizens: list(Citizens.t()),
-      details: Details.t(),
       pollution: integer,
       treasury: integer
   """
@@ -46,7 +45,6 @@ defmodule MayorGame.City.Town do
             tax_rates: map,
             user: %MayorGame.Auth.User{},
             citizens: list(Citizens.t()),
-            details: Details.t(),
             pollution: integer,
             treasury: integer,
             citizen_count: integer,
@@ -117,7 +115,6 @@ defmodule MayorGame.City.Town do
     # outline relationship between city and citizens
     # this has to be passed as a list []
     has_many(:citizens, Citizens)
-    has_one(:details, Details)
 
     # buildable schema
     for buildable <- MayorGame.City.Buildable.buildables_list() do

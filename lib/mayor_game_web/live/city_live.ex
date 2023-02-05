@@ -128,8 +128,8 @@ defmodule MayorGameWeb.CityLive do
         |> Enum.into(%{})
 
       for building_type <- Buildable.buildables_list() do
-        if city.details[building_type] != [] do
-          for buildable <- city.details[building_type] do
+        if city[building_type] != [] do
+          for buildable <- city[building_type] do
             case City.demolish_buildable(city_struct, building_type, buildable.buildable.id) do
               {:ok, _updated_details} ->
                 IO.puts("demolition success")
@@ -143,15 +143,7 @@ defmodule MayorGameWeb.CityLive do
 
       city_struct = struct(City.Town, city)
 
-      updated_attrs = buildables_zeroed |> Map.merge(treasury: 5000)
-
-      # case City.demolish_buildable(city.details, building_to_demolish, buildable_id) do
-      #   {:ok, _updated_details} ->
-      #     IO.puts("demolition success")
-
-      #   {:error, err} ->
-      #     Logger.error(inspect(err))
-      # end
+      updated_attrs = buildables_zeroed |> Map.put(:treasury, 5000)
 
       case City.update_town(city_struct, updated_attrs) do
         {:ok, _updated_town} ->
@@ -177,7 +169,7 @@ defmodule MayorGameWeb.CityLive do
 
     # get exponential price — don't want to set price on front-end for cheating reasons
     initial_purchase_price = get_in(Buildable.buildables_flat(), [building_to_buy_atom, :price])
-    buildable_count = length(city.details[building_to_buy_atom])
+    buildable_count = length(city[building_to_buy_atom])
 
     purchase_price = MayorGame.CityHelpers.building_price(initial_purchase_price, buildable_count)
 
@@ -186,8 +178,9 @@ defmodule MayorGameWeb.CityLive do
     # check for upgrade requirements?
 
     case City.purchase_buildable(city_struct, building_to_buy_atom, purchase_price) do
-      {:ok, _updated_details} ->
+      {_x, nil} ->
         nil
+        IO.puts('purchase success')
 
       {:error, err} ->
         Logger.error(inspect(err))
@@ -209,13 +202,13 @@ defmodule MayorGameWeb.CityLive do
     buildable_to_demolish_atom = String.to_existing_atom(building_to_demolish)
 
     # sometimes this is empty?
-    buildable_to_id = hd(city.details[String.to_existing_atom(building_to_demolish)])
-    buildable_id = buildable_to_id.buildable.id
+    # buildable_to_id = hd(city.details[String.to_existing_atom(building_to_demolish)])
+    # buildable_id = buildable_to_id.buildable.id
 
     city_struct = struct(City.Town, city)
 
-    case City.demolish_buildable(city_struct, buildable_to_demolish_atom, buildable_id) do
-      {:ok, _updated_details} ->
+    case City.demolish_buildable(city_struct, buildable_to_demolish_atom) do
+      {_x, nil} ->
         IO.puts("demolition success")
 
       {:error, err} ->
@@ -234,13 +227,6 @@ defmodule MayorGameWeb.CityLive do
     # check if user is mayor here?
     building_to_attack_atom = String.to_existing_atom(building_to_attack)
 
-    # sometimes this is empty?
-    buildable_to_id = hd(city.details[building_to_attack_atom])
-    buildable_id = buildable_to_id.buildable.id
-
-    buildable_to_delete =
-      Repo.get_by!(Ecto.assoc(city.details, building_to_attack_atom), id: buildable_id)
-
     attacking_town_struct = Repo.get!(Town, current_user.town.id)
     attacked_town_struct = struct(City.Town, city)
 
@@ -253,22 +239,27 @@ defmodule MayorGameWeb.CityLive do
         logs: limited_log
       })
 
-    from(t in Town, where: [id: ^current_user.town.id])
-    |> Repo.update_all(inc: [missiles: -1])
-
     if city.shields <= 0 && attacking_town_struct.missiles > 0 do
-      attack_building =
-        Ecto.Multi.new()
-        |> Ecto.Multi.update(
-          {:update_attacked_town, attacked_town_struct.id},
-          attacked_town_changeset
-        )
-        |> Ecto.Multi.delete({:delete_buildable, buildable_id}, buildable_to_delete)
-        |> Repo.transaction(timeout: 10_000)
+      case City.demolish_buildable(attacked_town_struct, building_to_attack_atom) do
+        {_x, nil} ->
+          from(t in Town, where: [id: ^current_user.town.id])
+          |> Repo.update_all(inc: [missiles: -1])
 
-      case attack_building do
-        {:ok, _updated_details} ->
-          IO.puts("attack success")
+          attack_building =
+            Ecto.Multi.new()
+            |> Ecto.Multi.update(
+              {:update_attacked_town, attacked_town_struct.id},
+              attacked_town_changeset
+            )
+            |> Repo.transaction(timeout: 10_000)
+
+          case attack_building do
+            {:ok, _updated_details} ->
+              IO.puts("attack success")
+
+            {:error, err} ->
+              Logger.error(inspect(err))
+          end
 
         {:error, err} ->
           Logger.error(inspect(err))
@@ -401,14 +392,11 @@ defmodule MayorGameWeb.CityLive do
     # this status is for the whole category
     buildables_with_status = calculate_buildables_statuses(city_with_stats2)
 
-    # mapped_details =
-    #   Map.from_struct(city_with_stats2.details) |> Map.take(Buildable.buildables_list())
-
     empty_buildable_map = Map.new(Buildable.buildables_list(), fn x -> {x, []} end)
 
     mapped_details_2 =
       Enum.reduce(city_with_stats2.result_buildables, empty_buildable_map, fn buildable, acc ->
-        Map.update!(acc, buildable.metadata.title, fn current_list ->
+        Map.update!(acc, buildable.title, fn current_list ->
           [buildable | current_list]
         end)
       end)
@@ -417,7 +405,7 @@ defmodule MayorGameWeb.CityLive do
 
     operating_count =
       Enum.map(mapped_details_2, fn {category, list} ->
-        {category, Enum.frequencies_by(list, fn x -> x.metadata.reason end)}
+        {category, Enum.frequencies_by(list, fn x -> x.reason end)}
       end)
       |> Enum.into(%{})
 
@@ -495,14 +483,14 @@ defmodule MayorGameWeb.CityLive do
             calculate_buildable_status(
               buildable_stats,
               city,
-              length(Map.get(city.details, buildable_key))
+              length(Map.get(city, buildable_key))
             )
           )}
        end)}
     end)
   end
 
-  # this takes a buildable metadata, and builds purchasable status from database
+  # this takes a buildable, and builds purchasable status from database
   # TODO: Clean this shit upppp
   defp calculate_buildable_status(buildable, city_with_stats, buildable_count) do
     updated_price = MayorGame.CityHelpers.building_price(buildable.price, buildable_count)
