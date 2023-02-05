@@ -54,6 +54,7 @@ defmodule MayorGame.City.Town do
             sulfur: integer,
             gold: integer,
             uranium: integer,
+            patron: integer,
             huts: integer,
             single_family_homes: integer,
             multi_family_homes: integer,
@@ -106,6 +107,8 @@ defmodule MayorGame.City.Town do
     field(:sulfur, :integer)
     field(:gold, :integer)
     field(:uranium, :integer)
+
+    field(:patron, :integer)
 
     # this corresponds to an elixir list
     field(:logs, {:array, :string})
@@ -180,7 +183,8 @@ defmodule MayorGame.City.Town do
         :shields,
         :sulfur,
         :gold,
-        :uranium
+        :uranium,
+        :patron
       ] ++ Buildable.buildables_list()
     )
     |> validate_required([:title, :region, :climate, :user_id])

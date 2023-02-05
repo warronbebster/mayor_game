@@ -1117,6 +1117,22 @@ select {
   right: 1rem;
 }
 
+.top-\[-8px\] {
+  top: -8px;
+}
+
+.left-4 {
+  left: 1rem;
+}
+
+.top-\[-4px\] {
+  top: -4px;
+}
+
+.top-\[-6px\] {
+  top: -6px;
+}
+
 .z-20 {
   z-index: 20;
 }
@@ -1175,6 +1191,10 @@ select {
   height: 100vh;
 }
 
+.h-\[12px\] {
+  height: 12px;
+}
+
 .w-screen {
   width: 100vw;
 }
@@ -1205,6 +1225,14 @@ select {
 
 .w-20 {
   width: 5rem;
+}
+
+.w-64 {
+  width: 16rem;
+}
+
+.w-72 {
+  width: 18rem;
 }
 
 .min-w-\[240px\] {
@@ -1250,6 +1278,11 @@ select {
 
 .-translate-y-8 {
   --tw-translate-y: -2rem;
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+}
+
+.translate-x-full {
+  --tw-translate-x: 100%;
   transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
 }
 
@@ -1481,6 +1514,10 @@ select {
 
 .pb-6 {
   padding-bottom: 1.5rem;
+}
+
+.align-middle {
+  vertical-align: middle;
 }
 
 .align-bottom {

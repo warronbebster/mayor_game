@@ -2,7 +2,19 @@
   <table class="self-end mr-auto align-bottom">
     <tr>
       <td class="top_td">
+      <span class="flex flex-row items-center gap-x-1">
         <%= @city2.title %>
+         <%= if @city2.patron > 0 do %>
+             <div class="group relative flex flex-row items-center text-amber-600">
+              <a href="patreon.com/user?u=88349213" target="_blank" >
+                <img src="/images/patron-1.svg" alt="patron" height="12" width="12"  />
+              </a>
+            <div class="tooltip w-72 top-[-6px] left-4">
+              This city supports fragile.city on patreon and keeps the servers from going down
+            </div>
+          </div>
+          <% end %>
+          </span>
       </td>
       <td class="top_td">
         Year
@@ -87,7 +99,7 @@
             class="inline"
           />
         </div>
-        <div class="tooltip top-0 left-0 -translate-x-full text-green-600">
+        <div class="tooltip top-0 left-0 -translate-x-full">
           Money
         </div>
       </td>
@@ -95,7 +107,7 @@
         <div class="flex items-center w-full pr-2">
           <img src="/images/energy.svg" alt="total energy" height="12" width="12" class="inline" />
         </div>
-        <div class="tooltip top-0 left-0 -translate-x-full text-yellow-600">
+        <div class="tooltip top-0 left-0 -translate-x-full ">
           Energy
         </div>
       </td>
@@ -103,7 +115,7 @@
         <div class="flex gap-1 items-center w-full pr-2">
           <img src="/images/area.svg" alt="total area" height="12" width="12" class="inline" />
         </div>
-        <div class="tooltip top-0 left-0 -translate-x-full text-cyan-600">
+        <div class="tooltip top-0 left-0 -translate-x-full ">
           Area
         </div>
       </td>
@@ -111,7 +123,7 @@
         <div class="flex gap-1 items-center w-full pr-2">
           <img src="/images/fun.svg" alt="total fun" height="12" width="12" class="inline" />
         </div>
-        <div class="tooltip top-0 left-0 -translate-x-full text-fuchsia-600">
+        <div class="tooltip top-0 left-0 -translate-x-full">
           Fun
         </div>
       </td>
@@ -119,7 +131,7 @@
         <div class="flex gap-1 items-center w-full pr-2">
           <img src="/images/health.svg" alt="total health" height="12" width="12" class="inline" />
         </div>
-        <div class="tooltip top-0 left-0 -translate-x-full text-rose-600">
+        <div class="tooltip top-0 left-0 -translate-x-full ">
           Health
         </div>
       </td>
@@ -127,7 +139,7 @@
         <div class="flex gap-1 items-center w-full pr-2">
           <img src="/images/steel.svg" alt="total steel" height="12" width="12" class="inline" />
         </div>
-        <div class="tooltip top-0 left-0 -translate-x-full text-steel-600">
+        <div class="tooltip top-0 left-0 -translate-x-full ">
           Steel
         </div>
       </td>
@@ -135,7 +147,7 @@
         <div class="flex gap-1 items-center w-full pr-2">
           <img src="/images/sulfur.svg" alt="total sulfur" height="12" width="12" class="inline" />
         </div>
-        <div class="tooltip top-0 left-0 -translate-x-full text-orange-600">
+        <div class="tooltip top-0 left-0 -translate-x-full">
           Sulfur
         </div>
       </td>
@@ -143,7 +155,7 @@
         <div class="flex gap-1 items-center w-full pr-2">
           <img src="/images/might.svg" alt="total missiles" height="12" width="12" class="inline" />
         </div>
-        <div class="tooltip top-0 left-0 -translate-x-full text-red-600">
+        <div class="tooltip top-0 left-0 -translate-x-full ">
           Missiles
         </div>
       </td>
@@ -151,7 +163,7 @@
         <div class="flex gap-1 items-center w-full pr-2">
           <img src="/images/shields.svg" alt="total might" height="12" width="12" class="inline" />
         </div>
-        <div class="tooltip top-0 left-0 -translate-x-full text-blue-600">
+        <div class="tooltip top-0 left-0 -translate-x-full ">
           Shields
         </div>
       </td>

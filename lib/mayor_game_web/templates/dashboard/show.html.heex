@@ -97,11 +97,21 @@
               to: Routes.city_path(@socket, MayorGameWeb.CityLive, city.title)
             ) %>
           </span>
-          <span class="opacity-50">
+          <%= if city.patron > 0 do %>
+             <div class="group relative flex flex-row items-center text-amber-600">
+              <a href="patreon.com/user?u=88349213" target="_blank" >
+                <img src="/images/patron-1.svg" alt="patron" height="12" width="12"  />
+              </a>
+            <div class="tooltip w-32">
+              This city supports fragile.city on patreon and keeps the servers from going down
+            </div>
+          </div>
+          <% end %>
             <%= if assigns[:current_user] && assigns[:current_user].nickname == city.user.nickname do %>
+          <span class="opacity-50">
               My City
-            <% end %>
           </span>
+            <% end %>
           <hr class="border-neutral-300 flex-1" />
           <div class="flex flex-row items-center gap-1">
             <div class="flex flex-row items-center gap-1 w-20">
