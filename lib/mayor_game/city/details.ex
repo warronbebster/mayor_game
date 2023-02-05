@@ -61,20 +61,23 @@ defmodule MayorGame.City.Details do
           arenas: list(Buildable.t() | CombinedBuildable.t()),
           # health
           hospitals: list(Buildable.t() | CombinedBuildable.t()),
-          doctor_offices: list(Buildable.t() | CombinedBuildable.t())
+          doctor_offices: list(Buildable.t() | CombinedBuildable.t()),
+          # combat
+          air_bases: list(Buildable.t() | CombinedBuildable.t()),
+          defense_bases: list(Buildable.t() | CombinedBuildable.t())
         }
 
   schema "details" do
     # add buildables to schema dynamically
     for buildable <- Buildable.buildables_list() do
-      has_many buildable, {to_string(buildable), Buildable}
+      has_many(buildable, {to_string(buildable), Buildable})
     end
 
     # ok so basically this is a macro
     # this belongs to the "town" schema
     # so there has to be a "whatever_id" has_many in the migration
     # automatically adds "_id" when looking for a foreign key, unless you set it
-    belongs_to :town, Town
+    belongs_to(:town, Town)
 
     timestamps()
   end

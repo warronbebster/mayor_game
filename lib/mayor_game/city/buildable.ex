@@ -24,7 +24,7 @@ defmodule MayorGame.City.Buildable do
   schema "buildable" do
     # has an id built-in?
     # what are the upgrades the buildable currently possesses
-    belongs_to :details, MayorGame.City.Details
+    belongs_to(:details, MayorGame.City.Details)
 
     timestamps()
 
@@ -490,7 +490,7 @@ defmodule MayorGame.City.Buildable do
           }
         },
         requires: %{
-          money: 3,
+          money: 10,
           area: 5,
           workers: %{count: 10, level: 2}
         },
@@ -711,7 +711,7 @@ defmodule MayorGame.City.Buildable do
         purchasable: true,
         purchasable_reason: "valid",
         requires: %{
-          money: 5,
+          money: 2,
           energy: 100,
           area: 2,
           workers: %{count: 3, level: 0}

@@ -78,16 +78,24 @@ defmodule MayorGame.City do
     # TODO: remove this when creating cities from token
     resourceMap = %{resources: Map.new(MayorGame.City.Town.resources(), fn x -> {x, 0} end)}
 
-    intro_attrs = %{
-      treasury: 5000,
-      pollution: 0,
-      citizen_count: 0,
-      missiles: 0,
-      shields: 0,
-      gold: 0,
-      sulfur: 0,
-      uranium: 0
-    }
+    buildables_zeroed =
+      Enum.map(Buildable.buildables_ordered_flat(), fn k ->
+        {k, 0}
+      end)
+      |> Enum.into(%{})
+
+    intro_attrs =
+      %{
+        treasury: 5000,
+        pollution: 0,
+        citizen_count: 0,
+        missiles: 0,
+        shields: 0,
+        gold: 0,
+        sulfur: 0,
+        uranium: 0
+      }
+      |> Map.merge(buildables_zeroed)
 
     # make sure keys are atoms, helps with input from phoenix forms
     attrsWithAtomKeys =
@@ -509,6 +517,11 @@ defmodule MayorGame.City do
       city.details
       |> Ecto.build_assoc(field_to_purchase, buildable_attrs)
 
+    from(t in Town,
+      where: [id: ^city.id]
+    )
+    |> Repo.update_all(inc: [{field_to_purchase, 1}])
+
     purchase_city =
       city
       |> Town.changeset(city_attrs)
@@ -543,18 +556,11 @@ defmodule MayorGame.City do
 
     refund_price = Buildable.buildables_flat()[buildable_to_demolish].price
 
-    from(t in Town,
-      where: [id: ^city.id],
-      update: [inc: [treasury: ^refund_price]]
-    )
-    |> Repo.update_all([])
-
-    # city_attrs = %{treasury: city.treasury + refund_price}
-    # refund_city =
-    #   city
-    #   |> Town.changeset(city_attrs)
-    #   |> Ecto.Changeset.validate_number(:treasury, greater_than: 0)
-    #   |> Repo.update()
+    Town
+    |> where(id: ^city.id)
+    |> update(inc: [treasury: ^refund_price])
+    # |> update(inc: [{buildable_to_delete, -1}])
+    |> Repo.update_all(inc: [{buildable_to_demolish, -1}])
 
     Repo.delete(buildable_to_delete)
   end

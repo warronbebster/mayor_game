@@ -486,7 +486,7 @@
                           width="12"
                         />
                       </button>
-                      <div class="tooltip w-32">
+                      <div class="tooltip w-32 right-4 -translate-x-full -translate-y-8">
                         Attack this building (1/<%= @current_user.town.missiles %> missiles left)
                       </div>
                     </div>
@@ -611,7 +611,7 @@
                     <%= Number.Delimit.number_to_delimited(
                       @operating_count[building_type][[]] * building_stats.produces.area
                     ) %>
-                    <div class="pointer-events-none group-hover:opacity-100 transition-opacity bg-amber-50 border border-neutral-800 z-10 p-2 absolute top-8 right-0 opacity-0 max-w-sm ">
+                    <div class="tooltip">
                       <%= @operating_count[building_type][[]] * building_stats.produces.area %> area generated
                     </div>
                   </div>
@@ -621,7 +621,7 @@
                   <div class=" group relative flex flex-row items-center text-amber-700 gap-1 w-16 cursor-help">
                     <img src="/images/housing.svg" alt="total area" height="12" width="12" />
                     <%= @operating_count[building_type][[]] * building_stats.produces.housing %>
-                    <div class="pointer-events-none group-hover:opacity-100 transition-opacity bg-amber-50 border border-neutral-800 z-10 p-2 absolute top-8 right-0 opacity-0 max-w-sm ">
+                    <div class="tooltip">
                       <%= @operating_count[building_type][[]] * building_stats.produces.housing %> housing provided
                     </div>
                   </div>
@@ -633,7 +633,7 @@
                     <%= Number.Delimit.number_to_delimited(
                       round(@operating_count[building_type][[]] * building_stats.produces.energy)
                     ) %>
-                    <div class="pointer-events-none group-hover:opacity-100 transition-opacity bg-amber-50 border border-neutral-800 z-10 p-2 absolute top-8 right-0 opacity-0 max-w-sm ">
+                    <div class="tooltip">
                       <%= Number.Delimit.number_to_delimited(
                         round(
                           @operating_count[building_type][[]] * building_stats.produces.energy

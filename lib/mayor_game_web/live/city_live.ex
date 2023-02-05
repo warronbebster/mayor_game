@@ -121,6 +121,12 @@ defmodule MayorGameWeb.CityLive do
       # reset = Map.new(Buildable.buildables_list(), fn x -> {x, []} end)
       city_struct = struct(City.Town, city)
 
+      buildables_zeroed =
+        Enum.map(Buildable.buildables_ordered_flat(), fn k ->
+          {k, 0}
+        end)
+        |> Enum.into(%{})
+
       for building_type <- Buildable.buildables_list() do
         if city.details[building_type] != [] do
           for buildable <- city.details[building_type] do
@@ -137,6 +143,8 @@ defmodule MayorGameWeb.CityLive do
 
       city_struct = struct(City.Town, city)
 
+      updated_attrs = buildables_zeroed |> Map.merge(treasury: 5000)
+
       # case City.demolish_buildable(city.details, building_to_demolish, buildable_id) do
       #   {:ok, _updated_details} ->
       #     IO.puts("demolition success")
@@ -145,7 +153,7 @@ defmodule MayorGameWeb.CityLive do
       #     Logger.error(inspect(err))
       # end
 
-      case City.update_town(city_struct, %{treasury: 5000}) do
+      case City.update_town(city_struct, updated_attrs) do
         {:ok, _updated_town} ->
           IO.puts("city_reset")
 
