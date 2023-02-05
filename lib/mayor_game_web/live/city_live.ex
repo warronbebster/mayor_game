@@ -130,8 +130,8 @@ defmodule MayorGameWeb.CityLive do
       for building_type <- Buildable.buildables_list() do
         if city[building_type] != [] do
           for buildable <- city[building_type] do
-            case City.demolish_buildable(city_struct, building_type, buildable.buildable.id) do
-              {:ok, _updated_details} ->
+            case City.demolish_buildable(city_struct, building_type) do
+              {_x, nil} ->
                 IO.puts("demolition success")
 
               {:error, err} ->

@@ -44,7 +44,7 @@ defmodule MayorGameWeb.CityCreationForm do
     city_form = Map.put(city_form, "user_id", current_user.id)
 
     # ok this needs to give attributes of user, title, region?
-    case City.create_city(city_form) do
+    case City.create_town(city_form) do
       # if city built successfully
       {:ok, _} ->
         IO.inspect('city_created')

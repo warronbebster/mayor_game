@@ -114,7 +114,9 @@ defmodule MayorGame.City do
       # if city built successfully, automatically build Details with it's id
       # update this so these fields are automatically generated
       {:ok, created_city} ->
-        IO.puts("city created!")
+        {:ok, created_city}
+
+      # IO.puts("city created!")
 
       # buildables = Map.new(Buildable.buildables_list(), fn buildable -> {buildable, []} end)
 
