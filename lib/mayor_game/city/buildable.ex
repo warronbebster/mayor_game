@@ -942,6 +942,10 @@ defmodule MayorGame.City.Buildable do
     end)
   end
 
+  def empty_buildable_map do
+    Map.new(buildables_list(), fn x -> {x, []} end)
+  end
+
   # ——————————————————————————————————————————————————————————————————
 
   # defmodule MayorGame.City.Upgrade do

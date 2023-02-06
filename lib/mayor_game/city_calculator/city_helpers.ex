@@ -40,16 +40,8 @@ defmodule MayorGame.CityHelpers do
     },
     ```
   """
-  def calculate_city_stats(%Town{} = city, %World{} = world, pollution_ceiling) do
+  def calculate_city_stats(%Town{} = city, %World{} = world, pollution_ceiling, season) do
     city_preloaded = preload_city_check(city)
-
-    season =
-      cond do
-        rem(world.day, 365) < 91 -> :winter
-        rem(world.day, 365) < 182 -> :spring
-        rem(world.day, 365) < 273 -> :summer
-        true -> :fall
-      end
 
     city_baked_direct = bake_details_int(city_preloaded)
 
@@ -593,7 +585,7 @@ defmodule MayorGame.CityHelpers do
 
       # NO FLOW
       combined_array =
-        if buildable_count == 0 do
+        if buildable_count <= 0 do
           []
         else
           Enum.map(1..buildable_count, fn _x ->

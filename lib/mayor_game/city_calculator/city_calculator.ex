@@ -53,6 +53,14 @@ defmodule MayorGame.CityCalculator do
         to_string(db_world.pollution) <> " | —————————————————————————————————————————————"
     )
 
+    season =
+      cond do
+        rem(world.day, 365) < 91 -> :winter
+        rem(world.day, 365) < 182 -> :spring
+        rem(world.day, 365) < 273 -> :summer
+        true -> :fall
+      end
+
     cities_list = if rem(db_world.day, 2) == 1, do: Enum.reverse(cities), else: cities
 
     # result is map %{cities_w_room: [], citizens_looking: [], citizens_to_reproduce: [], etc}
@@ -88,7 +96,8 @@ defmodule MayorGame.CityCalculator do
             CityHelpers.calculate_city_stats(
               city,
               db_world,
-              pollution_ceiling
+              pollution_ceiling,
+              season
             )
 
           citizens_looking =
@@ -195,29 +204,6 @@ defmodule MayorGame.CityCalculator do
       end)
       |> Map.new(fn city -> {city.id, city} end)
 
-    # slotted_cities_by_id =
-    #   Map.keys(leftovers.housing_slots)
-    #   |> Flow.from_enumerable(max_demand: 100)
-    #   |> Flow.map(fn city ->
-    #     normalize_city(
-    #       city,
-    #       leftovers.fun_max,
-    #       leftovers.health_max,
-    #       leftovers.pollution_max,
-    #       leftovers.sprawl_max
-    #     )
-    #   end)
-    #   |> Enum.to_list()
-    #   |> Map.new(fn city -> {city.id, city} end)
-
-    # shape: %{
-    # city_id: {normalized_city, slots},
-    # city_id: {normalized_city, slots}
-    # }
-
-    # shape: %{
-    # city_id: slots
-    # }
     housing_slots_by_city_id =
       leftovers.housing_slots
       |> Enum.map(fn {city, slots} ->
@@ -719,23 +705,6 @@ defmodule MayorGame.CityCalculator do
             update: [push: [logs: "A citizen died a lack of housing. RIP"]]
           )
           |> Repo.update_all([])
-
-          # Enum.reduce(chunk, Ecto.Multi.new(), fn citizen, multi ->
-          #   town = struct(Town, all_cities_by_id[citizen.town_id])
-
-          #   log =
-          #     CityHelpers.describe_citizen(citizen) <>
-          #       " has died because of a lack of housing. RIP"
-
-          #   limited_log = update_logs(log, town.logs)
-
-          #   town_changeset =
-          #     town
-          #     |> City.Town.changeset(%{logs: limited_log})
-
-          #   Ecto.Multi.update(multi, {:update, citizen.id}, town_changeset)
-          # end)
-          # |> Repo.transaction(timeout: 20_000)
         end)
 
         #
@@ -781,7 +750,7 @@ defmodule MayorGame.CityCalculator do
                 |> Map.put(:pollution, 0)
                 |> Map.put(:citizen_count, -1)
                 |> Map.put(:steel, 0)
-                |> Map.put(:treasury, 0)
+                # |> Map.put(:treasury, 0)
                 |> Map.put(:missiles, 0)
                 |> Map.put(:sulfur, 0)
                 |> Map.put(:gold, 0)
@@ -801,6 +770,9 @@ defmodule MayorGame.CityCalculator do
               citizen_count: city.citizen_count
             }
 
+            # I could make all these atomic
+            # then i don't think I'd need to fetch these from the DB again here in all_cities_recent
+
             # ok this works
 
             # if city.id == 2 do
@@ -818,10 +790,6 @@ defmodule MayorGame.CityCalculator do
                     update_logs("A citizen has moved here", city.logs)
                   )
                 )
-
-              # if city.id == 2 do
-              #   IO.inspect(town_update_changeset)
-              # end
 
               create_citizen_changeset =
                 City.create_citizens_changeset(%{

@@ -129,7 +129,7 @@ defmodule MayorGameWeb.CityLive do
 
       for building_type <- Buildable.buildables_list() do
         if city[building_type] != [] do
-          for buildable <- city[building_type] do
+          for _buildable <- city[building_type] do
             case City.demolish_buildable(city_struct, building_type) do
               {_x, nil} ->
                 IO.puts("demolition success")
@@ -201,18 +201,20 @@ defmodule MayorGameWeb.CityLive do
     # check if user is mayor here?
     buildable_to_demolish_atom = String.to_existing_atom(building_to_demolish)
 
-    # sometimes this is empty?
-    # buildable_to_id = hd(city.details[String.to_existing_atom(building_to_demolish)])
-    # buildable_id = buildable_to_id.buildable.id
-
     city_struct = struct(City.Town, city)
 
-    case City.demolish_buildable(city_struct, buildable_to_demolish_atom) do
-      {_x, nil} ->
-        IO.puts("demolition success")
+    buildable_count = length(city[buildable_to_demolish_atom])
 
-      {:error, err} ->
-        Logger.error(inspect(err))
+    if buildable_count > 0 do
+      case City.demolish_buildable(city_struct, buildable_to_demolish_atom) do
+        {_x, nil} ->
+          IO.puts("demolition success")
+
+        {:error, err} ->
+          Logger.error(inspect(err))
+      end
+    else
+      City.update_town(city_struct, %{buildable_to_demolish_atom => 0})
     end
 
     # this is all ya gotta do to update, baybee
@@ -376,14 +378,12 @@ defmodule MayorGameWeb.CityLive do
       City.get_town_by_title!(title)
       |> MayorGame.CityHelpers.preload_city_check()
 
-    # grab whole user struct
-    # city_user = Auth.get_user!(city.user_id)
-
     city_with_stats2 =
       MayorGame.CityHelpers.calculate_city_stats(
         city,
         world,
-        pollution_ceiling
+        pollution_ceiling,
+        season
       )
 
     # ok, here the price is updated per each CombinedBuildable
@@ -392,14 +392,16 @@ defmodule MayorGameWeb.CityLive do
     # this status is for the whole category
     buildables_with_status = calculate_buildables_statuses(city_with_stats2)
 
-    empty_buildable_map = Map.new(Buildable.buildables_list(), fn x -> {x, []} end)
-
     mapped_details_2 =
-      Enum.reduce(city_with_stats2.result_buildables, empty_buildable_map, fn buildable, acc ->
-        Map.update!(acc, buildable.title, fn current_list ->
-          [buildable | current_list]
-        end)
-      end)
+      Enum.reduce(
+        city_with_stats2.result_buildables,
+        Buildable.empty_buildable_map(),
+        fn buildable, acc ->
+          Map.update!(acc, buildable.title, fn current_list ->
+            [buildable | current_list]
+          end)
+        end
+      )
 
     # need to get a map with the key
 
@@ -435,7 +437,7 @@ defmodule MayorGameWeb.CityLive do
   end
 
   # function to mount city
-  defp mount_city_by_title(%{assigns: %{title: title, world: world}} = socket) do
+  defp mount_city_by_title(%{assigns: %{title: title}} = socket) do
     # this shouuuuld be fresh…
     city = City.get_town_by_title!(title)
 
