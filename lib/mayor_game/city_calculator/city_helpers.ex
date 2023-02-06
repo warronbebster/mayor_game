@@ -1,5 +1,5 @@
 defmodule MayorGame.CityHelpers do
-  alias MayorGame.City.{Citizens, Town, Buildable, CombinedBuildable, World}
+  alias MayorGame.City.{Citizens, Town, Buildable, World}
 
   @doc """
     takes a %Town{} struct and %World{} struct
@@ -353,7 +353,7 @@ defmodule MayorGame.CityHelpers do
     # Iterate through citizens
     # ________________________________________________________________________
     pollution_reached = world.pollution > pollution_ceiling
-    time_to_learn = rem(world.day, 365) == 0
+    time_to_learn = rem(world.day, 91) == 0
 
     after_citizen_checks =
       all_citizens
