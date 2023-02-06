@@ -774,12 +774,6 @@ defmodule MayorGame.CityCalculator do
                 do: 0,
                 else: newest_treasury + city.income - city.daily_cost
 
-            # buildables_zeroed =
-            #   Enum.map(Buildable.buildables_ordered_flat(), fn k ->
-            #     {k, 0}
-            #   end)
-            #   |> Enum.into(%{})
-
             town_struct =
               struct(
                 Town,
@@ -793,7 +787,6 @@ defmodule MayorGame.CityCalculator do
                 |> Map.put(:gold, 0)
                 |> Map.put(:uranium, 0)
                 |> Map.put(:shields, 0)
-                # |> Map.merge(buildables_zeroed)
               )
 
             updated_attrs = %{
@@ -808,12 +801,6 @@ defmodule MayorGame.CityCalculator do
               citizen_count: city.citizen_count
             }
 
-            synced_count =
-              Enum.map(Buildable.buildables_ordered_flat(), fn k ->
-                {k, length(city[k])}
-              end)
-              |> Enum.into(%{})
-
             # ok this works
 
             # if city.id == 2 do
@@ -826,7 +813,7 @@ defmodule MayorGame.CityCalculator do
                 City.Town.changeset(
                   town_struct,
                   Map.put(
-                    Map.merge(updated_attrs, synced_count),
+                    updated_attrs,
                     :logs,
                     update_logs("A citizen has moved here", city.logs)
                   )
@@ -848,8 +835,7 @@ defmodule MayorGame.CityCalculator do
               Ecto.Multi.insert(multi, {:add_citizen, city.id + 1}, create_citizen_changeset)
               |> Ecto.Multi.update({:update_towns, city.id}, town_update_changeset)
             else
-              town_update_changeset =
-                City.Town.changeset(town_struct, Map.merge(updated_attrs, synced_count))
+              town_update_changeset = City.Town.changeset(town_struct, updated_attrs)
 
               Ecto.Multi.update(multi, {:update_towns, city.id}, town_update_changeset)
             end

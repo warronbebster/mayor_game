@@ -1109,28 +1109,20 @@ select {
   top: 0px;
 }
 
-.left-0 {
-  left: 0px;
-}
-
-.right-4 {
-  right: 1rem;
-}
-
-.top-\[-8px\] {
-  top: -8px;
+.top-\[-6px\] {
+  top: -6px;
 }
 
 .left-4 {
   left: 1rem;
 }
 
-.top-\[-4px\] {
-  top: -4px;
+.left-0 {
+  left: 0px;
 }
 
-.top-\[-6px\] {
-  top: -6px;
+.right-4 {
+  right: 1rem;
 }
 
 .z-20 {
@@ -1191,12 +1183,12 @@ select {
   height: 100vh;
 }
 
-.h-\[12px\] {
-  height: 12px;
-}
-
 .w-screen {
   width: 100vw;
+}
+
+.w-72 {
+  width: 18rem;
 }
 
 .w-full {
@@ -1225,14 +1217,6 @@ select {
 
 .w-20 {
   width: 5rem;
-}
-
-.w-64 {
-  width: 16rem;
-}
-
-.w-72 {
-  width: 18rem;
 }
 
 .min-w-\[240px\] {
@@ -1281,11 +1265,6 @@ select {
   transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
 }
 
-.translate-x-full {
-  --tw-translate-x: 100%;
-  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
-}
-
 .cursor-help {
   cursor: help;
 }
@@ -1318,6 +1297,11 @@ select {
   gap: 0.5rem;
 }
 
+.gap-x-1 {
+  -moz-column-gap: 0.25rem;
+       column-gap: 0.25rem;
+}
+
 .gap-x-8 {
   -moz-column-gap: 2rem;
        column-gap: 2rem;
@@ -1325,11 +1309,6 @@ select {
 
 .gap-y-4 {
   row-gap: 1rem;
-}
-
-.gap-x-1 {
-  -moz-column-gap: 0.25rem;
-       column-gap: 0.25rem;
 }
 
 .space-x-3 > :not([hidden]) ~ :not([hidden]) {
@@ -1516,10 +1495,6 @@ select {
   padding-bottom: 1.5rem;
 }
 
-.align-middle {
-  vertical-align: middle;
-}
-
 .align-bottom {
   vertical-align: bottom;
 }
@@ -1553,14 +1528,14 @@ select {
   line-height: 1;
 }
 
-.text-purple-600 {
-  --tw-text-opacity: 1;
-  color: rgb(147 51 234 / var(--tw-text-opacity));
-}
-
 .text-amber-600 {
   --tw-text-opacity: 1;
   color: rgb(217 119 6 / var(--tw-text-opacity));
+}
+
+.text-purple-600 {
+  --tw-text-opacity: 1;
+  color: rgb(147 51 234 / var(--tw-text-opacity));
 }
 
 .text-green-600 {
