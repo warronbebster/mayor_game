@@ -40,19 +40,25 @@ defmodule MayorGame.CityHelpers do
     },
     ```
   """
-  def calculate_city_stats(%Town{} = city, %World{} = world, pollution_ceiling, season) do
+  def calculate_city_stats(
+        %Town{} = city,
+        %World{} = world,
+        pollution_ceiling,
+        season,
+        buildables_map
+      ) do
     city_preloaded = preload_city_check(city)
 
-    city_baked_direct = bake_details_int(city_preloaded)
+    city_baked_direct = bake_details_int(city_preloaded, buildables_map)
 
-    all_buildables = city_baked_direct |> Map.take(Buildable.buildables_list())
+    all_buildables = city_baked_direct |> Map.take(buildables_map.buildables_list)
 
     # this is a map
 
     # I think this looks like a keyword list with {type of buildable, list of actual buildables}
 
     ordered_buildables =
-      Enum.map(Buildable.buildables_ordered_flat(), fn x -> {x, all_buildables[x]} end)
+      Enum.map(buildables_map.buildables_ordered_flat, fn x -> {x, all_buildables[x]} end)
 
     sorted_citizens = Enum.sort_by(city_baked_direct.citizens, & &1.education, :desc)
     citizen_count = length(sorted_citizens)
@@ -193,6 +199,7 @@ defmodule MayorGame.CityHelpers do
                     |> Map.update!(:citizens, fn current_citizens ->
                       # this is where I need to filter by the job level
                       # I thought this would do it
+                      # TODO: OPTIMIZE THIS
                       current_citizens -- checked_workers
                     end)
                     |> Map.update!(:jobs, fn current_jobs_map ->
@@ -562,19 +569,19 @@ defmodule MayorGame.CityHelpers do
     end
   end
 
-  @spec bake_details_int(Town.t()) :: Town.t()
+  # @spec bake_details_int(Town.t(), %{}) :: Town.t()
   @doc """
       Takes a %Town{} struct
 
       returns the %Details{} with each buildable listing %CombinedBuildable{}s instead of raw %Buildable{}s
   """
-  def bake_details_int(%Town{} = town) do
-    Enum.reduce(Buildable.buildables_list(), town, fn buildable_list_item, town_acc ->
+  def bake_details_int(%Town{} = town, buildables_map) do
+    Enum.reduce(buildables_map.buildables_list, town, fn buildable_list_item, town_acc ->
       buildable_count = Map.get(town_acc, buildable_list_item)
 
       # if Map.has_key?(town_acc, buildable_list_item) && buildable_count > 0 do
 
-      buildable_metadata = Map.get(Buildable.buildables_flat(), buildable_list_item)
+      buildable_metadata = Map.get(buildables_map.buildables_flat, buildable_list_item)
 
       updated_price = building_price(buildable_metadata.price, buildable_count)
 

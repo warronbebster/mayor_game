@@ -21,6 +21,17 @@ defmodule MayorGame.CityCalculator do
   end
 
   def init(initial_world) do
+    buildables_map = %{
+      buildables_flat: Buildable.buildables_flat(),
+      buildables_kw_list: Buildable.buildables_kw_list(),
+      buildables: Buildable.buildables(),
+      buildables_list: Buildable.buildables_list(),
+      buildables_ordered: Buildable.buildables_ordered(),
+      buildables_ordered_flat: Buildable.buildables_ordered_flat(),
+      sorted_buildables: Buildable.sorted_buildables(),
+      empty_buildable_map: Buildable.empty_buildable_map()
+    }
+
     IO.puts('init')
     # initial_val is 1 here, set in application.ex then started with start_link
 
@@ -29,14 +40,14 @@ defmodule MayorGame.CityCalculator do
 
     # send message :tax to self process after 5000ms
     # calls `handle_info` function
-    Process.send_after(self(), :tax, 5000)
+    Process.send_after(self(), :tax, 2000)
 
     # returns ok tuple when u start
-    {:ok, game_world}
+    {:ok, %{world: game_world, buildables_map: buildables_map}}
   end
 
   # when :tax is sent
-  def handle_info(:tax, world) do
+  def handle_info(:tax, %{world: world, buildables_map: buildables_map} = sent_map) do
     cities = City.list_cities_preload()
     cities_count = Enum.count(cities)
 
@@ -62,6 +73,8 @@ defmodule MayorGame.CityCalculator do
       end
 
     cities_list = if rem(db_world.day, 2) == 1, do: Enum.reverse(cities), else: cities
+
+    # :eprof.start_profiling([self()])
 
     # result is map %{cities_w_room: [], citizens_looking: [], citizens_to_reproduce: [], etc}
     # FIRST ROUND CHECK
@@ -97,7 +110,8 @@ defmodule MayorGame.CityCalculator do
               city,
               db_world,
               pollution_ceiling,
-              season
+              season,
+              buildables_map
             )
 
           citizens_looking =
@@ -105,8 +119,6 @@ defmodule MayorGame.CityCalculator do
               city_with_stats2.housed_employed_looking_citizens
 
           housing_slots = city_with_stats2.housing_left
-
-          # + length(city_with_stats2.housed_unemployed_citizens) + length(city_with_stats2.housed_employed_looking_citizens)
 
           %{
             all_cities_new: [city_with_stats2 | acc.all_cities_new],
@@ -158,6 +170,9 @@ defmodule MayorGame.CityCalculator do
           }
         end
       )
+
+    # :eprof.stop_profiling()
+    # :eprof.analyze()
 
     total_slots =
       leftovers.housing_slots
@@ -981,7 +996,7 @@ defmodule MayorGame.CityCalculator do
           # |> Repo.transaction(timeout: 20_000)
         end)
       end,
-      timeout: 600_000
+      timeout: 6_000_000
     )
 
     updated_pollution =
@@ -1010,7 +1025,7 @@ defmodule MayorGame.CityCalculator do
     Process.send_after(self(), :tax, 2000)
 
     # returns this to whatever calls ?
-    {:noreply, updated_world}
+    {:noreply, %{world: updated_world, buildables_map: buildables_map}}
   end
 
   def update_logs(log, existing_logs) do

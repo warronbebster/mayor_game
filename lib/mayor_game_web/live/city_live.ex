@@ -45,6 +45,17 @@ defmodule MayorGameWeb.CityLive do
       combat: "Combat buildings let you attack other cities, or defend your city from attack."
     }
 
+    buildables_map = %{
+      buildables_flat: Buildable.buildables_flat(),
+      buildables_kw_list: Buildable.buildables_kw_list(),
+      buildables: Buildable.buildables(),
+      buildables_list: Buildable.buildables_list(),
+      buildables_ordered: Buildable.buildables_ordered(),
+      buildables_ordered_flat: Buildable.buildables_ordered_flat(),
+      sorted_buildables: Buildable.sorted_buildables(),
+      empty_buildable_map: Buildable.empty_buildable_map()
+    }
+
     # production_categories = [:energy, :area, :housing]
 
     {
@@ -53,6 +64,7 @@ defmodule MayorGameWeb.CityLive do
       # put the title and day in assigns
       |> assign(:title, title)
       |> assign(:world, world)
+      |> assign(:buildables_map, buildables_map)
       |> assign(:building_requirements, ["workers", "energy", "area", "money", "steel", "sulfur"])
       |> assign(:category_explanations, explanations)
       |> mount_city_by_title()
@@ -122,7 +134,7 @@ defmodule MayorGameWeb.CityLive do
       city_struct = struct(City.Town, city)
 
       buildables_zeroed =
-        Enum.map(Buildable.buildables_ordered_flat(), fn k ->
+        Enum.map(socket.assigns.buildables_map.buildables_ordered_flat, fn k ->
           {k, 0}
         end)
         |> Enum.into(%{})
@@ -383,19 +395,24 @@ defmodule MayorGameWeb.CityLive do
         city,
         world,
         pollution_ceiling,
-        season
+        season,
+        socket.assigns.buildables_map
       )
 
     # ok, here the price is updated per each CombinedBuildable
 
     # have to have this separate from the actual city because the city might not have some buildables, but they're still purchasable
     # this status is for the whole category
-    buildables_with_status = calculate_buildables_statuses(city_with_stats2)
+    buildables_with_status =
+      calculate_buildables_statuses(
+        city_with_stats2,
+        socket.assigns.buildables_map.buildables_kw_list
+      )
 
     mapped_details_2 =
       Enum.reduce(
         city_with_stats2.result_buildables,
-        Buildable.empty_buildable_map(),
+        socket.assigns.buildables_map.empty_buildable_map,
         fn buildable, acc ->
           Map.update!(acc, buildable.title, fn current_list ->
             [buildable | current_list]
@@ -475,8 +492,8 @@ defmodule MayorGameWeb.CityLive do
   end
 
   # this takes the generic buildables map and builds the status (enabled, etc) for each buildable
-  defp calculate_buildables_statuses(city) do
-    Enum.map(Buildable.buildables_kw_list(), fn {category, buildables} ->
+  defp calculate_buildables_statuses(city, buildables_kw_list) do
+    Enum.map(buildables_kw_list, fn {category, buildables} ->
       {category,
        buildables
        |> Enum.map(fn {buildable_key, buildable_stats} ->
