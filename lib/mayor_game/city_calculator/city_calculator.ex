@@ -74,110 +74,180 @@ defmodule MayorGame.CityCalculator do
 
     cities_list = if rem(db_world.day, 2) == 1, do: Enum.reverse(cities), else: cities
 
-    # :eprof.start_profiling([self()])
-
     # result is map %{cities_w_room: [], citizens_looking: [], citizens_to_reproduce: [], etc}
     # FIRST ROUND CHECK
     # go through all cities
     # could try flowing this
-    leftovers =
-      Enum.reduce(
-        cities_list,
-        %{
-          # all_cities: [],
-          all_cities_new: [],
-          citizens_looking: [],
-          citizens_out_of_room: [],
-          citizens_learning: %{0 => [], 1 => [], 2 => [], 3 => [], 4 => [], 5 => []},
-          citizens_too_old: [],
-          citizens_polluted: [],
-          citizens_to_reproduce: [],
-          new_world_pollution: 0,
-          housed_unemployed_citizens: [],
-          housed_employed_looking_citizens: [],
-          unhoused_citizens: [],
-          housing_slots: %{},
-          sprawl_max: 0,
-          fun_max: 0,
-          pollution_max: 0,
-          health_max: 0
-        },
-        fn city, acc ->
-          # result here is a %Town{} with stats calculated
+    # leftovers =
+    #   Enum.reduce(
+    #     cities_list,
+    #     %{
+    #       # all_cities: [],
+    #       all_cities_new: [],
+    #       citizens_looking: [],
+    #       citizens_learning: %{0 => [], 1 => [], 2 => [], 3 => [], 4 => [], 5 => []},
+    #       citizens_too_old: [],
+    #       citizens_polluted: [],
+    #       citizens_to_reproduce: [],
+    #       new_world_pollution: 0,
+    #       housed_unemployed_citizens: [],
+    #       housed_employed_looking_citizens: [],
+    #       unhoused_citizens: [],
+    #       housing_slots: %{},
+    #       sprawl_max: 0,
+    #       fun_max: 0,
+    #       pollution_max: 0,
+    #       health_max: 0
+    #     },
+    #     fn city, acc ->
+    #       # result here is a %Town{} with stats calculated
 
-          city_with_stats2 =
-            CityHelpers.calculate_city_stats(
-              city,
-              db_world,
-              pollution_ceiling,
-              season,
-              buildables_map
-            )
+    #       city_with_stats2 =
+    #         CityHelpers.calculate_city_stats(
+    #           city,
+    #           db_world,
+    #           pollution_ceiling,
+    #           season,
+    #           buildables_map
+    #         )
 
-          citizens_looking =
-            city_with_stats2.housed_unemployed_citizens ++
-              city_with_stats2.housed_employed_looking_citizens
+    #       citizens_looking =
+    #         city_with_stats2.housed_unemployed_citizens ++
+    #           city_with_stats2.housed_employed_looking_citizens
 
-          housing_slots = city_with_stats2.housing_left
+    #       housing_slots = city_with_stats2.housing_left
 
-          %{
-            all_cities_new: [city_with_stats2 | acc.all_cities_new],
-            # all_cities: [city_calculated_values | acc.all_cities],
-            citizens_too_old: city_with_stats2.old_citizens ++ acc.citizens_too_old,
-            citizens_learning:
-              Map.merge(city_with_stats2.educated_citizens, acc.citizens_learning, fn _k,
-                                                                                      v1,
-                                                                                      v2 ->
-                v1 ++ v2
-              end),
-            citizens_polluted: city_with_stats2.polluted_citizens ++ acc.citizens_polluted,
-            citizens_to_reproduce:
-              city_with_stats2.reproducing_citizens ++ acc.citizens_to_reproduce,
-            citizens_out_of_room: city_with_stats2.unhoused_citizens ++ acc.citizens_out_of_room,
-            citizens_looking: citizens_looking ++ acc.citizens_looking,
-            new_world_pollution: city_with_stats2.pollution + acc.new_world_pollution,
-            housed_unemployed_citizens:
-              city_with_stats2.housed_unemployed_citizens ++ acc.housed_unemployed_citizens,
-            housed_employed_looking_citizens:
-              city_with_stats2.housed_employed_looking_citizens ++
-                acc.housed_employed_looking_citizens,
-            unhoused_citizens: city_with_stats2.unhoused_citizens ++ acc.unhoused_citizens,
-            housing_slots:
-              if(housing_slots > 0,
-                do: Map.put(acc.housing_slots, city_with_stats2, housing_slots),
-                else: acc.housing_slots
-              ),
-            sprawl_max:
-              if(Map.has_key?(city_with_stats2, :sprawl),
-                do: max(city_with_stats2.sprawl, acc.sprawl_max),
-                else: acc.sprawl_max
-              ),
-            fun_max:
-              if(Map.has_key?(city_with_stats2, :fun),
-                do: max(city_with_stats2.fun, acc.fun_max),
-                else: acc.fun_max
-              ),
-            pollution_max:
-              if(Map.has_key?(city_with_stats2, :pollution),
-                do: max(city_with_stats2.pollution, acc.pollution_max),
-                else: acc.pollution_max
-              ),
-            health_max:
-              if(Map.has_key?(city_with_stats2, :health),
-                do: max(city_with_stats2.health, acc.health_max),
-                else: acc.health_max
-              )
-          }
-        end
+    #       %{
+    #         all_cities_new: [city_with_stats2 | acc.all_cities_new],
+    #         # all_cities: [city_calculated_values | acc.all_cities],
+    #         citizens_too_old: city_with_stats2.old_citizens ++ acc.citizens_too_old,
+    #         citizens_learning:
+    #           Map.merge(city_with_stats2.educated_citizens, acc.citizens_learning, fn _k,
+    #                                                                                   v1,
+    #                                                                                   v2 ->
+    #             v1 ++ v2
+    #           end),
+    #         citizens_polluted: city_with_stats2.polluted_citizens ++ acc.citizens_polluted,
+    #         citizens_to_reproduce:
+    #           city_with_stats2.reproducing_citizens ++ acc.citizens_to_reproduce,
+    #         citizens_looking: citizens_looking ++ acc.citizens_looking,
+    #         new_world_pollution: city_with_stats2.pollution + acc.new_world_pollution,
+    #         housed_unemployed_citizens:
+    #           city_with_stats2.housed_unemployed_citizens ++ acc.housed_unemployed_citizens,
+    #         housed_employed_looking_citizens:
+    #           city_with_stats2.housed_employed_looking_citizens ++
+    #             acc.housed_employed_looking_citizens,
+    #         unhoused_citizens: city_with_stats2.unhoused_citizens ++ acc.unhoused_citizens,
+    #         housing_slots:
+    #           if(housing_slots > 0,
+    #             do: Map.put(acc.housing_slots, city_with_stats2, housing_slots),
+    #             else: acc.housing_slots
+    #           ),
+    #         sprawl_max:
+    #           if(Map.has_key?(city_with_stats2, :sprawl),
+    #             do: max(city_with_stats2.sprawl, acc.sprawl_max),
+    #             else: acc.sprawl_max
+    #           ),
+    #         fun_max:
+    #           if(Map.has_key?(city_with_stats2, :fun),
+    #             do: max(city_with_stats2.fun, acc.fun_max),
+    #             else: acc.fun_max
+    #           ),
+    #         pollution_max:
+    #           if(Map.has_key?(city_with_stats2, :pollution),
+    #             do: max(city_with_stats2.pollution, acc.pollution_max),
+    #             else: acc.pollution_max
+    #           ),
+    #         health_max:
+    #           if(Map.has_key?(city_with_stats2, :health),
+    #             do: max(city_with_stats2.health, acc.health_max),
+    #             else: acc.health_max
+    #           )
+    #       }
+    #     end
+    #   )
+
+    # :eprof.start_profiling([self()])
+
+    leftovers2 =
+      cities_list
+      |> Flow.from_enumerable(max_demand: 100)
+      |> Flow.map(fn city ->
+        # result here is a %Town{} with stats calculated
+        CityHelpers.calculate_city_stats(
+          city,
+          db_world,
+          pollution_ceiling,
+          season,
+          buildables_map
+        )
+      end)
+
+    #
+
+    # citizens_looking =
+    #   city_with_stats2.housed_unemployed_citizens ++
+    #     city_with_stats2.housed_employed_looking_citizens
+
+    # housing_slots = city_with_stats2.housing_left
+
+    # + length(city_with_stats2.housed_unemployed_citizens) + length(city_with_stats2.housed_employed_looking_citizens)
+
+    # All_cities_new = just leftovers2
+
+    citizens_too_old = List.flatten(Enum.map(leftovers2, fn city -> city.old_citizens end))
+
+    citizens_looking =
+      List.flatten(
+        Enum.map(leftovers2, fn city ->
+          city.housed_unemployed_citizens ++ city.housed_employed_looking_citizens
+        end)
       )
+
+    citizens_polluted = List.flatten(Enum.map(leftovers2, fn city -> city.polluted_citizens end))
+
+    citizens_to_reproduce =
+      List.flatten(Enum.map(leftovers2, fn city -> city.reproducing_citizens end))
+
+    unhoused_citizens = List.flatten(Enum.map(leftovers2, fn city -> city.unhoused_citizens end))
+    new_world_pollution = Enum.sum(Enum.map(leftovers2, fn city -> city.pollution end))
+    total_slots = Enum.sum(Enum.map(leftovers2, fn city -> city.housing_left end))
+
+    housing_slots = Enum.map(leftovers2, fn city -> {city.id, city.housing_left} end) |> Map.new()
+
+    sprawl_max = Enum.max(Enum.map(leftovers2, fn city -> city.sprawl end))
+    pollution_max = Enum.max(Enum.map(leftovers2, fn city -> city.pollution end))
+    fun_max = Enum.max(Enum.map(leftovers2, fn city -> city.fun end))
+    health_max = Enum.max(Enum.map(leftovers2, fn city -> city.health end))
+
+    citizens_learning = %{
+      1 => List.flatten(Enum.map(leftovers2, fn city -> city.educated_citizens[1] end)),
+      2 => List.flatten(Enum.map(leftovers2, fn city -> city.educated_citizens[2] end)),
+      3 => List.flatten(Enum.map(leftovers2, fn city -> city.educated_citizens[3] end)),
+      4 => List.flatten(Enum.map(leftovers2, fn city -> city.educated_citizens[4] end)),
+      5 => List.flatten(Enum.map(leftovers2, fn city -> city.educated_citizens[5] end))
+    }
+
+    slotted_cities_by_id =
+      leftovers2
+      |> Enum.map(fn city ->
+        normalize_city(
+          city,
+          fun_max,
+          health_max,
+          pollution_max,
+          sprawl_max
+        )
+      end)
+      |> Map.new(fn city -> {city.id, city} end)
 
     # :eprof.stop_profiling()
     # :eprof.analyze()
 
-    total_slots =
-      leftovers.housing_slots
-      |> Map.values()
-      |> Enum.sum()
+    # total_slots =
+    #   housing_slots
+    #   |> Map.values()
+    #   |> Enum.sum()
 
     # ok so here each city has
 
@@ -200,36 +270,37 @@ defmodule MayorGame.CityCalculator do
     # }
     # all_cities_by_id = maybe make a map here of city in all_cities_new and their id
     # or all_cities_new might already be that, by index
-    # or the map is just of the ones with housing slots (e.g. in leftovers.housing_slots)
+    # or the map is just of the ones with housing slots (e.g. in housing_slots)
     all_cities_by_id =
-      leftovers.all_cities_new
+      leftovers2
       |> Map.new(fn city -> {city.id, city} end)
 
     # NO FLOW
-    slotted_cities_by_id =
-      Map.keys(leftovers.housing_slots)
-      |> Enum.map(fn city ->
-        normalize_city(
-          city,
-          leftovers.fun_max,
-          leftovers.health_max,
-          leftovers.pollution_max,
-          leftovers.sprawl_max
-        )
-      end)
-      |> Map.new(fn city -> {city.id, city} end)
+    # slotted_cities_by_id =
+    #   Map.keys(housing_slots)
+    #   |> Enum.map(fn city ->
+    #     normalize_city(
+    #       city,
+    #       fun_max,
+    #       health_max,
+    #       pollution_max,
+    #       sprawl_max
+    #     )
+    #   end)
+    #   |> Map.new(fn city -> {city.id, city} end)
 
-    housing_slots_by_city_id =
-      leftovers.housing_slots
-      |> Enum.map(fn {city, slots} ->
-        {city.id, slots}
-      end)
-      |> Enum.into(%{})
+    # housing_slots_by_city_id =
+    #   housing_slots
+    #   |> Enum.map(fn {city, slots} ->
+    #     {city.id, slots}
+    #   end)
+    #   |> Enum.into(%{})
 
-    # leftovers.housing_slots is a list of {city, number of slots}
+    # housing_slots is a list of {city, number of slots}
+    # try FLOW here with a partition + reduce
     job_and_housing_slots_normalized =
       Enum.reduce(
-        housing_slots_by_city_id,
+        housing_slots,
         %{level_slots: level_slots, total_slots_left: total_slots},
         fn {normalized_city_id, housing_slots_count}, acc ->
           slots_per_level =
@@ -284,7 +355,7 @@ defmodule MayorGame.CityCalculator do
       Map.new(0..5, fn x ->
         {x,
          Enum.split(
-           Enum.filter(leftovers.citizens_looking, fn cit -> cit.education == x end),
+           Enum.filter(citizens_looking, fn cit -> cit.education == x end),
            job_and_housing_slots_normalized.level_slots[x].total_slots
          )}
       end)
@@ -427,10 +498,10 @@ defmodule MayorGame.CityCalculator do
 
         # take housing slots, remove any city that was occupied previously
         slots_after_job_migrations =
-          if leftovers.housing_slots == %{} do
+          if housing_slots == %{} do
             %{}
           else
-            Enum.reduce(occupied_slots, housing_slots_by_city_id, fn city_id, acc ->
+            Enum.reduce(occupied_slots, housing_slots, fn city_id, acc ->
               # need to find the right key, these cities are already normalized
               if is_nil(city_id) do
                 acc
@@ -600,7 +671,7 @@ defmodule MayorGame.CityCalculator do
           )
 
         unhoused_split =
-          Enum.shuffle(leftovers.unhoused_citizens)
+          Enum.shuffle(unhoused_citizens)
           |> Enum.split(length(housing_slots_2_expanded))
 
         slots_filtered =
@@ -743,7 +814,7 @@ defmodule MayorGame.CityCalculator do
           all_cities_recent
           |> Map.new(fn city -> {city.id, city} end)
 
-        leftovers.all_cities_new
+        leftovers2
         |> Enum.chunk_every(200)
         |> Enum.map(fn chunk ->
           Enum.reduce(chunk, Ecto.Multi.new(), fn city, multi ->
@@ -830,13 +901,14 @@ defmodule MayorGame.CityCalculator do
 
         # Repo.update_all(Track, ​set:​ [​number_of_plays:​ 0])
 
-        # leftovers.citizens_learning[1]
+        # citizens_learning[1]
         # test = [1, 4]
 
         # IO.inspect(cs)
 
         # if rem(world.day, 365) == 0 do
-        leftovers.citizens_learning
+
+        citizens_learning
         |> Enum.map(fn {level, list} ->
           list
           |> Enum.chunk_every(200)
@@ -865,7 +937,7 @@ defmodule MayorGame.CityCalculator do
 
         # MULTI CHANGESET KILL OLD CITIZENS ——————————————————————————————————————————————————— DB UPDATE
 
-        leftovers.citizens_too_old
+        citizens_too_old
         |> Enum.chunk_every(200)
         |> Enum.map(fn chunk ->
           citizen_ids = Enum.map(chunk, fn citizen -> citizen.id end)
@@ -901,7 +973,7 @@ defmodule MayorGame.CityCalculator do
         # end)
 
         # MULTI KILL POLLUTED CITIZENS ——————————————————————————————————————————————————— DB UPDATE
-        leftovers.citizens_polluted
+        citizens_polluted
         |> Enum.chunk_every(200)
         |> Enum.map(fn chunk ->
           citizen_ids = Enum.map(chunk, fn citizen -> citizen.id end)
@@ -939,7 +1011,7 @@ defmodule MayorGame.CityCalculator do
 
         now_utc = DateTime.truncate(DateTime.utc_now(), :second)
 
-        leftovers.citizens_to_reproduce
+        citizens_to_reproduce
         |> Enum.chunk_every(200)
         |> Enum.map(fn chunk ->
           births =
@@ -966,44 +1038,16 @@ defmodule MayorGame.CityCalculator do
             update: [push: [logs: "A child was born"]]
           )
           |> Repo.update_all([])
-
-          # Enum.reduce(chunk, Ecto.Multi.new(), fn citizen, multi ->
-          #   town = struct(Town, all_cities_by_id[citizen.town_id])
-
-          #   log =
-          #     CityHelpers.describe_citizen(citizen) <>
-          #       " had a child"
-
-          #   limited_log = update_logs(log, town.logs)
-          #   # if list is longer than 50, remove last item
-
-          #   # changeset =
-          #   #   City.create_citizens_changeset(%{
-          #   #     town_id: citizen.town_id,
-          #   #     age: 0,
-          #   #     education: 0,
-          #   #     has_job: false,
-          #   #     last_moved: db_world.day
-          #   #   })
-
-          #   town_changeset =
-          #     town
-          #     |> City.Town.changeset(%{logs: limited_log})
-
-          #   # Ecto.Multi.insert(multi, {:add_citizen, citizen.id}, changeset)
-          #   Ecto.Multi.update(multi, {:update, citizen.id}, town_changeset)
-          # end)
-          # |> Repo.transaction(timeout: 20_000)
         end)
       end,
       timeout: 6_000_000
     )
 
     updated_pollution =
-      if db_world.pollution + leftovers.new_world_pollution < 0 do
+      if db_world.pollution + new_world_pollution < 0 do
         0
       else
-        db_world.pollution + leftovers.new_world_pollution
+        db_world.pollution + new_world_pollution
       end
 
     # update World in DB, pull updated_world var out of response

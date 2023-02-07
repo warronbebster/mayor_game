@@ -83,6 +83,7 @@ defmodule MayorGame.CityHelpers do
           employed_citizens: [],
           fun: 0,
           health: 0,
+          sprawl: 0,
           total_housing: 0,
           housing: 0,
           total_energy: 0,
