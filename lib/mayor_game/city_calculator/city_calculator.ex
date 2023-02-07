@@ -171,8 +171,8 @@ defmodule MayorGame.CityCalculator do
 
     leftovers2 =
       cities_list
-      |> Flow.from_enumerable(max_demand: 100)
-      |> Flow.map(fn city ->
+      # |> Flow.from_enumerable(max_demand: 100)
+      |> Enum.map(fn city ->
         # result here is a %Town{} with stats calculated
         CityHelpers.calculate_city_stats(
           city,
