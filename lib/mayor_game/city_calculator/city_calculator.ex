@@ -904,7 +904,7 @@ defmodule MayorGame.CityCalculator do
         |> Enum.chunk_every(200)
         |> Enum.each(fn chunk ->
           births =
-            Enum.each(chunk, fn citizen ->
+            Enum.map(chunk, fn citizen ->
               %{
                 town_id: citizen.town_id,
                 age: 0,
@@ -918,7 +918,9 @@ defmodule MayorGame.CityCalculator do
               }
             end)
 
-          Repo.insert_all(Citizens, births)
+          if births != [] do
+            Repo.insert_all(Citizens, births)
+          end
 
           town_ids = Enum.map(chunk, fn citizen -> citizen.town_id end)
 
