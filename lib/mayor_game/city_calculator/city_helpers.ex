@@ -281,11 +281,9 @@ defmodule MayorGame.CityHelpers do
             !is_nil(y.jobs) && y.jobs > 0
           end)
 
-        buildables_with_jobs = elem(buildables_split_by_jobs, 0)
-
         results_updated =
           Enum.reduce(
-            buildables_with_jobs,
+            elem(buildables_split_by_jobs, 0),
             %{results: results, citizens_available: citizens_available, buildables_after: []},
             fn buildable, acc ->
               job_level = buildable.requires.workers.level
@@ -313,9 +311,13 @@ defmodule MayorGame.CityHelpers do
 
               tax_earned =
                 round(
-                  length(qualified_workers) * (1 + job_level) * 100 *
+                  length(qualified_workers) *
+                    :math.pow(1.5, job_level) * 100 *
                     city.tax_rates[to_string(job_level)] / 10
                 )
+
+              IO.inspect(acc.results.income)
+              IO.inspect(tax_earned)
 
               acc_results =
                 if enough_workers,
@@ -335,6 +337,7 @@ defmodule MayorGame.CityHelpers do
                   else: acc.results
 
               %{
+                # todo: find way to optimie this --
                 citizens_available: acc.citizens_available -- newly_employed_workers,
                 buildables_after: [updated_buildable | acc.buildables_after],
                 results:
@@ -362,7 +365,9 @@ defmodule MayorGame.CityHelpers do
     # ________________________________________________________________________
     pollution_reached = world.pollution > pollution_ceiling
     time_to_learn = rem(world.day, 91) == 0
+    citizens_count = length(city_baked_direct.citizens)
 
+    # I don't think this needs to be a reduce. this could me a map then flatten
     after_citizen_checks =
       all_citizens
       |> Enum.reduce(
@@ -452,7 +457,7 @@ defmodule MayorGame.CityHelpers do
             :reproducing_citizens,
             if(
               citizen.age > 500 and citizen.age < 2000 and
-                :rand.uniform(length(city_baked_direct.citizens) + 1) == 1,
+                :rand.uniform(citizens_count + 1) == 1,
               do: &[citizen | &1],
               else: & &1
             )

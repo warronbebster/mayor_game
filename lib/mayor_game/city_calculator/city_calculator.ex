@@ -151,13 +151,6 @@ defmodule MayorGame.CityCalculator do
     # :eprof.stop_profiling()
     # :eprof.analyze()
 
-    # total_slots =
-    #   housing_slots
-    #   |> Map.values()
-    #   |> Enum.sum()
-
-    # ok so here each city has
-
     # ——————————————————————————————————————————————————————————————————————————————————
     # ————————————————————————————————————————— ROUND 1: MOVE CITIZENS PER JOB LEVEL
     # ——————————————————————————————————————————————————————————————————————————————————
@@ -345,8 +338,8 @@ defmodule MayorGame.CityCalculator do
         Enum.each(0..5, fn x ->
           if preferred_locations_by_level[x].choices != [] do
             preferred_locations_by_level[x].choices
-            |> Stream.chunk_every(200)
-            |> Stream.each(fn chunk ->
+            |> Enum.chunk_every(200)
+            |> Enum.each(fn chunk ->
               Enum.reduce(chunk, Ecto.Multi.new(), fn {citizen, city_id}, multi ->
                 town_from = struct(Town, all_cities_by_id[citizen.town_id])
                 town_to = struct(Town, all_cities_by_id[city_id])
@@ -483,8 +476,8 @@ defmodule MayorGame.CityCalculator do
         if preferred_locations.choices != [] do
           preferred_locations.choices
           # |> Flow.from_enumerable(max_demand: 100)
-          |> Stream.chunk_every(200)
-          |> Stream.each(fn chunk ->
+          |> Enum.chunk_every(200)
+          |> Enum.each(fn chunk ->
             Enum.reduce(chunk, Ecto.Multi.new(), fn {citizen, city_id}, multi ->
               town_from = struct(Town, all_cities_by_id[citizen.town_id])
               town_to = struct(Town, all_cities_by_id[city_id])
@@ -627,8 +620,8 @@ defmodule MayorGame.CityCalculator do
 
         if unhoused_locations.choices != [] do
           unhoused_locations.choices
-          |> Stream.chunk_every(200)
-          |> Stream.each(fn chunk ->
+          |> Enum.chunk_every(200)
+          |> Enum.each(fn chunk ->
             Enum.reduce(chunk, Ecto.Multi.new(), fn {citizen, city_id}, multi ->
               # citizen = Enum.at(elem(unhoused_split, 0), citizen_index)
               town_from = struct(Town, all_cities_by_id[citizen.town_id])
@@ -673,8 +666,8 @@ defmodule MayorGame.CityCalculator do
         # MULTI KILL REST OF UNHOUSED CITIZENS
 
         elem(unhoused_split, 1)
-        |> Stream.chunk_every(200)
-        |> Stream.each(fn chunk ->
+        |> Enum.chunk_every(200)
+        |> Enum.each(fn chunk ->
           citizen_ids = Enum.map(chunk, fn citizen -> citizen.id end)
 
           from(c in Citizens, where: c.id in ^citizen_ids)
@@ -711,8 +704,8 @@ defmodule MayorGame.CityCalculator do
           |> Map.new(fn city -> {city.id, city} end)
 
         leftovers
-        |> Stream.chunk_every(200)
-        |> Stream.each(fn chunk ->
+        |> Enum.chunk_every(200)
+        |> Enum.each(fn chunk ->
           Enum.reduce(chunk, Ecto.Multi.new(), fn city, multi ->
             # updated_city = City.get_town!(city.id)
             newest_treasury = all_cities_recent_by_id[city.id].treasury
@@ -807,8 +800,8 @@ defmodule MayorGame.CityCalculator do
         citizens_learning
         |> Enum.each(fn {level, list} ->
           list
-          |> Stream.chunk_every(200)
-          |> Stream.each(fn chunk ->
+          |> Enum.chunk_every(200)
+          |> Enum.each(fn chunk ->
             citizen_ids = Enum.map(chunk, fn citizen -> citizen.id end)
             town_ids = Enum.map(chunk, fn citizen -> citizen.town_id end)
 
@@ -834,8 +827,8 @@ defmodule MayorGame.CityCalculator do
         # MULTI CHANGESET KILL OLD CITIZENS ——————————————————————————————————————————————————— DB UPDATE
 
         citizens_too_old
-        |> Stream.chunk_every(200)
-        |> Stream.each(fn chunk ->
+        |> Enum.chunk_every(200)
+        |> Enum.each(fn chunk ->
           citizen_ids = Enum.map(chunk, fn citizen -> citizen.id end)
 
           from(c in Citizens, where: c.id in ^citizen_ids)
@@ -870,8 +863,8 @@ defmodule MayorGame.CityCalculator do
 
         # MULTI KILL POLLUTED CITIZENS ——————————————————————————————————————————————————— DB UPDATE
         citizens_polluted
-        |> Stream.chunk_every(200)
-        |> Stream.each(fn chunk ->
+        |> Enum.chunk_every(200)
+        |> Enum.each(fn chunk ->
           citizen_ids = Enum.map(chunk, fn citizen -> citizen.id end)
 
           from(c in Citizens, where: c.id in ^citizen_ids)
@@ -908,8 +901,8 @@ defmodule MayorGame.CityCalculator do
         now_utc = DateTime.truncate(DateTime.utc_now(), :second)
 
         citizens_to_reproduce
-        |> Stream.chunk_every(200)
-        |> Stream.each(fn chunk ->
+        |> Enum.chunk_every(200)
+        |> Enum.each(fn chunk ->
           births =
             Enum.each(chunk, fn citizen ->
               %{
