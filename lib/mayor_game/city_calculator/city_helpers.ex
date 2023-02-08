@@ -161,7 +161,7 @@ defmodule MayorGame.CityHelpers do
                     tax_earned =
                       round(
                         length(checked_workers) *
-                          (1 + individual_buildable.requires.workers.level) * 100 *
+                          :math.pow(1.5, individual_buildable.requires.workers.level) * 100 *
                           city.tax_rates[
                             to_string(individual_buildable.requires.workers.level)
                           ] /

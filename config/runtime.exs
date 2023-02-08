@@ -41,10 +41,10 @@ if config_env() == :prod do
   config :mayor_game, MayorGame.Repo,
     # ssl: true,
     url: database_url,
-    pool_size: String.to_integer(System.get_env("POOL_SIZE") || "25"),
+    pool_size: String.to_integer(System.get_env("POOL_SIZE") || "35"),
     timeout: 20_000,
     socket_options: maybe_ipv6,
-    queue_target: 10_000,
+    queue_target: 20_000,
     queue_interval: 30_000
 
   # The secret key base is used to sign/encrypt cookies and other secrets.

@@ -26,7 +26,7 @@ defmodule MayorGame.City.Town do
   @timestamps_opts [type: :utc_datetime]
 
   # don't print these on inspect
-  @derive {Inspect, except: [:logs, :citizens, :details]}
+  @derive {Inspect, except: [:logs, :citizens]}
 
   @typedoc """
       Type for %Town{} that's callable with MayorGame.City.Buildable.t()

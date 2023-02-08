@@ -14,7 +14,7 @@ database_url =
 config :mayor_game, MayorGame.Repo,
   # ssl: true,
   url: database_url,
-  pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10"),
+  pool_size: String.to_integer(System.get_env("POOL_SIZE") || "35"),
   queue_target: 20_000,
   queue_interval: 30_000
 

@@ -22,6 +22,28 @@
 # switch most logs to just counts: births, deaths for different reasons. Some can be text: moved_to, moved_from, attacks
 # consider separating money/resource generation ticks from movement ticks?
 
+logs:
+move-outs
+- level
+- reason
+- city moved to
+
+move-ins
+- level
+- city from
+
+educations per level
+
+deaths
+-pollution
+-age
+-housing
+
+births
+
+attacks
+- which city
+
 
 
 
