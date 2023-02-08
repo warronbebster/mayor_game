@@ -176,25 +176,6 @@ defmodule MayorGame.CityCalculator do
       |> Map.new(fn city -> {city.id, city} end)
 
     # NO FLOW
-    # slotted_cities_by_id =
-    #   Map.keys(housing_slots)
-    #   |> Enum.map(fn city ->
-    #     normalize_city(
-    #       city,
-    #       fun_max,
-    #       health_max,
-    #       pollution_max,
-    #       sprawl_max
-    #     )
-    #   end)
-    #   |> Map.new(fn city -> {city.id, city} end)
-
-    # housing_slots_by_city_id =
-    #   housing_slots
-    #   |> Enum.map(fn {city, slots} ->
-    #     {city.id, slots}
-    #   end)
-    #   |> Enum.into(%{})
 
     # housing_slots is a list of {city, number of slots}
     # try FLOW here with a partition + reduce
@@ -206,7 +187,7 @@ defmodule MayorGame.CityCalculator do
         fn {normalized_city_id, housing_slots_count}, acc ->
           slots_per_level =
             Enum.reduce(
-              slotted_cities_by_id[normalized_city_id].city.jobs,
+              slotted_cities_by_id[normalized_city_id].jobs,
               %{housing_slots_left: housing_slots_count},
               fn {level, count}, acc2 ->
                 if acc2.housing_slots_left > 0 do
@@ -981,7 +962,8 @@ defmodule MayorGame.CityCalculator do
 
   def normalize_city(city, max_fun, max_health, max_pollution, max_sprawl) do
     %{
-      city: city,
+      # city: city,
+      jobs: city.jobs,
       id: city.id,
       sprawl_normalized: zero_check(nil_value_check(city, :sprawl), max_sprawl),
       pollution_normalized: zero_check(nil_value_check(city, :pollution), max_pollution),
@@ -998,31 +980,8 @@ defmodule MayorGame.CityCalculator do
   def citizen_score(citizen_preferences, education_level, normalized_city) do
     (1 - normalized_city.tax_rates[to_string(education_level)]) * citizen_preferences["tax_rates"] +
       (1 - normalized_city.pollution_normalized) * citizen_preferences["pollution"] +
-      normalized_city.sprawl_normalized * citizen_preferences["sprawl"] +
+      (1 - normalized_city.sprawl_normalized) * citizen_preferences["sprawl"] +
       normalized_city.fun_normalized * citizen_preferences["fun"] +
       normalized_city.health_normalized * citizen_preferences["health"]
   end
-
-  # def compute_destination([row1 | _] = matrix) do
-  #   Enum.reduce(0..(length(matrix) - 1), %{matrix: matrix, output: []}, fn row_index, acc ->
-  #     # find best one
-  #     row = Enum.at(acc.matrix, row_index)
-
-  #     max = Enum.max(row)
-  #     chosen_index = Enum.find_index(row, fn x -> x == max end)
-  #     # chosen_index = Enum.find(row, fn x -> x == max end)
-
-  #     updated_matrix =
-  #       Enum.map(acc.matrix, fn row ->
-  #         List.replace_at(row, chosen_index, -1)
-  #       end)
-
-  #     %{
-  #       matrix: updated_matrix,
-  #       output: [{row_index, chosen_index} | acc.output]
-  #     }
-  #   end)
-
-  #   # end with list [{index, best option}]
-  # end
 end

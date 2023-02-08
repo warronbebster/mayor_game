@@ -1,5 +1,5 @@
 defmodule MayorGame.CityHelpers do
-  alias MayorGame.City.{Citizens, Town, Buildable, World}
+  alias MayorGame.City.{Citizens, Town, World}
 
   @doc """
     takes a %Town{} struct and %World{} struct
@@ -138,20 +138,19 @@ defmodule MayorGame.CityHelpers do
 
                     checked_workers = check_workers(individual_buildable.requires, acc2.citizens)
 
+                    working_workers = length(checked_workers)
+
                     enough_workers =
-                      length(checked_workers) >=
+                      working_workers >=
                         individual_buildable.requires.workers.count
 
                     updated_buildable =
                       if !enough_workers do
-                        individual_buildable
-                        |> Map.put(:reason, [:workers])
-                        |> Map.put(:enabled, false)
-                        |> Map.put(
-                          :jobs,
-                          individual_buildable.requires.workers.count -
-                            length(checked_workers)
-                        )
+                        Map.merge(individual_buildable, %{
+                          reason: [:workers],
+                          enabled: false,
+                          jobs: individual_buildable.requires.workers.count - working_workers
+                        })
                       else
                         # if all conditions are met
                         individual_buildable
@@ -179,15 +178,11 @@ defmodule MayorGame.CityHelpers do
                             acc2
                           )
                           |> Map.merge(reqs_minus_workers, fn _k, v1, v2 -> v1 - v2 end)
-                          |> Map.put(:income, acc2.income + tax_earned)
-                          |> Map.put(
-                            :daily_cost,
-                            acc2.daily_cost + money_required
-                          )
-                          |> Map.put(
-                            :money,
-                            acc2.money + tax_earned - money_required
-                          ),
+                          |> Map.merge(%{
+                            income: acc2.income + tax_earned,
+                            daily_cost: acc2.daily_cost + money_required,
+                            money: acc2.money + tax_earned - money_required
+                          }),
                         else: acc2
 
                     # update acc with disabled buildable
@@ -250,8 +245,10 @@ defmodule MayorGame.CityHelpers do
                   # if requirements not met
                   updated_buildable =
                     individual_buildable
-                    |> Map.put(:reason, checked_reqs)
-                    |> Map.put(:enabled, false)
+                    |> Map.merge(%{
+                      reason: checked_reqs,
+                      enabled: false
+                    })
 
                   # update acc with disabled buildable
                   Map.update!(acc2, :result_buildables, fn current ->
@@ -305,8 +302,10 @@ defmodule MayorGame.CityHelpers do
                 else
                   # if all conditions are met
                   buildable
-                  |> Map.put(:jobs, 0)
-                  |> Map.put(:reason, [])
+                  |> Map.merge(%{
+                    jobs: 0,
+                    reason: []
+                  })
                 end
 
               tax_earned =
@@ -326,11 +325,10 @@ defmodule MayorGame.CityHelpers do
                       season,
                       acc.results
                     )
-                    |> Map.put(:income, acc.results.income + tax_earned)
-                    |> Map.put(
-                      :daily_cost,
-                      acc.results.daily_cost + money_required
-                    ),
+                    |> Map.merge(%{
+                      income: acc.results.income + tax_earned,
+                      daily_cost: acc.results.daily_cost + money_required
+                    }),
                   else: acc.results
 
               %{
@@ -402,6 +400,7 @@ defmodule MayorGame.CityHelpers do
               acc.education_left[citizen.education + 1] > 0 && citizen_not_too_old &&
               !pollution_death
 
+          # do this with merge instead of updates
           acc
           |> Map.update!(
             :housing_left,
