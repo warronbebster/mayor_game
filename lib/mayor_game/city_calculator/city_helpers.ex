@@ -316,9 +316,6 @@ defmodule MayorGame.CityHelpers do
                     city.tax_rates[to_string(job_level)] / 10
                 )
 
-              IO.inspect(acc.results.income)
-              IO.inspect(tax_earned)
-
               acc_results =
                 if enough_workers,
                   do:
