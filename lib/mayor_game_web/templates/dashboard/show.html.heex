@@ -19,7 +19,7 @@
         </span>
       </div>
       <div class="flex flex-row items-center space-x-1 max-w-sm">
-        <span>Global pollution</span>
+        <span>Total pollution</span>
         <hr class="border-neutral-300 flex-1" />
         <img
           src="/images/pollution.svg"
@@ -30,6 +30,20 @@
         />
         <span class="text-violet-600">
           <%= Number.Delimit.number_to_delimited(@world.pollution) %>
+        </span>
+      </div>
+      <div class="flex flex-row items-center space-x-1 max-w-sm">
+        <span>Daily pollution</span>
+        <hr class="border-neutral-300 flex-1" />
+        <img
+          src="/images/pollution.svg"
+          alt="pollution logo"
+          height="12"
+          width="12"
+          class="inline"
+        />
+        <span class="text-violet-600">
+          <%= Number.Delimit.number_to_delimited(@pollution_sum) %>
         </span>
       </div>
       <div class="flex flex-row items-center space-x-1 max-w-sm">
@@ -185,7 +199,8 @@
         class="underline"
       >
         FAQ.
-      </a> And support this game on
+      </a>
+      And support this game on
       <a href="https://patreon.com/user?u=88349213" target="_blank" class="underline">Patreon</a>
       to keep the servers running!
     </p>

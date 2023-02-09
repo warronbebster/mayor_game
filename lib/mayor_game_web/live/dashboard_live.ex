@@ -80,11 +80,14 @@ defmodule MayorGameWeb.DashboardLive do
   # Assign all cities as the cities list. Maybe I should figure out a way to only show cities for that user.
   # at some point should sort by number of citizens
   defp assign_cities(socket) do
+    # cities_count = MayorGame.Repo.aggregate(City.Town, :count, :id)
     cities = City.list_cities() |> Enum.sort_by(& &1.citizen_count, :desc)
+    pollution_sum = Enum.sum(Enum.map(cities, fn city -> city.pollution end))
     world = MayorGame.Repo.get!(MayorGame.City.World, 1)
 
     socket
     |> assign(:cities, cities)
     |> assign(:world, world)
+    |> assign(:pollution_sum, pollution_sum)
   end
 end
