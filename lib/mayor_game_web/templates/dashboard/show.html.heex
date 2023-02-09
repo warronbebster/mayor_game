@@ -1,41 +1,52 @@
 <div class="p-4 flex flex-row flex-wrap gap-x-8 gap-y-4">
   <section class="basis-full max-w-sm">
     <div class="pb-6">
-    <div class="flex flex-row items-center space-x-1 max-w-sm">
-      <span>Year</span>
-      <hr class="border-neutral-300 flex-1" />
-      <span><%= div(@world.day, 365) %></span>
+      <div class="flex flex-row items-center space-x-1 max-w-sm">
+        <span>Year</span>
+        <hr class="border-neutral-300 flex-1" />
+        <span><%= div(@world.day, 365) %></span>
+      </div>
+      <div class="flex flex-row items-center space-x-1 max-w-sm">
+        <span>Day</span>
+        <hr class="border-neutral-300 flex-1" />
+        <span><%= rem(@world.day, 365) %></span>
+      </div>
+      <div class="flex flex-row items-center space-x-1 max-w-sm">
+        <span>Cities</span>
+        <hr class="border-neutral-300 flex-1" />
+        <span>
+          <%= Number.Delimit.number_to_delimited(length(@cities)) %>
+        </span>
+      </div>
+      <div class="flex flex-row items-center space-x-1 max-w-sm">
+        <span>Global pollution</span>
+        <hr class="border-neutral-300 flex-1" />
+        <img
+          src="/images/pollution.svg"
+          alt="pollution logo"
+          height="12"
+          width="12"
+          class="inline"
+        />
+        <span class="text-violet-600">
+          <%= Number.Delimit.number_to_delimited(@world.pollution) %>
+        </span>
+      </div>
+      <div class="flex flex-row items-center space-x-1 max-w-sm">
+        <span>Pollution ceiling</span>
+        <hr class="border-neutral-300 flex-1" />
+        <img
+          src="/images/pollution.svg"
+          alt="pollution logo"
+          height="12"
+          width="12"
+          class="inline"
+        />
+        <span class="text-violet-600">
+          <%= Number.Delimit.number_to_delimited(10_000_000_000) %>
+        </span>
+      </div>
     </div>
-    <div class="flex flex-row items-center space-x-1 max-w-sm">
-      <span>Day</span>
-      <hr class="border-neutral-300 flex-1" />
-      <span><%= rem(@world.day, 365) %></span>
-    </div>
-        <div class="flex flex-row items-center space-x-1 max-w-sm">
-      <span>Cities</span>
-      <hr class="border-neutral-300 flex-1" />
-      <span >
-        <%= Number.Delimit.number_to_delimited(length(@cities)) %>
-      </span>
-    </div>
-    <div class="flex flex-row items-center space-x-1 max-w-sm">
-      <span>Global pollution</span>
-      <hr class="border-neutral-300 flex-1" />
-      <img src="/images/pollution.svg" alt="pollution logo" height="12" width="12" class="inline" />
-      <span class="text-violet-600">
-        <%= Number.Delimit.number_to_delimited(@world.pollution) %>
-      </span>
-    </div>
-    <div class="flex flex-row items-center space-x-1 max-w-sm">
-      <span>Pollution ceiling</span>
-      <hr class="border-neutral-300 flex-1" />
-      <img src="/images/pollution.svg" alt="pollution logo" height="12" width="12" class="inline" />
-      <span class="text-violet-600">
-        <%= Number.Delimit.number_to_delimited(10_000_000_000) %>
-      </span>
-    </div>
-    </div>
-
 
     <article>
       <%= if assigns[:current_user] && @current_user.town != nil do %>
@@ -98,20 +109,20 @@
             ) %>
           </span>
           <%= if city.patron > 0 do %>
-             <div class="group relative flex flex-row items-center text-amber-600">
-              <a href="patreon.com/user?u=88349213" target="_blank" >
-                <img src="/images/patron-1.svg" alt="patron" height="12" width="12"  />
+            <div class="group relative flex flex-row items-center text-amber-600">
+              <a href="patreon.com/user?u=88349213" target="_blank">
+                <img src="/images/patron-1.svg" alt="patron" height="12" width="12" />
               </a>
-            <div class="tooltip w-32">
-              This city supports fragile.city on patreon and keeps the servers from going down
+              <div class="tooltip w-32">
+                This city supports fragile.city on patreon and keeps the servers from going down
+              </div>
             </div>
-          </div>
           <% end %>
-            <%= if assigns[:current_user] && assigns[:current_user].nickname == city.user.nickname do %>
-          <span class="opacity-50">
+          <%= if assigns[:current_user] && assigns[:current_user].nickname == city.user.nickname do %>
+            <span class="opacity-50">
               My City
-          </span>
-            <% end %>
+            </span>
+          <% end %>
           <hr class="border-neutral-300 flex-1" />
           <div class="flex flex-row items-center gap-1">
             <div class="flex flex-row items-center gap-1 w-20">
@@ -165,6 +176,18 @@
     </p>
     <p class="max-w-sm">
       All cities are beholden to pollution. If there's enough pollution, citizens start dying. It's very expensive to remove pollution from the world. However, it's also expensive to build clean power sources.
+    </p>
+    <p class="max-w-sm">
+      Learn more on the
+      <a
+        href="https://fragile-city.notion.site/Intro-25d07a8aade7459a9b2a93429170b29b"
+        target="_blank"
+        class="underline"
+      >
+        FAQ.
+      </a> And support this game on
+      <a href="https://patreon.com/user?u=88349213" target="_blank" class="underline">Patreon</a>
+      to keep the servers running!
     </p>
   </div>
 </div>
