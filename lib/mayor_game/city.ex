@@ -281,10 +281,12 @@ defmodule MayorGame.City do
   """
   def create_citizens(attrs \\ %{}) do
     # this makes a map with random values that add up to 1
+    decision_factors = Enum.shuffle([:tax_rates, :sprawl, :fun, :health, :pollution])
+
     random_preferences =
-      Enum.reduce(Citizens.decision_factors(), %{preference_map: %{}, room_taken: 0}, fn x, acc ->
+      Enum.reduce(decision_factors, %{preference_map: %{}, room_taken: 0}, fn x, acc ->
         value =
-          if x == List.last(Citizens.decision_factors()),
+          if x == List.last(decision_factors),
             do: (1 - acc.room_taken) |> Float.round(2),
             else: (:rand.uniform() * (1 - acc.room_taken)) |> Float.round(2)
 
@@ -293,10 +295,6 @@ defmodule MayorGame.City do
           room_taken: acc.room_taken + value
         }
       end)
-
-    # Map.new(Citizens.decision_factors(), fn x ->
-    #   {to_string(x), :rand.uniform() |> Float.round(2)}
-    # end)
 
     # add new attribute if not set
     attrs_plus_preferences =

@@ -14,13 +14,10 @@
 # fly postgres connect -a mayorgame-db connects to prod DB
 # fly volumes list --app mayorgame-db gets volumes from the db project thingy
 
-# balance prices
 # flow some more calculations for optimization
-# turn buildables into ints, not a bunch of indivudal structs
-# add different defense weights for each buildable?
 # maybe make pubsub for each city when it's opened to subscribe to updates from other cities attacking u?
+# consider separating money/resource generation ticks from citizen movement ticks?
 # switch most logs to just counts: births, deaths for different reasons. Some can be text: moved_to, moved_from, attacks
-# consider separating money/resource generation ticks from movement ticks?
 
 logs:
 move-outs

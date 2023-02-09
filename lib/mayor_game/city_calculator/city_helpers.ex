@@ -158,13 +158,12 @@ defmodule MayorGame.CityHelpers do
                       end
 
                     tax_earned =
-                      round(
-                        length(checked_workers) *
-                          :math.pow(1.5, individual_buildable.requires.workers.level) * 100 *
-                          city.tax_rates[
-                            to_string(individual_buildable.requires.workers.level)
-                          ] /
-                          10
+                      calculate_earnings(
+                        working_workers,
+                        individual_buildable.requires.workers.level,
+                        city.tax_rates[
+                          to_string(individual_buildable.requires.workers.level)
+                        ]
                       )
 
                     acc_after_workers =
@@ -289,7 +288,8 @@ defmodule MayorGame.CityHelpers do
                 Enum.filter(acc.citizens_available, fn cit -> cit.education >= job_level end)
 
               newly_employed_workers = Enum.take(qualified_workers, buildable.jobs)
-              enough_workers = length(newly_employed_workers) >= buildable.jobs
+              working_workers_count = length(newly_employed_workers)
+              enough_workers = working_workers_count >= buildable.jobs
 
               money_required =
                 if Map.has_key?(buildable.requires, :money),
@@ -309,10 +309,10 @@ defmodule MayorGame.CityHelpers do
                 end
 
               tax_earned =
-                round(
-                  length(qualified_workers) *
-                    :math.pow(1.5, job_level) * 100 *
-                    city.tax_rates[to_string(job_level)] / 10
+                calculate_earnings(
+                  working_workers_count,
+                  job_level,
+                  city.tax_rates[to_string(job_level)]
                 )
 
               acc_results =
@@ -480,10 +480,12 @@ defmodule MayorGame.CityHelpers do
   returns a preference map for citizens
   """
   def create_citizen_preference_map() do
+    decision_factors = Enum.shuffle([:tax_rates, :sprawl, :fun, :health, :pollution])
+
     random_preferences =
-      Enum.reduce(Citizens.decision_factors(), %{preference_map: %{}, room_taken: 0}, fn x, acc ->
+      Enum.reduce(decision_factors, %{preference_map: %{}, room_taken: 0}, fn x, acc ->
         value =
-          if x == List.last(Citizens.decision_factors()),
+          if x == List.last(decision_factors),
             do: (1 - acc.room_taken) |> Float.round(2),
             else: (:rand.uniform() * (1 - acc.room_taken)) |> Float.round(2)
 
@@ -701,5 +703,9 @@ defmodule MayorGame.CityHelpers do
         recurse_merge(l, vv1, vv2)
       end)
     end
+  end
+
+  def calculate_earnings(worker_count, level, tax_rate) do
+    round(worker_count * :math.pow(1.5, level + 1) * 100 * (tax_rate / 10))
   end
 end

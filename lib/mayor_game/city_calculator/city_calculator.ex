@@ -47,7 +47,7 @@ defmodule MayorGame.CityCalculator do
   end
 
   # when :tax is sent
-  def handle_info(:tax, %{world: world, buildables_map: buildables_map} = sent_map) do
+  def handle_info(:tax, %{world: world, buildables_map: buildables_map} = _sent_map) do
     cities = City.list_cities_preload()
     cities_count = Enum.count(cities)
 
@@ -124,8 +124,12 @@ defmodule MayorGame.CityCalculator do
 
     sprawl_max = Enum.max(Enum.map(leftovers, fn city -> city.sprawl end))
     pollution_max = Enum.max(Enum.map(leftovers, fn city -> city.pollution end))
+    pollution_min = Enum.min(Enum.map(leftovers, fn city -> city.pollution end))
+    pollution_spread = pollution_max - pollution_min
     fun_max = Enum.max(Enum.map(leftovers, fn city -> city.fun end))
     health_max = Enum.max(Enum.map(leftovers, fn city -> city.health end))
+    health_min = Enum.min(Enum.map(leftovers, fn city -> city.sprawl end))
+    health_spread = health_max - health_min
 
     citizens_learning = %{
       1 => List.flatten(Enum.map(leftovers, fn city -> city.educated_citizens[1] end)),
@@ -141,8 +145,8 @@ defmodule MayorGame.CityCalculator do
         normalize_city(
           city,
           fun_max,
-          health_max,
-          pollution_max,
+          health_spread,
+          pollution_spread,
           sprawl_max
         )
       end)
@@ -171,9 +175,9 @@ defmodule MayorGame.CityCalculator do
     # all_cities_by_id = maybe make a map here of city in all_cities_new and their id
     # or all_cities_new might already be that, by index
     # or the map is just of the ones with housing slots (e.g. in housing_slots)
-    all_cities_by_id =
-      leftovers
-      |> Map.new(fn city -> {city.id, city} end)
+    # all_cities_by_id =
+    #   leftovers
+    #   |> Map.new(fn city -> {city.id, city} end)
 
     # NO FLOW
 
@@ -322,8 +326,8 @@ defmodule MayorGame.CityCalculator do
             |> Enum.chunk_every(200)
             |> Enum.each(fn chunk ->
               Enum.reduce(chunk, Ecto.Multi.new(), fn {citizen, city_id}, multi ->
-                town_from = struct(Town, all_cities_by_id[citizen.town_id])
-                town_to = struct(Town, all_cities_by_id[city_id])
+                town_from = struct(Town, slotted_cities_by_id[citizen.town_id].city)
+                town_to = struct(Town, slotted_cities_by_id[city_id].city)
 
                 if town_from.id != town_to.id do
                   citizen_changeset =
@@ -460,8 +464,8 @@ defmodule MayorGame.CityCalculator do
           |> Enum.chunk_every(200)
           |> Enum.each(fn chunk ->
             Enum.reduce(chunk, Ecto.Multi.new(), fn {citizen, city_id}, multi ->
-              town_from = struct(Town, all_cities_by_id[citizen.town_id])
-              town_to = struct(Town, all_cities_by_id[city_id])
+              town_from = struct(Town, slotted_cities_by_id[citizen.town_id].city)
+              town_to = struct(Town, slotted_cities_by_id[city_id].city)
 
               if town_from.id != town_to.id do
                 citizen_changeset =
@@ -605,8 +609,8 @@ defmodule MayorGame.CityCalculator do
           |> Enum.each(fn chunk ->
             Enum.reduce(chunk, Ecto.Multi.new(), fn {citizen, city_id}, multi ->
               # citizen = Enum.at(elem(unhoused_split, 0), citizen_index)
-              town_from = struct(Town, all_cities_by_id[citizen.town_id])
-              town_to = struct(Town, all_cities_by_id[city_id])
+              town_from = struct(Town, slotted_cities_by_id[citizen.town_id].city)
+              town_to = struct(Town, slotted_cities_by_id[city_id]).city
 
               if town_from.id != town_to.id do
                 citizen_changeset =
@@ -671,6 +675,7 @@ defmodule MayorGame.CityCalculator do
 
         # MULTI UPDATE: update city money/treasury in DB ——————————————————————————————————————————————————— DB UPDATE
 
+        # IF I MAKE THIS ATOMIC, DON'T NEED TO DO THIS
         # delete_all
         all_cities_recent =
           from(t in Town, select: [:treasury, :shields, :id])
@@ -822,22 +827,6 @@ defmodule MayorGame.CityCalculator do
             update: [push: [logs: "A citizen died from old age. RIP"]]
           )
           |> Repo.update_all([])
-
-          # Enum.reduce(chunk, Ecto.Multi.new(), fn citizen, multi ->
-          #   town = struct(Town, all_cities_by_id[citizen.town_id])
-
-          #   log = CityHelpers.describe_citizen(citizen) <> " has died from old age. RIP"
-
-          #   # if list is longer than 50, remove last item
-          #   limited_log = update_logs(log, town.logs)
-
-          #   town_changeset =
-          #     town
-          #     |> City.Town.changeset(%{logs: limited_log})
-
-          #   Ecto.Multi.update(multi, {:update, town.id}, town_changeset)
-          # end)
-          # |> Repo.transaction(timeout: 20_000)
         end)
 
         # end)
@@ -858,23 +847,6 @@ defmodule MayorGame.CityCalculator do
             update: [push: [logs: "A citizen died from pollution. RIP"]]
           )
           |> Repo.update_all([])
-
-          # Enum.reduce(chunk, Ecto.Multi.new(), fn citizen, multi ->
-          #   town = struct(Town, all_cities_by_id[citizen.town_id])
-
-          #   log =
-          #     CityHelpers.describe_citizen(citizen) <>
-          #       " has died because of pollution. RIP"
-
-          #   limited_log = update_logs(log, town.logs)
-
-          #   town_changeset =
-          #     town
-          #     |> City.Town.changeset(%{logs: limited_log})
-
-          #   Ecto.Multi.update(multi, {:update, citizen.id}, town_changeset)
-          # end)
-          # |> Repo.transaction(timeout: 20_000)
         end)
 
         # MULTI REPRODUCE ——————————————————————————————————————————————————— DB UPDATE
@@ -960,15 +932,15 @@ defmodule MayorGame.CityCalculator do
     if Map.has_key?(map, key), do: map[key], else: 0
   end
 
-  def normalize_city(city, max_fun, max_health, max_pollution, max_sprawl) do
+  def normalize_city(city, max_fun, spread_health, spread_pollution, max_sprawl) do
     %{
-      # city: city,
+      city: city,
       jobs: city.jobs,
       id: city.id,
       sprawl_normalized: zero_check(nil_value_check(city, :sprawl), max_sprawl),
-      pollution_normalized: zero_check(nil_value_check(city, :pollution), max_pollution),
+      pollution_normalized: zero_check(nil_value_check(city, :pollution), spread_pollution),
       fun_normalized: zero_check(nil_value_check(city, :fun), max_fun),
-      health_normalized: zero_check(nil_value_check(city, :health), max_health),
+      health_normalized: zero_check(nil_value_check(city, :health), spread_health),
       tax_rates: city.tax_rates
     }
   end
