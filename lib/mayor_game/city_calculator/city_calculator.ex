@@ -610,7 +610,7 @@ defmodule MayorGame.CityCalculator do
             Enum.reduce(chunk, Ecto.Multi.new(), fn {citizen, city_id}, multi ->
               # citizen = Enum.at(elem(unhoused_split, 0), citizen_index)
               town_from = struct(Town, slotted_cities_by_id[citizen.town_id].city)
-              town_to = struct(Town, slotted_cities_by_id[city_id]).city
+              town_to = struct(Town, slotted_cities_by_id[city_id].city)
 
               if town_from.id != town_to.id do
                 citizen_changeset =

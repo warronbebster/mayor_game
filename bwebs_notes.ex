@@ -15,6 +15,9 @@
 # fly volumes list --app mayorgame-db gets volumes from the db project thingy
 
 # flow some more calculations for optimization
+# add crime (random deaths)
+# add homeless people
+# add specialization
 # maybe make pubsub for each city when it's opened to subscribe to updates from other cities attacking u?
 # consider separating money/resource generation ticks from citizen movement ticks?
 # switch most logs to just counts: births, deaths for different reasons. Some can be text: moved_to, moved_from, attacks
