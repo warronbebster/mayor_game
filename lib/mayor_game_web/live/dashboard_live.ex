@@ -82,7 +82,6 @@ defmodule MayorGameWeb.DashboardLive do
   defp assign_cities(socket) do
     # cities_count = MayorGame.Repo.aggregate(City.Town, :count, :id)
     cities = City.list_cities() |> Enum.sort_by(& &1.citizen_count, :desc)
-    Enum.each(cities, fn city -> IO.inspect(city.pollution, label: city.title) end)
 
     pollution_sum = Enum.sum(Enum.map(cities, fn city -> city.pollution end))
     world = MayorGame.Repo.get!(MayorGame.City.World, 1)
