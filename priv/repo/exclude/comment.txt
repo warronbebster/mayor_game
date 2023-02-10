@@ -1,0 +1,5 @@
+Some migrations had to be removed from the migrations list as they fail. Mostly because either the columns to be added already exists, or the columns to be deleted no longer exist.
+
+The true cause is not known, but it is suspected that changes to the files that some migrations depend on as imports may have generated changes to earlier migrations. These changes would be applied only when building from scratch, but not when built incrementally from an existing one.
+
+The files are kept here as a record, and can be restored if need be.
