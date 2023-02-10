@@ -708,15 +708,15 @@ defmodule MayorGame.CityCalculator do
               struct(
                 Town,
                 city
-                |> Map.put(:pollution, 0)
+                |> Map.put(:pollution, -1)
                 |> Map.put(:citizen_count, -1)
-                |> Map.put(:steel, 0)
+                |> Map.put(:steel, -1)
                 # |> Map.put(:treasury, 0)
-                |> Map.put(:missiles, 0)
-                |> Map.put(:sulfur, 0)
-                |> Map.put(:gold, 0)
-                |> Map.put(:uranium, 0)
-                |> Map.put(:shields, 0)
+                |> Map.put(:missiles, -1)
+                |> Map.put(:sulfur, -1)
+                |> Map.put(:gold, -1)
+                |> Map.put(:uranium, -1)
+                |> Map.put(:shields, -1)
               )
 
             updated_attrs = %{
