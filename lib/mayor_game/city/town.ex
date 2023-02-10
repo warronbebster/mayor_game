@@ -48,6 +48,7 @@ defmodule MayorGame.City.Town do
             pollution: integer,
             treasury: integer,
             citizen_count: integer,
+            # ————————————————————————————
             steel: integer,
             missiles: integer,
             shields: integer,

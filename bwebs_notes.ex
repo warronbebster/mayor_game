@@ -20,7 +20,9 @@
 # add specialization
 # maybe make pubsub for each city when it's opened to subscribe to updates from other cities attacking u?
 # consider separating money/resource generation ticks from citizen movement ticks?
+# ^ Do this with an entirely seperate process
 # switch most logs to just counts: births, deaths for different reasons. Some can be text: moved_to, moved_from, attacks
+# make pollution accumulative, not static
 
 logs:
 move-outs
@@ -42,7 +44,9 @@ deaths
 births
 
 attacks
+- shields
 - which city
+- which building
 
 
 
