@@ -48,6 +48,7 @@ defmodule MayorGame.City.Town do
             pollution: integer,
             treasury: integer,
             citizen_count: integer,
+            citizens_blob: list(map),
             # ————————————————————————————
             steel: integer,
             missiles: integer,
@@ -110,6 +111,7 @@ defmodule MayorGame.City.Town do
     field(:uranium, :integer)
 
     field(:patron, :integer)
+    field :citizens_blob, {:array, :map}, null: false, default: []
 
     # this corresponds to an elixir list
     field(:logs, {:array, :string})
@@ -185,7 +187,8 @@ defmodule MayorGame.City.Town do
         :sulfur,
         :gold,
         :uranium,
-        :patron
+        :patron,
+        :citizens_blob
       ] ++ Buildable.buildables_list()
     )
     |> validate_required([:title, :region, :climate, :user_id])
