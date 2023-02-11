@@ -68,14 +68,22 @@ defmodule MayorGame.CityHelpers do
       Enum.reduce(
         ordered_buildables,
         %{
+          new_money: 0,
+          new_steel: 0,
+          new_uranium: 0,
+          new_gold: 0,
+          new_sulfur: 0,
+          new_missiles: 0,
+          new_shields: 0,
+          #
           money: city_baked_direct.treasury,
           steel: city_baked_direct.steel,
           uranium: city_baked_direct.uranium,
           gold: city_baked_direct.gold,
           sulfur: city_baked_direct.sulfur,
           missiles: city_baked_direct.missiles,
-          loaded_shields: city_baked_direct.shields,
           shields: city_baked_direct.shields,
+          #
           income: 0,
           daily_cost: 0,
           citizen_count: citizen_count,
@@ -521,6 +529,31 @@ defmodule MayorGame.CityHelpers do
       total_housing:
         if(!prod_nil and Map.has_key?(prod_map_mult, :housing),
           do: prod_map_mult.housing,
+          else: 0
+        ),
+      new_shields:
+        if(!prod_nil and Map.has_key?(prod_map_mult, :shields),
+          do: prod_map_mult.shields,
+          else: 0
+        ),
+      new_missiles:
+        if(!prod_nil and Map.has_key?(prod_map_mult, :missiles),
+          do: prod_map_mult.missiles,
+          else: 0
+        ),
+      new_gold:
+        if(!prod_nil and Map.has_key?(prod_map_mult, :gold),
+          do: prod_map_mult.gold,
+          else: 0
+        ),
+      new_uranium:
+        if(!prod_nil and Map.has_key?(prod_map_mult, :uranium),
+          do: prod_map_mult.uranium,
+          else: 0
+        ),
+      new_sulfur:
+        if(!prod_nil and Map.has_key?(prod_map_mult, :sulfur),
+          do: prod_map_mult.sulfur,
           else: 0
         )
     }
