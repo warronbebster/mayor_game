@@ -77,18 +77,69 @@ defmodule MayorGameWeb.DashboardLive do
     {:noreply, socket |> assign_cities()}
   end
 
+  def handle_event(
+        "sort_by_name",
+        _value,
+        assigns = socket
+      ) do
+
+    {:noreply,
+      socket
+      |> assign(:sort, "name")
+      |> assign_cities()}
+  end
+
+  def handle_event(
+        "sort_by_population",
+        _value,
+        assigns = socket
+      ) do
+
+    {:noreply,
+      socket
+      |> assign(:sort, "population")
+      |> assign_cities()}
+  end
+  
+  def handle_event(
+        "sort_by_pollution",
+        _value,
+        assigns = socket
+      ) do
+
+    {:noreply,
+      socket
+      |> assign(:sort, "pollution")
+      |> assign_cities()}
+  end
+
   # Assign all cities as the cities list. Maybe I should figure out a way to only show cities for that user.
   # at some point should sort by number of citizens
   defp assign_cities(socket) do
     # cities_count = MayorGame.Repo.aggregate(City.Town, :count, :id)
-    cities = City.list_cities() |> Enum.sort_by(& &1.citizen_count, :desc)
+
+    cities = 
+      if Map.has_key?(socket.assigns, :sort), do: (
+        case socket.assigns.sort do
+          "name" -> 
+            City.list_cities() |> Enum.sort_by(& &1.title |> String.downcase(), :asc)
+          "pollution" -> 
+            City.list_cities() |> Enum.sort_by(& &1.pollution, :desc)
+          _ -> 
+            City.list_cities() |> Enum.sort_by(& &1.citizen_count, :desc)
+        end),
+        else: (
+          City.list_cities() |> Enum.sort_by(& &1.citizen_count, :desc)
+          )
 
     pollution_sum = Enum.sum(Enum.map(cities, fn city -> city.pollution end))
+    citizen_sum = Enum.sum(Enum.map(cities, fn city -> city.citizen_count end))
     world = MayorGame.Repo.get!(MayorGame.City.World, 1)
 
     socket
     |> assign(:cities, cities)
     |> assign(:world, world)
     |> assign(:pollution_sum, pollution_sum)
+    |> assign(:citizen_sum, citizen_sum)
   end
 end
