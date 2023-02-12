@@ -252,7 +252,7 @@ defmodule MayorGame.CityCalculator do
       end)
 
     preferred_locations_by_level =
-      Map.new(0..5, fn level ->
+      Map.new(5..0//-1, fn level ->
         {level,
          Enum.reduce(
            elem(citizens_split[level], 0),
@@ -316,7 +316,7 @@ defmodule MayorGame.CityCalculator do
     looking_but_not_in_job_race =
       Enum.reduce(citizens_split, [], fn {_k, v}, acc ->
         acc ++ elem(v, 1)
-      end)
+      end) |> Enum.reverse()
 
     # array of citizens who are still looking, that didn't make it into the level-specific comparisons
 
