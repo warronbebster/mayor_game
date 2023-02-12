@@ -174,7 +174,7 @@ defmodule MayorGameWeb.CityLive do
     case City.purchase_buildable(city_struct, building_to_buy_atom, purchase_price) do
       {_x, nil} ->
         nil
-        IO.puts('purchase success')
+        IO.puts("purchase success: " <> building_to_buy <> " for $" <> to_string(purchase_price))
 
       {:error, err} ->
         Logger.error(inspect(err))
@@ -195,14 +195,17 @@ defmodule MayorGameWeb.CityLive do
     # check if user is mayor here?
     buildable_to_demolish_atom = String.to_existing_atom(building_to_demolish)
 
+    # get exponential price — don't want to set price on front-end for cheating reasons
+    initial_purchase_price = get_in(Buildable.buildables_flat(), [buildable_to_demolish_atom, :price])
+    buildable_count = length(city[buildable_to_demolish_atom])
+    refund_price = if buildable_count <= 1, do: initial_purchase_price, else: MayorGame.CityHelpers.building_price(initial_purchase_price, buildable_count - 1)
+    
     city_struct = struct(City.Town, city)
 
-    buildable_count = length(city[buildable_to_demolish_atom])
-
     if buildable_count > 0 do
-      case City.demolish_buildable(city_struct, buildable_to_demolish_atom) do
+      case City.demolish_buildable(city_struct, buildable_to_demolish_atom, refund_price) do
         {_x, nil} ->
-          IO.puts("demolition success")
+          IO.puts("demolition success: " <> building_to_demolish <> " for $" <> to_string(refund_price))
 
         {:error, err} ->
           Logger.error(inspect(err))
@@ -236,7 +239,7 @@ defmodule MayorGameWeb.CityLive do
       })
 
     if city.shields <= 0 && attacking_town_struct.missiles > 0 do
-      case City.demolish_buildable(attacked_town_struct, building_to_attack_atom) do
+      case City.demolish_buildable(attacked_town_struct, building_to_attack_atom, 0) do
         {_x, nil} ->
           from(t in Town, where: [id: ^current_user.town.id])
           |> Repo.update_all(inc: [missiles: -1])

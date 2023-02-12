@@ -202,6 +202,9 @@ defmodule MayorGame.City do
   end
 
   @doc """
+  updates log for a city. Expects the town(city) struct & a single string.
+
+  @doc """
   Deletes a town.
 
   ## Examples
@@ -435,16 +438,17 @@ defmodule MayorGame.City do
 
   @doc """
   remove 1 of a given building
-  expects (details, :atom of building, building id)
+  expects (details, :atom of building, pric)
 
   ## Examples
 
-      iex> demolish_buildable(details, :schools, buildable_id int)
+      iex> demolish_buildable(details, :schools, 300)
       {:ok, %Details{}}
 
   """
-  def demolish_buildable(%Town{} = city, buildable_to_demolish) do
-    refund_price = Buildable.buildables_flat()[buildable_to_demolish].price
+  def demolish_buildable(%Town{} = city, buildable_to_demolish, purchase_price) do
+    # refund_price = Buildable.buildables_flat()[buildable_to_demolish].price
+    refund_price = purchase_price
 
     Town
     |> where(id: ^city.id)
