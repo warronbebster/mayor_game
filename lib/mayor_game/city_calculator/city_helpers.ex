@@ -384,7 +384,6 @@ defmodule MayorGame.CityHelpers do
     # ________________________________________________________________________
     pollution_reached = world.pollution > pollution_ceiling
     time_to_learn = rem(world.day, 91) == 0
-    citizens_count = length(city_baked_direct.citizens)
 
     # I don't think this needs to be a reduce. this could me a map then flatten
     after_citizen_checks =
@@ -500,7 +499,7 @@ defmodule MayorGame.CityHelpers do
             :reproducing_citizens,
             if(
               updated_citizen.age > 500 and updated_citizen.age < 2000 and
-                :rand.uniform(citizens_count + 1) == 1,
+                :rand.uniform(citizen_count + 1) == 1,
               do: &[citizen | &1],
               else: & &1
             )
