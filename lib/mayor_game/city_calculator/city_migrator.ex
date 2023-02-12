@@ -668,22 +668,22 @@ defmodule MayorGame.CityMigrator do
     # this could also be in ETS
 
     # take housing slots, remove any city that was occupied previously
-    slots_after_job_migrations = housing_slots_4
+    # slots_after_job_migrations = housing_slots_4
 
-    housing_slots_expanded =
-      Enum.reduce(
-        housing_slots_4,
-        [],
-        fn {city_id, slots_count}, acc ->
-          # duplicate this score v times (1 for each slot)
+    # housing_slots_expanded =
+    #   Enum.reduce(
+    #     housing_slots_4,
+    #     [],
+    #     fn {city_id, slots_count}, acc ->
+    #       # duplicate this score v times (1 for each slot)
 
-          if slots_count > 0 do
-            acc ++ for _ <- 1..slots_count, do: city_id
-          else
-            acc
-          end
-        end
-      )
+    #       if slots_count > 0 do
+    #         acc ++ for _ <- 1..slots_count, do: city_id
+    #       else
+    #         acc
+    #       end
+    #     end
+    #   )
 
     slots_after_job_filtered =
       Enum.filter(housing_slots_4, fn {_k, v} -> v > 0 end) |> Enum.into(%{})
