@@ -65,6 +65,16 @@
           Housing
         </div>
       </td>
+
+      <td class="group relative h-4 top_td text-green-600">
+        <div class="flex gap-1 items-center w-full pr-2">
+          <img src="/images/workers-fulfilled.svg" alt="total workers" height="12" width="12" class="inline" />
+        </div>
+        <div class="tooltip top-0 left-0 -translate-x-full text-green-600">
+          Jobs
+        </div>
+      </td>
+
       <td class="group relative h-4 top_td text-green-600">
         <div class="flex items-center w-full pr-2">
           <img src="/images/plus.svg" alt="plus" height="12" width="12" class="inline" />
@@ -187,6 +197,12 @@
           <%= @city2.housing - @total_citizens %>/<%= @city2.housing %>
         </span>
       </td>
+
+      <td class="top_td">
+        <span class="text-green-800">
+          <%= Enum.sum(Map.values(@city2.jobs)) %>/<%= Enum.sum(Map.values(@city2.total_jobs)) %>
+        </span>
+      </td>
       <td class="top_td">
         <span class="text-green-800">
           $<%= Number.Delimit.number_to_delimited(@city2.income) %>/day
@@ -298,30 +314,103 @@
           <%= rate %>
         <% end %>
         <!--print citizen count at level-->
-        <div>
+        <div class=" group relative flex flex-row items-center gap-1 w-32 cursor-help">
+          <img
+            src="/images/citizen.svg"
+            alt="total citizen"
+            height="12"
+            width="12"
+          />
           <%= if @citizens_by_edu[String.to_integer(job_level)] !== nil do %>
             <%= to_string(@citizens_by_edu[String.to_integer(job_level)]) %>
           <% else %>
             0
           <% end %>
-          citizens
+          <div class="tooltip max-w-sm">
+            <%= if @citizens_by_edu[String.to_integer(job_level)] !== nil do %>
+              <%= to_string(@citizens_by_edu[String.to_integer(job_level)]) %>
+            <% else %>
+              0
+            <% end %>
+            citizens
+          </div>
         </div>
         <!--print job count at level-->
-        <div>
+        <div class=" group relative flex flex-row items-center text-green-700 gap-1 w-32 cursor-help">
+          <img
+            src="/images/workers-fulfilled.svg"
+            alt="total workers"
+            height="12"
+            width="12"
+          />
+          <%= if (@city2.total_jobs[String.to_integer(job_level)] !== nil && @city2.jobs[String.to_integer(job_level)] !== nil) do %>
+            <%= to_string(@city2.total_jobs[String.to_integer(job_level)] - @city2.jobs[String.to_integer(job_level)]) %>
+          <% else %>
+            0
+          <% end %>
+          /
           <%= if @city2.total_jobs[String.to_integer(job_level)] !== nil do %>
             <%= to_string(@city2.total_jobs[String.to_integer(job_level)]) %>
           <% else %>
             0
           <% end %>
-          total jobs
+          <div class="tooltip max-w-sm">
+            <div class="pb-1">
+              <%= if @city2.total_jobs[String.to_integer(job_level)] !== nil do %>
+                <%= to_string(@city2.total_jobs[String.to_integer(job_level)]) %>
+              <% else %>
+                0
+              <% end %>
+              total jobs
+            </div>
+            <div class="pb-2">
+              <%= if (@city2.total_jobs[String.to_integer(job_level)] !== nil && @city2.jobs[String.to_integer(job_level)] !== nil) do %>
+                <%= to_string(@city2.total_jobs[String.to_integer(job_level)] - @city2.jobs[String.to_integer(job_level)]) %>
+              <% else %>
+                0
+              <% end %>
+              occupied jobs
+            </div>
+            <div>
+              <%= if @city2.jobs[String.to_integer(job_level)] !== nil do %>
+                <%= to_string(@city2.jobs[String.to_integer(job_level)]) %>
+              <% else %>
+                0
+              <% end %>
+              available jobs
+            </div>
+          </div>
         </div>
-        <div>
-          <%= if @city2.jobs[String.to_integer(job_level)] !== nil do %>
-            <%= to_string(@city2.jobs[String.to_integer(job_level)]) %>
+        <div class=" group relative flex flex-row items-center text-green-700 gap-1 w-32 cursor-help">
+          <div>
+            <img
+              src="/images/workers-fulfilled.svg"
+              alt="total workers"
+              height="12"
+              width="12"
+            />
+            <img
+              src="/images/money-fulfilled.svg"
+              alt="total income"
+              height="12"
+              width="12"
+            />
+          </div>
+          <%= if (@tax_by_level[String.to_integer(job_level)] !== nil) do %>
+            <%= Number.Delimit.number_to_delimited(@tax_by_level[String.to_integer(job_level)]) %>
           <% else %>
             0
           <% end %>
-          available jobs
+          <div class="tooltip max-w-sm">
+            <div class="pb-1">
+              <%= if @tax_by_level[String.to_integer(job_level)] !== nil do %>
+                $<%= Number.Delimit.number_to_delimited(@tax_by_level[String.to_integer(job_level)]) %>
+              <% else %>
+                $0
+              <% end %>
+              tax income
+            </div>
+          </div>
         </div>
       </div>
     <% end %>
