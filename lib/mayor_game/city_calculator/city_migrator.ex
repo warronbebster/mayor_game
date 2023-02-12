@@ -198,7 +198,7 @@ defmodule MayorGame.CityMigrator do
           # for each level in slots_per_level
           #
           level_results =
-            Enum.map(0..5, fn x ->
+            Enum.map(5..0, fn x ->
               {x,
                %{
                  normalized_cities: acc.level_slots[x].normalized_cities ++ [slots_per_level[x]],
@@ -218,7 +218,7 @@ defmodule MayorGame.CityMigrator do
       )
 
     citizens_split =
-      Map.new(0..5, fn x ->
+      Map.new(5..0, fn x ->
         {x,
          Enum.split(
            Enum.filter(citizens_looking, fn cit -> cit.education == x end),
@@ -227,7 +227,7 @@ defmodule MayorGame.CityMigrator do
       end)
 
     preferred_locations_by_level =
-      Map.new(0..5, fn level ->
+      Map.new(5..0, fn level ->
         {level,
          Enum.reduce(
            elem(citizens_split[level], 0),
@@ -300,7 +300,7 @@ defmodule MayorGame.CityMigrator do
     # MOVE CITIZENS
 
     updated_citizens_by_id_2 =
-      Enum.reduce(0..5, updated_citizens_by_id, fn x, acc ->
+      Enum.reduce(5..0, updated_citizens_by_id, fn x, acc ->
         if preferred_locations_by_level[x].choices != [] do
           Enum.reduce(preferred_locations_by_level[x].choices, acc, fn {citizen, chosen_city_id},
                                                                        acc2 ->
