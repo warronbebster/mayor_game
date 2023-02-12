@@ -1,7 +1,6 @@
 defmodule MayorGame.CityCalculator do
   use GenServer, restart: :permanent
-  alias MayorGame.City.Buildable
-  alias MayorGame.City.{Town, Citizens}
+  alias MayorGame.City.{Town, Buildable}
   alias MayorGame.{City, CityHelpers, Repo}
   import Ecto.Query
 
@@ -120,7 +119,7 @@ defmodule MayorGame.CityCalculator do
                     education: 0,
                     has_job: false,
                     last_moved: db_world.day,
-                    preferences: :rand.uniform(5)
+                    preferences: :rand.uniform(6)
                   }
                 end)
               else
@@ -132,7 +131,7 @@ defmodule MayorGame.CityCalculator do
                       education: 0,
                       has_job: false,
                       last_moved: db_world.day,
-                      preferences: :rand.uniform(5)
+                      preferences: :rand.uniform(6)
                     }
                   ]
                 else
@@ -140,8 +139,7 @@ defmodule MayorGame.CityCalculator do
                 end
               end
 
-            citizens_blob = simplified_citizens
-            # citizens_blob = simplified_citizens ++ births
+            citizens_blob = simplified_citizens ++ births
 
             from(t in Town,
               where: t.id == ^city.id,
