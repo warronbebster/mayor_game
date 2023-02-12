@@ -74,7 +74,6 @@ defmodule MayorGame.City do
   def create_town(attrs \\ %{}) do
     # have to create a resourcemap from scratch when creating a new town cuz it's required
     # TODO: remove this when creating cities from token
-    resourceMap = %{resources: Map.new(MayorGame.City.Town.resources(), fn x -> {x, 0} end)}
 
     buildables_zeroed =
       Enum.map(Buildable.buildables_ordered_flat(), fn k ->
@@ -103,7 +102,7 @@ defmodule MayorGame.City do
       |> Map.merge(intro_attrs)
 
     %Town{}
-    |> Town.changeset(Map.merge(attrsWithAtomKeys, resourceMap))
+    |> Town.changeset(attrsWithAtomKeys)
     |> Repo.insert()
   end
 

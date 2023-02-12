@@ -93,12 +93,12 @@ defmodule MayorGame.CityCalculatorOriginal do
     #
 
     # citizens_looking =
-    #   city_with_stats2.housed_unemployed_citizens ++
-    #     city_with_stats2.housed_employed_looking_citizens
+    #   city_with_stats2.unemployed_citizens ++
+    #     city_with_stats2.employed_looking_citizens
 
     # housing_slots = city_with_stats2.housing_left
 
-    # + length(city_with_stats2.housed_unemployed_citizens) + length(city_with_stats2.housed_employed_looking_citizens)
+    # + length(city_with_stats2.unemployed_citizens) + length(city_with_stats2.employed_looking_citizens)
 
     # All_cities_new = just  leftovers
 
@@ -107,7 +107,7 @@ defmodule MayorGame.CityCalculatorOriginal do
     citizens_looking =
       List.flatten(
         Enum.map(leftovers, fn city ->
-          city.housed_unemployed_citizens ++ city.housed_employed_looking_citizens
+          city.unemployed_citizens ++ city.employed_looking_citizens
         end)
       )
 

@@ -9,7 +9,6 @@ defmodule MayorGame.City.Town do
       title: String.t(),
       region: String.t(),
       climate: String.t(),
-      resources: map,
       logs: list(String.t()),
       tax_rates: map,
       user: %MayorGame.Auth.User{},
@@ -20,7 +19,7 @@ defmodule MayorGame.City.Town do
 
   use Ecto.Schema
   import Ecto.Changeset
-  alias MayorGame.City.{Citizens, Details, Buildable}
+  alias MayorGame.City.{Citizens, Buildable}
   use Accessible
 
   @timestamps_opts [type: :utc_datetime]
@@ -40,7 +39,6 @@ defmodule MayorGame.City.Town do
             title: String.t(),
             region: String.t(),
             climate: String.t(),
-            resources: map,
             logs: list(String.t()),
             tax_rates: map,
             user: %MayorGame.Auth.User{},
@@ -49,14 +47,29 @@ defmodule MayorGame.City.Town do
             treasury: integer,
             citizen_count: integer,
             citizens_blob: list(map),
-            # ————————————————————————————
+            patron: integer,
+            # logs ——————————————————————————————
+            logs_emigration_housing: map,
+            logs_emigration_taxes: map,
+            logs_emigration_jobs: map,
+            logs_immigration: map,
+            logs_attacks: map,
+            logs_edu: map,
+            logs_deaths_pollution: integer,
+            logs_deaths_age: integer,
+            logs_deaths_housing: integer,
+            logs_deaths_attacks: integer,
+            logs_births: integer,
+
+            # Resources————————————————————————————
             steel: integer,
             missiles: integer,
             shields: integer,
             sulfur: integer,
             gold: integer,
             uranium: integer,
-            patron: integer,
+
+            # Buildings ————————————————————————————
             huts: integer,
             single_family_homes: integer,
             multi_family_homes: integer,
@@ -99,7 +112,6 @@ defmodule MayorGame.City.Town do
     field(:title, :string)
     field(:region, :string)
     field(:climate, :string)
-    field(:resources, :map)
     field(:pollution, :integer)
     field(:treasury, :integer)
     field(:citizen_count, :integer)
@@ -117,6 +129,19 @@ defmodule MayorGame.City.Town do
     field(:logs, {:array, :string})
     field(:tax_rates, :map)
     belongs_to(:user, MayorGame.Auth.User)
+
+    # logs ——————————————————————————————
+    field :logs_emigration_housing, :map, default: %{}
+    field :logs_emigration_taxes, :map, default: %{}
+    field :logs_emigration_jobs, :map, default: %{}
+    field :logs_immigration, :map, default: %{}
+    field :logs_attacks, :map, default: %{}
+    field :logs_edu, :map, default: %{}
+    field :logs_deaths_pollution, :integer, default: 0
+    field :logs_deaths_age, :integer, default: 0
+    field :logs_deaths_housing, :integer, default: 0
+    field :logs_deaths_attacks, :integer, default: 0
+    field :logs_births, :integer, default: 0
 
     # outline relationship between city and citizens
     # this has to be passed as a list []
@@ -150,20 +175,6 @@ defmodule MayorGame.City.Town do
     ]
   end
 
-  def resources do
-    [
-      "oil",
-      "coal",
-      "gems",
-      "gold",
-      "diamond",
-      "stone",
-      "copper",
-      "iron",
-      "water"
-    ]
-  end
-
   @doc false
   def changeset(%MayorGame.City.Town{} = town, attrs) do
     town
@@ -177,7 +188,6 @@ defmodule MayorGame.City.Town do
         :treasury,
         :region,
         :climate,
-        :resources,
         :user_id,
         :logs,
         :tax_rates,
@@ -188,7 +198,18 @@ defmodule MayorGame.City.Town do
         :gold,
         :uranium,
         :patron,
-        :citizens_blob
+        :citizens_blob,
+        :logs_emigration_housing,
+        :logs_emigration_taxes,
+        :logs_emigration_jobs,
+        :logs_immigration,
+        :logs_attacks,
+        :logs_edu,
+        :logs_deaths_pollution,
+        :logs_deaths_age,
+        :logs_deaths_housing,
+        :logs_deaths_attacks,
+        :logs_births
       ] ++ Buildable.buildables_list()
     )
     |> validate_required([:title, :region, :climate, :user_id])

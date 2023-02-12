@@ -1215,6 +1215,10 @@ select {
   width: 4rem;
 }
 
+.w-64 {
+  width: 16rem;
+}
+
 .w-20 {
   width: 5rem;
 }
@@ -1240,6 +1244,10 @@ select {
 }
 
 .flex-grow {
+  flex-grow: 1;
+}
+
+.grow {
   flex-grow: 1;
 }
 
@@ -1391,6 +1399,10 @@ select {
   border-left-width: 0px;
 }
 
+.border-l {
+  border-left-width: 1px;
+}
+
 .border-none {
   border-style: none;
 }
@@ -1402,6 +1414,10 @@ select {
 
 .border-neutral-800\/25 {
   border-color: rgb(38 38 38 / 0.25);
+}
+
+.border-neutral-800\/10 {
+  border-color: rgb(38 38 38 / 0.1);
 }
 
 .border-neutral-300 {
@@ -1445,9 +1461,9 @@ select {
   padding-right: 0.5rem;
 }
 
-.px-4 {
-  padding-left: 1rem;
-  padding-right: 1rem;
+.px-3 {
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
 }
 
 .py-4 {
@@ -1465,14 +1481,14 @@ select {
   padding-bottom: 0px;
 }
 
-.px-1 {
-  padding-left: 0.25rem;
-  padding-right: 0.25rem;
-}
-
 .py-1 {
   padding-top: 0.25rem;
   padding-bottom: 0.25rem;
+}
+
+.px-1 {
+  padding-left: 0.25rem;
+  padding-right: 0.25rem;
 }
 
 .pr-2 {

@@ -30,9 +30,9 @@ defmodule MayorGame.CityHelpers do
       housing_left: results.housing,
       education_left: results.education,
       educated_citizens: %{0 => [], 1 => [], 2 => [], 3 => [], 4 => [], 5 => []},
-      housed_unemployed_citizens: [],
+      unemployed_citizens: [],
       housed_employed_staying_citizens: [],
-      housed_employed_looking_citizens: [],
+      employed_looking_citizens: [],
       unhoused_citizens: all_citizens,
       polluted_citizens: [],
       old_citizens: [],
@@ -78,6 +78,9 @@ defmodule MayorGame.CityHelpers do
     #   end
 
     citizen_count = length(sorted_blob_citizens)
+
+    # reduce citizens from highest level
+    # look at buildables
 
     # buildables_ordered is in order
     results =
@@ -383,7 +386,7 @@ defmodule MayorGame.CityHelpers do
     # Iterate through citizens
     # ________________________________________________________________________
     pollution_reached = world.pollution > pollution_ceiling
-    time_to_learn = rem(world.day, 10) == 0
+    time_to_learn = rem(world.day, 365) == 0
 
     # I don't think this needs to be a reduce. this could me a map then flatten
     after_citizen_checks =
@@ -394,10 +397,10 @@ defmodule MayorGame.CityHelpers do
           all_citizens_persisting: [],
           housing_left: results_after_2nd_round_jobs.housing,
           education_left: results_after_2nd_round_jobs.education,
-          educated_citizens: %{0 => [], 1 => [], 2 => [], 3 => [], 4 => [], 5 => []},
-          housed_unemployed_citizens: [],
+          educated_citizens: %{1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0},
+          unemployed_citizens: [],
           housed_employed_staying_citizens: [],
-          housed_employed_looking_citizens: [],
+          employed_looking_citizens: [],
           unhoused_citizens: [],
           polluted_citizens: [],
           old_citizens: Enum.filter(all_citizens, &(&1.age > 10000)),
@@ -448,24 +451,27 @@ defmodule MayorGame.CityHelpers do
           )
           |> Map.update!(
             :housing_left,
-            if(acc.housing_left > 0 and !pollution_death, do: &(&1 - 1), else: & &1)
+            if(acc.housing_left > 0 and !pollution_death and citizen_not_too_old,
+              do: &(&1 - 1),
+              else: & &1
+            )
           )
           |> Map.update!(
             :education_left,
             if(will_citizen_learn,
-              do: fn current -> Map.update!(current, citizen.education + 1, &(&1 - 1)) end,
+              do: fn current -> Map.update!(current, updated_citizen.education, &(&1 - 1)) end,
               else: & &1
             )
           )
           |> Map.update!(
             :educated_citizens,
             if(will_citizen_learn,
-              do: fn current -> Map.update!(current, citizen.education + 1, &[citizen | &1]) end,
+              do: fn current -> Map.update!(current, updated_citizen.education, &(&1 + 1)) end,
               else: & &1
             )
           )
           |> Map.update!(
-            :housed_unemployed_citizens,
+            :unemployed_citizens,
             if(
               acc.housing_left > 0 && !citizen.has_job && citizen_not_too_old && !pollution_death,
               do: &[updated_citizen | &1],
@@ -484,9 +490,9 @@ defmodule MayorGame.CityHelpers do
             if(employable && !tax_too_high, do: &[updated_citizen | &1], else: & &1)
           )
           |> Map.update!(
-            :housed_employed_looking_citizens,
-            if(employable && tax_too_high && updated_citizen.last_moved < world.day - 10,
-              do: &[citizen | &1],
+            :employed_looking_citizens,
+            if(employable && tax_too_high && updated_citizen.last_moved < world.day - 50,
+              do: &[updated_citizen | &1],
               else: & &1
             )
           )
@@ -500,7 +506,7 @@ defmodule MayorGame.CityHelpers do
             :reproducing_citizens,
             if(
               updated_citizen.age > 500 and updated_citizen.age < 2000 and
-                :rand.uniform(citizen_count + 1) == 1,
+                :rand.uniform(citizen_count + 1) < max(results.health, 10),
               do: &(&1 + 1),
               else: & &1
             )
@@ -779,5 +785,17 @@ defmodule MayorGame.CityHelpers do
 
   def calculate_earnings(worker_count, level, tax_rate) do
     round(worker_count * :math.pow(1.5, level + 1) * 100 * (tax_rate / 10))
+  end
+
+  def atomize_keys(map) do
+    Map.new(map, fn {k, v} ->
+      {if(!is_atom(k), do: String.to_existing_atom(k), else: k), v}
+    end)
+  end
+
+  def integerize_keys(map) do
+    Map.new(map, fn {k, v} ->
+      {if(!is_integer(k), do: String.to_integer(k), else: k), v}
+    end)
   end
 end

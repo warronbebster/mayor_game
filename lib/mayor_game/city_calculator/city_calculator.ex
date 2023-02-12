@@ -83,14 +83,6 @@ defmodule MayorGame.CityCalculator do
         )
       end)
 
-    # might not even need to do all this flattening cuz it only matters to individual cities
-
-    # citizens_too_old = List.flatten(Enum.map(leftovers, fn city -> city.old_citizens end))
-
-    # citizens_polluted = List.flatten(Enum.map(leftovers, fn city -> city.polluted_citizens end))
-
-    # citizens_to_reproduce = List.flatten(Enum.map(leftovers, fn city -> city.reproducing_citizens end))
-
     new_world_pollution = Enum.sum(Enum.map(leftovers, fn city -> city.pollution end))
 
     leftovers
@@ -110,21 +102,21 @@ defmodule MayorGame.CityCalculator do
                 end
               )
 
-            births =
+            births_count =
               if city.citizen_count > 20 do
-                Enum.map(1..city.reproducing_citizens, fn _citizen ->
-                  %{
-                    town_id: city.id,
-                    age: 0,
-                    education: 0,
-                    has_job: false,
-                    last_moved: db_world.day,
-                    preferences: :rand.uniform(6)
-                  }
-                end)
+                city.reproducing_citizens
               else
                 if :rand.uniform() > 0.5 do
-                  [
+                  1
+                else
+                  0
+                end
+              end
+
+            updated_citizens =
+              if births_count > 0 do
+                simplified_citizens ++
+                  Enum.map(1..births_count, fn _citizen ->
                     %{
                       town_id: city.id,
                       age: 0,
@@ -133,13 +125,10 @@ defmodule MayorGame.CityCalculator do
                       last_moved: db_world.day,
                       preferences: :rand.uniform(6)
                     }
-                  ]
-                else
-                  []
-                end
+                  end)
+              else
+                simplified_citizens
               end
-
-            updated_citizens = simplified_citizens ++ births
 
             citizens_blob =
               if length(updated_citizens) < 20 do
@@ -148,8 +137,20 @@ defmodule MayorGame.CityCalculator do
                 updated_citizens
               end
 
-            # if < 20, remove over housing limit
-            # also check housing limit on births?
+            updated_edu_logs =
+              Map.merge(CityHelpers.integerize_keys(city.logs_edu), city.educated_citizens, fn _k,
+                                                                                               v1,
+                                                                                               v2 ->
+                v1 + v2
+              end)
+
+            # :logs_emigration_housing,
+            # :logs_emigration_taxes,
+            # :logs_emigration_jobs,
+            # :logs_immigration,
+            # :logs_attacks,
+            # :logs_deaths_housing,
+            # :logs_deaths_attacks,
 
             from(t in Town,
               where: t.id == ^city.id,
@@ -161,12 +162,17 @@ defmodule MayorGame.CityCalculator do
                   sulfur: ^city.new_sulfur,
                   gold: ^city.new_gold,
                   uranium: ^city.new_uranium,
-                  shields: ^city.new_shields
+                  shields: ^city.new_shields,
+                  # logs—————————
+                  logs_births: ^births_count,
+                  logs_deaths_pollution: ^length(city.polluted_citizens),
+                  logs_deaths_age: ^length(city.old_citizens)
                 ],
                 set: [
                   citizen_count: ^city.citizen_count,
                   pollution: ^city.pollution,
-                  citizens_blob: ^citizens_blob
+                  citizens_blob: ^citizens_blob,
+                  logs_edu: ^updated_edu_logs
                 ]
               ]
             )
