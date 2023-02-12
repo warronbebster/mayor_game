@@ -188,9 +188,9 @@ defmodule MayorGame.City do
     # add new item to head of list
     updated_log = [log_item | town.logs]
 
-    # if list is longer than 50, remove last item
+    # if list is longer than 250, remove last item
     limited_log =
-      if length(updated_log) > 50 do
+      if length(updated_log) > 250 do
         updated_log |> Enum.reverse() |> tl() |> Enum.reverse()
       else
         updated_log

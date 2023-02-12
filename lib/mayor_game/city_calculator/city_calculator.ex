@@ -921,8 +921,8 @@ defmodule MayorGame.CityCalculator do
 
     # updated_log = [log | existing_logs]
 
-    if length(updated_log) > 50 do
-      updated_log |> Enum.take(50)
+    if length(updated_log) > 250 do
+      updated_log |> Enum.take(250)
     else
       updated_log
     end
