@@ -410,6 +410,34 @@ defmodule MayorGameWeb.CityLive do
       end)
       |> Enum.into(%{})
 
+    operating_tax =
+      Enum.map(mapped_details_2, fn {category, _} ->
+        {category, (
+          buildable = socket.assigns.buildables_map.buildables_flat[category]
+          if (operating_count[category][[]] != nil && Map.has_key?(buildable, :requires) && buildable.requires != nil), do: (
+            if (Map.has_key?(buildable.requires, :workers)), do: 
+                 MayorGame.CityHelpers.calculate_earnings(operating_count[category][[]] * buildable.requires.workers.count,
+                 buildable.requires.workers.level,
+                 city.tax_rates[to_string(buildable.requires.workers.level)]),
+              else: 0),
+            else: 0)
+        }
+      end)
+      |> Enum.into(%{})
+
+    tax_by_level = 
+      Enum.map(
+        Enum.group_by(operating_tax, fn {category, _} -> 
+          buildable = socket.assigns.buildables_map.buildables_flat[category]
+          (if (operating_count[category][[]] != nil && Map.has_key?(buildable, :requires) && buildable.requires != nil), do: (
+            if (Map.has_key?(buildable.requires, :workers)), do: buildable.requires.workers.level, else: 0),
+            else: 0)
+          end,
+          fn {_, value} -> value end
+        ),
+        fn {level, array} -> {level, Enum.sum(array)} end
+      ) |> Enum.into(%{})
+    
     citizen_edu_count =
       Enum.frequencies_by(city_with_stats2.all_citizens, fn x -> x.education end)
 
@@ -431,6 +459,8 @@ defmodule MayorGameWeb.CityLive do
     # |> assign(:username, city_user.nickname)
     |> assign(:city2, city2_without_citizens)
     |> assign(:operating_count, operating_count)
+    |> assign(:operating_tax, operating_tax)
+    |> assign(:tax_by_level, tax_by_level)
     |> assign(:citizens_by_edu, citizen_edu_count)
     |> assign(:total_citizens, length(city_with_stats2.all_citizens))
   end
