@@ -244,7 +244,7 @@ defmodule MayorGame.CityMigrator do
                    if count > 0 do
                      Float.round(
                        citizen_score(
-                         citizen.preferences,
+                         Citizens.preset_preferences()[citizen.preferences],
                          citizen.education,
                          slotted_cities_by_id[city_id]
                        ),
@@ -412,7 +412,7 @@ defmodule MayorGame.CityMigrator do
                 if count > 0 do
                   Float.round(
                     citizen_score(
-                      citizen.preferences,
+                      Citizens.preset_preferences()[citizen.preferences],
                       citizen.education,
                       slotted_cities_by_id[city_id]
                     ),
@@ -571,7 +571,7 @@ defmodule MayorGame.CityMigrator do
               if count > 0 do
                 Float.round(
                   citizen_score(
-                    citizen.preferences,
+                    Citizens.preset_preferences()[citizen.preferences],
                     citizen.education,
                     slotted_cities_by_id[city_id]
                   ),
@@ -792,10 +792,10 @@ defmodule MayorGame.CityMigrator do
   end
 
   def citizen_score(citizen_preferences, education_level, normalized_city) do
-    (1 - normalized_city.tax_rates[to_string(education_level)]) * citizen_preferences["tax_rates"] +
-      (1 - normalized_city.pollution_normalized) * citizen_preferences["pollution"] +
-      (1 - normalized_city.sprawl_normalized) * citizen_preferences["sprawl"] +
-      normalized_city.fun_normalized * citizen_preferences["fun"] +
-      normalized_city.health_normalized * citizen_preferences["health"]
+    (1 - normalized_city.tax_rates[to_string(education_level)]) * citizen_preferences.tax_rates +
+      (1 - normalized_city.pollution_normalized) * citizen_preferences.pollution +
+      (1 - normalized_city.sprawl_normalized) * citizen_preferences.sprawl +
+      normalized_city.fun_normalized * citizen_preferences.fun +
+      normalized_city.health_normalized * citizen_preferences.health
   end
 end

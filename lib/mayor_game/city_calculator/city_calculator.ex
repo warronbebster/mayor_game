@@ -109,6 +109,7 @@ defmodule MayorGame.CityCalculator do
                 fn citizen ->
                   Map.take(citizen, [:age, :education, :last_moved, :preferences, :town_id])
                   |> Map.put(:has_job, false)
+                  |> Map.put(:preferences, :rand.uniform(5))
                 end
               )
 
@@ -121,7 +122,7 @@ defmodule MayorGame.CityCalculator do
                     education: 0,
                     has_job: false,
                     last_moved: db_world.day,
-                    preferences: CityHelpers.create_citizen_preference_map()
+                    preferences: :rand.uniform(5)
                   }
                 end)
               else
@@ -133,7 +134,7 @@ defmodule MayorGame.CityCalculator do
                       education: 0,
                       has_job: false,
                       last_moved: db_world.day,
-                      preferences: CityHelpers.create_citizen_preference_map()
+                      preferences: :rand.uniform(5)
                     }
                   ]
                 else
@@ -143,8 +144,6 @@ defmodule MayorGame.CityCalculator do
 
             citizens_blob = simplified_citizens
             # citizens_blob = simplified_citizens ++ births
-
-            IO.inspect(citizens_blob)
 
             from(t in Town,
               where: t.id == ^city.id,
