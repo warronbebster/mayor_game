@@ -39,7 +39,7 @@ defmodule MayorGame.CityMigrator do
 
     # send message :tax to self process after
     # calls `handle_info` function
-    Process.send_after(self(), :tax, 10000)
+    Process.send_after(self(), :tax, 20000)
 
     # returns ok tuple when u start
     {:ok, %{world: game_world, buildables_map: buildables_map}}
@@ -670,20 +670,12 @@ defmodule MayorGame.CityMigrator do
         end
       end)
 
-    Repo.checkout(
-      fn ->
-        updated_citizens_by_id_4
-        |> Enum.chunk_every(200)
-        |> Enum.each(fn chunk ->
+    updated_citizens_by_id_4
+    |> Enum.chunk_every(200)
+    |> Enum.each(fn chunk ->
+      Repo.checkout(
+        fn ->
           Enum.each(chunk, fn {id, list} ->
-            # town_ids = chunk |> Enum.map(fn {id, _list} -> id end) |> Enum.sort()
-
-            # from(t in Town,
-            #   where: t.id in ^town_ids,
-            #   update: [set: [citizens_blob: ^chunk[t.id], citizen_count: ^length(chunk[t.id])]]
-            # )
-            # |> Repo.update_all([])
-
             from(t in Town,
               where: t.id == ^id,
               update: [
@@ -695,61 +687,61 @@ defmodule MayorGame.CityMigrator do
             )
             |> Repo.update_all([])
           end)
-        end)
+        end,
+        timeout: 6_000_000
+      )
+    end)
 
-        # MULTI KILL REST OF UNHOUSED CITIZENS
+    # MULTI KILL REST OF UNHOUSED CITIZENS
 
-        # elem(unhoused_split, 1)
-        # |> Enum.sort_by(& &1.id)
-        # |> Enum.chunk_every(200)
-        # |> Enum.each(fn chunk ->
-        #   citizen_ids = chunk |> Enum.map(fn citizen -> citizen.id end) |> Enum.sort()
+    # elem(unhoused_split, 1)
+    # |> Enum.sort_by(& &1.id)
+    # |> Enum.chunk_every(200)
+    # |> Enum.each(fn chunk ->
+    #   citizen_ids = chunk |> Enum.map(fn citizen -> citizen.id end) |> Enum.sort()
 
-        #   town_ids = chunk |> Enum.map(fn citizen -> citizen.town_id end) |> Enum.sort()
+    #   town_ids = chunk |> Enum.map(fn citizen -> citizen.town_id end) |> Enum.sort()
 
-        #   from(c in Citizens, where: c.id in ^citizen_ids)
-        #   |> Repo.delete_all()
+    #   from(c in Citizens, where: c.id in ^citizen_ids)
+    #   |> Repo.delete_all()
 
-        #   from(t in Town,
-        #     where: t.id in ^town_ids,
-        #     update: [push: [logs: "A citizen died a lack of housing. RIP"]]
-        #   )
-        #   |> Repo.update_all([])
-        # end)
+    #   from(t in Town,
+    #     where: t.id in ^town_ids,
+    #     update: [push: [logs: "A citizen died a lack of housing. RIP"]]
+    #   )
+    #   |> Repo.update_all([])
+    # end)
 
-        #
+    #
 
-        # ——————————————————————————————————————————————————————————————————————————————————
-        # ————————————————————————————————————————— OTHER ECTO UPDATES
-        # ——————————————————————————————————————————————————————————————————————————————————
+    # ——————————————————————————————————————————————————————————————————————————————————
+    # ————————————————————————————————————————— OTHER ECTO UPDATES
+    # ——————————————————————————————————————————————————————————————————————————————————
 
-        # MULTI UPDATE: update city money/treasury in DB ——————————————————————————————————————————————————— DB UPDATE
+    # MULTI UPDATE: update city money/treasury in DB ——————————————————————————————————————————————————— DB UPDATE
 
-        # IF I MAKE THIS ATOMIC, DON'T NEED TO DO THIS
-        # delete_all
+    # IF I MAKE THIS ATOMIC, DON'T NEED TO DO THIS
+    # delete_all
 
-        # MULTI CHANGESET EDUCATE ——————————————————————————————————————————————————— DB UPDATE
+    # MULTI CHANGESET EDUCATE ——————————————————————————————————————————————————— DB UPDATE
 
-        # test = [1, 4]
+    # test = [1, 4]
 
-        # IO.inspect(cs)
+    # IO.inspect(cs)
 
-        # if rem(world.day, 365) == 0 do
+    # if rem(world.day, 365) == 0 do
 
-        # end
+    # end
 
-        # end)
+    # end)
 
-        # MULTI CHANGESET AGE
+    # MULTI CHANGESET AGE
 
-        # MULTI CHANGESET KILL OLD CITIZENS ——————————————————————————————————————————————————— DB UPDATE
+    # MULTI CHANGESET KILL OLD CITIZENS ——————————————————————————————————————————————————— DB UPDATE
 
-        # end)
+    # end)
 
-        # MULTI REPRODUCE ——————————————————————————————————————————————————— DB UPDATE
-      end,
-      timeout: 6_000_000
-    )
+    # MULTI REPRODUCE ——————————————————————————————————————————————————— DB UPDATE
 
     # SEND RESULTS TO CLIENTS
     # send val to liveView process that manages front-end; this basically sends to every client.
@@ -760,7 +752,7 @@ defmodule MayorGame.CityMigrator do
     )
 
     # recurse, do it again
-    Process.send_after(self(), :tax, 10000)
+    Process.send_after(self(), :tax, 20000)
 
     # returns this to whatever calls ?
     {:noreply, %{world: db_world, buildables_map: buildables_map}}

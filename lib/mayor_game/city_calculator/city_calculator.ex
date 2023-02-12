@@ -39,7 +39,7 @@ defmodule MayorGame.CityCalculator do
 
     # send message :tax to self process after 5000ms
     # calls `handle_info` function
-    Process.send_after(self(), :tax, 2000)
+    Process.send_after(self(), :tax, 5000)
 
     # returns ok tuple when u start
     {:ok, %{world: game_world, buildables_map: buildables_map}}
@@ -94,12 +94,12 @@ defmodule MayorGame.CityCalculator do
 
     new_world_pollution = Enum.sum(Enum.map(leftovers, fn city -> city.pollution end))
 
-    Repo.checkout(
-      fn ->
-        leftovers
-        |> Enum.sort_by(& &1.id)
-        |> Enum.chunk_every(200)
-        |> Enum.each(fn chunk ->
+    leftovers
+    |> Enum.sort_by(& &1.id)
+    |> Enum.chunk_every(200)
+    |> Enum.each(fn chunk ->
+      Repo.checkout(
+        fn ->
           # town_ids = Enum.map(chunk, fn city -> city.id end)
           Enum.each(chunk, fn city ->
             # ok this seems to be working
@@ -168,10 +168,10 @@ defmodule MayorGame.CityCalculator do
             # also update logs here for old deaths
             # and pollution deaths
           end)
-        end)
-      end,
-      timeout: 6_000_000
-    )
+        end,
+        timeout: 6_000_000
+      )
+    end)
 
     # MULTI CHANGESET EDUCATE ——————————————————————————————————————————————————— DB UPDATE
 
@@ -304,7 +304,7 @@ defmodule MayorGame.CityCalculator do
     )
 
     # recurse, do it again
-    Process.send_after(self(), :tax, 2000)
+    Process.send_after(self(), :tax, 5000)
 
     # returns this to whatever calls ?
     {:noreply, %{world: updated_world, buildables_map: buildables_map}}
