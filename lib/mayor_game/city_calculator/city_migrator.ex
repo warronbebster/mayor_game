@@ -131,8 +131,6 @@ defmodule MayorGame.CityMigrator do
       leftovers
       |> Map.new(fn city -> {city.id, city.housed_employed_staying_citizens} end)
 
-    # IO.inspect(updated_citizens_by_id, label: "updated_citizens_by_id")
-
     # for each city
     # add an aempty list
     # first put staying citizens
@@ -239,8 +237,6 @@ defmodule MayorGame.CityMigrator do
           level_results
         end
       )
-
-    # IO.inspect(job_and_housing_slots_normalized)
 
     # split by who will get to take the good slots
     # shape is map with key level, tuple
@@ -359,10 +355,6 @@ defmodule MayorGame.CityMigrator do
       else
         updated_citizens_by_id_2
       end
-
-    # IO.inspect(preferred_locations_by_level[0].slots)
-    # ^ I think these should work as a substitute for job_and_housing_slots_normalized[x].job_and_housing_slots
-    # ok these are…
 
     vacated_slots =
       Enum.flat_map(preferred_locations_by_level, fn {_level, preferred_locations} ->
@@ -505,10 +497,6 @@ defmodule MayorGame.CityMigrator do
         updated_citizens_by_id_4
       end
 
-    # IO.inspect(preferred_locations_by_level[0].slots)
-    # ^ I think these should work as a substitute for job_and_housing_slots_normalized[x].job_and_housing_slots
-    # ok these are…
-
     vacated_slots_2 =
       Enum.flat_map(unemployed_preferred_locations_by_level, fn {_level, preferred_locations} ->
         preferred_locations.choices
@@ -635,12 +623,6 @@ defmodule MayorGame.CityMigrator do
         end
       end)
 
-    # add non-lookers back
-
-    # IO.inspect(preferred_locations_by_level[0].slots)
-    # ^ I think these should work as a substitute for job_and_housing_slots_normalized[x].job_and_housing_slots
-    # ok these are…
-
     vacated_slots_3 =
       Enum.flat_map(unhoused_preferred_locations_by_level, fn {_level, preferred_locations} ->
         preferred_locations.choices
@@ -669,9 +651,6 @@ defmodule MayorGame.CityMigrator do
     # this means a job was taken from second elem, and giving housing to the first one
     # yes
     # adjust housing_slots here
-
-    # IO.inspect(occupied_slots, label: "occupied")
-    # IO.inspect(job_and_housing_slots_normalized)
 
     # have to subtract from housing_slots and run again
 
@@ -710,8 +689,6 @@ defmodule MayorGame.CityMigrator do
       Enum.filter(housing_slots_4, fn {_k, v} -> v > 0 end) |> Enum.into(%{})
 
     housing_slots_left = Enum.sum(Map.values(housing_slots_4))
-
-    IO.inspect(housing_slots_4)
 
     unhoused_split_3 = unhoused_split_2 |> Enum.split(housing_slots_left)
 
@@ -964,8 +941,6 @@ defmodule MayorGame.CityMigrator do
     # MULTI CHANGESET EDUCATE ——————————————————————————————————————————————————— DB UPDATE
 
     # test = [1, 4]
-
-    # IO.inspect(cs)
 
     # if rem(world.day, 365) == 0 do
 

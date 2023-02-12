@@ -424,7 +424,6 @@ defmodule MayorGameWeb.CityLive do
         :citizens_looking,
         :citizens_to_reproduce,
         :citizens_polluted,
-        :resources,
         :citizens_looking,
         :education
       ])
