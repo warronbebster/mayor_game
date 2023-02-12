@@ -1,5 +1,8 @@
 defmodule MayorGameWeb.DashboardLive do
   require Logger
+  import Ecto.Query
+  alias MayorGame.City.{Town}
+  alias MayorGame.Repo
 
   use Phoenix.LiveView, container: {:div, class: "liveview-container"}
   # don't need this because you get it in DashboardView?
@@ -18,7 +21,7 @@ defmodule MayorGameWeb.DashboardLive do
 
     {:ok,
      socket
-     |> assign(current_user: current_user |> MayorGame.Repo.preload(:town))
+     |> assign(current_user: current_user |> Repo.preload(:town))
      |> assign_cities()}
   end
 
@@ -38,7 +41,7 @@ defmodule MayorGameWeb.DashboardLive do
        |> assign(
          current_user:
            MayorGame.Auth.get_user!(socket.assigns.current_user.id)
-           |> MayorGame.Repo.preload(:town)
+           |> Repo.preload(:town)
        )
        |> assign_cities()}
     else
@@ -55,7 +58,7 @@ defmodule MayorGameWeb.DashboardLive do
        |> assign(
          current_user:
            MayorGame.Auth.get_user!(socket.assigns.current_user.id)
-           |> MayorGame.Repo.preload(:town)
+           |> Repo.preload(:town)
        )
        |> assign_cities()}
     else
@@ -98,13 +101,19 @@ defmodule MayorGameWeb.DashboardLive do
   # at some point should sort by number of citizens
   defp assign_cities(socket) do
     # cities_count = MayorGame.Repo.aggregate(City.Town, :count, :id)
-    cities = City.list_cities() |> Enum.sort_by(& &1.citizen_count, :desc)
+    all_cities_recent =
+      from(t in Town, select: [:citizen_count, :pollution, :id, :title, :user_id, :patron])
+      |> MayorGame.Repo.all()
+      |> MayorGame.Repo.preload(:user)
+      |> Enum.sort_by(& &1.citizen_count, :desc)
 
-    pollution_sum = Enum.sum(Enum.map(cities, fn city -> city.pollution end))
+    # cities = City.list_cities() |> Enum.sort_by(& &1.citizen_count, :desc)
+
+    pollution_sum = Enum.sum(Enum.map(all_cities_recent, fn city -> city.pollution end))
     world = MayorGame.Repo.get!(MayorGame.City.World, 1)
 
     socket
-    |> assign(:cities, cities)
+    |> assign(:cities, all_cities_recent)
     |> assign(:world, world)
     |> assign(:pollution_sum, pollution_sum)
   end

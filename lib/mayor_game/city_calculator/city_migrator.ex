@@ -1,7 +1,6 @@
 defmodule MayorGame.CityMigrator do
   use GenServer, restart: :permanent
-  alias MayorGame.City.Buildable
-  alias MayorGame.City.{Town, Citizens}
+  alias MayorGame.City.{Town, Citizens, Buildable}
   alias MayorGame.{City, CityHelpers, Repo}
   import Ecto.Query
 
