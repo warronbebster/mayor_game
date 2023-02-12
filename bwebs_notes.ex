@@ -28,11 +28,12 @@
 # potentially use list.keysort instead of sort_by for perf reasons
 # could just save a set of pre-defined preference maps and each "citizen" could reference them
 # that would mean just having a "class" perhaps for citizenSegments
+# I should do that. The only thing stopping it is discrete age. Maybe I just capture the "origin date" for an entire class
+# fix "add citizen" button
 
 logs:
-move-outs
+move-outs by reason
 - level
-- reason
 - city moved to
 
 move-ins

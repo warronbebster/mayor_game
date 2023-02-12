@@ -88,6 +88,8 @@ defmodule MayorGame.CityMigrator do
         end)
       )
 
+    IO.inspect(citizens_looking)
+
     unhoused_citizens = List.flatten(Enum.map(leftovers, fn city -> city.unhoused_citizens end))
     # new_world_pollution = Enum.sum(Enum.map(leftovers, fn city -> city.pollution end))
     total_slots = Enum.sum(Enum.map(leftovers, fn city -> city.housing_left end))

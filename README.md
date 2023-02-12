@@ -89,6 +89,12 @@ cd postgres
 restart DBs:
 `fly pg restart -a mayorgame-db`
 
+see db machine details
+`fly machine status 73287903f11685 -a mayorgame-db`
+
+scaling fly postgres
+https://fly.io/docs/postgres/managing/scaling/
+
 ## Learn more
 
 - Official website: https://www.phoenixframework.org/

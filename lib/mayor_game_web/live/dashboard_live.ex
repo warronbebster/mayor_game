@@ -110,11 +110,13 @@ defmodule MayorGameWeb.DashboardLive do
     # cities = City.list_cities() |> Enum.sort_by(& &1.citizen_count, :desc)
 
     pollution_sum = Enum.sum(Enum.map(all_cities_recent, fn city -> city.pollution end))
+    citizens_sum = Enum.sum(Enum.map(all_cities_recent, fn city -> city.citizen_count end))
     world = MayorGame.Repo.get!(MayorGame.City.World, 1)
 
     socket
     |> assign(:cities, all_cities_recent)
     |> assign(:world, world)
     |> assign(:pollution_sum, pollution_sum)
+    |> assign(:citizens_sum, citizens_sum)
   end
 end

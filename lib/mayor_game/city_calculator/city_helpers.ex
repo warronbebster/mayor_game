@@ -383,7 +383,7 @@ defmodule MayorGame.CityHelpers do
     # Iterate through citizens
     # ________________________________________________________________________
     pollution_reached = world.pollution > pollution_ceiling
-    time_to_learn = rem(world.day, 91) == 0
+    time_to_learn = rem(world.day, 10) == 0
 
     # I don't think this needs to be a reduce. this could me a map then flatten
     after_citizen_checks =
@@ -401,7 +401,7 @@ defmodule MayorGame.CityHelpers do
           unhoused_citizens: [],
           polluted_citizens: [],
           old_citizens: Enum.filter(all_citizens, &(&1.age > 10000)),
-          reproducing_citizens: []
+          reproducing_citizens: 0
         },
         # end,
 
@@ -436,6 +436,7 @@ defmodule MayorGame.CityHelpers do
             )
             |> Map.update!(:age, &(&1 + 1))
 
+          # TODO
           # do this with merge instead of updates
           acc
           |> Map.update!(
@@ -500,7 +501,7 @@ defmodule MayorGame.CityHelpers do
             if(
               updated_citizen.age > 500 and updated_citizen.age < 2000 and
                 :rand.uniform(citizen_count + 1) == 1,
-              do: &[citizen | &1],
+              do: &(&1 + 1),
               else: & &1
             )
           )

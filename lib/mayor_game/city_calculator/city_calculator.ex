@@ -111,8 +111,8 @@ defmodule MayorGame.CityCalculator do
               )
 
             births =
-              if city.citizen_count > 10 do
-                Enum.map(1..length(city.reproducing_citizens), fn _citizen ->
+              if city.citizen_count > 20 do
+                Enum.map(1..city.reproducing_citizens, fn _citizen ->
                   %{
                     town_id: city.id,
                     age: 0,
@@ -123,7 +123,7 @@ defmodule MayorGame.CityCalculator do
                   }
                 end)
               else
-                if :rand.uniform() > 0.8 do
+                if :rand.uniform() > 0.5 do
                   [
                     %{
                       town_id: city.id,
@@ -139,7 +139,17 @@ defmodule MayorGame.CityCalculator do
                 end
               end
 
-            citizens_blob = simplified_citizens ++ births
+            updated_citizens = simplified_citizens ++ births
+
+            citizens_blob =
+              if length(updated_citizens) < 20 do
+                Enum.take(updated_citizens, city.total_housing)
+              else
+                updated_citizens
+              end
+
+            # if < 20, remove over housing limit
+            # also check housing limit on births?
 
             from(t in Town,
               where: t.id == ^city.id,
