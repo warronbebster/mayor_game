@@ -673,26 +673,28 @@ defmodule MayorGame.CityMigrator do
     Repo.checkout(
       fn ->
         updated_citizens_by_id_4
-        # |> Enum.chunk_every(200)
-        |> Enum.each(fn {id, list} ->
-          # town_ids = chunk |> Enum.map(fn {id, _list} -> id end) |> Enum.sort()
+        |> Enum.chunk_every(200)
+        |> Enum.each(fn chunk ->
+          Enum.each(chunk, fn {id, list} ->
+            # town_ids = chunk |> Enum.map(fn {id, _list} -> id end) |> Enum.sort()
 
-          # from(t in Town,
-          #   where: t.id in ^town_ids,
-          #   update: [set: [citizens_blob: ^chunk[t.id], citizen_count: ^length(chunk[t.id])]]
-          # )
-          # |> Repo.update_all([])
+            # from(t in Town,
+            #   where: t.id in ^town_ids,
+            #   update: [set: [citizens_blob: ^chunk[t.id], citizen_count: ^length(chunk[t.id])]]
+            # )
+            # |> Repo.update_all([])
 
-          from(t in Town,
-            where: t.id == ^id,
-            update: [
-              set: [
-                citizen_count: ^length(list),
-                citizens_blob: ^list
+            from(t in Town,
+              where: t.id == ^id,
+              update: [
+                set: [
+                  citizen_count: ^length(list),
+                  citizens_blob: ^list
+                ]
               ]
-            ]
-          )
-          |> Repo.update_all([])
+            )
+            |> Repo.update_all([])
+          end)
         end)
 
         # MULTI KILL REST OF UNHOUSED CITIZENS

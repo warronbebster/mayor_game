@@ -26,6 +26,8 @@
 # have libraries randomly add some education
 # make updates atomic
 # potentially use list.keysort instead of sort_by for perf reasons
+# could just save a set of pre-defined preference maps and each "citizen" could reference them
+# that would mean just having a "class" perhaps for citizenSegments
 
 logs:
 move-outs
