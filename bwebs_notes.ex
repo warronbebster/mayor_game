@@ -17,12 +17,17 @@
 # flow some more calculations for optimization
 # add crime (random deaths)
 # add homeless people
-# add specialization
+# add job specialization (police, etc)
 # maybe make pubsub for each city when it's opened to subscribe to updates from other cities attacking u?
 # consider separating money/resource generation ticks from citizen movement ticks?
 # ^ Do this with an entirely seperate process
 # switch most logs to just counts: births, deaths for different reasons. Some can be text: moved_to, moved_from, attacks
-# make pollution accumulative, not static
+# potentially switch city representation of cities to a count for each type of citizen? would this… make sense? For each citizen that "looks" would it just grab a random citizen from the DB?
+# have libraries randomly add some education
+# make updates atomic
+# potentially use list.keysort instead of sort_by for perf reasons
+# could just save a set of pre-defined preference maps and each "citizen" could reference them
+# that would mean just having a "class" perhaps for citizenSegments
 
 logs:
 move-outs
