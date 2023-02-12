@@ -505,8 +505,8 @@ defmodule MayorGame.CityHelpers do
           |> Map.update!(
             :reproducing_citizens,
             if(
-              updated_citizen.age > 500 and updated_citizen.age < 2000 and
-                :rand.uniform(citizen_count + 1) < max(results.health, 10),
+              updated_citizen.age > 1000 and updated_citizen.age < 2000 and
+                :rand.uniform(citizen_count + 1) < max(results.health / 100, 10),
               do: &(&1 + 1),
               else: & &1
             )
