@@ -96,7 +96,7 @@ defmodule MayorGame.CityCalculator do
 
     leftovers
     |> Enum.sort_by(& &1.id)
-    |> Enum.chunk_every(200)
+    |> Enum.chunk_every(20)
     |> Enum.each(fn chunk ->
       Repo.checkout(
         fn ->
@@ -143,6 +143,8 @@ defmodule MayorGame.CityCalculator do
 
             citizens_blob = simplified_citizens
             # citizens_blob = simplified_citizens ++ births
+
+            IO.inspect(citizens_blob)
 
             from(t in Town,
               where: t.id == ^city.id,

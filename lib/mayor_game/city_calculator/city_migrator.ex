@@ -671,7 +671,7 @@ defmodule MayorGame.CityMigrator do
       end)
 
     updated_citizens_by_id_4
-    |> Enum.chunk_every(200)
+    |> Enum.chunk_every(20)
     |> Enum.each(fn chunk ->
       Repo.checkout(
         fn ->
