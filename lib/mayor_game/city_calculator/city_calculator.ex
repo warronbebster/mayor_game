@@ -128,7 +128,7 @@ defmodule MayorGame.CityCalculator do
     pollution_spread = pollution_max - pollution_min
     fun_max = Enum.max(Enum.map(leftovers, fn city -> city.fun end))
     health_max = Enum.max(Enum.map(leftovers, fn city -> city.health end))
-    health_min = Enum.min(Enum.map(leftovers, fn city -> city.sprawl end))
+    health_min = Enum.min(Enum.map(leftovers, fn city -> city.health end))
     health_spread = health_max - health_min
 
     citizens_learning = %{
