@@ -83,20 +83,24 @@ defmodule MayorGameWeb.CityLive do
         %{assigns: %{city2: city}} = socket
       ) do
     if socket.assigns.current_user.id == 1 do
-      case City.create_citizens(%{
-             town_id: city.id,
-             education: 0,
-             age: 0,
-             has_job: false,
-             last_moved: socket.assigns.world.day
-           }) do
-        # pattern match to assign new_citizen to what's returned from City.create_citizens
-        {:ok, _updated_citizens} ->
-          IO.inspect("updated 1 citizen")
+      new_citizen = %{
+        town_id: city.id,
+        age: 0,
+        education: 0,
+        has_job: false,
+        last_moved: socket.assigns.world.day,
+        preferences: :rand.uniform(6)
+      }
 
-        {:error, err} ->
-          Logger.error(inspect(err))
-      end
+      from(t in Town,
+        where: t.id == ^city.id,
+        update: [
+          push: [
+            citizens_blob: ^new_citizen
+          ]
+        ]
+      )
+      |> Repo.update_all([])
     end
 
     {:noreply, socket |> update_city_by_title()}
