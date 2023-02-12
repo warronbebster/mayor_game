@@ -53,14 +53,12 @@ defmodule MayorGame.CityHelpers do
 
     all_buildables = city_baked_direct |> Map.take(buildables_map.buildables_list)
 
-    # this is a map
-
     # I think this looks like a keyword list with {type of buildable, list of actual buildables}
 
     ordered_buildables =
       Enum.map(buildables_map.buildables_ordered_flat, fn x -> {x, all_buildables[x]} end)
 
-    sorted_citizens = Enum.sort_by(city_baked_direct.citizens, & &1.education, :desc)
+    # sorted_citizens = Enum.sort_by(city_baked_direct.citizens, & &1.education, :desc)
 
     citizens_blob_atoms =
       Enum.map(city_baked_direct.citizens_blob, fn citizen ->
@@ -68,17 +66,18 @@ defmodule MayorGame.CityHelpers do
             into: %{},
             do: {String.to_existing_atom(key), val}
       end)
+      |> Enum.map(fn citizen -> citizen |> Map.merge(%{has_job: false, town_id: city.id}) end)
 
     sorted_blob_citizens = Enum.sort_by(citizens_blob_atoms, & &1.education, :desc)
 
-    citizens_to_use =
-      if sorted_blob_citizens == [] do
-        sorted_citizens
-      else
-        sorted_blob_citizens
-      end
+    # citizens_to_use =
+    #   if sorted_blob_citizens == [] do
+    #     sorted_citizens
+    #   else
+    #     sorted_blob_citizens
+    #   end
 
-    citizen_count = length(citizens_to_use)
+    citizen_count = length(sorted_blob_citizens)
 
     # buildables_ordered is in order
     results =
@@ -104,7 +103,7 @@ defmodule MayorGame.CityHelpers do
           income: 0,
           daily_cost: 0,
           citizen_count: citizen_count,
-          citizens: citizens_to_use,
+          citizens: sorted_blob_citizens,
           employed_citizens: [],
           fun: 0,
           health: 0,
@@ -639,8 +638,8 @@ defmodule MayorGame.CityHelpers do
       Take a %Town{}, return the %Town{} with citizens, user preloaded
   """
   def preload_city_check(%Town{} = town) do
-    if !Ecto.assoc_loaded?(town.citizens) do
-      town |> MayorGame.Repo.preload([:citizens, :user])
+    if !Ecto.assoc_loaded?(town.user) do
+      town |> MayorGame.Repo.preload([:user])
     else
       town
     end

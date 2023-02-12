@@ -39,7 +39,7 @@ defmodule MayorGame.CityCalculator do
 
     # send message :tax to self process after 5000ms
     # calls `handle_info` function
-    Process.send_after(self(), :tax, 5000)
+    Process.send_after(self(), :tax, 1000)
 
     # returns ok tuple when u start
     {:ok, %{world: game_world, buildables_map: buildables_map}}
@@ -107,9 +107,7 @@ defmodule MayorGame.CityCalculator do
               Enum.map(
                 city.all_citizens_persisting,
                 fn citizen ->
-                  Map.take(citizen, [:age, :education, :last_moved, :preferences, :town_id])
-                  |> Map.put(:has_job, false)
-                  |> Map.put(:preferences, :rand.uniform(5))
+                  Map.take(citizen, [:age, :education, :last_moved, :preferences])
                 end
               )
 
@@ -305,7 +303,7 @@ defmodule MayorGame.CityCalculator do
     )
 
     # recurse, do it again
-    Process.send_after(self(), :tax, 5000)
+    Process.send_after(self(), :tax, 2000)
 
     # returns this to whatever calls ?
     {:noreply, %{world: updated_world, buildables_map: buildables_map}}

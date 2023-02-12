@@ -39,7 +39,7 @@ defmodule MayorGame.CityMigrator do
 
     # send message :tax to self process after
     # calls `handle_info` function
-    Process.send_after(self(), :tax, 20000)
+    Process.send_after(self(), :tax, 10000)
 
     # returns ok tuple when u start
     {:ok, %{world: game_world, buildables_map: buildables_map}}
@@ -752,7 +752,7 @@ defmodule MayorGame.CityMigrator do
     )
 
     # recurse, do it again
-    Process.send_after(self(), :tax, 20000)
+    Process.send_after(self(), :tax, 10000)
 
     # returns this to whatever calls ?
     {:noreply, %{world: db_world, buildables_map: buildables_map}}

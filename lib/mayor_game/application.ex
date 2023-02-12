@@ -22,6 +22,7 @@ defmodule MayorGame.Application do
 
       Supervisor.child_spec({MayorGame.CityMigrator, 1}, id: :city_migrator),
       Supervisor.child_spec({MayorGame.CityCalculator, 1}, id: :city_calculator),
+      # Supervisor.child_spec({MayorGame.CityCalculatorOriginal, 1}, id: :city_calculator_og),
 
       # clean up old records a la https://github.com/ZennerIoT/pow_postgres_store
       {Pow.Postgres.Store.AutoDeleteExpired, [interval: :timer.hours(1)]}
