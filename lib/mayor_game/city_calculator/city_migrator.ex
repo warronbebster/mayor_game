@@ -45,7 +45,7 @@ defmodule MayorGame.CityMigrator do
   end
 
   # when :tax is sent
-  def handle_info(:tax, %{world: world, buildables_map: buildables_map} = _sent_map) do
+  def handle_info(:tax, %{world: _world, buildables_map: buildables_map} = _sent_map) do
     # filter for
     cities = City.list_cities_preload() |> Enum.filter(fn city -> city.citizen_count > 20 end)
 
@@ -99,7 +99,7 @@ defmodule MayorGame.CityMigrator do
 
     unhoused_citizens = List.flatten(Enum.map(leftovers, fn city -> city.unhoused_citizens end))
     # new_world_pollution = Enum.sum(Enum.map(leftovers, fn city -> city.pollution end))
-    total_housing_slots = Enum.sum(Enum.map(leftovers, fn city -> city.housing_left end))
+    # total_housing_slots = Enum.sum(Enum.map(leftovers, fn city -> city.housing_left end))
 
     housing_slots = Enum.map(leftovers, fn city -> {city.id, city.housing_left} end) |> Map.new()
 
@@ -263,6 +263,16 @@ defmodule MayorGame.CityMigrator do
              slots: job_and_housing_slots_normalized[level].normalized_cities
            },
            fn citizen, acc ->
+             current_city_score =
+               Float.round(
+                 citizen_score(
+                   Citizens.preset_preferences()[citizen.preferences],
+                   citizen.education,
+                   slotted_cities_by_id[citizen.town_id]
+                 ),
+                 4
+               )
+
              chosen_city =
                Enum.reduce(acc.slots, %{chosen_id: citizen.town_id, top_score: -1}, fn {city_id,
                                                                                         count},
@@ -281,7 +291,7 @@ defmodule MayorGame.CityMigrator do
                      0
                    end
 
-                 if score > acc2.top_score do
+                 if score > acc2.top_score && score > current_city_score + 0.1 do
                    %{
                      chosen_id: city_id,
                      top_score: score
@@ -313,8 +323,6 @@ defmodule MayorGame.CityMigrator do
       Enum.reduce(employed_citizens_split, [], fn {_k, v}, acc ->
         acc ++ elem(v, 1)
       end)
-
-    IO.inspect(looking_but_not_in_job_race)
 
     # ^ array of citizens who are still looking, that didn't make it into the level-specific comparisons
 
@@ -376,8 +384,6 @@ defmodule MayorGame.CityMigrator do
     vacated_freq = Enum.frequencies(vacated_slots)
     occupied_freq = Enum.frequencies(occupied_slots)
 
-    IO.inspect(housing_slots)
-
     housing_slots_2 =
       housing_slots
       |> Map.merge(vacated_freq, fn _k, v1, v2 -> v1 + v2 end)
@@ -408,33 +414,45 @@ defmodule MayorGame.CityMigrator do
              slots: preferred_locations_by_level[level].slots
            },
            fn citizen, acc ->
-             chosen_city =
-               Enum.reduce(acc.slots, %{chosen_id: citizen.town_id, top_score: -1}, fn {city_id,
-                                                                                        count},
-                                                                                       acc2 ->
-                 score =
-                   if count > 0 do
-                     Float.round(
-                       citizen_score(
-                         Citizens.preset_preferences()[citizen.preferences],
-                         citizen.education,
-                         slotted_cities_by_id[city_id]
-                       ),
-                       4
-                     )
-                   else
-                     0
-                   end
+             current_city_score =
+               Float.round(
+                 citizen_score(
+                   Citizens.preset_preferences()[citizen.preferences],
+                   citizen.education,
+                   slotted_cities_by_id[citizen.town_id]
+                 ),
+                 4
+               )
 
-                 if score > acc2.top_score do
-                   %{
-                     chosen_id: city_id,
-                     top_score: score
-                   }
-                 else
-                   acc2
+             chosen_city =
+               Enum.reduce(
+                 acc.slots,
+                 %{chosen_id: citizen.town_id, top_score: current_city_score + 0.1},
+                 fn {city_id, count}, acc2 ->
+                   score =
+                     if count > 0 do
+                       Float.round(
+                         citizen_score(
+                           Citizens.preset_preferences()[citizen.preferences],
+                           citizen.education,
+                           slotted_cities_by_id[city_id]
+                         ),
+                         4
+                       )
+                     else
+                       0
+                     end
+
+                   if score > acc2.top_score do
+                     %{
+                       chosen_id: city_id,
+                       top_score: score
+                     }
+                   else
+                     acc2
+                   end
                  end
-               end)
+               )
 
              updated_slots =
                if acc.slots != %{} && chosen_city.chosen_id != citizen.town_id do
@@ -458,8 +476,6 @@ defmodule MayorGame.CityMigrator do
       Enum.reduce(unemployed_citizens_split, [], fn {_k, v}, acc ->
         acc ++ elem(v, 1)
       end)
-
-    # ^ array of citizens who are still looking, that didn't make it into the level-specific comparisons
 
     # update the citizen's choice
     updated_citizens_by_id_4 =
@@ -551,33 +567,45 @@ defmodule MayorGame.CityMigrator do
              slots: unemployed_preferred_locations_by_level[level].slots
            },
            fn citizen, acc ->
-             chosen_city =
-               Enum.reduce(acc.slots, %{chosen_id: citizen.town_id, top_score: -1}, fn {city_id,
-                                                                                        count},
-                                                                                       acc2 ->
-                 score =
-                   if count > 0 do
-                     Float.round(
-                       citizen_score(
-                         Citizens.preset_preferences()[citizen.preferences],
-                         citizen.education,
-                         slotted_cities_by_id[city_id]
-                       ),
-                       4
-                     )
-                   else
-                     0
-                   end
+             current_city_score =
+               Float.round(
+                 citizen_score(
+                   Citizens.preset_preferences()[citizen.preferences],
+                   citizen.education,
+                   slotted_cities_by_id[citizen.town_id]
+                 ),
+                 4
+               )
 
-                 if score > acc2.top_score do
-                   %{
-                     chosen_id: city_id,
-                     top_score: score
-                   }
-                 else
-                   acc2
+             chosen_city =
+               Enum.reduce(
+                 acc.slots,
+                 %{chosen_id: citizen.town_id, top_score: current_city_score + 0.1},
+                 fn {city_id, count}, acc2 ->
+                   score =
+                     if count > 0 do
+                       Float.round(
+                         citizen_score(
+                           Citizens.preset_preferences()[citizen.preferences],
+                           citizen.education,
+                           slotted_cities_by_id[city_id]
+                         ),
+                         4
+                       )
+                     else
+                       0
+                     end
+
+                   if score > acc2.top_score && score > current_city_score + 0.1 do
+                     %{
+                       chosen_id: city_id,
+                       top_score: score
+                     }
+                   else
+                     acc2
+                   end
                  end
-               end)
+               )
 
              updated_slots =
                if acc.slots != %{} && chosen_city.chosen_id != citizen.town_id do
@@ -705,33 +733,45 @@ defmodule MayorGame.CityMigrator do
         elem(unhoused_split_3, 0),
         %{choices: [], slots: slots_after_job_filtered},
         fn citizen, acc ->
-          chosen_city =
-            Enum.reduce(acc.slots, %{chosen_id: citizen.town_id, top_score: -1}, fn {city_id,
-                                                                                     count},
-                                                                                    acc2 ->
-              score =
-                if count > 0 do
-                  Float.round(
-                    citizen_score(
-                      Citizens.preset_preferences()[citizen.preferences],
-                      citizen.education,
-                      slotted_cities_by_id[city_id]
-                    ),
-                    4
-                  )
-                else
-                  0
-                end
+          current_city_score =
+            Float.round(
+              citizen_score(
+                Citizens.preset_preferences()[citizen.preferences],
+                citizen.education,
+                slotted_cities_by_id[citizen.town_id]
+              ),
+              4
+            )
 
-              if score > acc2.top_score do
-                %{
-                  chosen_id: city_id,
-                  top_score: score
-                }
-              else
-                acc2
+          chosen_city =
+            Enum.reduce(
+              acc.slots,
+              %{chosen_id: citizen.town_id, top_score: current_city_score + 0.1},
+              fn {city_id, count}, acc2 ->
+                score =
+                  if count > 0 do
+                    Float.round(
+                      citizen_score(
+                        Citizens.preset_preferences()[citizen.preferences],
+                        citizen.education,
+                        slotted_cities_by_id[city_id]
+                      ),
+                      4
+                    )
+                  else
+                    0
+                  end
+
+                if score > acc2.top_score && score > current_city_score + 0.1 do
+                  %{
+                    chosen_id: city_id,
+                    top_score: score
+                  }
+                else
+                  acc2
+                end
               end
-            end)
+            )
 
           updated_slots =
             if acc.slots != %{} && chosen_city.chosen_id != citizen.town_id do
@@ -765,122 +805,6 @@ defmodule MayorGame.CityMigrator do
         end
       end)
 
-    # # ——————————————————————————————————————————————————————————————————————————————————
-    # # ————————————————————————————————————————— ROUND 3: MOVE CITIZENS WITHOUT HOUSING ANYWHERE THERE IS HOUSING
-    # # ——————————————————————————————————————————————————————————————————————————————————
-
-    # occupied_slots_4 =
-    #   Enum.map(unhoused_preferred_locations.choices, fn {_citizen_id, city_id} ->
-    #     city_id
-    #   end)
-
-    # slots_after_housing_migrations =
-    #   if slots_after_job_migrations == %{} do
-    #     %{}
-    #   else
-    #     Enum.reduce(occupied_slots_2, slots_after_job_migrations, fn city_id, acc ->
-    #       # need to find the right key, these cities are already normalized
-    #       if is_nil(city_id) do
-    #         acc
-    #       else
-    #         # key = Enum.find(Map.keys(acc), fn x -> x.id == city.id end)
-    #         Map.update!(acc, city_id, &(&1 - 1))
-    #         # TODO
-    #         # this seems like something that could be done with ETS
-    #       end
-    #     end)
-    #   end
-
-    # housing_slots_2_expanded =
-    #   Enum.reduce(
-    #     slots_after_housing_migrations,
-    #     [],
-    #     fn {city_id, slots_count}, acc ->
-    #       # duplicate this score v times (1 for each slot)
-
-    #       if slots_count > 0 do
-    #         acc ++ for _ <- 1..slots_count, do: city_id
-    #       else
-    #         acc
-    #       end
-    #     end
-    #   )
-
-    # unhoused_split_3 = unhoused_split_2 |> Enum.split(length(housing_slots_2_expanded))
-
-    # slots_filtered =
-    #   Enum.filter(slots_after_housing_migrations, fn {_k, v} -> v > 0 end) |> Enum.into(%{})
-
-    # # SHAPE OF unhoused_locations.choices is an array of {citizen, city_id}
-    # unhoused_locations =
-    #   Enum.reduce(elem(unhoused_split_3, 0), %{choices: [], slots: slots_filtered}, fn citizen,
-    #                                                                                  acc ->
-    #     chosen_city =
-    #       Enum.reduce(acc.slots, %{chosen_id: 0, top_score: 0}, fn {city_id, count}, acc2 ->
-    #         score =
-    #           if count > 0 do
-    #             Float.round(
-    #               citizen_score(
-    #                 Citizens.preset_preferences()[citizen.preferences],
-    #                 citizen.education,
-    #                 slotted_cities_by_id[city_id]
-    #               ),
-    #               4
-    #             )
-    #           else
-    #             0
-    #           end
-
-    #         if score > acc2.top_score do
-    #           %{
-    #             chosen_id: city_id,
-    #             top_score: score
-    #           }
-    #         else
-    #           acc2
-    #         end
-    #       end)
-
-    #     updated_slots =
-    #       if chosen_city.chosen_id > 0 do
-    #         if acc.slots[chosen_city.chosen_id] > 0 do
-    #           Map.update!(acc.slots, chosen_city.chosen_id, &(&1 - 1))
-    #         else
-    #           Map.drop(acc.slots, [chosen_city.chosen_id])
-    #         end
-    #       else
-    #         acc.slots
-    #       end
-
-    #     %{
-    #       choices:
-    #         if chosen_city.chosen_id == 0 do
-    #           acc.choices
-    #         else
-    #           acc.choices ++ [{citizen, chosen_city.chosen_id}]
-    #         end,
-    #       slots: updated_slots
-    #     }
-    #   end)
-
-    # updated_citizens_by_id_5 =
-    #   Enum.reduce(unhoused_locations.choices, updated_citizens_by_id_4, fn {citizen,
-    #                                                                         chosen_city_id},
-    #                                                                        acc ->
-    #     if citizen.town_id != chosen_city_id do
-    #       acc |> Map.update!(chosen_city_id, &[citizen | &1])
-    #     else
-    #       acc
-    #     end
-    #   end)
-
-    # updated_edu_logs =
-    #   Map.merge(CityHelpers.integerize_keys(city.logs_edu), city.educated_citizens, fn _k,
-    #                                                                                    v1,
-    #                                                                                    v2 ->
-    #     v1 + v2
-    #   end)
-
     # :logs_emigration_housing,
     # :logs_emigration_taxes,
     # :logs_emigration_jobs,
@@ -913,55 +837,6 @@ defmodule MayorGame.CityMigrator do
         timeout: 6_000_000
       )
     end)
-
-    # MULTI KILL REST OF UNHOUSED CITIZENS
-
-    # elem(unhoused_split, 1)
-    # |> Enum.sort_by(& &1.id)
-    # |> Enum.chunk_every(200)
-    # |> Enum.each(fn chunk ->
-    #   citizen_ids = chunk |> Enum.map(fn citizen -> citizen.id end) |> Enum.sort()
-
-    #   town_ids = chunk |> Enum.map(fn citizen -> citizen.town_id end) |> Enum.sort()
-
-    #   from(c in Citizens, where: c.id in ^citizen_ids)
-    #   |> Repo.delete_all()
-
-    #   from(t in Town,
-    #     where: t.id in ^town_ids,
-    #     update: [push: [logs: "A citizen died a lack of housing. RIP"]]
-    #   )
-    #   |> Repo.update_all([])
-    # end)
-
-    #
-
-    # ——————————————————————————————————————————————————————————————————————————————————
-    # ————————————————————————————————————————— OTHER ECTO UPDATES
-    # ——————————————————————————————————————————————————————————————————————————————————
-
-    # MULTI UPDATE: update city money/treasury in DB ——————————————————————————————————————————————————— DB UPDATE
-
-    # IF I MAKE THIS ATOMIC, DON'T NEED TO DO THIS
-    # delete_all
-
-    # MULTI CHANGESET EDUCATE ——————————————————————————————————————————————————— DB UPDATE
-
-    # test = [1, 4]
-
-    # if rem(world.day, 365) == 0 do
-
-    # end
-
-    # end)
-
-    # MULTI CHANGESET AGE
-
-    # MULTI CHANGESET KILL OLD CITIZENS ——————————————————————————————————————————————————— DB UPDATE
-
-    # end)
-
-    # MULTI REPRODUCE ——————————————————————————————————————————————————— DB UPDATE
 
     # SEND RESULTS TO CLIENTS
     # send val to liveView process that manages front-end; this basically sends to every client.
