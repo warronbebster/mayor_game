@@ -83,20 +83,24 @@ defmodule MayorGameWeb.CityLive do
         %{assigns: %{city2: city}} = socket
       ) do
     if socket.assigns.current_user.id == 1 do
-      case City.create_citizens(%{
-             town_id: city.id,
-             education: 0,
-             age: 0,
-             has_job: false,
-             last_moved: socket.assigns.world.day
-           }) do
-        # pattern match to assign new_citizen to what's returned from City.create_citizens
-        {:ok, _updated_citizens} ->
-          IO.inspect("updated 1 citizen")
+      new_citizen = %{
+        town_id: city.id,
+        age: 0,
+        education: 0,
+        has_job: false,
+        last_moved: socket.assigns.world.day,
+        preferences: :rand.uniform(6)
+      }
 
-        {:error, err} ->
-          Logger.error(inspect(err))
-      end
+      from(t in Town,
+        where: t.id == ^city.id,
+        update: [
+          push: [
+            citizens_blob: ^new_citizen
+          ]
+        ]
+      )
+      |> Repo.update_all([])
     end
 
     {:noreply, socket |> update_city_by_title()}
@@ -226,13 +230,13 @@ defmodule MayorGameWeb.CityLive do
     attacking_town_struct = Repo.get!(Town, current_user.town.id)
     attacked_town_struct = struct(City.Town, city)
 
-    log = attacking_town_struct.title <> " attacked one of your " <> building_to_attack
-    limited_log = CityCalculator.update_logs(log, city.logs)
+    updated_attacked_logs =
+      Map.update(city.logs_attacks, attacking_town_struct.title, 1, &(&1 + 1))
 
     attacked_town_changeset =
       attacked_town_struct
       |> City.Town.changeset(%{
-        logs: limited_log
+        logs_attacks: updated_attacked_logs
       })
 
     if city.shields <= 0 && attacking_town_struct.missiles > 0 do
@@ -276,14 +280,13 @@ defmodule MayorGameWeb.CityLive do
     attacking_town_struct = Repo.get!(Town, current_user.town.id)
     shielded_town_struct = struct(City.Town, city)
 
-    log = attacking_town_struct.title <> " attacked your shields"
-    limited_log = CityCalculator.update_logs(log, city.logs)
+    updated_attacked_logs =
+      Map.update(city.logs_attacks, attacking_town_struct.title, 1, &(&1 + 1))
 
     shields_update_changeset =
       shielded_town_struct
       |> City.Town.changeset(%{
-        # shields: city.shields - 1,
-        logs: limited_log
+        logs_attacks: updated_attacked_logs
       })
 
     from(t in Town, where: [id: ^city.id])
@@ -344,6 +347,11 @@ defmodule MayorGameWeb.CityLive do
   # this is what gets messages from CityCalculator
   def handle_info(%{event: "ping", payload: world}, socket) do
     {:noreply, socket |> assign(:world, world) |> update_city_by_title()}
+  end
+
+  # this is what gets messages from CityCalculator
+  def handle_info(%{event: "pong", payload: world}, socket) do
+    {:noreply, socket |> update_city_by_title()}
   end
 
   # this is just the generic handle_info if nothing else matches
@@ -448,7 +456,6 @@ defmodule MayorGameWeb.CityLive do
         :citizens_looking,
         :citizens_to_reproduce,
         :citizens_polluted,
-        :resources,
         :citizens_looking,
         :education
       ])

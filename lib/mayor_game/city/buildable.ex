@@ -176,7 +176,8 @@ defmodule MayorGame.City.Buildable do
           area: 1
         },
         produces: %{
-          housing: 1
+          housing: 1,
+          sprawl: 1
         }
       },
       # single family homes ————————————————————————————————————
@@ -191,7 +192,8 @@ defmodule MayorGame.City.Buildable do
           energy: 12
         },
         produces: %{
-          housing: 2
+          housing: 2,
+          sprawl: 5
         }
       },
       # multi family homes ————————————————————————————————————
@@ -206,7 +208,8 @@ defmodule MayorGame.City.Buildable do
           energy: 18
         },
         produces: %{
-          housing: 6
+          housing: 6,
+          sprawl: 3
         }
       },
       # homeless shelters ————————————————————————————————————
@@ -324,6 +327,22 @@ defmodule MayorGame.City.Buildable do
           pollution: &(&1 * 0.03)
         }
       },
+      # Subway Lines ————————————————————————————————————
+      subway_lines: %BuildableMetadata{
+        priority: 1,
+        title: :subway_lines,
+        price: 2000,
+        purchasable: true,
+        purchasable_reason: "valid",
+        requires: %{
+          workers: %{count: 10, level: 0},
+          money: 40
+        },
+        produces: %{
+          sprawl: 1,
+          area: 1000
+        }
+      },
       # Bus Lines ————————————————————————————————————
       bus_lines: %BuildableMetadata{
         priority: 1,
@@ -339,22 +358,6 @@ defmodule MayorGame.City.Buildable do
           health: -2,
           sprawl: 3,
           area: 50
-        }
-      },
-      # Subway Lines ————————————————————————————————————
-      subway_lines: %BuildableMetadata{
-        priority: 1,
-        title: :subway_lines,
-        price: 2000,
-        purchasable: true,
-        purchasable_reason: "valid",
-        requires: %{
-          workers: %{count: 10, level: 0},
-          money: 40
-        },
-        produces: %{
-          sprawl: 1,
-          area: 1000
         }
       },
       # Bike lanes ————————————————————————————————————
@@ -900,7 +903,9 @@ defmodule MayorGame.City.Buildable do
       get_requirements_keys([:area]),
       get_requirements_keys([:money]),
       get_requirements_keys([:money, :energy]),
+      # ^ airports
       get_requirements_keys([:money, :workers]),
+      # ^ bus lines and subways
       get_requirements_keys([:area, :workers]),
       # this is basically all energy gen
       get_requirements_keys([:area, :money, :workers]),

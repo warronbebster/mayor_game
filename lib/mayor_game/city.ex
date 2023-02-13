@@ -74,7 +74,6 @@ defmodule MayorGame.City do
   def create_town(attrs \\ %{}) do
     # have to create a resourcemap from scratch when creating a new town cuz it's required
     # TODO: remove this when creating cities from token
-    resourceMap = %{resources: Map.new(MayorGame.City.Town.resources(), fn x -> {x, 0} end)}
 
     buildables_zeroed =
       Enum.map(Buildable.buildables_ordered_flat(), fn k ->
@@ -103,7 +102,7 @@ defmodule MayorGame.City do
       |> Map.merge(intro_attrs)
 
     %Town{}
-    |> Town.changeset(Map.merge(attrsWithAtomKeys, resourceMap))
+    |> Town.changeset(attrsWithAtomKeys)
     |> Repo.insert()
   end
 
@@ -319,34 +318,35 @@ defmodule MayorGame.City do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_citizens_changeset(attrs \\ %{}) do
-    # this makes a map with random values that add up to 1
-    random_preferences =
-      Enum.reduce(Citizens.decision_factors(), %{preference_map: %{}, room_taken: 0}, fn x, acc ->
-        value =
-          if x == List.last(Citizens.decision_factors()),
-            do: (1 - acc.room_taken) |> Float.round(2),
-            else: (:rand.uniform() * (1 - acc.room_taken)) |> Float.round(2)
 
-        %{
-          preference_map: Map.put(acc.preference_map, to_string(x), value),
-          room_taken: acc.room_taken + value
-        }
-      end)
+  # def create_citizens_changeset(attrs \\ %{}) do
+  #   # this makes a map with random values that add up to 1
+  #   random_preferences =
+  #     Enum.reduce(Citizens.decision_factors(), %{preference_map: %{}, room_taken: 0}, fn x, acc ->
+  #       value =
+  #         if x == List.last(Citizens.decision_factors()),
+  #           do: (1 - acc.room_taken) |> Float.round(2),
+  #           else: (:rand.uniform() * (1 - acc.room_taken)) |> Float.round(2)
 
-    # Map.new(Citizens.decision_factors(), fn x ->
-    #   {to_string(x), :rand.uniform() |> Float.round(2)}
-    # end)
+  #       %{
+  #         preference_map: Map.put(acc.preference_map, to_string(x), value),
+  #         room_taken: acc.room_taken + value
+  #       }
+  #     end)
 
-    # add new attribute if not set
-    attrs_plus_preferences =
-      attrs
-      |> Map.put_new(:name, Faker.Person.name())
-      |> Map.put(:preferences, random_preferences.preference_map)
+  #   # Map.new(Citizens.decision_factors(), fn x ->
+  #   #   {to_string(x), :rand.uniform() |> Float.round(2)}
+  #   # end)
 
-    %Citizens{}
-    |> Citizens.changeset(attrs_plus_preferences)
-  end
+  #   # add new attribute if not set
+  #   attrs_plus_preferences =
+  #     attrs
+  #     |> Map.put_new(:name, Faker.Person.name())
+  #     |> Map.put(:preferences, random_preferences.preference_map)
+
+  #   %Citizens{}
+  #   |> Citizens.changeset(attrs_plus_preferences)
+  # end
 
   @doc """
   Updates a citizens.

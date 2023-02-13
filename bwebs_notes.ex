@@ -17,17 +17,24 @@
 # flow some more calculations for optimization
 # add crime (random deaths)
 # add homeless people
-# add specialization
+# add job specialization (police, etc)
 # maybe make pubsub for each city when it's opened to subscribe to updates from other cities attacking u?
 # consider separating money/resource generation ticks from citizen movement ticks?
 # ^ Do this with an entirely seperate process
 # switch most logs to just counts: births, deaths for different reasons. Some can be text: moved_to, moved_from, attacks
-# make pollution accumulative, not static
+# potentially switch city representation of cities to a count for each type of citizen? would this… make sense? For each citizen that "looks" would it just grab a random citizen from the DB?
+# have libraries randomly add some education
+# make updates atomic
+# potentially use list.keysort instead of sort_by for perf reasons
+# could just save a set of pre-defined preference maps and each "citizen" could reference them
+# that would mean just having a "class" perhaps for citizenSegments
+# I should do that. The only thing stopping it is discrete age. Maybe I just capture the "origin date" for an entire class
+# fix "add citizen" button
+# spread workers over buildables instead of only filling one type first
 
 logs:
-move-outs
+move-outs by reason
 - level
-- reason
 - city moved to
 
 move-ins
