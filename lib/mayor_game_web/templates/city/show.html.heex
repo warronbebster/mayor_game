@@ -435,6 +435,14 @@
                         <hr class="border-neutral-800 flex-1" />
                         <%= to_string(value) %>
                       </div>
+                    <% else %>
+                      <%= if is_function(value, 1) do %>
+                        <div class="flex items-center gap-1">
+                          <div class=""><%= to_string(produces_type) %> per pop</div>
+                          <hr class="border-neutral-800 flex-1" />
+                          <%= value.(1) %>
+                        </div>
+                      <% end %>
                     <% end %>
                   <% end %>
                 <% end %>
@@ -731,29 +739,33 @@
                 <%= if !is_nil(building_stats.produces) && Map.has_key?(building_stats.produces, :pollution) do %>
                   <div class="group relative flex flex-row items-center text-violet-700 gap-1 w-16 cursor-help">
                     <img src="/images/pollution.svg" alt="total area" height="12" width="12" />
-                    <%= if !is_number(building_stats.produces.pollution) do %>
-                      <%= Number.Delimit.number_to_delimited(
-                        @operating_count[
-                          building_type
-                        ][[]] * building_stats.produces.pollution.(@total_citizens)
-                      ) %>
-                    <% else %>
+                    <%= if is_number(building_stats.produces.pollution) do %>
                       <%= Number.Delimit.number_to_delimited(
                         @operating_count[
                           building_type
                         ][[]] * building_stats.produces.pollution
                       ) %>
+                    <% else %>
+                      <%= if is_function(building_stats.produces.pollution, 1) do %>
+                        <%= Number.Delimit.number_to_delimited(
+                          @operating_count[
+                            building_type
+                          ][[]] * building_stats.produces.pollution.(@total_citizens)
+                        ) %>
+                      <% end %>
                     <% end %>
 
                     <div class="tooltip">
-                      <%= if !is_number(building_stats.produces.pollution) do %>
-                        <%= round(building_stats.produces.pollution.(100)) %> pollution generated per building per 100 citizens
-                      <% else %>
+                      <%= if is_number(building_stats.produces.pollution) do %>
                         <%= Number.Delimit.number_to_delimited(
                           @operating_count[
                             building_type
                           ][[]] * building_stats.produces.pollution
                         ) %> pollution generated
+                      <% else %>
+                        <%= if is_function(building_stats.produces.pollution, 1) do %>
+                          <%= round(building_stats.produces.pollution.(100)) %> pollution generated per building per 100 citizens
+                        <% end %>
                       <% end %>
                     </div>
                 </div>
