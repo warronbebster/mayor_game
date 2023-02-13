@@ -84,12 +84,12 @@ defmodule MayorGame.CityMigrator do
 
     # maybe do this one step at a time
     # employed should only jump if there's something better
-    citizens_looking =
-      List.flatten(
-        Enum.map(leftovers, fn city ->
-          city.unemployed_citizens ++ city.employed_looking_citizens
-        end)
-      )
+    # citizens_looking =
+    #   List.flatten(
+    #     Enum.map(leftovers, fn city ->
+    #       city.unemployed_citizens ++ city.employed_looking_citizens
+    #     end)
+    #   )
 
     employed_looking_citizens =
       List.flatten(Enum.map(leftovers, fn city -> city.employed_looking_citizens end))
@@ -373,10 +373,15 @@ defmodule MayorGame.CityMigrator do
     vacated_freq = Enum.frequencies(vacated_slots)
     occupied_freq = Enum.frequencies(occupied_slots)
 
+    IO.inspect(vacated_freq)
+    IO.inspect(occupied_freq)
+
     housing_slots_2 =
       housing_slots
-      |> Map.merge(vacated_freq, fn _k, v1, v2 -> v1 - v2 end)
-      |> Map.merge(occupied_freq, fn _k, v1, v2 -> v1 + v2 end)
+      |> Map.merge(vacated_freq, fn _k, v1, v2 -> v1 + v2 end)
+      |> Map.merge(occupied_freq, fn _k, v1, v2 -> v1 - v2 end)
+
+    IO.inspect(housing_slots_2)
 
     # NEW UNEMPLOYED CODE ————————————————————————————————————————————————————————————————————————————
     # ————————————————————————————————————————————————————————————————————————————
@@ -516,8 +521,8 @@ defmodule MayorGame.CityMigrator do
 
     housing_slots_3 =
       housing_slots_2
-      |> Map.merge(vacated_freq_2, fn _k, v1, v2 -> v1 - v2 end)
-      |> Map.merge(occupied_freq_2, fn _k, v1, v2 -> v1 + v2 end)
+      |> Map.merge(vacated_freq_2, fn _k, v1, v2 -> v1 + v2 end)
+      |> Map.merge(occupied_freq_2, fn _k, v1, v2 -> v1 - v2 end)
 
     # NEW UNHOUSED CODE —————————————————————————————————————————————————————————————
     # ————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
@@ -642,8 +647,8 @@ defmodule MayorGame.CityMigrator do
 
     housing_slots_4 =
       housing_slots_3
-      |> Map.merge(vacated_freq_3, fn _k, v1, v2 -> v1 - v2 end)
-      |> Map.merge(occupied_freq_3, fn _k, v1, v2 -> v1 + v2 end)
+      |> Map.merge(vacated_freq_3, fn _k, v1, v2 -> v1 + v2 end)
+      |> Map.merge(occupied_freq_3, fn _k, v1, v2 -> v1 - v2 end)
 
     # shape: [city_id, city_id, city_id]
     # subtract these from housing_slots

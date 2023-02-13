@@ -8,7 +8,6 @@ defmodule MayorGameWeb.DashboardLive do
   # don't need this because you get it in DashboardView?
   # use Phoenix.HTML
 
-  alias MayorGame.City
   alias MayorGameWeb.DashboardView
 
   def render(assigns) do
@@ -115,6 +114,7 @@ defmodule MayorGameWeb.DashboardLive do
 
     pollution_sum = Enum.sum(Enum.map(all_cities_recent, fn city -> city.pollution end))
     citizens_sum = Enum.sum(Enum.map(all_cities_recent, fn city -> city.citizen_count end))
+
     world = MayorGame.Repo.get!(MayorGame.City.World, 1)
 
     socket
