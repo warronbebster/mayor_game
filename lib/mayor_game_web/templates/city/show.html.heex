@@ -65,6 +65,16 @@
           Housing
         </div>
       </td>
+
+      <td class="group relative h-4 top_td text-green-600">
+        <div class="flex gap-1 items-center w-full pr-2">
+          <img src="/images/workers-fulfilled.svg" alt="total workers" height="12" width="12" class="inline" />
+        </div>
+        <div class="tooltip top-0 left-0 -translate-x-full text-green-600">
+          Jobs
+        </div>
+      </td>
+
       <td class="group relative h-4 top_td text-green-600">
         <div class="flex items-center w-full pr-2">
           <img src="/images/plus.svg" alt="plus" height="12" width="12" class="inline" />
@@ -185,6 +195,12 @@
       <td class="top_td">
         <span class="text-amber-800">
           <%= @city2.housing - @total_citizens %>/<%= @city2.housing %>
+        </span>
+      </td>
+
+      <td class="top_td">
+        <span class="text-green-800">
+          <%= Enum.sum(Map.values(@city2.jobs)) %>/<%= Enum.sum(Map.values(@city2.total_jobs)) %>
         </span>
       </td>
       <td class="top_td">
