@@ -230,13 +230,13 @@ defmodule MayorGameWeb.CityLive do
     attacking_town_struct = Repo.get!(Town, current_user.town.id)
     attacked_town_struct = struct(City.Town, city)
 
-    log = attacking_town_struct.title <> " attacked one of your " <> building_to_attack
-    limited_log = CityCalculator.update_logs(log, city.logs)
+    updated_attacked_logs =
+      Map.update(city.logs_attacks, attacking_town_struct.title, 1, &(&1 + 1))
 
     attacked_town_changeset =
       attacked_town_struct
       |> City.Town.changeset(%{
-        logs: limited_log
+        logs_attacks: updated_attacked_logs
       })
 
     if city.shields <= 0 && attacking_town_struct.missiles > 0 do
@@ -280,14 +280,13 @@ defmodule MayorGameWeb.CityLive do
     attacking_town_struct = Repo.get!(Town, current_user.town.id)
     shielded_town_struct = struct(City.Town, city)
 
-    log = attacking_town_struct.title <> " attacked your shields"
-    limited_log = CityCalculator.update_logs(log, city.logs)
+    updated_attacked_logs =
+      Map.update(city.logs_attacks, attacking_town_struct.title, 1, &(&1 + 1))
 
     shields_update_changeset =
       shielded_town_struct
       |> City.Town.changeset(%{
-        # shields: city.shields - 1,
-        logs: limited_log
+        logs_attacks: updated_attacked_logs
       })
 
     from(t in Town, where: [id: ^city.id])

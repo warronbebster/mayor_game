@@ -386,7 +386,7 @@ defmodule MayorGame.CityHelpers do
     # Iterate through citizens
     # ________________________________________________________________________
     pollution_reached = world.pollution > pollution_ceiling
-    time_to_learn = rem(world.day, 365) == 0
+    time_to_learn = rem(world.day, 10) == 0
 
     # I don't think this needs to be a reduce. this could me a map then flatten
     after_citizen_checks =
@@ -491,7 +491,9 @@ defmodule MayorGame.CityHelpers do
           )
           |> Map.update!(
             :employed_looking_citizens,
-            if(employable && tax_too_high && updated_citizen.last_moved < world.day - 50,
+            if(
+              employable && tax_too_high &&
+                updated_citizen.last_moved < world.day - 10 * updated_citizen.education,
               do: &[updated_citizen | &1],
               else: & &1
             )

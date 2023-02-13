@@ -823,7 +823,7 @@
             Births
           </h3>
           <div class="tooltip w-40">
-            lol
+            Citizens will occasionally give birth.
           </div>
         </div>
         <div>
@@ -837,7 +837,7 @@
             Pollution deaths
           </h3>
           <div class="tooltip w-40">
-            lol
+            How many citizens have died from overpollution
           </div>
         </div>
         <div>
@@ -851,7 +851,7 @@
             Age deaths
           </h3>
           <div class="tooltip w-40">
-            lol
+            Citizens die when they reacth 10,000 days of age.
           </div>
         </div>
         <div>
@@ -865,7 +865,7 @@
             Housing deaths
           </h3>
           <div class="tooltip w-40">
-            lol
+            If a citizen runs out of housing and can't find any anywhere else, they'll die.
           </div>
         </div>
         <div>
@@ -880,7 +880,7 @@
           </h3>
 
           <div class="tooltip w-40">
-            lol
+            This counts how many citizens have had their level upgraded from the education buildings.
           </div>
         </div>
 
@@ -889,6 +889,26 @@
             <span><%= edu_level %></span>
             <hr class="border-neutral-300 flex-1" />
             <span><%= Number.Delimit.number_to_delimited(educated_citizens_count) %></span>
+          </div>
+        <% end %>
+      </div>
+      <!-- ATTACKS -->
+      <div class="flex flex-col gap-2 py-1">
+        <div class="group relative inline-block">
+          <h3 class="text-l first-letter:uppercase decoration-1	underline underline-offset-4 cursor-help decoration-neutral-800/40 decoration-dotted	">
+            Attacks
+          </h3>
+
+          <div class="tooltip w-40">
+            This shows cities that have attacked your city.
+          </div>
+        </div>
+
+        <%= for {attacking_town, attack_counts} <- @city2.logs_attacks do %>
+          <div class="flex flex-row items-center justify-between gap-2 my-0 leading-none">
+            <span><%= attacking_town %></span>
+            <hr class="border-neutral-300 flex-1" />
+            <span><%= Number.Delimit.number_to_delimited(attack_counts) %></span>
           </div>
         <% end %>
       </div>
