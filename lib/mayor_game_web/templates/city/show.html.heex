@@ -1070,7 +1070,7 @@
             Age deaths
           </h3>
           <div class="tooltip w-40">
-            Citizens die when they reacth 10,000 days of age.
+            Citizens die when they reach 10,000 days of age.
           </div>
         </div>
         <div>
@@ -1131,6 +1131,69 @@
           </div>
         <% end %>
       </div>
+      <!-- HOUSING_EMIGRATION -->
+      <div class="flex flex-col gap-2 py-1">
+        <div class="group relative inline-block">
+          <h3 class="text-l first-letter:uppercase decoration-1	underline underline-offset-4 cursor-help decoration-neutral-800/40 decoration-dotted	">
+            Housing Emigration
+          </h3>
+
+          <div class="tooltip w-40">
+            Citizens by level who left because there was no housing.
+          </div>
+        </div>
+
+        <%= for {edu_level, emigration_count} <- @city2.logs_emigration_housing do %>
+          <div class="flex flex-row items-center justify-between gap-2 my-0 leading-none">
+            <span><%= edu_level %></span>
+            <hr class="border-neutral-300 flex-1" />
+            <span><%= Number.Delimit.number_to_delimited(emigration_count) %></span>
+          </div>
+        <% end %>
+      </div>
+      <!-- TAX_EMIGRATION -->
+      <div class="flex flex-col gap-2 py-1">
+        <div class="group relative inline-block">
+          <h3 class="text-l first-letter:uppercase decoration-1	underline underline-offset-4 cursor-help decoration-neutral-800/40 decoration-dotted	">
+            Tax Emigration
+          </h3>
+
+          <div class="tooltip w-40">
+            Citizens by level who left because the taxes were too high.
+          </div>
+        </div>
+
+        <%= for {edu_level, emigration_count} <- @city2.logs_emigration_taxes do %>
+          <div class="flex flex-row items-center justify-between gap-2 my-0 leading-none">
+            <span><%= edu_level %></span>
+            <hr class="border-neutral-300 flex-1" />
+            <span><%= Number.Delimit.number_to_delimited(emigration_count) %></span>
+          </div>
+        <% end %>
+      </div>
+      <!-- JOB_EMIGRATION -->
+      <div class="flex flex-col gap-2 py-1">
+        <div class="group relative inline-block">
+          <h3 class="text-l first-letter:uppercase decoration-1	underline underline-offset-4 cursor-help decoration-neutral-800/40 decoration-dotted	">
+            Job Emigration
+          </h3>
+
+          <div class="tooltip w-40">
+            Citizens by level who left because there wasn't a job at the right level.
+          </div>
+        </div>
+
+        <%= for {edu_level, emigration_count} <- @city2.logs_emigration_jobs do %>
+          <div class="flex flex-row items-center justify-between gap-2 my-0 leading-none">
+            <span><%= edu_level %></span>
+            <hr class="border-neutral-300 flex-1" />
+            <span><%= Number.Delimit.number_to_delimited(emigration_count) %></span>
+          </div>
+        <% end %>
+      </div>
+      <!-- ^End of individual logs sections -->
     </div>
+    <!-- End of logs inner container -->
   </div>
+  <!-- End of logs container -->
 </div>

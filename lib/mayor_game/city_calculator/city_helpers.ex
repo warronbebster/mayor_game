@@ -386,7 +386,7 @@ defmodule MayorGame.CityHelpers do
     # Iterate through citizens
     # ________________________________________________________________________
     pollution_reached = world.pollution > pollution_ceiling
-    time_to_learn = rem(world.day, 10) == 0
+    time_to_learn = rem(world.day, 91) == 0
 
     # I don't think this needs to be a reduce. this could me a map then flatten
     after_citizen_checks =
@@ -507,8 +507,8 @@ defmodule MayorGame.CityHelpers do
           |> Map.update!(
             :reproducing_citizens,
             if(
-              updated_citizen.age > 500 and updated_citizen.age < 4000 and
-                :rand.uniform(citizen_count + 1) < max(results.health / 5, 100),
+              updated_citizen.age > 500 and updated_citizen.age < 3000 and
+                :rand.uniform(citizen_count + 1) < max(results.health / 10, 100),
               do: &(&1 + 1),
               else: & &1
             )
@@ -531,27 +531,27 @@ defmodule MayorGame.CityHelpers do
     "#{to_string(citizen.name)} (edu lvl #{citizen.education})"
   end
 
-  @doc """
-  returns a preference map for citizens
-  """
-  def create_citizen_preference_map() do
-    decision_factors = Enum.shuffle([:tax_rates, :sprawl, :fun, :health, :pollution])
+  # @doc """
+  # returns a preference map for citizens
+  # """
+  # def create_citizen_preference_map() do
+  #   decision_factors = Enum.shuffle([:tax_rates, :sprawl, :fun, :health, :pollution])
 
-    random_preferences =
-      Enum.reduce(decision_factors, %{preference_map: %{}, room_taken: 0}, fn x, acc ->
-        value =
-          if x == List.last(decision_factors),
-            do: (1 - acc.room_taken) |> Float.round(2),
-            else: (:rand.uniform() * (1 - acc.room_taken)) |> Float.round(2)
+  #   random_preferences =
+  #     Enum.reduce(decision_factors, %{preference_map: %{}, room_taken: 0}, fn x, acc ->
+  #       value =
+  #         if x == List.last(decision_factors),
+  #           do: (1 - acc.room_taken) |> Float.round(2),
+  #           else: (:rand.uniform() * (1 - acc.room_taken)) |> Float.round(2)
 
-        %{
-          preference_map: Map.put(acc.preference_map, to_string(x), value),
-          room_taken: acc.room_taken + value
-        }
-      end)
+  #       %{
+  #         preference_map: Map.put(acc.preference_map, to_string(x), value),
+  #         room_taken: acc.room_taken + value
+  #       }
+  #     end)
 
-    random_preferences.preference_map
-  end
+  #   random_preferences.preference_map
+  # end
 
   def render_production(production_map, multiplier_map, citizen_count, region, season) do
     # TODO: add seasonality and region changes to this
