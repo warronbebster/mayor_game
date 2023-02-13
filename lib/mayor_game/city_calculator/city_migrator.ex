@@ -314,6 +314,8 @@ defmodule MayorGame.CityMigrator do
         acc ++ elem(v, 1)
       end)
 
+    IO.inspect(looking_but_not_in_job_race)
+
     # ^ array of citizens who are still looking, that didn't make it into the level-specific comparisons
 
     # update the citizen's choice
@@ -322,18 +324,19 @@ defmodule MayorGame.CityMigrator do
         if preferred_locations_by_level[x].choices != [] do
           Enum.reduce(preferred_locations_by_level[x].choices, acc, fn {citizen, chosen_city_id},
                                                                        acc2 ->
-            if citizen.town_id != chosen_city_id do
-              acc2
-              |> Map.update!(
-                chosen_city_id,
-                &[
-                  citizen |> Map.drop([:town_id, :has_job]) |> Map.put(:last_moved, db_world.day)
-                  | &1
-                ]
-              )
-            else
-              acc2
-            end
+            # if citizen.town_id != chosen_city_id do
+            acc2
+            |> Map.update!(
+              chosen_city_id,
+              &[
+                citizen |> Map.drop([:town_id, :has_job]) |> Map.put(:last_moved, db_world.day)
+                | &1
+              ]
+            )
+
+            # else
+            #   acc2
+            # end
           end)
         else
           acc
@@ -373,15 +376,12 @@ defmodule MayorGame.CityMigrator do
     vacated_freq = Enum.frequencies(vacated_slots)
     occupied_freq = Enum.frequencies(occupied_slots)
 
-    IO.inspect(vacated_freq)
-    IO.inspect(occupied_freq)
+    IO.inspect(housing_slots)
 
     housing_slots_2 =
       housing_slots
       |> Map.merge(vacated_freq, fn _k, v1, v2 -> v1 + v2 end)
       |> Map.merge(occupied_freq, fn _k, v1, v2 -> v1 - v2 end)
-
-    IO.inspect(housing_slots_2)
 
     # NEW UNEMPLOYED CODE ————————————————————————————————————————————————————————————————————————————
     # ————————————————————————————————————————————————————————————————————————————
@@ -468,18 +468,19 @@ defmodule MayorGame.CityMigrator do
           Enum.reduce(unemployed_preferred_locations_by_level[x].choices, acc, fn {citizen,
                                                                                    chosen_city_id},
                                                                                   acc2 ->
-            if citizen.town_id != chosen_city_id do
-              acc2
-              |> Map.update!(
-                chosen_city_id,
-                &[
-                  citizen |> Map.drop([:town_id, :has_job]) |> Map.put(:last_moved, db_world.day)
-                  | &1
-                ]
-              )
-            else
-              acc2
-            end
+            # if citizen.town_id != chosen_city_id do
+            acc2
+            |> Map.update!(
+              chosen_city_id,
+              &[
+                citizen |> Map.drop([:town_id, :has_job]) |> Map.put(:last_moved, db_world.day)
+                | &1
+              ]
+            )
+
+            # else
+            #   acc2
+            # end
           end)
         else
           acc
@@ -610,18 +611,19 @@ defmodule MayorGame.CityMigrator do
           Enum.reduce(unhoused_preferred_locations_by_level[x].choices, acc, fn {citizen,
                                                                                  chosen_city_id},
                                                                                 acc2 ->
-            if citizen.town_id != chosen_city_id do
-              acc2
-              |> Map.update!(
-                chosen_city_id,
-                &[
-                  citizen |> Map.drop([:town_id, :has_job]) |> Map.put(:last_moved, db_world.day)
-                  | &1
-                ]
-              )
-            else
-              acc2
-            end
+            # if citizen.town_id != chosen_city_id do
+            acc2
+            |> Map.update!(
+              chosen_city_id,
+              &[
+                citizen |> Map.drop([:town_id, :has_job]) |> Map.put(:last_moved, db_world.day)
+                | &1
+              ]
+            )
+
+            # else
+            #   acc2
+            # end
           end)
         else
           acc
