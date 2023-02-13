@@ -427,12 +427,11 @@ defmodule MayorGame.CityHelpers do
               acc.education_left[citizen.education + 1] > 0 && citizen_not_too_old &&
               !pollution_death
 
-          will_citizens_reproduce =
-            citizen.age > 500 and citizen.age < 3000 and acc.housing_left >= 0
+          will_citizen_reproduce =
+            citizen.age > 500 and citizen.age < 3000 and acc.housing_left >= 0 &&
+              :rand.uniform(citizen_count + 1) < max(results.health / 100, 10)
 
-          :rand.uniform(citizen_count + 1) < max(results.health / 10, 100)
-
-          housing_taken = if will_citizens_reproduce, do: 2, else: 1
+          housing_taken = if will_citizen_reproduce, do: 2, else: 1
 
           updated_citizen =
             citizen
@@ -513,7 +512,7 @@ defmodule MayorGame.CityHelpers do
           # could do for above as well (list of polluted citizens)
           |> Map.update!(
             :reproducing_citizens,
-            if(will_citizens_reproduce,
+            if(will_citizen_reproduce,
               do: &(&1 + 1),
               else: & &1
             )
