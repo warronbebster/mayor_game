@@ -314,30 +314,103 @@
           <%= rate %>
         <% end %>
         <!--print citizen count at level-->
-        <div>
+        <div class=" group relative flex flex-row items-center gap-1 w-32 cursor-help">
+          <img
+            src="/images/citizen.svg"
+            alt="total citizen"
+            height="12"
+            width="12"
+          />
           <%= if @citizens_by_edu[String.to_integer(job_level)] !== nil do %>
             <%= to_string(@citizens_by_edu[String.to_integer(job_level)]) %>
           <% else %>
             0
           <% end %>
-          citizens
+          <div class="tooltip max-w-sm">
+            <%= if @citizens_by_edu[String.to_integer(job_level)] !== nil do %>
+              <%= to_string(@citizens_by_edu[String.to_integer(job_level)]) %>
+            <% else %>
+              0
+            <% end %>
+            citizens
+          </div>
         </div>
         <!--print job count at level-->
-        <div>
+        <div class=" group relative flex flex-row items-center text-green-700 gap-1 w-32 cursor-help">
+          <img
+            src="/images/workers-fulfilled.svg"
+            alt="total workers"
+            height="12"
+            width="12"
+          />
+          <%= if (@city2.total_jobs[String.to_integer(job_level)] !== nil && @city2.jobs[String.to_integer(job_level)] !== nil) do %>
+            <%= to_string(@city2.total_jobs[String.to_integer(job_level)] - @city2.jobs[String.to_integer(job_level)]) %>
+          <% else %>
+            0
+          <% end %>
+          /
           <%= if @city2.total_jobs[String.to_integer(job_level)] !== nil do %>
             <%= to_string(@city2.total_jobs[String.to_integer(job_level)]) %>
           <% else %>
             0
           <% end %>
-          total jobs
+          <div class="tooltip max-w-sm">
+            <div class="pb-1">
+              <%= if @city2.total_jobs[String.to_integer(job_level)] !== nil do %>
+                <%= to_string(@city2.total_jobs[String.to_integer(job_level)]) %>
+              <% else %>
+                0
+              <% end %>
+              total jobs
+            </div>
+            <div class="pb-2">
+              <%= if (@city2.total_jobs[String.to_integer(job_level)] !== nil && @city2.jobs[String.to_integer(job_level)] !== nil) do %>
+                <%= to_string(@city2.total_jobs[String.to_integer(job_level)] - @city2.jobs[String.to_integer(job_level)]) %>
+              <% else %>
+                0
+              <% end %>
+              occupied jobs
+            </div>
+            <div>
+              <%= if @city2.jobs[String.to_integer(job_level)] !== nil do %>
+                <%= to_string(@city2.jobs[String.to_integer(job_level)]) %>
+              <% else %>
+                0
+              <% end %>
+              available jobs
+            </div>
+          </div>
         </div>
-        <div>
-          <%= if @city2.jobs[String.to_integer(job_level)] !== nil do %>
-            <%= to_string(@city2.jobs[String.to_integer(job_level)]) %>
+        <div class=" group relative flex flex-row items-center text-green-700 gap-1 w-32 cursor-help">
+          <div>
+            <img
+              src="/images/workers-fulfilled.svg"
+              alt="total workers"
+              height="12"
+              width="12"
+            />
+            <img
+              src="/images/money-fulfilled.svg"
+              alt="total income"
+              height="12"
+              width="12"
+            />
+          </div>
+          <%= if (@tax_by_level[String.to_integer(job_level)] !== nil) do %>
+            <%= Number.Delimit.number_to_delimited(@tax_by_level[String.to_integer(job_level)]) %>
           <% else %>
             0
           <% end %>
-          available jobs
+          <div class="tooltip max-w-sm">
+            <div class="pb-1">
+              <%= if @tax_by_level[String.to_integer(job_level)] !== nil do %>
+                $<%= Number.Delimit.number_to_delimited(@tax_by_level[String.to_integer(job_level)]) %>
+              <% else %>
+                $0
+              <% end %>
+              tax income
+            </div>
+          </div>
         </div>
       </div>
     <% end %>
@@ -852,10 +925,47 @@
                       <% end %>
                     </div>
                 </div>
-                  <% end %>
+                <% end %>
+                <!-- income and expenses -->
+                <%= if !is_nil(building_stats.requires) && Map.has_key?(building_stats.requires, :money) do %>
+                  <div class=" group relative flex flex-row items-center text-red-700 gap-1 w-16 cursor-help">
+                    <img
+                      src="/images/money-off.svg"
+                      alt="total expenses"
+                      height="12"
+                      width="12"
+                    />
+                    -<%= Number.SI.number_to_si(
+                        round(@operating_count[building_type][[]] * building_stats.requires.money), precision: 3, trim: true
+                    ) %>
+                    <div class="tooltip max-w-sm">
+                      <%= Number.Delimit.number_to_delimited(
+                      round(@operating_count[building_type][[]] * building_stats.requires.money)
+                      ) %> running expenses
+                    </div>
+                  </div>
+                <% end %>
+                <%= if !is_nil(building_stats.produces) && Map.has_key?(building_stats.produces, :money) do %>
+                  <div class=" group relative flex flex-row items-center text-green-700 gap-1 w-16 cursor-help">
+                    <img
+                      src="/images/money-fulfilled.svg"
+                      alt="total income"
+                      height="12"
+                      width="12"
+                    />
+                    -<%= Number.SI.number_to_si(
+                        round(@operating_count[building_type][[]] * building_stats.produces.money), precision: 3, trim: true
+                    ) %>
+                    <div class="tooltip max-w-sm">
+                      <%= Number.Delimit.number_to_delimited(
+                      round(@operating_count[building_type][[]] * building_stats.produces.money)
+                      ) %> running income
+                    </div>
+                  </div>
+                <% end %>
                 <!-- workers -->
-                  <%= if !is_nil(building_stats.requires) && Map.has_key?(building_stats.requires, :workers) do %>
-                <div class=" group relative flex flex-row items-center text-green-700 gap-1 w-16 cursor-help">
+                <%= if !is_nil(building_stats.requires) && Map.has_key?(building_stats.requires, :workers) do %>
+                  <div class=" group relative flex flex-row items-center text-green-700 gap-1 w-16 cursor-help">
                     <img
                       src="/images/workers-fulfilled.svg"
                       alt="total workers"
@@ -868,8 +978,28 @@
                       <%= @operating_count[building_type][[]] *
                         building_stats.requires.workers.count %> workers employed at level <%= building_stats.requires.workers.level %>
                     </div>
-                </div>
-                  <% end %>
+                  </div>
+                  <div class=" group relative flex flex-row items-center text-green-700 gap-1 w-16 cursor-help">
+                    <div>
+                      <img
+                        src="/images/workers-fulfilled.svg"
+                        alt="total workers"
+                        height="10"
+                        width="10"
+                      />
+                      <img
+                        src="/images/money-fulfilled.svg"
+                        alt="total income"
+                        height="10"
+                        width="10"
+                      />
+                    </div>
+                    <%= Number.SI.number_to_si(@operating_tax[building_type], precision: 3, trim: true) %>
+                    <div class="tooltip max-w-sm">
+                      $<%= Number.Delimit.number_to_delimited(@operating_tax[building_type]) %> tax income
+                    </div>
+                  </div>
+                <% end %>
               <% end %>
             </div>
           </div>
