@@ -776,13 +776,27 @@ defmodule MayorGame.CityMigrator do
         end
       end)
 
+    unhoused_deaths = elem(unhoused_split_3, 1) |> Enum.frequencies_by(& &1.town_id)
+    # logs_deaths_housing: integer,
+
     # :logs_emigration_taxes,
     for_tax_logs =
       Enum.flat_map(preferred_locations_by_level, fn {_key, val} ->
         Enum.filter(val.choices, fn {citizen, chosen_id} -> citizen.town_id != chosen_id end)
       end)
 
-    IO.inspect(for_tax_logs)
+    tax_cities_chosen = Enum.group_by(for_tax_logs, &elem(&1, 1))
+    tax_cities_left = Enum.group_by(for_tax_logs, &elem(&1, 0).town_id)
+
+    tax_cities_left_by_edu =
+      Enum.map(tax_cities_left, fn {city_id, array} ->
+        {city_id, Enum.frequencies_by(array, &elem(&1, 0).education)}
+      end)
+      |> Map.new()
+
+    # %{
+    #   city_id: [{choice(tuple)}]
+    # }
 
     # shape:
     # [
@@ -820,14 +834,25 @@ defmodule MayorGame.CityMigrator do
         Enum.filter(val.choices, fn {citizen, chosen_id} -> citizen.town_id != chosen_id end)
       end)
 
+    job_cities_chosen = Enum.group_by(for_jobs_logs, &elem(&1, 1))
+    job_cities_left = Enum.group_by(for_jobs_logs, &elem(&1, 0).town_id)
+
+    job_cities_left_by_edu =
+      Enum.map(job_cities_left, fn {city_id, array} ->
+        {city_id, Enum.frequencies_by(array, &elem(&1, 0).education)}
+      end)
+      |> Map.new()
+
     #  for_jobs_logs =
     # Enum.map(unemployed_preferred_locations_by_level, fn {key, val} ->
     #   {key,
-    #    Enum.filter(val.choices, fn {citizen, chosen_id} -> citizen.town_id != chosen_id end)}
+    #   val.choices |>
+    #    Enum.filter( fn {citizen, chosen_id} -> citizen.town_id != chosen_id end)
+    #    |> Enum.group_by(for_tax_logs, &elem(&1, 1))
+
+    #   }
     # end)
     # |> Enum.into(%{})
-
-    IO.inspect(for_jobs_logs)
 
     # :logs_emigration_housing,
     for_unhoused_logs =
@@ -835,9 +860,23 @@ defmodule MayorGame.CityMigrator do
         Enum.filter(val.choices, fn {citizen, chosen_id} -> citizen.town_id != chosen_id end)
       end)
 
-    IO.inspect(for_unhoused_logs)
+    for_unhoused_logs_2 =
+      Enum.filter(unhoused_preferred_locations.choices, fn {citizen, chosen_id} ->
+        citizen.town_id != chosen_id
+      end)
 
-    # :logs_immigration,
+    housing_cities_chosen = Enum.group_by(for_unhoused_logs, &elem(&1, 1))
+    housing_cities_left = Enum.group_by(for_unhoused_logs, &elem(&1, 0).town_id)
+    housing_cities_left_2 = Enum.group_by(for_unhoused_logs_2, &elem(&1, 0).town_id)
+
+    merged_housing_cities_left =
+      Map.merge(housing_cities_left, housing_cities_left_2, fn _k, v1, v2 -> v1 ++ v2 end)
+
+    housing_cities_left_by_edu =
+      Enum.map(merged_housing_cities_left, fn {city_id, array} ->
+        {city_id, Enum.frequencies_by(array, &elem(&1, 0).education)}
+      end)
+      |> Map.new()
 
     # filter updated_citizens to remove jas_job and town_id before going in the DB
 
@@ -848,12 +887,56 @@ defmodule MayorGame.CityMigrator do
         # each comes with a city_id and a list of citizens
         fn ->
           Enum.each(chunk, fn {id, list} ->
+            # each ID
+            logs_emigration_taxes =
+              if !is_nil(tax_cities_left_by_edu[id]) do
+                Map.merge(
+                  CityHelpers.integerize_keys(
+                    slotted_cities_by_id[id].city.logs_emigration_taxes
+                  ),
+                  tax_cities_left_by_edu[id],
+                  fn _k, v1, v2 -> v1 + v2 end
+                )
+              else
+                slotted_cities_by_id[id].city.logs_emigration_taxes
+              end
+
+            logs_emigration_jobs =
+              if !is_nil(job_cities_left_by_edu[id]) do
+                Map.merge(
+                  CityHelpers.integerize_keys(slotted_cities_by_id[id].city.logs_emigration_jobs),
+                  job_cities_left_by_edu[id],
+                  fn _k, v1, v2 -> v1 + v2 end
+                )
+              else
+                slotted_cities_by_id[id].city.logs_emigration_jobs
+              end
+
+            logs_emigration_housing =
+              if !is_nil(housing_cities_left_by_edu[id]) do
+                Map.merge(
+                  CityHelpers.integerize_keys(
+                    slotted_cities_by_id[id].city.logs_emigration_housing
+                  ),
+                  housing_cities_left_by_edu[id],
+                  fn _k, v1, v2 -> v1 + v2 end
+                )
+              else
+                slotted_cities_by_id[id].city.logs_emigration_housing
+              end
+
             from(t in Town,
               where: t.id == ^id,
               update: [
                 set: [
+                  logs_emigration_taxes: ^logs_emigration_taxes,
+                  logs_emigration_jobs: ^logs_emigration_jobs,
+                  logs_emigration_housing: ^logs_emigration_housing,
                   citizen_count: ^length(list),
                   citizens_blob: ^list
+                ],
+                inc: [
+                  logs_deaths_housing: ^unhoused_deaths[id]
                 ]
               ]
             )
