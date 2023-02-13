@@ -50,7 +50,7 @@
     <tr>
       <td class="group relative h-4 top_td text-purple-600 ">
         <div class="flex gap-1 items-center w-full pr-2">
-          <img src="/images/pollution.svg" alt="total area" height="12" width="12" class="inline" />
+          <img src="/images/pollution.svg" alt="total pollution" height="12" width="12" class="inline" />
         </div>
         <div class="tooltip top-0 left-0 -translate-x-full text-purple-600">
           Pollution
@@ -59,7 +59,7 @@
 
       <td class="group relative h-4 top_td text-amber-600">
         <div class="flex gap-1 items-center w-full pr-2">
-          <img src="/images/housing.svg" alt="total area" height="12" width="12" class="inline" />
+          <img src="/images/housing.svg" alt="total housing" height="12" width="12" class="inline" />
         </div>
         <div class="tooltip top-0 left-0 -translate-x-full text-amber-600">
           Housing
@@ -70,7 +70,7 @@
           <img src="/images/plus.svg" alt="plus" height="12" width="12" class="inline" />
           <img
             src="/images/money-fulfilled.svg"
-            alt="total area"
+            alt="total income"
             height="12"
             width="12"
             class="inline"
@@ -93,7 +93,7 @@
         <div class="flex items-center w-full pr-2">
           <img
             src="/images/money-fulfilled.svg"
-            alt="total area"
+            alt="total money"
             height="12"
             width="12"
             class="inline"
@@ -763,13 +763,13 @@
                 <div class=" group relative flex flex-row items-center text-green-700 gap-1 w-16 cursor-help">
                     <img
                       src="/images/workers-fulfilled.svg"
-                      alt="total area"
+                      alt="total workers"
                       height="12"
                       width="12"
                     />
                     <%= @operating_count[building_type][[]] *
                       building_stats.requires.workers.count %>/<%= building_stats.requires.workers.level %>
-                    <div class="tooltip max-w-sm ">
+                    <div class="tooltip max-w-sm">
                       <%= @operating_count[building_type][[]] *
                         building_stats.requires.workers.count %> workers employed at level <%= building_stats.requires.workers.level %>
                     </div>
