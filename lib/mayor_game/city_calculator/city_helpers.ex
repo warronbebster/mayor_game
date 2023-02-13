@@ -386,7 +386,7 @@ defmodule MayorGame.CityHelpers do
     # Iterate through citizens
     # ________________________________________________________________________
     pollution_reached = world.pollution > pollution_ceiling
-    time_to_learn = rem(world.day, 10) == 0
+    time_to_learn = rem(world.day, 365) == 0
 
     # I don't think this needs to be a reduce. this could me a map then flatten
     after_citizen_checks =
