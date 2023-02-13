@@ -1,11 +1,13 @@
 defmodule MayorGameWeb.DashboardLive do
   require Logger
+  import Ecto.Query
+  alias MayorGame.City.{Town}
+  alias MayorGame.Repo
 
   use Phoenix.LiveView, container: {:div, class: "liveview-container"}
   # don't need this because you get it in DashboardView?
   # use Phoenix.HTML
 
-  alias MayorGame.City
   alias MayorGameWeb.DashboardView
 
   def render(assigns) do
@@ -18,7 +20,7 @@ defmodule MayorGameWeb.DashboardLive do
 
     {:ok,
      socket
-     |> assign(current_user: current_user |> MayorGame.Repo.preload(:town))
+     |> assign(current_user: current_user |> Repo.preload(:town))
      |> assign_cities()}
   end
 
@@ -38,7 +40,24 @@ defmodule MayorGameWeb.DashboardLive do
        |> assign(
          current_user:
            MayorGame.Auth.get_user!(socket.assigns.current_user.id)
-           |> MayorGame.Repo.preload(:town)
+           |> Repo.preload(:town)
+       )
+       |> assign_cities()}
+    else
+      {:noreply,
+       socket
+       |> assign_cities()}
+    end
+  end
+
+  def handle_info(%{event: "pong", payload: _world}, socket) do
+    if Map.has_key?(socket.assigns, :current_user) do
+      {:noreply,
+       socket
+       |> assign(
+         current_user:
+           MayorGame.Auth.get_user!(socket.assigns.current_user.id)
+           |> Repo.preload(:town)
        )
        |> assign_cities()}
     else
@@ -58,20 +77,24 @@ defmodule MayorGameWeb.DashboardLive do
     # IO.inspect(get_user(socket, session))
 
     if socket.assigns.current_user.id == 1 do
-      case City.create_citizens(%{
-             town_id: city_id,
-             education: 0,
-             age: 0,
-             has_job: false,
-             last_moved: socket.assigns.world.day
-           }) do
-        # pattern match to assign new_citizen to what's returned from City.create_citizens
-        {:ok, _updated_citizens} ->
-          IO.puts("updated 1 citizen")
+      new_citizen = %{
+        town_id: city_id,
+        age: 0,
+        education: 0,
+        has_job: false,
+        last_moved: socket.assigns.world.day,
+        preferences: :rand.uniform(6)
+      }
 
-        {:error, err} ->
-          Logger.error(inspect(err))
-      end
+      from(t in Town,
+        where: t.id == ^city_id,
+        update: [
+          push: [
+            citizens_blob: ^new_citizen
+          ]
+        ]
+      )
+      |> Repo.update_all([])
     end
 
     {:noreply, socket |> assign_cities()}
@@ -81,14 +104,23 @@ defmodule MayorGameWeb.DashboardLive do
   # at some point should sort by number of citizens
   defp assign_cities(socket) do
     # cities_count = MayorGame.Repo.aggregate(City.Town, :count, :id)
-    cities = City.list_cities() |> Enum.sort_by(& &1.citizen_count, :desc)
+    all_cities_recent =
+      from(t in Town, select: [:citizen_count, :pollution, :id, :title, :user_id, :patron])
+      |> MayorGame.Repo.all()
+      |> MayorGame.Repo.preload(:user)
+      |> Enum.sort_by(& &1.citizen_count, :desc)
 
-    pollution_sum = Enum.sum(Enum.map(cities, fn city -> city.pollution end))
+    # cities = City.list_cities() |> Enum.sort_by(& &1.citizen_count, :desc)
+
+    pollution_sum = Enum.sum(Enum.map(all_cities_recent, fn city -> city.pollution end))
+    citizens_sum = Enum.sum(Enum.map(all_cities_recent, fn city -> city.citizen_count end))
+
     world = MayorGame.Repo.get!(MayorGame.City.World, 1)
 
     socket
-    |> assign(:cities, cities)
+    |> assign(:cities, all_cities_recent)
     |> assign(:world, world)
     |> assign(:pollution_sum, pollution_sum)
+    |> assign(:citizens_sum, citizens_sum)
   end
 end

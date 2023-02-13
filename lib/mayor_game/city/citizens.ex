@@ -57,6 +57,17 @@ defmodule MayorGame.City.Citizens do
     ]
   end
 
+  def preset_preferences do
+    %{
+      1 => %{tax_rates: 0.1, sprawl: 0.2, fun: 0.35, health: 0.25, pollution: 0.1},
+      2 => %{tax_rates: 0.5, sprawl: 0.2, fun: 0.2, health: 0.07, pollution: 0.03},
+      3 => %{tax_rates: 0.15, sprawl: 0.4, fun: 0.05, health: 0.25, pollution: 0.25},
+      4 => %{tax_rates: 0.6, sprawl: 0.12, fun: 0.15, health: 0.03, pollution: 0.1},
+      5 => %{tax_rates: 0.2, sprawl: 0.09, fun: 0.12, health: 0.14, pollution: 0.45},
+      6 => %{tax_rates: 0.82, sprawl: 0.04, fun: 0.05, health: 0.03, pollution: 0.06}
+    }
+  end
+
   @doc false
   def changeset(citizens, attrs) do
     citizens

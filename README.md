@@ -71,7 +71,7 @@ fly ssh console
 app/bin/mayor_game remote
 world = MayorGame.City.get_world(1)
 MayorGame.City.update_world(world, %{pollution: 1000000})
-MayorGame.City.get_town_by_title!("Name")
+city = MayorGame.City.get_town_by_title!("Name")
  MayorGame.City.update_town(city, %{patron: 1})
 
 ```
@@ -88,6 +88,12 @@ cd postgres
 
 restart DBs:
 `fly pg restart -a mayorgame-db`
+
+see db machine details
+`fly machine status 73287903f11685 -a mayorgame-db`
+
+scaling fly postgres
+https://fly.io/docs/postgres/managing/scaling/
 
 ## Learn more
 
