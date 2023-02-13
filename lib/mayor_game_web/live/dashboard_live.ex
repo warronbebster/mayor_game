@@ -100,6 +100,51 @@ defmodule MayorGameWeb.DashboardLive do
     {:noreply, socket |> assign_cities()}
   end
 
+  # sort events
+  def handle_event(
+        "sort_by_name",
+        _value,
+        assigns = socket
+      ) do
+    {:noreply,
+     socket
+     |> assign(:sort, "name")
+     |> assign_cities()}
+  end
+
+  def handle_event(
+        "sort_by_age",
+        _value,
+        assigns = socket
+      ) do
+    {:noreply,
+     socket
+     |> assign(:sort, "age")
+     |> assign_cities()}
+  end
+
+  def handle_event(
+        "sort_by_population",
+        _value,
+        assigns = socket
+      ) do
+    {:noreply,
+     socket
+     |> assign(:sort, "population")
+     |> assign_cities()}
+  end
+
+  def handle_event(
+        "sort_by_pollution",
+        _value,
+        assigns = socket
+      ) do
+    {:noreply,
+     socket
+     |> assign(:sort, "pollution")
+     |> assign_cities()}
+  end
+
   # Assign all cities as the cities list. Maybe I should figure out a way to only show cities for that user.
   # at some point should sort by number of citizens
   defp assign_cities(socket) do
@@ -110,7 +155,23 @@ defmodule MayorGameWeb.DashboardLive do
       |> MayorGame.Repo.preload(:user)
       |> Enum.sort_by(& &1.citizen_count, :desc)
 
-    # cities = City.list_cities() |> Enum.sort_by(& &1.citizen_count, :desc)
+    all_cities_recent =
+      if Map.has_key?(socket.assigns, :sort),
+        do:
+          (case socket.assigns.sort do
+             "name" ->
+               all_cities_recent |> Enum.sort_by(&(&1.title |> String.downcase()), :asc)
+
+             "pollution" ->
+               all_cities_recent |> Enum.sort_by(& &1.pollution, :desc)
+
+             "age" ->
+               all_cities_recent |> Enum.sort_by(& &1.id, :desc)
+
+             _ ->
+               all_cities_recent |> Enum.sort_by(& &1.citizen_count, :desc)
+           end),
+        else: all_cities_recent |> Enum.sort_by(& &1.citizen_count, :desc)
 
     pollution_sum = Enum.sum(Enum.map(all_cities_recent, fn city -> city.pollution end))
     citizens_sum = Enum.sum(Enum.map(all_cities_recent, fn city -> city.citizen_count end))

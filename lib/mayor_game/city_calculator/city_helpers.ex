@@ -390,7 +390,7 @@ defmodule MayorGame.CityHelpers do
 
     # I don't think this needs to be a reduce. this could me a map then flatten
     after_citizen_checks =
-      all_citizens
+      Enum.sort_by(all_citizens, & &1.education, :desc)
       |> Enum.reduce(
         # fn ->
         %{
@@ -427,6 +427,13 @@ defmodule MayorGame.CityHelpers do
               acc.education_left[citizen.education + 1] > 0 && citizen_not_too_old &&
               !pollution_death
 
+          will_citizens_reproduce =
+            citizen.age > 500 and citizen.age < 3000 and acc.housing_left >= 0
+
+          :rand.uniform(citizen_count + 1) < max(results.health / 10, 100)
+
+          housing_taken = if will_citizens_reproduce, do: 2, else: 1
+
           updated_citizen =
             citizen
             # |> Map.from_struct()
@@ -452,7 +459,7 @@ defmodule MayorGame.CityHelpers do
           |> Map.update!(
             :housing_left,
             if(acc.housing_left > 0 and !pollution_death and citizen_not_too_old,
-              do: &(&1 - 1),
+              do: &(&1 - housing_taken),
               else: & &1
             )
           )
@@ -506,9 +513,7 @@ defmodule MayorGame.CityHelpers do
           # could do for above as well (list of polluted citizens)
           |> Map.update!(
             :reproducing_citizens,
-            if(
-              updated_citizen.age > 500 and updated_citizen.age < 3000 and
-                :rand.uniform(citizen_count + 1) < max(results.health / 10, 100),
+            if(will_citizens_reproduce,
               do: &(&1 + 1),
               else: & &1
             )
