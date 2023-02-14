@@ -162,29 +162,31 @@ defmodule MayorGameWeb.CityLive do
         %{assigns: %{city2: city}} = socket
       ) do
     # check if user is mayor here?
+    if socket.assigns.current_user.id == city.user_id do
+      building_to_buy_atom = String.to_existing_atom(building_to_buy)
 
-    building_to_buy_atom = String.to_existing_atom(building_to_buy)
+      # get exponential price — don't want to set price on front-end for cheating reasons
+      initial_purchase_price = get_in(Buildable.buildables_flat(), [building_to_buy_atom, :price])
+      buildable_count = length(city[building_to_buy_atom])
 
-    # get exponential price — don't want to set price on front-end for cheating reasons
-    initial_purchase_price = get_in(Buildable.buildables_flat(), [building_to_buy_atom, :price])
-    buildable_count = length(city[building_to_buy_atom])
+      purchase_price =
+        MayorGame.CityHelpers.building_price(initial_purchase_price, buildable_count)
 
-    purchase_price = MayorGame.CityHelpers.building_price(initial_purchase_price, buildable_count)
+      city_struct = struct(City.Town, city)
 
-    city_struct = struct(City.Town, city)
+      # check for upgrade requirements?
 
-    # check for upgrade requirements?
+      case City.purchase_buildable(city_struct, building_to_buy_atom, purchase_price) do
+        {_x, nil} ->
+          nil
+          IO.puts('purchase success')
 
-    case City.purchase_buildable(city_struct, building_to_buy_atom, purchase_price) do
-      {_x, nil} ->
-        nil
-        IO.puts('purchase success')
+        {:error, err} ->
+          Logger.error(inspect(err))
 
-      {:error, err} ->
-        Logger.error(inspect(err))
-
-      nil ->
-        nil
+        nil ->
+          nil
+      end
     end
 
     # this is all ya gotta do to update, baybee
@@ -197,26 +199,28 @@ defmodule MayorGameWeb.CityLive do
         %{assigns: %{city2: city}} = socket
       ) do
     # check if user is mayor here?
-    buildable_to_demolish_atom = String.to_existing_atom(building_to_demolish)
+    if socket.assigns.current_user.id == city.user_id do
+      buildable_to_demolish_atom = String.to_existing_atom(building_to_demolish)
 
-    city_struct = struct(City.Town, city)
+      city_struct = struct(City.Town, city)
 
-    buildable_count = length(city[buildable_to_demolish_atom])
+      buildable_count = length(city[buildable_to_demolish_atom])
 
-    if buildable_count > 0 do
-      case City.demolish_buildable(city_struct, buildable_to_demolish_atom) do
-        {_x, nil} ->
-          IO.puts("demolition success")
+      if buildable_count > 0 do
+        case City.demolish_buildable(city_struct, buildable_to_demolish_atom) do
+          {_x, nil} ->
+            IO.puts("demolition success")
 
-        {:error, err} ->
-          Logger.error(inspect(err))
+          {:error, err} ->
+            Logger.error(inspect(err))
+        end
+      else
+        City.update_town(city_struct, %{buildable_to_demolish_atom => 0})
       end
-    else
-      City.update_town(city_struct, %{buildable_to_demolish_atom => 0})
-    end
 
-    # this is all ya gotta do to update, baybee
-    {:noreply, socket |> update_city_by_title()}
+      # this is all ya gotta do to update, baybee
+      {:noreply, socket |> update_city_by_title()}
+    end
   end
 
   def handle_event(
@@ -319,29 +323,31 @@ defmodule MayorGameWeb.CityLive do
         %{"job_level" => job_level, "value" => updated_value},
         %{assigns: %{city2: city}} = socket
       ) do
-    # check if user is mayor here?
-    updated_value_float = Float.parse(updated_value)
+    if socket.assigns.current_user.id == city.user_id do
+      # check if user is mayor here?
+      updated_value_float = Float.parse(updated_value)
 
-    if updated_value_float != :error do
-      updated_value_constrained =
-        elem(updated_value_float, 0) |> max(0.0) |> min(1.0) |> Float.round(2)
+      if updated_value_float != :error do
+        updated_value_constrained =
+          elem(updated_value_float, 0) |> max(0.0) |> min(1.0) |> Float.round(2)
 
-      # check if it's below 0 or above 1 or not a number
+        # check if it's below 0 or above 1 or not a number
 
-      updated_tax_rates =
-        city.tax_rates |> Map.put(job_level, updated_value_constrained) |> Map.drop(["6"])
+        updated_tax_rates =
+          city.tax_rates |> Map.put(job_level, updated_value_constrained) |> Map.drop(["6"])
 
-      case City.update_town_by_id(city.id, %{tax_rates: updated_tax_rates}) do
-        {:ok, _updated_details} ->
-          IO.puts("tax rates updated")
+        case City.update_town_by_id(city.id, %{tax_rates: updated_tax_rates}) do
+          {:ok, _updated_details} ->
+            IO.puts("tax rates updated")
 
-        {:error, err} ->
-          Logger.error(inspect(err))
+          {:error, err} ->
+            Logger.error(inspect(err))
+        end
       end
-    end
 
-    # this is all ya gotta do to update, baybee
-    {:noreply, socket |> update_city_by_title()}
+      # this is all ya gotta do to update, baybee
+      {:noreply, socket |> update_city_by_title()}
+    end
   end
 
   # this is what gets messages from CityCalculator
@@ -632,7 +638,7 @@ defmodule MayorGameWeb.CityLive do
       socket
       |> assign(
         :is_user_mayor,
-        to_string(socket.assigns.user_id) == to_string(socket.assigns.user_id)
+        to_string(socket.assigns.user_id) == to_string(socket.assigns.current_user.id)
       )
     else
       # if there's no user logged in

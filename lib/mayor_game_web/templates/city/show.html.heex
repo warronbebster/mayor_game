@@ -537,6 +537,45 @@
               </div>
               <!-- build & delete buttons -->
               <div class="flex flex-row ">
+                <%= if @is_user_mayor do %>
+                  <%= if building_stats.purchasable do %>
+                    <button
+                      class="btn m-0 rounded-none border border-neutral-800/25 leading-none h-6"
+                      phx-click="purchase_building"
+                      phx-throttle="200"
+                      phx-value-building={building_type}
+                    >
+                      $<%= Number.Delimit.number_to_delimited(building_stats.price) %>
+                    </button>
+                  <% else %>
+                    <div class="group relative inline-block">
+                      <button
+                        disabled
+                        class="opacity-50 rounded-none m-0 border border-neutral-800/25 leading-none h-6"
+                      >
+                        $<%= Number.Delimit.number_to_delimited(building_stats.price) %>
+                      </button>
+                      <div class="tooltip w-28"><%= building_stats.purchasable_reason %></div>
+                    </div>
+                  <% end %>
+                  <%= if not Enum.empty?(Map.get(@operating_count, building_type)) do %>
+                    <button
+                      phx-click="demolish_building"
+                      class="btn m-0 rounded-none border border-l-0 border-neutral-800/25 leading-none h-6"
+                      phx-throttle="300"
+                      phx-value-building={building_type}
+                    >
+                      -1
+                    </button>
+                  <% else %>
+                    <button
+                      disabled
+                      class="opacity-50 m-0 rounded-none border border-l-0 border-neutral-800/25 leading-none h-6"
+                    >
+                      -1
+                    </button>
+                  <% end %>
+                <% end %>
                 <%= if @current_user && !is_nil(@current_user.town) && !@is_user_mayor do %>
                   <%= if !Enum.empty?(Map.get(@operating_count, building_type)) && @current_user.town.missiles > 0 do %>
                     <%= if @city2.shields == 0 do %>
