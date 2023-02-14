@@ -479,7 +479,7 @@ defmodule MayorGame.CityHelpers do
     result_blob = activation_round(result_blob, buildables, city, season, education_diff)
 
     # enforce up to the full range of education level differences is considered, to prevent recursion from stopping early
-    if result_blob.updated_buildable_count > count && education_diff < 5 do
+    if result_blob.updated_buildable_count > count || education_diff < 5 do
       # filter buildables for the next round of checks
       buildables_split_by_jobs =
         Enum.split_with(result_blob.result_buildables, fn y ->
