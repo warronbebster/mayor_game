@@ -387,7 +387,8 @@ defmodule MayorGameWeb.CityLive do
         pollution_ceiling,
         season,
         socket.assigns.buildables_map
-      ) |> Map.put(:season, season)
+      )
+      |> Map.put(:season, season)
 
     # ok, here the price is updated per each CombinedBuildable
 
@@ -477,7 +478,17 @@ defmodule MayorGameWeb.CityLive do
       ])
 
     # this controls what (and in what order) resource change categories will be displayed to the right of the buildable
-    subtotal_types = [{:health, "text-rose-700"}, {:area, "text-cyan-700"}, {:housing, "text-amber-700"}, {:energy, "text-yellow-700"}, {:sulfur, "text-orange-700"}, {:steel, "text-slate-700"}, {:fun, "text-fuchsia-700"}, {:missile, "text-slate-700"}, {:shields, "text-slate-700"}]
+    subtotal_types = [
+      {:health, "text-rose-700"},
+      {:area, "text-cyan-700"},
+      {:housing, "text-amber-700"},
+      {:energy, "text-yellow-700"},
+      {:sulfur, "text-orange-700"},
+      {:steel, "text-slate-700"},
+      {:fun, "text-fuchsia-700"},
+      {:missile, "text-slate-700"},
+      {:shields, "text-slate-700"}
+    ]
 
     socket
     |> assign(:season, season)
@@ -554,7 +565,7 @@ defmodule MayorGameWeb.CityLive do
   defp calculate_buildable_status(buildable, city_with_stats, buildable_count) do
     updated_price = MayorGame.CityHelpers.building_price(buildable.price, buildable_count)
 
-    buildable_stats = 
+    buildable_stats =
       if city_with_stats.treasury > updated_price do
         if is_nil(buildable.requires) do
           %{buildable | purchasable: true, purchasable_reason: "valid", price: updated_price}
@@ -593,12 +604,16 @@ defmodule MayorGameWeb.CityLive do
       end
 
     buildable_stats
-      |> Map.put(:actual_produces, MayorGame.CityHelpers.get_production_map(
+    |> Map.put(
+      :actual_produces,
+      MayorGame.CityHelpers.get_production_map(
         buildable.produces,
         buildable.multipliers,
         city_with_stats.citizen_count,
         city_with_stats.region,
-        city_with_stats.season))
+        city_with_stats.season
+      )
+    )
   end
 
   # POW
