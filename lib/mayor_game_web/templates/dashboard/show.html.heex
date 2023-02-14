@@ -128,6 +128,38 @@
           <% end %>
         </div>
       <% end %>
+      <!-- sort options-->
+      <div class="flex flex-row space-x-1 pb-2 items-center">
+        <span>Sort by:</span>
+        <button
+          class="btn m-0 border rounded-none border-neutral-800/25 leading-none"
+          phx-click="sort_by_name"
+          phx-throttle="300"
+        >
+          Name
+        </button>
+        <button
+          class="btn m-0 border rounded-none border-neutral-800/25 leading-none"
+          phx-click="sort_by_population"
+          phx-throttle="300"
+        >
+          Population
+        </button>
+        <button
+          class="btn m-0 border rounded-none border-neutral-800/25 leading-none"
+          phx-click="sort_by_age"
+          phx-throttle="300"
+        >
+          Newest
+        </button>
+        <button
+          class="btn m-0 border rounded-none border-neutral-800/25 leading-none"
+          phx-click="sort_by_pollution"
+          phx-throttle="300"
+        >
+          Pollution
+        </button>
+      </div>
       <!-- list cities-->
       <%= for city <- @cities do %>
         <div class="flex flex-row items-center space-x-1">
