@@ -329,7 +329,7 @@
   </div>
 </div>
 <!-- END HEADER ——————————————————————————————————————————— -->
-<div class="flex flex-row flex-wrap relative h-full overflow-y-scroll ">
+<div class="flex flex-row flex-wrap relative h-full w-screen overflow-x-hidden overflow-y-scroll ">
   <div class="px-3 my-0 flex flex-col grow">
     <!--Taxes-->
   <!--All building details-->
@@ -691,7 +691,7 @@
                 </tr>
               </table>
               <!-- for each operating building, multiply by energy, workers_required, area -->
-              <div class="flex flex-row gap-[2px] items-center">
+              <div class="flex flex-row flex-wrap gap-[2px] items-center">
                 <%= if Map.has_key?(@operating_count[building_type], []) do %>
                   <%= for {subtotal_type, append_class} <- @subtotal_types do %>
                     <!-- produced -->
