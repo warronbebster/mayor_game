@@ -873,7 +873,7 @@ defmodule MayorGame.CityMigrator do
     # filter updated_citizens to remove jas_job and town_id before going in the DB
 
     updated_citizens_by_id_7
-    |> Enum.chunk_every(20)
+    |> Enum.chunk_every(200)
     |> Enum.each(fn chunk ->
       Repo.checkout(
         # each comes with a city_id and a list of citizens

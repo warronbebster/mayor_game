@@ -129,7 +129,7 @@ defmodule MayorGame.CityHelpers do
     # Iterate through citizens
     # ________________________________________________________________________
     pollution_reached = world.pollution > pollution_ceiling
-    time_to_learn = rem(world.day, 91) == 0
+    time_to_learn = rem(world.day, 365) == 0
 
     # I don't think this needs to be a reduce. this could me a map then flatten
     after_citizen_checks =
@@ -310,7 +310,8 @@ defmodule MayorGame.CityHelpers do
     # TODO: add seasonality and region changes to this
     prod_nil = is_nil(production_map)
 
-    prod_map_mult = get_production_map(production_map, multiplier_map, citizen_count, region, season)
+    prod_map_mult =
+      get_production_map(production_map, multiplier_map, citizen_count, region, season)
 
     totals = %{
       total_area:

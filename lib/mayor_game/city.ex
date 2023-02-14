@@ -8,6 +8,7 @@ defmodule MayorGame.City do
   import Ecto.Query, warn: false
   alias MayorGame.Repo
   alias MayorGame.City.{Town, Citizens, World, Buildable}
+  alias MayorGame.CityHelpers
 
   @doc """
   Returns the list of cities.
@@ -38,7 +39,7 @@ defmodule MayorGame.City do
 
   """
   def list_cities_preload do
-    Repo.all(Town) |> Repo.preload([:citizens, :user], timeout: 100_000)
+    Repo.all(Town, timeout: 100_000) |> Repo.preload([:citizens, :user], timeout: 100_000)
   end
 
   @doc """
@@ -444,7 +445,15 @@ defmodule MayorGame.City do
 
   """
   def demolish_buildable(%Town{} = city, buildable_to_demolish) do
-    refund_price = Buildable.buildables_flat()[buildable_to_demolish].price
+    buildable_count = length(city[buildable_to_demolish])
+
+    refund_price =
+      round(
+        CityHelpers.building_price(
+          Buildable.buildables_flat()[buildable_to_demolish].price,
+          buildable_count
+        ) / 2
+      )
 
     Town
     |> where(id: ^city.id)

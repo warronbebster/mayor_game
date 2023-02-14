@@ -195,7 +195,11 @@
 
       <td class="top_td">
         <span class="text-amber-800">
-          <%= @city2.housing - @total_citizens %>/<%= @city2.housing %>
+          <%= @city2.housing - @total_citizens %>/<%= Number.SI.number_to_si(
+            @city2.housing,
+            precision: 3,
+            trim: true
+          ) %>
         </span>
       </td>
       <td class="top_td">
@@ -356,7 +360,11 @@
           <!--print citizen count at level-->
           <div>
             <%= if @citizens_by_edu[String.to_integer(job_level)] !== nil do %>
-              <%= to_string(@citizens_by_edu[String.to_integer(job_level)]) %>
+              <%= Number.SI.number_to_si(
+                @citizens_by_edu[String.to_integer(job_level)],
+                precision: 3,
+                trim: true
+              ) %>
             <% else %>
               0
             <% end %>
@@ -497,8 +505,12 @@
                           <hr class="border-neutral-800 flex-1" />
                           <%= to_string(round(value)) %>
                           <%= if value != building_stats.actual_produces[produces_type] do %>
-                            (<%= if value < building_stats.actual_produces[produces_type] do "+" end%><%= to_string(round(building_stats.actual_produces[produces_type] - value)) %>)
-                          <%= end %>
+                            (<%= if value < building_stats.actual_produces[produces_type] do
+                              "+"
+                            end %><%= to_string(
+                              round(building_stats.actual_produces[produces_type] - value)
+                            ) %>)
+                          <% end %>
                         </div>
                       <% else %>
                         <%= if is_function(value, 1) do %>
@@ -507,8 +519,15 @@
                             <hr class="border-neutral-800 flex-1" />
                             <%= value.(1) %>
                             <%= if value.(1) != building_stats.actual_produces[produces_type].(1) do %>
-                              (<%= if value.(1) < building_stats.actual_produces[produces_type].(1) do "+" end%><%= to_string(round(building_stats.actual_produces[produces_type].(1) - value.(1))) %>)
-                            <%= end %>
+                              (<%= if value.(1) <
+                                        building_stats.actual_produces[produces_type].(1) do
+                                "+"
+                              end %><%= to_string(
+                                round(
+                                  building_stats.actual_produces[produces_type].(1) - value.(1)
+                                )
+                              ) %>)
+                            <% end %>
                           </div>
                         <% end %>
                       <% end %>
@@ -681,69 +700,98 @@
                   <%= for {subtotal_type, append_class} <- @subtotal_types do %>
                     <!-- produced -->
                     <%= if !is_nil(building_stats.actual_produces) && Map.has_key?(building_stats.actual_produces, subtotal_type) do %>
-                      <div class={["group relative flex flex-row items-center gap-[2px] w-16 cursor-help", append_class ]}>
-                        <img src={"/images/" <> to_string(subtotal_type) <> ".svg"} alt={"total " <> to_string(subtotal_type)} height="10" width="10" />
+                      <div class={
+                        [
+                          "group relative flex flex-row items-center gap-[2px] w-16 cursor-help",
+                          append_class
+                        ]
+                      }>
+                        <img
+                          src={"/images/" <> to_string(subtotal_type) <> ".svg"}
+                          alt={"total " <> to_string(subtotal_type)}
+                          height="10"
+                          width="10"
+                        />
                         <%= if abs(@operating_count[building_type][[]] * building_stats.actual_produces[subtotal_type]) >= 10_000 do %>
                           <%= Number.SI.number_to_si(
-                            @operating_count[building_type][[]] * building_stats.actual_produces[subtotal_type],
+                            @operating_count[building_type][[]] *
+                              building_stats.actual_produces[subtotal_type],
                             precision: 3,
                             trim: true
                           ) %>
-                        <%= else %>
+                        <% else %>
                           <%= Number.Delimit.number_to_delimited(
                             round(
-                              @operating_count[building_type][[]] * building_stats.actual_produces[subtotal_type]
+                              @operating_count[building_type][[]] *
+                                building_stats.actual_produces[subtotal_type]
                             )
                           ) %>
-                        <%= end %>
+                        <% end %>
                         <div class="tooltip">
                           <%= if abs(@operating_count[building_type][[]] * building_stats.actual_produces[subtotal_type]) >= 10_000 do %>
                             <%= Number.SI.number_to_si(
-                              @operating_count[building_type][[]] * building_stats.actual_produces[subtotal_type],
+                              @operating_count[building_type][[]] *
+                                building_stats.actual_produces[subtotal_type],
                               precision: 3,
                               trim: true
                             ) %> <%= subtotal_type %> generated
-                          <%= else %>
+                          <% else %>
                             <%= Number.Delimit.number_to_delimited(
                               round(
-                                @operating_count[building_type][[]] * building_stats.actual_produces[subtotal_type]
+                                @operating_count[building_type][[]] *
+                                  building_stats.actual_produces[subtotal_type]
                               )
                             ) %> <%= subtotal_type %> generated
-                          <%= end %>
+                          <% end %>
                         </div>
                       </div>
                     <% end %>
                     <!-- required -->
                     <%= if !is_nil(building_stats.requires) && Map.has_key?(building_stats.requires, subtotal_type) do %>
-                      <div class={["group relative flex flex-row items-center gap-[2px] w-16 cursor-help", append_class ]}>
-                        <img src={"/images/" <> to_string(subtotal_type) <> ".svg"} alt={"total " <> to_string(subtotal_type)} height="10" width="10" />
+                      <div class={
+                        [
+                          "group relative flex flex-row items-center gap-[2px] w-16 cursor-help",
+                          append_class
+                        ]
+                      }>
+                        <img
+                          src={"/images/" <> to_string(subtotal_type) <> ".svg"}
+                          alt={"total " <> to_string(subtotal_type)}
+                          height="10"
+                          width="10"
+                        />
                         <%= if abs(@operating_count[building_type][[]] * building_stats.requires[subtotal_type]) >= 10_000 do %>
                           <%= Number.SI.number_to_si(
-                            -@operating_count[building_type][[]] * building_stats.requires[subtotal_type],
+                            -@operating_count[building_type][[]] *
+                              building_stats.requires[subtotal_type],
                             precision: 3,
                             trim: true
                           ) %>
-                        <%= else %>
+                        <% else %>
                           <%= Number.Delimit.number_to_delimited(
                             round(
-                              -@operating_count[building_type][[]] * building_stats.requires[subtotal_type]
+                              -@operating_count[building_type][[]] *
+                                building_stats.requires[subtotal_type]
                             )
                           ) %>
-                        <%= end %>
+                        <% end %>
                         <div class="tooltip">
                           <%= if abs(@operating_count[building_type][[]] * building_stats.requires[subtotal_type]) >= 10_000 do %>
                             <%= Number.SI.number_to_si(
-                              @operating_count[building_type][[]] * building_stats.requires[subtotal_type],
+                              @operating_count[building_type][[]] *
+                                building_stats.requires[subtotal_type],
                               precision: 3,
                               trim: true
                             ) %> consumed
-                          <%= else %>
+                          <% else %>
                             <%= Number.Delimit.number_to_delimited(
                               round(
-                                @operating_count[building_type][[]] * building_stats.requires[subtotal_type]
+                                @operating_count[building_type][[]] *
+                                  building_stats.requires[subtotal_type]
                               )
                             ) %>
-                          <%= end %> consumed
+                          <% end %>
+                          consumed
                         </div>
                       </div>
                     <% end %>
@@ -942,7 +990,11 @@
           </div>
         </div>
         <div>
-          <%= @city2.logs_births %>
+          <%= Number.SI.number_to_si(
+            @city2.logs_births,
+            precision: 3,
+            trim: true
+          ) %>
         </div>
       </div>
       <!-- POLLUTION DEATHS -->
@@ -955,9 +1007,15 @@
             How many citizens have died from overpollution
           </div>
         </div>
-        <div>
-          <%= @city2.logs_deaths_pollution %>
-        </div>
+        <%= if !is_nil(@city2.logs_deaths_age) do %>
+          <div>
+            <%= Number.SI.number_to_si(
+              @city2.logs_deaths_pollution,
+              precision: 3,
+              trim: true
+            ) %>
+          </div>
+        <% end %>
       </div>
       <!-- AGE DEATHS -->
       <div class="flex flex-row items-center justify-between gap-2 py-1">
@@ -969,9 +1027,15 @@
             Citizens die when they reach 10,000 days of age.
           </div>
         </div>
-        <div>
-          <%= @city2.logs_deaths_age %>
-        </div>
+        <%= if !is_nil(@city2.logs_deaths_age) do %>
+          <div>
+            <%= Number.SI.number_to_si(
+              @city2.logs_deaths_age,
+              precision: 3,
+              trim: true
+            ) %>
+          </div>
+        <% end %>
       </div>
       <!-- HOUSING DEATHS -->
       <div class="flex flex-row items-center justify-between gap-2 py-1">
@@ -983,9 +1047,15 @@
             If a citizen runs out of housing and can't find any anywhere else, they'll die.
           </div>
         </div>
-        <div>
-          <%= @city2.logs_deaths_housing %>
-        </div>
+        <%= if !is_nil(@city2.logs_deaths_housing) do %>
+          <div>
+            <%= Number.SI.number_to_si(
+              @city2.logs_deaths_housing,
+              precision: 3,
+              trim: true
+            ) %>
+          </div>
+        <% end %>
       </div>
       <!-- EDUCATION -->
       <div class="flex flex-col gap-2 py-1">
@@ -1003,7 +1073,13 @@
           <div class="flex flex-row items-center justify-between gap-2 my-0 leading-none">
             <span><%= edu_level %></span>
             <hr class="border-neutral-300 flex-1" />
-            <span><%= Number.Delimit.number_to_delimited(educated_citizens_count) %></span>
+            <span>
+              <%= Number.SI.number_to_si(
+                educated_citizens_count,
+                precision: 3,
+                trim: true
+              ) %>
+            </span>
           </div>
         <% end %>
       </div>
@@ -1043,7 +1119,13 @@
           <div class="flex flex-row items-center justify-between gap-2 my-0 leading-none">
             <span><%= edu_level %></span>
             <hr class="border-neutral-300 flex-1" />
-            <span><%= Number.Delimit.number_to_delimited(emigration_count) %></span>
+            <span>
+              <%= Number.SI.number_to_si(
+                emigration_count,
+                precision: 3,
+                trim: true
+              ) %>
+            </span>
           </div>
         <% end %>
       </div>
@@ -1063,7 +1145,13 @@
           <div class="flex flex-row items-center justify-between gap-2 my-0 leading-none">
             <span><%= edu_level %></span>
             <hr class="border-neutral-300 flex-1" />
-            <span><%= Number.Delimit.number_to_delimited(emigration_count) %></span>
+            <span>
+              <%= Number.SI.number_to_si(
+                emigration_count,
+                precision: 3,
+                trim: true
+              ) %>
+            </span>
           </div>
         <% end %>
       </div>
@@ -1083,7 +1171,13 @@
           <div class="flex flex-row items-center justify-between gap-2 my-0 leading-none">
             <span><%= edu_level %></span>
             <hr class="border-neutral-300 flex-1" />
-            <span><%= Number.Delimit.number_to_delimited(emigration_count) %></span>
+            <span>
+              <%= Number.SI.number_to_si(
+                emigration_count,
+                precision: 3,
+                trim: true
+              ) %>
+            </span>
           </div>
         <% end %>
       </div>
