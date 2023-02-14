@@ -1043,6 +1043,34 @@
     </h2>
     <!-- LOGS CONTAINER -->
     <div class="divide-y divide-neutral-800/10 ">
+      <!-- REGION -->
+      <div class="flex flex-row items-center justify-between gap-2 py-1">
+        <div class="group relative inline-block">
+          <h3 class="text-l first-letter:uppercase decoration-1	underline underline-offset-4 cursor-help decoration-neutral-800/40 decoration-dotted	">
+            Region
+          </h3>
+          <div class="tooltip w-40">
+            The region this city is in.
+          </div>
+        </div>
+        <div>
+          <%= @city2.region %>
+        </div>
+      </div>
+      <!-- CLIMATE -->
+      <div class="flex flex-row items-center justify-between gap-2 py-1">
+        <div class="group relative inline-block">
+          <h3 class="text-l first-letter:uppercase decoration-1	underline underline-offset-4 cursor-help decoration-neutral-800/40 decoration-dotted	">
+            Climate
+          </h3>
+          <div class="tooltip w-40">
+            The climate this city is in.
+          </div>
+        </div>
+        <div>
+          <%= @city2.climate %>
+        </div>
+      </div>
       <!-- BIRTH LOGS -->
       <div class="flex flex-row items-center justify-between gap-2 py-1">
         <div class="group relative inline-block">
