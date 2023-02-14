@@ -90,20 +90,14 @@ attacks
 # i think i can do this by just having different preliminary functions before enumerating through the main buildable list
 # and maybe I have to store whether they're enabled or not in that enum
 
-# figure out why moving logs make tax logs not appear?
-# figure out why taxer stops sometimes
-
 # function to loan/give other cities money?
 
 # eventually could write calculate functions with Stream instead of Enum to speed up
 
-# probably should move treasury out of details and reserve details just for buildables
-
-# — adjust auth so you can only control your own cities (done on front-end)
-#   — might need to do this on the backend with a constraint or something in case haxkorz
-#   — (although maybe you just couldn't send to the submit action from console?)
-
-# — adjust signin/session time limit (maybe done with persistent session plugin?)
+# trading — send money, etc to other cities and put it in a log
+# fighter jets
+# if there are no fighter jets, destroying air-bases takes missiles out as well
+# cap on shields from defense bases
 
 
 

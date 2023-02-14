@@ -186,7 +186,6 @@ defmodule MayorGame.CityHelpers do
 
           # TODO
           # do this with merge instead of updates
-          # this doesn't account for births
           acc
           |> Map.update!(
             :all_citizens_persisting,
@@ -434,18 +433,6 @@ defmodule MayorGame.CityHelpers do
             buildable_metadata_price_updated
           end)
         end
-
-      # combined_array =
-      #   buildable_array
-      #   |> Flow.from_enumerable(max_demand: 200)
-      #   |> Flow.map(fn x ->
-      #     # %CombinedBuildable.combine_and_apply_upgrades(x, buildable_metadata_price_updated)
-      #     %CombinedBuildable{
-      #       buildable: x,
-      #       metadata: buildable_metadata_price_updated
-      #     }
-      #   end)
-      #   |> Enum.to_list()
 
       %{town_acc | buildable_list_item => combined_array}
       # else
