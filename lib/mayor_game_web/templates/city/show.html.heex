@@ -66,6 +66,20 @@
         </div>
       </td>
       <td class="group relative h-4 top_td text-green-600">
+        <div class="flex gap-1 items-center w-full pr-2">
+          <img
+            src="/images/workers-fulfilled.svg"
+            alt="total workers"
+            height="12"
+            width="12"
+            class="inline"
+          />
+        </div>
+        <div class="tooltip top-0 left-0 -translate-x-full text-green-600">
+          Jobs
+        </div>
+      </td>
+      <td class="group relative h-4 top_td text-green-600">
         <div class="flex items-center w-full pr-2">
           <img src="/images/plus.svg" alt="plus" height="12" width="12" class="inline" />
           <img
@@ -171,7 +185,11 @@
     <tr>
       <td class="top_td">
         <span class="text-purple-800">
-          <%= Number.Delimit.number_to_delimited(@city2.pollution) %>/day
+          <%= Number.SI.number_to_si(
+            @city2.pollution,
+            precision: 3,
+            trim: true
+          ) %>/day
         </span>
       </td>
 
@@ -182,30 +200,59 @@
       </td>
       <td class="top_td">
         <span class="text-green-800">
-          $<%= Number.Delimit.number_to_delimited(@city2.income) %>/day
-        </span>
-      </td>
-      <td class="top_td">
-        <span class="text-red-800">
-          $<%= Number.Delimit.number_to_delimited(@city2.daily_cost) %>/day
+          <%= Enum.sum(Map.values(@city2.jobs)) %>/<%= Enum.sum(Map.values(@city2.total_jobs)) %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-green-800">
-          $<%= Number.Delimit.number_to_delimited(@city2.treasury) %>
+          $<%= Number.SI.number_to_si(
+            @city2.income,
+            precision: 3,
+            trim: true
+          ) %>/day
+        </span>
+      </td>
+      <td class="top_td">
+        <span class="text-red-800">
+          $<%= Number.SI.number_to_si(
+            @city2.daily_cost,
+            precision: 3,
+            trim: true
+          ) %>/day
+        </span>
+      </td>
+      <td class="top_td">
+        <span class="text-green-800">
+          $<%= Number.SI.number_to_si(
+            @city2.treasury,
+            precision: 3,
+            trim: true
+          ) %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-yellow-800">
-          <%= Number.Delimit.number_to_delimited(@city2.energy) %>/<%= Number.Delimit.number_to_delimited(
-            @city2.total_energy
+          <%= Number.SI.number_to_si(
+            @city2.energy,
+            precision: 3,
+            trim: true
+          ) %>/<%= Number.SI.number_to_si(
+            @city2.total_energy,
+            precision: 3,
+            trim: true
           ) %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-cyan-800">
-          <%= Number.Delimit.number_to_delimited(@city2.area) %>/<%= Number.Delimit.number_to_delimited(
-            @city2.total_area
+          <%= Number.SI.number_to_si(
+            @city2.area,
+            precision: 3,
+            trim: true
+          ) %>/<%= Number.SI.number_to_si(
+            @city2.total_area,
+            precision: 3,
+            trim: true
           ) %>
         </span>
       </td>
@@ -219,22 +266,38 @@
       </td>
       <td class="top_td">
         <span class="text-slate-800">
-          <%= Number.Delimit.number_to_delimited(@city2.steel) %>
+          <%= Number.SI.number_to_si(
+            @city2.steel,
+            precision: 3,
+            trim: true
+          ) %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-orange-800">
-          <%= Number.Delimit.number_to_delimited(@city2.sulfur) %>
+          <%= Number.SI.number_to_si(
+            @city2.sulfur,
+            precision: 3,
+            trim: true
+          ) %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-red-800">
-          <%= Number.Delimit.number_to_delimited(@city2.missiles) %>
+          <%= Number.SI.number_to_si(
+            @city2.missiles,
+            precision: 3,
+            trim: true
+          ) %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-blue-800">
-          <%= Number.Delimit.number_to_delimited(@city2.shields) %>
+          <%= Number.SI.number_to_si(
+            @city2.shields,
+            precision: 3,
+            trim: true
+          ) %>
         </span>
       </td>
     </tr>
@@ -434,6 +497,14 @@
                           <hr class="border-neutral-800 flex-1" />
                           <%= to_string(value) %>
                         </div>
+                      <% else %>
+                        <%= if is_function(value, 1) do %>
+                          <div class="flex items-center gap-1">
+                            <div class=""><%= to_string(produces_type) %> per pop</div>
+                            <hr class="border-neutral-800 flex-1" />
+                            <%= value.(1) %>
+                          </div>
+                        <% end %>
                       <% end %>
                     <% end %>
                   <% end %>
@@ -599,12 +670,12 @@
                 </tr>
               </table>
               <!-- for each operating building, multiply by energy, workers_required, area -->
-              <div class="flex flex-row gap-1 items-center">
+              <div class="flex flex-row gap-[2px] items-center">
                 <%= if Map.has_key?(@operating_count[building_type], []) do %>
                   <!-- health -->
                   <%= if !is_nil(building_stats.produces) && Map.has_key?(building_stats.produces, :health) do %>
-                    <div class="group relative flex flex-row items-center text-rose-700 gap-1 w-16 cursor-help">
-                      <img src="/images/health.svg" alt="total health" height="12" width="12" />
+                    <div class="group relative flex flex-row items-center text-rose-700 gap-[2px] w-16 cursor-help">
+                      <img src="/images/health.svg" alt="total health" height="10" width="10" />
                       <%= Number.Delimit.number_to_delimited(
                         round(
                           @operating_count[building_type][[]] * building_stats.produces.health
@@ -621,20 +692,38 @@
                   <% end %>
                   <!-- area -->
                   <%= if !is_nil(building_stats.produces) && Map.has_key?(building_stats.produces, :area) do %>
-                    <div class=" group relative flex flex-row items-center text-cyan-700 gap-1 w-16 cursor-help">
-                      <img src="/images/area.svg" alt="total area" height="12" width="12" />
-                      <%= Number.Delimit.number_to_delimited(
-                        @operating_count[building_type][[]] * building_stats.produces.area
+                    <div class=" group relative flex flex-row items-center text-cyan-700 gap-[2px] w-16 cursor-help">
+                      <img src="/images/area.svg" alt="total area" height="10" width="10" />
+
+                      <%= Number.SI.number_to_si(
+                        @operating_count[building_type][[]] * building_stats.produces.area,
+                        precision: 3,
+                        trim: true
                       ) %>
+
                       <div class="tooltip">
                         <%= @operating_count[building_type][[]] * building_stats.produces.area %> area generated
                       </div>
                     </div>
                   <% end %>
+                  <!-- area_required -->
+                  <%= if !is_nil(building_stats.requires) && Map.has_key?(building_stats.requires, :area) do %>
+                    <div class=" group relative flex flex-row items-center text-cyan-700 gap-[2px] w-16 cursor-help">
+                      <img src="/images/area.svg" alt="total area" height="10" width="10" />
+                      -<%= Number.SI.number_to_si(
+                        @operating_count[building_type][[]] * building_stats.requires.area,
+                        precision: 3,
+                        trim: true
+                      ) %>
+                      <div class="tooltip">
+                        <%= @operating_count[building_type][[]] * building_stats.requires.area %> area consumed
+                      </div>
+                    </div>
+                  <% end %>
                   <!-- housing -->
                   <%= if !is_nil(building_stats.produces) && Map.has_key?(building_stats.produces, :housing) do %>
-                    <div class=" group relative flex flex-row items-center text-amber-700 gap-1 w-16 cursor-help">
-                      <img src="/images/housing.svg" alt="total area" height="12" width="12" />
+                    <div class=" group relative flex flex-row items-center text-amber-700 gap-[2px] w-16 cursor-help">
+                      <img src="/images/housing.svg" alt="total housing" height="10" width="10" />
                       <%= @operating_count[building_type][[]] * building_stats.produces.housing %>
                       <div class="tooltip">
                         <%= @operating_count[building_type][[]] * building_stats.produces.housing %> housing provided
@@ -643,13 +732,15 @@
                   <% end %>
                   <!-- energy -->
                   <%= if !is_nil(building_stats.produces) && Map.has_key?(building_stats.produces, :energy) do %>
-                    <div class="group relative flex flex-row items-center text-yellow-700 gap-1 w-16 cursor-help">
-                      <img src="/images/energy.svg" alt="total area" height="12" width="12" />
-                      <%= Number.Delimit.number_to_delimited(
-                        round(
-                          @operating_count[building_type][[]] * building_stats.produces.energy
-                        )
+                    <div class="group relative flex flex-row items-center text-yellow-700 gap-[2px] w-16 cursor-help">
+                      <img src="/images/energy.svg" alt="total energy" height="10" width="10" />
+
+                      <%= Number.SI.number_to_si(
+                        @operating_count[building_type][[]] * building_stats.produces.energy,
+                        precision: 3,
+                        trim: true
                       ) %>
+
                       <div class="tooltip">
                         <%= Number.Delimit.number_to_delimited(
                           round(
@@ -659,10 +750,30 @@
                       </div>
                     </div>
                   <% end %>
+                  <!-- energy_required -->
+                  <%= if !is_nil(building_stats.requires) && Map.has_key?(building_stats.requires, :energy) do %>
+                    <div class="group relative flex flex-row items-center text-yellow-700 gap-[2px] w-16 cursor-help">
+                      <img src="/images/energy.svg" alt="total energy" height="10" width="10" />
+                      -<%= Number.SI.number_to_si(
+                        round(
+                          @operating_count[building_type][[]] * building_stats.requires.energy
+                        ),
+                        precision: 3,
+                        trim: true
+                      ) %>
+                      <div class="tooltip">
+                        <%= Number.Delimit.number_to_delimited(
+                          round(
+                            @operating_count[building_type][[]] * building_stats.requires.energy
+                          )
+                        ) %> energy consumed
+                      </div>
+                    </div>
+                  <% end %>
                   <!-- sulfur -->
                   <%= if !is_nil(building_stats.produces) && Map.has_key?(building_stats.produces, :sulfur) do %>
-                    <div class="group relative flex flex-row items-center text-orange-700 gap-1 w-16 cursor-help">
-                      <img src="/images/sulfur.svg" alt="total sulfur" height="12" width="12" />
+                    <div class="group relative flex flex-row items-center text-orange-700 gap-[2px] w-16 cursor-help">
+                      <img src="/images/sulfur.svg" alt="total sulfur" height="10" width="10" />
                       <%= Number.Delimit.number_to_delimited(
                         round(
                           @operating_count[building_type][[]] * building_stats.produces.sulfur
@@ -677,10 +788,28 @@
                       </div>
                     </div>
                   <% end %>
+                  <!-- sulfur_required -->
+                  <%= if !is_nil(building_stats.requires) && Map.has_key?(building_stats.requires, :sulfur) do %>
+                    <div class="group relative flex flex-row items-center text-orange-700 gap-[2px] w-16 cursor-help">
+                      <img src="/images/sulfur.svg" alt="total sulfur" height="10" width="10" />
+                      -<%= Number.Delimit.number_to_delimited(
+                        round(
+                          @operating_count[building_type][[]] * building_stats.requires.sulfur
+                        )
+                      ) %>
+                      <div class="tooltip ">
+                        <%= Number.Delimit.number_to_delimited(
+                          round(
+                            @operating_count[building_type][[]] * building_stats.requires.sulfur
+                          )
+                        ) %> sulfur consumed
+                      </div>
+                    </div>
+                  <% end %>
                   <!-- steel -->
                   <%= if !is_nil(building_stats.produces) && Map.has_key?(building_stats.produces, :steel) do %>
-                    <div class="group relative flex flex-row items-center text-slate-700 gap-1 w-16 cursor-help">
-                      <img src="/images/steel.svg" alt="total steel" height="12" width="12" />
+                    <div class="group relative flex flex-row items-center text-slate-700 gap-[2px] w-16 cursor-help">
+                      <img src="/images/steel.svg" alt="total steel" height="10" width="10" />
                       <%= Number.Delimit.number_to_delimited(
                         round(@operating_count[building_type][[]] * building_stats.produces.steel)
                       ) %>
@@ -693,10 +822,26 @@
                       </div>
                     </div>
                   <% end %>
+                  <!-- steel_required -->
+                  <%= if !is_nil(building_stats.requires) && Map.has_key?(building_stats.requires, :steel) do %>
+                    <div class="group relative flex flex-row items-center text-slate-700 gap-[2px] w-16 cursor-help">
+                      <img src="/images/steel.svg" alt="total steel" height="10" width="10" />
+                      -<%= Number.Delimit.number_to_delimited(
+                        round(@operating_count[building_type][[]] * building_stats.requires.steel)
+                      ) %>
+                      <div class="tooltip">
+                        <%= Number.Delimit.number_to_delimited(
+                          round(
+                            @operating_count[building_type][[]] * building_stats.requires.steel
+                          )
+                        ) %> steel consumed
+                      </div>
+                    </div>
+                  <% end %>
                   <!-- fun -->
                   <%= if !is_nil(building_stats.produces) && Map.has_key?(building_stats.produces, :fun) do %>
-                    <div class="group relative flex flex-row items-center text-fuchsia-700 gap-1 w-16 cursor-help">
-                      <img src="/images/fun.svg" alt="total fun" height="12" width="12" />
+                    <div class="group relative flex flex-row items-center text-fuchsia-700 gap-[2px] w-16 cursor-help">
+                      <img src="/images/fun.svg" alt="total fun" height="10" width="10" />
                       <%= Number.Delimit.number_to_delimited(
                         round(@operating_count[building_type][[]] * building_stats.produces.fun)
                       ) %>
@@ -709,8 +854,8 @@
                   <% end %>
                   <!-- missiles -->
                   <%= if !is_nil(building_stats.produces) && Map.has_key?(building_stats.produces, :missiles) do %>
-                    <div class="group relative flex flex-row items-center text-slate-700 gap-1 w-16 cursor-help">
-                      <img src="/images/might.svg" alt="total missiles" height="12" width="12" />
+                    <div class="group relative flex flex-row items-center text-slate-700 gap-[2px] w-16 cursor-help">
+                      <img src="/images/might.svg" alt="total missiles" height="10" width="10" />
                       <%= Number.Delimit.number_to_delimited(
                         round(
                           @operating_count[building_type][[]] * building_stats.produces.missiles
@@ -727,8 +872,8 @@
                   <% end %>
                   <!-- shields -->
                   <%= if !is_nil(building_stats.produces) && Map.has_key?(building_stats.produces, :shields) do %>
-                    <div class="group relative flex flex-row items-center text-slate-700 gap-1 w-16 cursor-help">
-                      <img src="/images/shields.svg" alt="total shields" height="12" width="12" />
+                    <div class="group relative flex flex-row items-center text-slate-700 gap-[2px] w-16 cursor-help">
+                      <img src="/images/shields.svg" alt="total shields" height="10" width="10" />
                       <%= Number.Delimit.number_to_delimited(
                         round(
                           @operating_count[building_type][[]] * building_stats.produces.shields
@@ -745,49 +890,131 @@
                   <% end %>
                   <!-- pollution -->
                   <%= if !is_nil(building_stats.produces) && Map.has_key?(building_stats.produces, :pollution) do %>
-                    <div class="group relative flex flex-row items-center text-violet-700 gap-1 w-16 cursor-help">
-                      <img src="/images/pollution.svg" alt="total area" height="12" width="12" />
-                      <%= if !is_number(building_stats.produces.pollution) do %>
-                        <%= Number.Delimit.number_to_delimited(
-                          @operating_count[
-                            building_type
-                          ][[]] * building_stats.produces.pollution.(@total_citizens)
+                    <div class="group relative flex flex-row items-center text-violet-700 gap-[2px] w-16 cursor-help">
+                      <img
+                        src="/images/pollution.svg"
+                        alt="total pollution"
+                        height="10"
+                        width="10"
+                      />
+                      <%= if is_number(building_stats.produces.pollution) do %>
+                        <%= Number.SI.number_to_si(
+                          round(
+                            @operating_count[
+                              building_type
+                            ][[]] * building_stats.produces.pollution
+                          ),
+                          precision: 3,
+                          trim: true
                         ) %>
                       <% else %>
-                        <%= Number.Delimit.number_to_delimited(
-                          @operating_count[
-                            building_type
-                          ][[]] * building_stats.produces.pollution
-                        ) %>
+                        <%= if is_function(building_stats.produces.pollution, 1) do %>
+                          <%= Number.SI.number_to_si(
+                            round(
+                              @operating_count[
+                                building_type
+                              ][[]] * building_stats.produces.pollution.(@total_citizens)
+                            ),
+                            precision: 3,
+                            trim: true
+                          ) %>
+                        <% end %>
                       <% end %>
-
                       <div class="tooltip">
-                        <%= if !is_number(building_stats.produces.pollution) do %>
-                          <%= round(building_stats.produces.pollution.(100)) %> pollution generated per building per 100 citizens
-                        <% else %>
+                        <%= if is_number(building_stats.produces.pollution) do %>
                           <%= Number.Delimit.number_to_delimited(
                             @operating_count[
                               building_type
                             ][[]] * building_stats.produces.pollution
                           ) %> pollution generated
+                        <% else %>
+                          <%= if is_function(building_stats.produces.pollution, 1) do %>
+                            <%= round(building_stats.produces.pollution.(100)) %> pollution generated per building per 100 citizens
+                          <% end %>
                         <% end %>
+                      </div>
+                    </div>
+                  <% end %>
+                  <!-- income and expenses -->
+                  <%= if !is_nil(building_stats.requires) && Map.has_key?(building_stats.requires, :money) do %>
+                    <div class=" group relative flex flex-row items-center text-red-700 gap-[2px] w-16 cursor-help">
+                      <img
+                        src="/images/money-off.svg"
+                        alt="total expenses"
+                        height="10"
+                        width="10"
+                      />
+                      -<%= Number.SI.number_to_si(
+                        round(
+                          @operating_count[building_type][[]] * building_stats.requires.money
+                        ),
+                        precision: 3,
+                        trim: true
+                      ) %>
+                      <div class="tooltip max-w-sm">
+                        <%= Number.Delimit.number_to_delimited(
+                          round(
+                            @operating_count[building_type][[]] * building_stats.requires.money
+                          )
+                        ) %> running expenses
+                      </div>
+                    </div>
+                  <% end %>
+                  <%= if !is_nil(building_stats.produces) && Map.has_key?(building_stats.produces, :money) do %>
+                    <div class=" group relative flex flex-row items-center text-green-700 gap-[2px] w-16 cursor-help">
+                      <img
+                        src="/images/money-fulfilled.svg"
+                        alt="total income"
+                        height="10"
+                        width="10"
+                      />
+                      -<%= Number.SI.number_to_si(
+                        round(
+                          @operating_count[building_type][[]] * building_stats.produces.money
+                        ),
+                        precision: 3,
+                        trim: true
+                      ) %>
+                      <div class="tooltip max-w-sm">
+                        <%= Number.Delimit.number_to_delimited(
+                          round(
+                            @operating_count[building_type][[]] * building_stats.produces.money
+                          )
+                        ) %> running income
                       </div>
                     </div>
                   <% end %>
                   <!-- workers -->
                   <%= if !is_nil(building_stats.requires) && Map.has_key?(building_stats.requires, :workers) do %>
-                    <div class=" group relative flex flex-row items-center text-green-700 gap-1 w-16 cursor-help">
+                    <div class=" group relative flex flex-row items-center text-green-700 gap-[2px] w-16 cursor-help">
                       <img
                         src="/images/workers-fulfilled.svg"
-                        alt="total area"
-                        height="12"
-                        width="12"
+                        alt="total workers"
+                        height="10"
+                        width="10"
                       />
                       <%= @operating_count[building_type][[]] *
                         building_stats.requires.workers.count %>/<%= building_stats.requires.workers.level %>
-                      <div class="tooltip max-w-sm ">
+                      <div class="tooltip max-w-sm">
                         <%= @operating_count[building_type][[]] *
                           building_stats.requires.workers.count %> workers employed at level <%= building_stats.requires.workers.level %>
+                      </div>
+                    </div>
+                    <div class=" group relative flex flex-row items-center text-green-700 gap-[2px] w-16 cursor-help">
+                      <div>
+                        <img
+                          src="/images/money-fulfilled.svg"
+                          alt="total workers"
+                          height="10"
+                          width="10"
+                        />
+                      </div>
+                      <%= Number.SI.number_to_si(@operating_tax[building_type],
+                        precision: 3,
+                        trim: true
+                      ) %>
+                      <div class="tooltip max-w-sm">
+                        $<%= Number.Delimit.number_to_delimited(@operating_tax[building_type]) %> tax income
                       </div>
                     </div>
                   <% end %>
@@ -810,7 +1037,7 @@
     <% end %>
   </div>
   <!-- LOGS -->
-  <div class="w-64 border-l border-neutral-800/10 px-3  flex flex-col">
+  <div class="w-48 border-l grow border-neutral-800/10 px-3 flex flex-col lg:grow-0">
     <h2 class="text-base pt-2 pb-1">
       Logs
     </h2>

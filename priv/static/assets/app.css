@@ -1211,8 +1211,8 @@ select {
   width: 4rem;
 }
 
-.w-64 {
-  width: 16rem;
+.w-48 {
+  width: 12rem;
 }
 
 .w-20 {
@@ -1299,6 +1299,10 @@ select {
 
 .gap-2 {
   gap: 0.5rem;
+}
+
+.gap-\[2px\] {
+  gap: 2px;
 }
 
 .gap-x-1 {
@@ -1489,6 +1493,10 @@ select {
 
 .pb-6 {
   padding-bottom: 1.5rem;
+}
+
+.pb-2 {
+  padding-bottom: 0.5rem;
 }
 
 .align-bottom {
@@ -1822,5 +1830,11 @@ input[type="submit"] {
 @media (min-width: 768px) {
   .md\:basis-72 {
     flex-basis: 18rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .lg\:grow-0 {
+    flex-grow: 0;
   }
 }

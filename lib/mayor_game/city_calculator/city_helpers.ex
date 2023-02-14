@@ -70,13 +70,6 @@ defmodule MayorGame.CityHelpers do
 
     sorted_blob_citizens = Enum.sort_by(citizens_blob_atoms, & &1.education, :desc)
 
-    # citizens_to_use =
-    #   if sorted_blob_citizens == [] do
-    #     sorted_citizens
-    #   else
-    #     sorted_blob_citizens
-    #   end
-
     citizen_count = length(sorted_blob_citizens)
 
     # reduce citizens from highest level
@@ -287,6 +280,9 @@ defmodule MayorGame.CityHelpers do
         end
       )
 
+    # IO.inspect(results.jobs)
+    # IO.inspect(results.total_jobs)
+
     # ————————————————————————————————————————————————————————————————
     # FILL LOWER LEVEL JOBS
 
@@ -326,6 +322,7 @@ defmodule MayorGame.CityHelpers do
               updated_buildable =
                 if !enough_workers do
                   buildable
+                  |> Map.merge(%{jobs: buildable.jobs - working_workers_count})
                 else
                   # if all conditions are met
                   buildable
@@ -380,23 +377,25 @@ defmodule MayorGame.CityHelpers do
         )
       end
 
-    all_citizens = results.employed_citizens ++ results.citizens
+    # IO.inspect(results_after_2nd_round_jobs.jobs)
+
+    all_citizens =
+      Enum.sort_by(results.employed_citizens ++ results.citizens, & &1.education, :desc)
 
     # ________________________________________________________________________
     # Iterate through citizens
     # ________________________________________________________________________
     pollution_reached = world.pollution > pollution_ceiling
-    time_to_learn = rem(world.day, 365) == 0
+    time_to_learn = rem(world.day, 91) == 0
 
     # I don't think this needs to be a reduce. this could me a map then flatten
     after_citizen_checks =
       all_citizens
       |> Enum.reduce(
-        # fn ->
         %{
           all_citizens_persisting: [],
-          housing_left: results_after_2nd_round_jobs.housing,
-          education_left: results_after_2nd_round_jobs.education,
+          housing_left: results.housing,
+          education_left: results.education,
           educated_citizens: %{1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0},
           unemployed_citizens: [],
           housed_employed_staying_citizens: [],
@@ -406,8 +405,6 @@ defmodule MayorGame.CityHelpers do
           old_citizens: Enum.filter(all_citizens, &(&1.age > 10000)),
           reproducing_citizens: 0
         },
-        # end,
-
         fn citizen, acc ->
           citizen_not_too_old = citizen.age < 10000
 
@@ -427,9 +424,14 @@ defmodule MayorGame.CityHelpers do
               acc.education_left[citizen.education + 1] > 0 && citizen_not_too_old &&
               !pollution_death
 
+          will_citizen_reproduce =
+            citizen.age > 500 and citizen.age < 3000 and acc.housing_left > 1 &&
+              :rand.uniform(citizen_count + 1) < max(results.health / 100, 5)
+
+          housing_taken = if will_citizen_reproduce, do: 2, else: 1
+
           updated_citizen =
             citizen
-            # |> Map.from_struct()
             |> Map.update!(
               :education,
               if(will_citizen_learn,
@@ -441,6 +443,7 @@ defmodule MayorGame.CityHelpers do
 
           # TODO
           # do this with merge instead of updates
+          # this doesn't account for births
           acc
           |> Map.update!(
             :all_citizens_persisting,
@@ -452,7 +455,7 @@ defmodule MayorGame.CityHelpers do
           |> Map.update!(
             :housing_left,
             if(acc.housing_left > 0 and !pollution_death and citizen_not_too_old,
-              do: &(&1 - 1),
+              do: &(&1 - housing_taken),
               else: & &1
             )
           )
@@ -506,9 +509,7 @@ defmodule MayorGame.CityHelpers do
           # could do for above as well (list of polluted citizens)
           |> Map.update!(
             :reproducing_citizens,
-            if(
-              updated_citizen.age > 500 and updated_citizen.age < 4000 and
-                :rand.uniform(citizen_count + 1) < max(results.health / 5, 100),
+            if(will_citizen_reproduce,
               do: &(&1 + 1),
               else: & &1
             )
@@ -516,6 +517,8 @@ defmodule MayorGame.CityHelpers do
         end
       )
       |> Enum.into(%{})
+
+    # IO.inspect(after_citizen_checks.housing_left)
 
     city_baked_direct
     |> Map.from_struct()
