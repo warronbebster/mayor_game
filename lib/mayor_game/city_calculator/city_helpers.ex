@@ -556,14 +556,18 @@ defmodule MayorGame.CityHelpers do
   #   random_preferences.preference_map
   # end
 
+  def get_production_map(production_map, multiplier_map, citizen_count, region, season) do
+    # this is fetched by web live and server-side calculations
+    if is_nil(multiplier_map),
+      do: production_map,
+      else: production_map |> multiply(multiplier_map, region, season)
+  end
+
   def render_production(production_map, multiplier_map, citizen_count, region, season) do
     # TODO: add seasonality and region changes to this
     prod_nil = is_nil(production_map)
 
-    prod_map_mult =
-      if is_nil(multiplier_map),
-        do: production_map,
-        else: production_map |> multiply(multiplier_map, region, season)
+    prod_map_mult = get_production_map(production_map, multiplier_map, citizen_count, region, season)
 
     totals = %{
       total_area:
