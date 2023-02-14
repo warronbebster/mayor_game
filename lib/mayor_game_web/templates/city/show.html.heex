@@ -683,17 +683,33 @@
                     <%= if !is_nil(building_stats.actual_produces) && Map.has_key?(building_stats.actual_produces, subtotal_type) do %>
                       <div class={["group relative flex flex-row items-center gap-[2px] w-16 cursor-help", append_class ]}>
                         <img src={"/images/" <> to_string(subtotal_type) <> ".svg"} alt={"total " <> to_string(subtotal_type)} height="10" width="10" />
-                        <%= Number.Delimit.number_to_delimited(
-                          round(
-                            @operating_count[building_type][[]] * building_stats.actual_produces[subtotal_type]
-                          )
-                        ) %>
-                        <div class="tooltip">
+                        <%= if abs(@operating_count[building_type][[]] * building_stats.actual_produces[subtotal_type]) >= 10_000 do %>
+                          <%= Number.SI.number_to_si(
+                            @operating_count[building_type][[]] * building_stats.actual_produces[subtotal_type],
+                            precision: 3,
+                            trim: true
+                          ) %>
+                        <%= else %>
                           <%= Number.Delimit.number_to_delimited(
                             round(
                               @operating_count[building_type][[]] * building_stats.actual_produces[subtotal_type]
                             )
-                          ) %> <%= subtotal_type %> generated
+                          ) %>
+                        <%= end %>
+                        <div class="tooltip">
+                          <%= if abs(@operating_count[building_type][[]] * building_stats.actual_produces[subtotal_type]) >= 10_000 do %>
+                            <%= Number.SI.number_to_si(
+                              @operating_count[building_type][[]] * building_stats.actual_produces[subtotal_type],
+                              precision: 3,
+                              trim: true
+                            ) %> <%= subtotal_type %> generated
+                          <%= else %>
+                            <%= Number.Delimit.number_to_delimited(
+                              round(
+                                @operating_count[building_type][[]] * building_stats.actual_produces[subtotal_type]
+                              )
+                            ) %> <%= subtotal_type %> generated
+                          <%= end %>
                         </div>
                       </div>
                     <% end %>
@@ -701,13 +717,33 @@
                     <%= if !is_nil(building_stats.requires) && Map.has_key?(building_stats.requires, subtotal_type) do %>
                       <div class={["group relative flex flex-row items-center gap-[2px] w-16 cursor-help", append_class ]}>
                         <img src={"/images/" <> to_string(subtotal_type) <> ".svg"} alt={"total " <> to_string(subtotal_type)} height="10" width="10" />
-                        <%= Number.SI.number_to_si(
-                          -@operating_count[building_type][[]] * building_stats.requires.area,
-                          precision: 3,
-                          trim: true
-                        ) %>
+                        <%= if abs(@operating_count[building_type][[]] * building_stats.requires[subtotal_type]) >= 10_000 do %>
+                          <%= Number.SI.number_to_si(
+                            -@operating_count[building_type][[]] * building_stats.requires[subtotal_type],
+                            precision: 3,
+                            trim: true
+                          ) %>
+                        <%= else %>
+                          <%= Number.Delimit.number_to_delimited(
+                            round(
+                              -@operating_count[building_type][[]] * building_stats.requires[subtotal_type]
+                            )
+                          ) %>
+                        <%= end %>
                         <div class="tooltip">
-                          <%= @operating_count[building_type][[]] * building_stats.requires.area %> <%= subtotal_type %> consumed
+                          <%= if abs(@operating_count[building_type][[]] * building_stats.requires[subtotal_type]) >= 10_000 do %>
+                            <%= Number.SI.number_to_si(
+                              @operating_count[building_type][[]] * building_stats.requires[subtotal_type],
+                              precision: 3,
+                              trim: true
+                            ) %> consumed
+                          <%= else %>
+                            <%= Number.Delimit.number_to_delimited(
+                              round(
+                                @operating_count[building_type][[]] * building_stats.requires[subtotal_type]
+                              )
+                            ) %>
+                          <%= end %> consumed
                         </div>
                       </div>
                     <% end %>
