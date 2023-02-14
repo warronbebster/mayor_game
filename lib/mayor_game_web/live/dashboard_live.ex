@@ -101,6 +101,7 @@ defmodule MayorGameWeb.DashboardLive do
   end
 
   # sort events
+  # no need to call assign_cities as the city list has already been retrieved
   def handle_event(
         "sort_by_name",
         _value,
@@ -109,7 +110,7 @@ defmodule MayorGameWeb.DashboardLive do
     {:noreply,
      socket
      |> assign(:sort, "name")
-     |> assign_cities()}
+     |> sort_cities()}
   end
 
   def handle_event(
@@ -120,7 +121,7 @@ defmodule MayorGameWeb.DashboardLive do
     {:noreply,
      socket
      |> assign(:sort, "age")
-     |> assign_cities()}
+     |> sort_cities()}
   end
 
   def handle_event(
@@ -131,7 +132,7 @@ defmodule MayorGameWeb.DashboardLive do
     {:noreply,
      socket
      |> assign(:sort, "population")
-     |> assign_cities()}
+     |> sort_cities()}
   end
 
   def handle_event(
@@ -142,7 +143,27 @@ defmodule MayorGameWeb.DashboardLive do
     {:noreply,
      socket
      |> assign(:sort, "pollution")
-     |> assign_cities()}
+     |> sort_cities()}
+  end
+
+  # Sort cities here
+  defp sort_cities(socket) do
+    sorted_cities = 
+      if Map.has_key?(socket.assigns, :sort), do: (
+        case socket.assigns.sort do
+          "name" -> 
+            socket.assigns.cities |> Enum.sort_by(& &1.title |> String.downcase(), :asc)
+          "pollution" -> 
+            socket.assigns.cities |> Enum.sort_by(& &1.pollution, :desc)
+          _ -> 
+            socket.assigns.cities |> Enum.sort_by(& &1.citizen_count, :desc)
+          end),
+        else: (
+          socket.assigns.cities |> Enum.sort_by(& &1.citizen_count, :desc)
+      )
+
+    socket
+    |> assign(:cities, sorted_cities)
   end
 
   # Assign all cities as the cities list. Maybe I should figure out a way to only show cities for that user.
@@ -153,25 +174,8 @@ defmodule MayorGameWeb.DashboardLive do
       from(t in Town, select: [:citizen_count, :pollution, :id, :title, :user_id, :patron])
       |> MayorGame.Repo.all()
       |> MayorGame.Repo.preload(:user)
-      |> Enum.sort_by(& &1.citizen_count, :desc)
-
-    all_cities_recent =
-      if Map.has_key?(socket.assigns, :sort),
-        do:
-          (case socket.assigns.sort do
-             "name" ->
-               all_cities_recent |> Enum.sort_by(&(&1.title |> String.downcase()), :asc)
-
-             "pollution" ->
-               all_cities_recent |> Enum.sort_by(& &1.pollution, :desc)
-
-             "age" ->
-               all_cities_recent |> Enum.sort_by(& &1.id, :desc)
-
-             _ ->
-               all_cities_recent |> Enum.sort_by(& &1.citizen_count, :desc)
-           end),
-        else: all_cities_recent |> Enum.sort_by(& &1.citizen_count, :desc)
+    # use sort_cities to sort
+    #  |> Enum.sort_by(& &1.citizen_count, :desc)
 
     pollution_sum = Enum.sum(Enum.map(all_cities_recent, fn city -> city.pollution end))
     citizens_sum = Enum.sum(Enum.map(all_cities_recent, fn city -> city.citizen_count end))
@@ -183,5 +187,6 @@ defmodule MayorGameWeb.DashboardLive do
     |> assign(:world, world)
     |> assign(:pollution_sum, pollution_sum)
     |> assign(:citizens_sum, citizens_sum)
+    |> sort_cities()
   end
 end
