@@ -185,7 +185,11 @@
     <tr>
       <td class="top_td">
         <span class="text-purple-800">
-          <%= Number.Delimit.number_to_delimited(@city2.pollution) %>/day
+          <%= Number.SI.number_to_si(
+            @city2.pollution,
+            precision: 3,
+            trim: true
+          ) %>/day
         </span>
       </td>
 
@@ -201,30 +205,54 @@
       </td>
       <td class="top_td">
         <span class="text-green-800">
-          $<%= Number.Delimit.number_to_delimited(@city2.income) %>/day
+          $<%= Number.SI.number_to_si(
+            @city2.income,
+            precision: 3,
+            trim: true
+          ) %>/day
         </span>
       </td>
       <td class="top_td">
         <span class="text-red-800">
-          $<%= Number.Delimit.number_to_delimited(@city2.daily_cost) %>/day
+          $<%= Number.SI.number_to_si(
+            @city2.daily_cost,
+            precision: 3,
+            trim: true
+          ) %>/day
         </span>
       </td>
       <td class="top_td">
         <span class="text-green-800">
-          $<%= Number.Delimit.number_to_delimited(@city2.treasury) %>
+          $<%= Number.SI.number_to_si(
+            @city2.treasury,
+            precision: 3,
+            trim: true
+          ) %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-yellow-800">
-          <%= Number.Delimit.number_to_delimited(@city2.energy) %>/<%= Number.Delimit.number_to_delimited(
-            @city2.total_energy
+          <%= Number.SI.number_to_si(
+            @city2.energy,
+            precision: 3,
+            trim: true
+          ) %>/<%= Number.SI.number_to_si(
+            @city2.total_energy,
+            precision: 3,
+            trim: true
           ) %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-cyan-800">
-          <%= Number.Delimit.number_to_delimited(@city2.area) %>/<%= Number.Delimit.number_to_delimited(
-            @city2.total_area
+          <%= Number.SI.number_to_si(
+            @city2.area,
+            precision: 3,
+            trim: true
+          ) %>/<%= Number.SI.number_to_si(
+            @city2.total_area,
+            precision: 3,
+            trim: true
           ) %>
         </span>
       </td>
@@ -238,22 +266,38 @@
       </td>
       <td class="top_td">
         <span class="text-slate-800">
-          <%= Number.Delimit.number_to_delimited(@city2.steel) %>
+          <%= Number.SI.number_to_si(
+            @city2.steel,
+            precision: 3,
+            trim: true
+          ) %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-orange-800">
-          <%= Number.Delimit.number_to_delimited(@city2.sulfur) %>
+          <%= Number.SI.number_to_si(
+            @city2.sulfur,
+            precision: 3,
+            trim: true
+          ) %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-red-800">
-          <%= Number.Delimit.number_to_delimited(@city2.missiles) %>
+          <%= Number.SI.number_to_si(
+            @city2.missiles,
+            precision: 3,
+            trim: true
+          ) %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-blue-800">
-          <%= Number.Delimit.number_to_delimited(@city2.shields) %>
+          <%= Number.SI.number_to_si(
+            @city2.shields,
+            precision: 3,
+            trim: true
+          ) %>
         </span>
       </td>
     </tr>
@@ -630,7 +674,7 @@
                 <%= if Map.has_key?(@operating_count[building_type], []) do %>
                   <!-- health -->
                   <%= if !is_nil(building_stats.produces) && Map.has_key?(building_stats.produces, :health) do %>
-                    <div class="group relative flex flex-row items-center text-rose-700 gap-[2px] w-[3.5rem] cursor-help">
+                    <div class="group relative flex flex-row items-center text-rose-700 gap-[2px] w-16 cursor-help">
                       <img src="/images/health.svg" alt="total health" height="10" width="10" />
                       <%= Number.Delimit.number_to_delimited(
                         round(
@@ -648,7 +692,7 @@
                   <% end %>
                   <!-- area -->
                   <%= if !is_nil(building_stats.produces) && Map.has_key?(building_stats.produces, :area) do %>
-                    <div class=" group relative flex flex-row items-center text-cyan-700 gap-[2px] w-[3.5rem] cursor-help">
+                    <div class=" group relative flex flex-row items-center text-cyan-700 gap-[2px] w-16 cursor-help">
                       <img src="/images/area.svg" alt="total area" height="10" width="10" />
 
                       <%= Number.SI.number_to_si(
@@ -664,7 +708,7 @@
                   <% end %>
                   <!-- area_required -->
                   <%= if !is_nil(building_stats.requires) && Map.has_key?(building_stats.requires, :area) do %>
-                    <div class=" group relative flex flex-row items-center text-cyan-700 gap-[2px] w-[3.5rem] cursor-help">
+                    <div class=" group relative flex flex-row items-center text-cyan-700 gap-[2px] w-16 cursor-help">
                       <img src="/images/area.svg" alt="total area" height="10" width="10" />
                       -<%= Number.SI.number_to_si(
                         @operating_count[building_type][[]] * building_stats.requires.area,
@@ -678,7 +722,7 @@
                   <% end %>
                   <!-- housing -->
                   <%= if !is_nil(building_stats.produces) && Map.has_key?(building_stats.produces, :housing) do %>
-                    <div class=" group relative flex flex-row items-center text-amber-700 gap-[2px] w-[3.5rem] cursor-help">
+                    <div class=" group relative flex flex-row items-center text-amber-700 gap-[2px] w-16 cursor-help">
                       <img src="/images/housing.svg" alt="total housing" height="10" width="10" />
                       <%= @operating_count[building_type][[]] * building_stats.produces.housing %>
                       <div class="tooltip">
@@ -688,7 +732,7 @@
                   <% end %>
                   <!-- energy -->
                   <%= if !is_nil(building_stats.produces) && Map.has_key?(building_stats.produces, :energy) do %>
-                    <div class="group relative flex flex-row items-center text-yellow-700 gap-[2px] w-[3.5rem] cursor-help">
+                    <div class="group relative flex flex-row items-center text-yellow-700 gap-[2px] w-16 cursor-help">
                       <img src="/images/energy.svg" alt="total energy" height="10" width="10" />
 
                       <%= Number.SI.number_to_si(
@@ -708,7 +752,7 @@
                   <% end %>
                   <!-- energy_required -->
                   <%= if !is_nil(building_stats.requires) && Map.has_key?(building_stats.requires, :energy) do %>
-                    <div class="group relative flex flex-row items-center text-yellow-700 gap-[2px] w-[3.5rem] cursor-help">
+                    <div class="group relative flex flex-row items-center text-yellow-700 gap-[2px] w-16 cursor-help">
                       <img src="/images/energy.svg" alt="total energy" height="10" width="10" />
                       -<%= Number.SI.number_to_si(
                         round(
@@ -728,7 +772,7 @@
                   <% end %>
                   <!-- sulfur -->
                   <%= if !is_nil(building_stats.produces) && Map.has_key?(building_stats.produces, :sulfur) do %>
-                    <div class="group relative flex flex-row items-center text-orange-700 gap-[2px] w-[3.5rem] cursor-help">
+                    <div class="group relative flex flex-row items-center text-orange-700 gap-[2px] w-16 cursor-help">
                       <img src="/images/sulfur.svg" alt="total sulfur" height="10" width="10" />
                       <%= Number.Delimit.number_to_delimited(
                         round(
@@ -746,7 +790,7 @@
                   <% end %>
                   <!-- sulfur_required -->
                   <%= if !is_nil(building_stats.requires) && Map.has_key?(building_stats.requires, :sulfur) do %>
-                    <div class="group relative flex flex-row items-center text-orange-700 gap-[2px] w-[3.5rem] cursor-help">
+                    <div class="group relative flex flex-row items-center text-orange-700 gap-[2px] w-16 cursor-help">
                       <img src="/images/sulfur.svg" alt="total sulfur" height="10" width="10" />
                       -<%= Number.Delimit.number_to_delimited(
                         round(
@@ -764,7 +808,7 @@
                   <% end %>
                   <!-- steel -->
                   <%= if !is_nil(building_stats.produces) && Map.has_key?(building_stats.produces, :steel) do %>
-                    <div class="group relative flex flex-row items-center text-slate-700 gap-[2px] w-[3.5rem] cursor-help">
+                    <div class="group relative flex flex-row items-center text-slate-700 gap-[2px] w-16 cursor-help">
                       <img src="/images/steel.svg" alt="total steel" height="10" width="10" />
                       <%= Number.Delimit.number_to_delimited(
                         round(@operating_count[building_type][[]] * building_stats.produces.steel)
@@ -780,7 +824,7 @@
                   <% end %>
                   <!-- steel_required -->
                   <%= if !is_nil(building_stats.requires) && Map.has_key?(building_stats.requires, :steel) do %>
-                    <div class="group relative flex flex-row items-center text-slate-700 gap-[2px] w-[3.5rem] cursor-help">
+                    <div class="group relative flex flex-row items-center text-slate-700 gap-[2px] w-16 cursor-help">
                       <img src="/images/steel.svg" alt="total steel" height="10" width="10" />
                       -<%= Number.Delimit.number_to_delimited(
                         round(@operating_count[building_type][[]] * building_stats.requires.steel)
@@ -796,7 +840,7 @@
                   <% end %>
                   <!-- fun -->
                   <%= if !is_nil(building_stats.produces) && Map.has_key?(building_stats.produces, :fun) do %>
-                    <div class="group relative flex flex-row items-center text-fuchsia-700 gap-[2px] w-[3.5rem] cursor-help">
+                    <div class="group relative flex flex-row items-center text-fuchsia-700 gap-[2px] w-16 cursor-help">
                       <img src="/images/fun.svg" alt="total fun" height="10" width="10" />
                       <%= Number.Delimit.number_to_delimited(
                         round(@operating_count[building_type][[]] * building_stats.produces.fun)
@@ -810,7 +854,7 @@
                   <% end %>
                   <!-- missiles -->
                   <%= if !is_nil(building_stats.produces) && Map.has_key?(building_stats.produces, :missiles) do %>
-                    <div class="group relative flex flex-row items-center text-slate-700 gap-[2px] w-[3.5rem] cursor-help">
+                    <div class="group relative flex flex-row items-center text-slate-700 gap-[2px] w-16 cursor-help">
                       <img src="/images/might.svg" alt="total missiles" height="10" width="10" />
                       <%= Number.Delimit.number_to_delimited(
                         round(
@@ -828,7 +872,7 @@
                   <% end %>
                   <!-- shields -->
                   <%= if !is_nil(building_stats.produces) && Map.has_key?(building_stats.produces, :shields) do %>
-                    <div class="group relative flex flex-row items-center text-slate-700 gap-[2px] w-[3.5rem] cursor-help">
+                    <div class="group relative flex flex-row items-center text-slate-700 gap-[2px] w-16 cursor-help">
                       <img src="/images/shields.svg" alt="total shields" height="10" width="10" />
                       <%= Number.Delimit.number_to_delimited(
                         round(
@@ -846,7 +890,7 @@
                   <% end %>
                   <!-- pollution -->
                   <%= if !is_nil(building_stats.produces) && Map.has_key?(building_stats.produces, :pollution) do %>
-                    <div class="group relative flex flex-row items-center text-violet-700 gap-[2px] w-[3.5rem] cursor-help">
+                    <div class="group relative flex flex-row items-center text-violet-700 gap-[2px] w-16 cursor-help">
                       <img
                         src="/images/pollution.svg"
                         alt="total pollution"
@@ -893,7 +937,7 @@
                   <% end %>
                   <!-- income and expenses -->
                   <%= if !is_nil(building_stats.requires) && Map.has_key?(building_stats.requires, :money) do %>
-                    <div class=" group relative flex flex-row items-center text-red-700 gap-[2px] w-[3.5rem] cursor-help">
+                    <div class=" group relative flex flex-row items-center text-red-700 gap-[2px] w-16 cursor-help">
                       <img
                         src="/images/money-off.svg"
                         alt="total expenses"
@@ -917,7 +961,7 @@
                     </div>
                   <% end %>
                   <%= if !is_nil(building_stats.produces) && Map.has_key?(building_stats.produces, :money) do %>
-                    <div class=" group relative flex flex-row items-center text-green-700 gap-[2px] w-[3.5rem] cursor-help">
+                    <div class=" group relative flex flex-row items-center text-green-700 gap-[2px] w-16 cursor-help">
                       <img
                         src="/images/money-fulfilled.svg"
                         alt="total income"
@@ -942,7 +986,7 @@
                   <% end %>
                   <!-- workers -->
                   <%= if !is_nil(building_stats.requires) && Map.has_key?(building_stats.requires, :workers) do %>
-                    <div class=" group relative flex flex-row items-center text-green-700 gap-[2px] w-[3.5rem] cursor-help">
+                    <div class=" group relative flex flex-row items-center text-green-700 gap-[2px] w-16 cursor-help">
                       <img
                         src="/images/workers-fulfilled.svg"
                         alt="total workers"
@@ -956,7 +1000,7 @@
                           building_stats.requires.workers.count %> workers employed at level <%= building_stats.requires.workers.level %>
                       </div>
                     </div>
-                    <div class=" group relative flex flex-row items-center text-green-700 gap-[2px] w-[3.5rem] cursor-help">
+                    <div class=" group relative flex flex-row items-center text-green-700 gap-[2px] w-16 cursor-help">
                       <div>
                         <img
                           src="/images/money-fulfilled.svg"
