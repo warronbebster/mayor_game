@@ -628,14 +628,14 @@ defmodule MayorGame.CityHelpers do
                 Map.update!(
                   current_jobs_map,
                   individual_buildable.requires.workers.level,
-                  &(&1 + required_worker_count - checked_workers_count)
+                  &(&1 + is_nil(individual_buildable.jobs) do required_worker_count else 0 end - checked_workers_count)
                 )
               end)
               |> Map.update!(:total_jobs, fn current_total_jobs_map ->
                 Map.update!(
                   current_total_jobs_map,
                   individual_buildable.requires.workers.level,
-                  &(&1 + required_worker_count)
+                  &(&1 + is_nil(individual_buildable.jobs) do required_worker_count else 0 end)
                 )
               end)
               |> Map.update!(:result_buildables, fn current ->
