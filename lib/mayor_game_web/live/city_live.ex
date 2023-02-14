@@ -476,11 +476,15 @@ defmodule MayorGameWeb.CityLive do
         :education
       ])
 
+    # this controls what (and in what order) resource change categories will be displayed to the right of the buildable
+    subtotal_types = [{:health, "text-rose-700"}, {:area, "text-cyan-700"}, {:housing, "text-amber-700"}, {:energy, "text-yellow-700"}, {:sulfur, "text-orange-700"}, {:steel, "text-slate-700"}, {:fun, "text-fuchsia-700"}, {:missile, "text-slate-700"}, {:shields, "text-slate-700"}]
+
     socket
     |> assign(:season, season)
     |> assign(:buildables, buildables_with_status)
     # |> assign(:user_id, city_user.id)
     # |> assign(:username, city_user.nickname)
+    |> assign(:subtotal_types, subtotal_types)
     |> assign(:city2, city2_without_citizens)
     |> assign(:operating_count, operating_count)
     |> assign(:operating_tax, operating_tax)
@@ -588,12 +592,13 @@ defmodule MayorGameWeb.CityLive do
         }
       end
 
-    buildable_stats |> Map.put(:produces, MayorGame.CityHelpers.get_production_map(
-      buildable.produces,
-      buildable.multipliers,
-      city_with_stats.citizen_count,
-      city_with_stats.region,
-      city_with_stats.season))
+    buildable_stats
+      |> Map.put(:actual_produces, MayorGame.CityHelpers.get_production_map(
+        buildable.produces,
+        buildable.multipliers,
+        city_with_stats.citizen_count,
+        city_with_stats.region,
+        city_with_stats.season))
   end
 
   # POW
