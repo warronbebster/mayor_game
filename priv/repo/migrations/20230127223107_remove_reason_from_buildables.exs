@@ -1,4 +1,4 @@
-defmodule MayorGame.Repo.Migrations.RemoveReasonFromBuildables do
+defmodule MayorGame.Repo.Migrations.RemoveUpgradesFromBuildables do
   use Ecto.Migration
   import MayorGame.City.Buildable
 

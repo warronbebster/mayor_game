@@ -1,4 +1,4 @@
-defmodule MayorGame.Repo.Migrations.RemoveCruftFromCitizens do
+defmodule MayorGame.Repo.Migrations.RemovePollutionTreasuryFromDetails do
   use Ecto.Migration
 
   def change do
