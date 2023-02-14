@@ -16,6 +16,12 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>fragile.city</title>
+    <%= if Application.get_env(:mayor_game, :env) == :dev do %>
+      <link rel="icon" type="image/x-icon" href="images/favicon_dev.ico">
+    <% else %>
+      <link rel="icon" type="image/x-icon" href="images/favicon.ico">
+    <% end %>
+
     <link phx-track-static rel="stylesheet" href="<%= Routes.static_path(@conn, "/assets/app.css") %>"/>
     <script phx-track-static defer type="text/javascript" src="<%= Routes.static_path(@conn, "/assets/app.js") %>"></script>
   </head>

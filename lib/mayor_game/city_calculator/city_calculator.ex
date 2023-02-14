@@ -123,7 +123,7 @@ defmodule MayorGame.CityCalculator do
                       education: 0,
                       has_job: false,
                       last_moved: db_world.day,
-                      preferences: :rand.uniform(6)
+                      preferences: :rand.uniform(10)
                     }
                   end)
               else

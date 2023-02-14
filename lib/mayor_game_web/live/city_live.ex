@@ -27,6 +27,7 @@ defmodule MayorGameWeb.CityLive do
     # subscribe to the channel "cityPubSub". everyone subscribes to this channel
     MayorGameWeb.Endpoint.subscribe("cityPubSub")
     world = Repo.get!(MayorGame.City.World, 1)
+    in_dev = Application.get_env(:mayor_game, :env) == :dev
 
     explanations = %{
       transit:
@@ -64,6 +65,7 @@ defmodule MayorGameWeb.CityLive do
       # put the title and day in assigns
       |> assign(:title, title)
       |> assign(:world, world)
+      |> assign(:in_dev, in_dev)
       |> assign(:buildables_map, buildables_map)
       |> assign(:building_requirements, ["workers", "energy", "area", "money", "steel", "sulfur"])
       |> assign(:category_explanations, explanations)
@@ -635,15 +637,15 @@ defmodule MayorGameWeb.CityLive do
 
     if socket.assigns.current_user do
       # if there's a user logged in
-      socket
-      |> assign(
-        :is_user_mayor,
-        to_string(socket.assigns.user_id) == to_string(socket.assigns.current_user.id)
-      )
+      is_user_mayor =
+        if !socket.assigns.in_dev,
+          do: to_string(socket.assigns.user_id) == to_string(socket.assigns.current_user.id),
+          else: true
+
+      socket |> assign(:is_user_mayor, is_user_mayor)
     else
       # if there's no user logged in
-      socket
-      |> assign(:is_user_mayor, false)
+      socket |> assign(:is_user_mayor, false)
     end
   end
 

@@ -360,11 +360,7 @@
           <!--print citizen count at level-->
           <div>
             <%= if @citizens_by_edu[String.to_integer(job_level)] !== nil do %>
-              <%= Number.SI.number_to_si(
-                @citizens_by_edu[String.to_integer(job_level)],
-                precision: 3,
-                trim: true
-              ) %>
+              <%= @citizens_by_edu[String.to_integer(job_level)] %>
             <% else %>
               0
             <% end %>
