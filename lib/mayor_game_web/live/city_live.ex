@@ -387,7 +387,7 @@ defmodule MayorGameWeb.CityLive do
         pollution_ceiling,
         season,
         socket.assigns.buildables_map
-      )
+      ) |> Map.put(:season, season)
 
     # ok, here the price is updated per each CombinedBuildable
 
@@ -476,11 +476,15 @@ defmodule MayorGameWeb.CityLive do
         :education
       ])
 
+    # this controls what (and in what order) resource change categories will be displayed to the right of the buildable
+    subtotal_types = [{:health, "text-rose-700"}, {:area, "text-cyan-700"}, {:housing, "text-amber-700"}, {:energy, "text-yellow-700"}, {:sulfur, "text-orange-700"}, {:steel, "text-slate-700"}, {:fun, "text-fuchsia-700"}, {:missile, "text-slate-700"}, {:shields, "text-slate-700"}]
+
     socket
     |> assign(:season, season)
     |> assign(:buildables, buildables_with_status)
     # |> assign(:user_id, city_user.id)
     # |> assign(:username, city_user.nickname)
+    |> assign(:subtotal_types, subtotal_types)
     |> assign(:city2, city2_without_citizens)
     |> assign(:operating_count, operating_count)
     |> assign(:operating_tax, operating_tax)
@@ -550,131 +554,51 @@ defmodule MayorGameWeb.CityLive do
   defp calculate_buildable_status(buildable, city_with_stats, buildable_count) do
     updated_price = MayorGame.CityHelpers.building_price(buildable.price, buildable_count)
 
-    if city_with_stats.treasury > updated_price do
-      if is_nil(buildable.requires) do
-        %{buildable | purchasable: true, purchasable_reason: "valid", price: updated_price}
-      else
-        purchase_requirements = [:energy, :area]
-
-        unfulfilled_requirements =
-          Enum.reduce(purchase_requirements, [], fn requirement, acc ->
-            if Map.has_key?(buildable.requires, requirement) &&
-                 city_with_stats[requirement] < buildable.requires[requirement] do
-              acc ++ [requirement]
-            else
-              acc
-            end
-          end)
-
-        if length(unfulfilled_requirements) > 0 do
-          %{
-            buildable
-            | purchasable: false,
-              purchasable_reason:
-                "not enough " <> Enum.join(unfulfilled_requirements, " or ") <> " to build",
-              price: updated_price
-          }
-        else
+    buildable_stats = 
+      if city_with_stats.treasury > updated_price do
+        if is_nil(buildable.requires) do
           %{buildable | purchasable: true, purchasable_reason: "valid", price: updated_price}
+        else
+          purchase_requirements = [:energy, :area]
+
+          unfulfilled_requirements =
+            Enum.reduce(purchase_requirements, [], fn requirement, acc ->
+              if Map.has_key?(buildable.requires, requirement) &&
+                   city_with_stats[requirement] < buildable.requires[requirement] do
+                acc ++ [requirement]
+              else
+                acc
+              end
+            end)
+
+          if length(unfulfilled_requirements) > 0 do
+            %{
+              buildable
+              | purchasable: false,
+                purchasable_reason:
+                  "not enough " <> Enum.join(unfulfilled_requirements, " or ") <> " to build",
+                price: updated_price
+            }
+          else
+            %{buildable | purchasable: true, purchasable_reason: "valid", price: updated_price}
+          end
         end
-
-        # cond do
-        #   # enough energy AND enough area
-
-        #   Map.has_key?(buildable.requires, :energy) and
-        #     city_with_stats.energy >= buildable.requires.energy &&
-        #       (Map.has_key?(buildable.requires, :area) and
-        #          city_with_stats.area >= buildable.requires.area) ->
-        #     %{buildable | purchasable: true, purchasable_reason: "valid", price: updated_price}
-
-        #   # not enough energy, enough area
-        #   Map.has_key?(buildable.requires, :energy) and
-        #     city_with_stats.energy < buildable.requires.energy &&
-        #       (Map.has_key?(buildable.requires, :area) and
-        #          city_with_stats.area >= buildable.requires.area) ->
-        #     %{
-        #       buildable
-        #       | purchasable: false,
-        #         purchasable_reason: "not enough energy to build",
-        #         price: updated_price
-        #     }
-
-        #   # enough energy, not enough area
-        #   Map.has_key?(buildable.requires, :energy) and
-        #     city_with_stats.energy >= buildable.requires.energy &&
-        #       (Map.has_key?(buildable.requires, :area) and
-        #          city_with_stats.area < buildable.requires.area) ->
-        #     %{
-        #       buildable
-        #       | purchasable: false,
-        #         purchasable_reason: "not enough area to build",
-        #         price: updated_price
-        #     }
-
-        #   # not enough energy AND not enough area
-        #   Map.has_key?(buildable.requires, :energy) and
-        #     city_with_stats.energy < buildable.requires.energy &&
-        #       (Map.has_key?(buildable.requires, :area) and
-        #          city_with_stats.area < buildable.requires.area) ->
-        #     %{
-        #       buildable
-        #       | purchasable: false,
-        #         purchasable_reason: "not enough area or energy to build",
-        #         price: updated_price
-        #     }
-
-        #   # no energy needed, enough area
-        #   Map.has_key?(buildable.requires, :energy) &&
-        #       (Map.has_key?(buildable.requires, :area) and
-        #          city_with_stats.area >= buildable.requires.area) ->
-        #     %{buildable | purchasable: true, purchasable_reason: "valid", price: updated_price}
-
-        #   # no energy needed, not enough area
-        #   Map.has_key?(buildable.requires, :energy) &&
-        #       (Map.has_key?(buildable.requires, :area) and
-        #          city_with_stats.area < buildable.requires.area) ->
-        #     %{
-        #       buildable
-        #       | purchasable: false,
-        #         purchasable_reason: "not enough area to build",
-        #         price: updated_price
-        #     }
-
-        #   # no area needed, enough energy
-        #   !Map.has_key?(buildable.requires, :area) &&
-        #       (Map.has_key?(buildable.requires, :energy) and
-        #          city_with_stats.energy >= buildable.requires.energy) ->
-        #     %{buildable | purchasable: true, purchasable_reason: "valid", price: updated_price}
-
-        #   # no area needed, not enough energy
-        #   !Map.has_key?(buildable.requires, :area) &&
-        #       (Map.has_key?(buildable.requires, :energy) and
-        #          city_with_stats.energy < buildable.requires.energy) ->
-        #     %{
-        #       buildable
-        #       | purchasable: false,
-        #         purchasable_reason: "not enough energy to build",
-        #         price: updated_price
-        #     }
-
-        #   # no area needed, no energy needed
-        #   !Map.has_key?(buildable.requires, :energy) and
-        #       !Map.has_key?(buildable.requires, :energy) ->
-        #     %{buildable | purchasable: true, purchasable_reason: "valid", price: updated_price}
-
-        #   # catch-all
-        #   true ->
-        #     %{buildable | purchasable: true, purchasable_reason: "valid", price: updated_price}
-        # end
+      else
+        %{
+          buildable
+          | purchasable: false,
+            purchasable_reason: "not enough money",
+            price: updated_price
+        }
       end
-    else
-      %{
-        buildable
-        | purchasable: false,
-          purchasable_reason: "not enough money",
-          price: updated_price
-      }
-    end
+
+    buildable_stats
+      |> Map.put(:actual_produces, MayorGame.CityHelpers.get_production_map(
+        buildable.produces,
+        buildable.multipliers,
+        city_with_stats.citizen_count,
+        city_with_stats.region,
+        city_with_stats.season))
   end
 
   # POW
@@ -693,7 +617,7 @@ defmodule MayorGameWeb.CityLive do
       socket
       |> assign(
         :is_user_mayor,
-        to_string(socket.assigns.user_id) == to_string(socket.assigns.current_user.id)
+        to_string(socket.assigns.user_id) == to_string(socket.assigns.user_id)
       )
     else
       # if there's no user logged in
