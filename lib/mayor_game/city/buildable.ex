@@ -774,10 +774,10 @@ defmodule MayorGame.City.Buildable do
         purchasable: true,
         purchasable_reason: "valid",
         requires: %{
-          money: 500,
+          money: 250,
           energy: 1900,
           area: 25,
-          workers: %{count: 20, level: 0}
+          workers: %{count: 30, level: 0}
         },
         produces: %{
           health: -5,
