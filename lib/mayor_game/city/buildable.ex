@@ -642,7 +642,7 @@ defmodule MayorGame.City.Buildable do
         requires: %{
           money: 10,
           energy: 800,
-          area: 5,
+          area: 7,
           workers: %{count: 10, level: 1}
         },
         produces: %{
@@ -661,7 +661,7 @@ defmodule MayorGame.City.Buildable do
         requires: %{
           money: 10,
           energy: 800,
-          area: 5,
+          area: 10,
           workers: %{count: 10, level: 2}
         },
         produces: %{
@@ -699,7 +699,7 @@ defmodule MayorGame.City.Buildable do
         requires: %{
           money: 200,
           energy: 1200,
-          area: 3,
+          area: 30,
           workers: %{count: 10, level: 4}
         },
         produces: %{
