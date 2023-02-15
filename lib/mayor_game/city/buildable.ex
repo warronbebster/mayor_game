@@ -88,7 +88,8 @@ defmodule MayorGame.City.Buildable do
         retail_shops: buildables_flat().retail_shops,
         factories: buildables_flat().factories,
         mines: buildables_flat().mines,
-        office_buildings: buildables_flat().office_buildings
+        office_buildings: buildables_flat().office_buildings,
+        distribution_centers: buildables_flat().distribution_centers
       },
       entertainment: %{
         theatres: buildables_flat().theatres,
@@ -149,7 +150,8 @@ defmodule MayorGame.City.Buildable do
         retail_shops: buildables_flat().retail_shops,
         factories: buildables_flat().factories,
         mines: buildables_flat().mines,
-        office_buildings: buildables_flat().office_buildings
+        office_buildings: buildables_flat().office_buildings,
+        distribution_centers: buildables_flat().distribution_centers
       ],
       entertainment: [
         theatres: buildables_flat().theatres,
@@ -799,6 +801,25 @@ defmodule MayorGame.City.Buildable do
           energy: 800,
           area: 2,
           workers: %{count: 20, level: 1}
+        }
+      },
+      # DISTRIBUTION CENTERS ————————————————————————————————
+      distribution_centers: %BuildableMetadata{
+        priority: 0,
+        title: :distribution_centers,
+        price: 100000,
+        purchasable: true,
+        purchasable_reason: "valid",
+        requires: %{
+          money: 25,
+          energy: 1500,
+          area: 100,
+          workers: %{count: 250, level: 0}
+        },
+        produces: %{
+          health: -3,
+          fun: -10,
+          pollution: 1
         }
       },
       # THEATRES ————————————————————————————————————
