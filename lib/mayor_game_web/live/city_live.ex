@@ -66,16 +66,13 @@ defmodule MayorGameWeb.CityLive do
       |> assign(:title, title)
       |> assign(:world, world)
       |> assign(:in_dev, in_dev)
-      # |> assign(:form, City.update_town(%Town{}))
       |> assign(:buildables_map, buildables_map)
       |> assign(:building_requirements, ["workers", "energy", "area", "money", "steel", "sulfur"])
       |> assign(:category_explanations, explanations)
-      |> assign(resources: ["money", "steel", "sulfur", "missiles"])
       |> mount_city_by_title()
       |> update_city_by_title()
       |> assign_auth(session)
       |> update_current_user()
-      |> assign_trade_set()
       # run helper function to get the stuff from the DB for those things
     }
   end
@@ -146,16 +143,7 @@ defmodule MayorGameWeb.CityLive do
         Map.new(Enum.map(Buildable.buildables_list(), fn building -> {building, 0} end))
 
       updated_attrs =
-        reset_buildables
-        |> Map.merge(%{
-          treasury: 5000,
-          pollution: 0,
-          steel: 0,
-          missiles: 0,
-          shields: 0,
-          sulfur: 0,
-          citizen_count: 0
-        })
+        reset_buildables |> Map.merge(%{treasury: 5000, pollution: 0, citizen_count: 0})
 
       case City.update_town(city_struct, updated_attrs) do
         {:ok, _updated_town} ->
@@ -307,13 +295,13 @@ defmodule MayorGameWeb.CityLive do
         logs_attacks: updated_attacked_logs
       })
 
+    from(t in Town, where: [id: ^city.id])
+    |> Repo.update_all(inc: [shields: -1])
+
+    from(t in Town, where: [id: ^current_user.town.id])
+    |> Repo.update_all(inc: [missiles: -1])
+
     if city.shields > 0 && attacking_town_struct.missiles > 0 do
-      from(t in Town, where: [id: ^city.id])
-      |> Repo.update_all(inc: [shields: -1])
-
-      from(t in Town, where: [id: ^current_user.town.id])
-      |> Repo.update_all(inc: [missiles: -1])
-
       attack_shields =
         Ecto.Multi.new()
         |> Ecto.Multi.update({:update_attacked_town, city.id}, shields_update_changeset)
@@ -636,152 +624,9 @@ defmodule MayorGameWeb.CityLive do
     )
   end
 
-  # TRADING —————————————————————————————————————————————————————————————————————————————————————
-  # ——————————————————————————————————————————————————————————————————
-
-  # Create a city based on the payload that comes from the form (matched as `city_form`).
-  # If its title is blank, build a title randomly
-  # Finally, reload the current user's `cities` association, and re-assign it to the socket,
-  # so the template will be re-rendered.
-  def handle_event(
-        "trade",
-        # grab "town" map from response and cast it into city_form
-        %{"town" => city_form},
-        # pattern match to pull these variables out of the socket
-        %{assigns: %{city2: city, current_user: current_user}} = socket
-      ) do
-    giving_town_struct = Repo.get!(Town, current_user.town.id)
-    receiving_town_struct = struct(City.Town, city)
-
-    resource =
-      if city_form["resource"] != "",
-        do: String.to_existing_atom(city_form["resource"]),
-        else: nil
-
-    resource_key = if resource == :money, do: :treasury, else: resource
-
-    amount = if city_form["amount"] != "", do: String.to_integer(city_form["amount"]), else: 0
-    neg_amount = 0 - amount
-
-    changeset_check =
-      if !is_nil(resource),
-        do: %{resource_key => amount},
-        else: %{}
-
-    trade_set =
-      if !is_nil(resource) do
-        giving_town_struct
-        |> Town.changeset(changeset_check)
-        |> Ecto.Changeset.validate_number(resource_key,
-          less_than: giving_town_struct[resource_key]
-        )
-      else
-        giving_town_struct
-        |> Town.changeset(%{})
-      end
-
-    # update cities
-    IO.inspect(amount)
-
-    if !is_nil(resource) && amount < giving_town_struct[resource_key] do
-      IO.inspect("GAVE IT —————")
-
-      from(t in Town, where: [id: ^current_user.town.id])
-      |> Repo.update_all(inc: [{resource_key, neg_amount}])
-
-      from(t in Town, where: [id: ^city.id])
-      |> Repo.update_all(inc: [{resource_key, amount}])
-
-      # receiving_town_changeset =
-      #   receiving_town_struct
-      #   |> City.Town.changeset(%{
-      #     resource_key => city[resource_key] + amount
-      #   })
-
-      # give_changeset =
-      #   Ecto.Multi.new()
-      #   |> Ecto.Multi.update({:update_giving_town, current_user.town.id}, trade_set)
-      #   |> Ecto.Multi.update({:update_recieving_town, city.id}, receiving_town_changeset)
-      #   |> Repo.transaction(timeout: 10_000)
-    end
-
-    trade_set =
-      if trade_set.errors == [] do
-        Map.put(trade_set, :changes, %{amount: amount, resource: city_form["resource"]})
-      else
-        Map.put(trade_set, :changes, %{amount: amount, resource: city_form["resource"]})
-        |> Map.update!(:errors, fn current -> [amount: elem(hd(current), 1)] end)
-        |> Map.put(:action, :insert)
-      end
-
-    {:noreply, assign(socket, :trade_set, trade_set) |> update_city_by_title()}
-  end
-
-  def handle_event(
-        "validate",
-        %{"town" => city_form},
-        %{assigns: %{current_user: current_user}} = socket
-      ) do
-    IO.inspect(city_form)
-    giving_town_struct = Repo.get!(Town, current_user.town.id)
-
-    # receiving_town_struct = struct(City.Town, city)
-
-    # new changeset from the form changes
-    # new_changeset =
-    #   Town.changeset(city, Map.put(city_form, "user_id", socket.assigns[:current_user].id))
-    resource =
-      if city_form["resource"] != "",
-        do: String.to_existing_atom(city_form["resource"]),
-        else: nil
-
-    resource_key = if resource == :money, do: :treasury, else: resource
-    amount = if city_form["amount"] != "", do: String.to_integer(city_form["amount"]), else: 0
-
-    changeset_check =
-      if !is_nil(resource),
-        do: %{resource_key => amount},
-        else: %{}
-
-    trade_set =
-      if !is_nil(resource) do
-        giving_town_struct
-        |> Town.changeset(changeset_check)
-        |> Ecto.Changeset.validate_number(resource_key,
-          less_than: giving_town_struct[resource_key]
-        )
-      else
-        giving_town_struct
-        |> Town.changeset(%{})
-      end
-
-    trade_set =
-      if trade_set.errors == [] do
-        Map.put(trade_set, :changes, %{amount: amount, resource: city_form["resource"]})
-      else
-        Map.put(trade_set, :changes, %{amount: amount, resource: city_form["resource"]})
-        |> Map.update!(:errors, fn current -> [amount: elem(hd(current), 1)] end)
-        |> Map.put(:action, :insert)
-      end
-
-    {:noreply, assign(socket, :trade_set, trade_set)}
-  end
-
-  # Build a changeset for the newly created city,
-  # We'll use the changeset to drive a form to be displayed in the rendered template.
-  defp assign_trade_set(socket) do
-    changeset =
-      %Town{}
-      |> Town.changeset(%{
-        user_id: socket.assigns[:current_user].id
-      })
-
-    assign(socket, :trade_set, changeset)
-  end
-
   # POW
   # AUTH
-  # POW AUTH STUFF DOWN HERE BAYBEE ——————————————————————————————————————————————————————————————————
+  # POW AUTH STUFF DOWN HERE BAYBEE
 
   defp assign_auth(socket, session) do
     # add an assign :current_user to the socket

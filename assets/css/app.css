@@ -358,12 +358,8 @@
 }
 .invalid-feedback {
   color: #a94442;
-}
-
-#trade-form {
-  display: flex;
-  flex: row;
-  gap: 0.25rem;
+  display: block;
+  margin: -1rem 0 2rem;
 }
 
 .phx-error {
@@ -381,25 +377,13 @@ input[type="button"],
 input[type="text"],
 input[type="reset"],
 input[type="password"],
-input[type="submit"],
-input[type="number"] {
-  font-size: 0.75rem;
+input[type="submit"] {
+  border: 0.1rem solid #606c76;
   background: transparent;
-  border-radius: 0;
+  border-radius: 0.4rem;
   cursor: pointer;
   display: inline-block;
-  padding: 0.25rem;
+  padding: 0.2rem;
   text-decoration: none;
   white-space: nowrap;
-}
-
-input[type="number"] {
-  max-width: 8rem;
-}
-
-#trade-form input,
-#trade-form button,
-#trade-form select {
-  padding: 0 0.25rem;
-  border: 1px solid rgba(38, 38, 38, 0.25);
 }
