@@ -222,7 +222,8 @@ defmodule MayorGame.City.Buildable do
         requires: %{
           area: 5,
           money: 100,
-          energy: 70
+          energy: 70,
+          workers: %{count: 5, level: 0},
         },
         produces: %{
           housing: 20
