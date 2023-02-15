@@ -84,6 +84,7 @@ defmodule MayorGame.City.Town do
             bike_lanes: integer,
             bikeshare_stations: integer,
             coal_plants: integer,
+            natural_gas_plants: integer,
             wind_turbines: integer,
             solar_plants: integer,
             nuclear_plants: integer,

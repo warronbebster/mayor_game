@@ -66,6 +66,7 @@ defmodule MayorGame.City.Buildable do
       },
       energy: [
         coal_plants: buildables_flat().coal_plants,
+        natural_gas_plants: buildables_flat().natural_gas_plants,
         wind_turbines: buildables_flat().wind_turbines,
         solar_plants: buildables_flat().solar_plants,
         nuclear_plants: buildables_flat().nuclear_plants,
@@ -126,6 +127,7 @@ defmodule MayorGame.City.Buildable do
       ],
       energy: [
         coal_plants: buildables_flat().coal_plants,
+        natural_gas_plants: buildables_flat().natural_gas_plants,
         wind_turbines: buildables_flat().wind_turbines,
         solar_plants: buildables_flat().solar_plants,
         nuclear_plants: buildables_flat().nuclear_plants,
@@ -437,6 +439,31 @@ defmodule MayorGame.City.Buildable do
           energy: 2000,
           pollution: 30,
           health: -10
+        }
+      },
+      # Natural Gas Plants ————————————————————————————————————
+      natural_gas_plants: %BuildableMetadata{
+        priority: 2,
+        title: :natural_gas_plants,
+        price: 800,
+        purchasable: true,
+        purchasable_reason: "valid",
+        multipliers: %{
+          region: %{
+            energy: %{
+              desert: 1.3
+            }
+          }
+        },
+        requires: %{
+          area: 15,
+          money: 20,
+          workers: %{count: 5, level: 1}
+        },
+        produces: %{
+          energy: 2000,
+          pollution: 15,
+          health: -5
         }
       },
       # wind turbines ————————————————————————————————————
