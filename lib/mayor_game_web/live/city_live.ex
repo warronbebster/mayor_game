@@ -257,7 +257,8 @@ defmodule MayorGameWeb.CityLive do
         logs_attacks: updated_attacked_logs
       })
 
-    if city.shields <= 0 && attacking_town_struct.missiles > 0 do
+    if city.shields <= 0 && attacking_town_struct.missiles > 0 &&
+         attacking_town_struct.air_bases > 0 do
       case City.demolish_buildable(attacked_town_struct, building_to_attack_atom) do
         {_x, nil} ->
           from(t in Town, where: [id: ^current_user.town.id])
@@ -681,30 +682,71 @@ defmodule MayorGameWeb.CityLive do
       end
 
     # update cities
-    IO.inspect(amount)
 
     if !is_nil(resource) && amount < giving_town_struct[resource_key] do
-      IO.inspect("GAVE IT —————")
-
       from(t in Town, where: [id: ^current_user.town.id])
       |> Repo.update_all(inc: [{resource_key, neg_amount}])
 
       from(t in Town, where: [id: ^city.id])
       |> Repo.update_all(inc: [{resource_key, amount}])
 
-      # receiving_town_changeset =
-      #   receiving_town_struct
-      #   |> City.Town.changeset(%{
-      #     resource_key => city[resource_key] + amount
-      #   })
+      updated_receiving_logs =
+        if Map.has_key?(city.logs_received, giving_town_struct.title) do
+          updated_town_map =
+            Map.update(
+              city.logs_received[giving_town_struct.title],
+              to_string(resource_key),
+              0,
+              &(&1 + amount)
+            )
 
-      # give_changeset =
-      #   Ecto.Multi.new()
-      #   |> Ecto.Multi.update({:update_giving_town, current_user.town.id}, trade_set)
-      #   |> Ecto.Multi.update({:update_recieving_town, city.id}, receiving_town_changeset)
-      #   |> Repo.transaction(timeout: 10_000)
+          Map.put(city.logs_received, giving_town_struct.title, updated_town_map)
+        else
+          Map.put(city.logs_received, giving_town_struct.title, %{
+            to_string(resource_key) => amount
+          })
+        end
+
+      # SENDING LOGS
+
+      updated_sending_logs =
+        if Map.has_key?(giving_town_struct.logs_sent, city.title) do
+          updated_town_map =
+            Map.update(
+              giving_town_struct.logs_sent[city.title],
+              to_string(resource_key),
+              0,
+              &(&1 + amount)
+            )
+
+          Map.put(giving_town_struct.logs_sent, city.title, updated_town_map)
+        else
+          Map.put(giving_town_struct.logs_sent, city.title, %{to_string(resource_key) => amount})
+        end
+
+      receiving_town_changeset =
+        receiving_town_struct
+        |> City.Town.changeset(%{
+          logs_received: updated_receiving_logs
+        })
+
+      sending_town_changeset =
+        giving_town_struct
+        |> City.Town.changeset(%{
+          logs_sent: updated_sending_logs
+        })
+
+      # trade_changeset =
+      Ecto.Multi.new()
+      |> Ecto.Multi.update(
+        {:update_sending_town_logs, current_user.town.id},
+        sending_town_changeset
+      )
+      |> Ecto.Multi.update({:update_recieving_town_logs, city.id}, receiving_town_changeset)
+      |> Repo.transaction(timeout: 10_000)
     end
 
+    # validation for form
     trade_set =
       if trade_set.errors == [] do
         Map.put(trade_set, :changes, %{amount: amount, resource: city_form["resource"]})
@@ -722,7 +764,6 @@ defmodule MayorGameWeb.CityLive do
         %{"town" => city_form},
         %{assigns: %{current_user: current_user}} = socket
       ) do
-    IO.inspect(city_form)
     giving_town_struct = Repo.get!(Town, current_user.town.id)
 
     # receiving_town_struct = struct(City.Town, city)
@@ -793,7 +834,7 @@ defmodule MayorGameWeb.CityLive do
       is_user_mayor =
         if !socket.assigns.in_dev,
           do: to_string(socket.assigns.user_id) == to_string(socket.assigns.current_user.id),
-          else: true
+          else: to_string(socket.assigns.user_id) == to_string(socket.assigns.current_user.id)
 
       socket |> assign(:is_user_mayor, is_user_mayor)
     else

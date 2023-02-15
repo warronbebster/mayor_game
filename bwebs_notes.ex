@@ -31,6 +31,7 @@
 # I should do that. The only thing stopping it is discrete age. Maybe I just capture the "origin date" for an entire class
 # fix "add citizen" button
 # spread workers over buildables instead of only filling one type first
+# batch citizen counts. make age way broader
 
 logs:
 move-outs by reason

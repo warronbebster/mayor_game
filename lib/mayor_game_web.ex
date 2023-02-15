@@ -76,6 +76,9 @@ defmodule MayorGameWeb do
       # commented this out cuz why not
       # import MayorGameWeb.Gettext
       alias MayorGameWeb.Router.Helpers, as: Routes
+      # import MayorGameWeb.LiveHelpers
+      import Phoenix.Component
+      import Phoenix.LiveView.Helpers
     end
   end
 

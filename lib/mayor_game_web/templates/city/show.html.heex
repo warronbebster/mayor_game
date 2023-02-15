@@ -1116,6 +1116,69 @@
           </div>
         <% end %>
       </div>
+      <!-- SENT RESOURCES -->
+      <div class="flex flex-col gap-2 py-1">
+        <div class="group relative inline-block">
+          <h3 class="text-l first-letter:uppercase decoration-1	underline underline-offset-4 cursor-help decoration-neutral-800/40 decoration-dotted	">
+            Resources Sent
+          </h3>
+
+          <div class="tooltip w-40">
+            Resources this city has sent to others.
+          </div>
+        </div>
+
+        <%= for {city, resource_map} <- @city2.logs_sent do %>
+          <div class="flex flex-col justify-between gap-2 my-0 leading-none">
+            <span><a class="underline" href={"/city/#{city}"}><%= city %></a></span>
+             <%= for {resource, amount} <- resource_map do %>
+                <div class="flex flex-row items-center justify-between gap-2 my-0 leading-none">
+                  <span><%= resource %></span>
+                  <hr class="border-neutral-300 flex-1" />
+                  <span>
+                    <%= Number.SI.number_to_si(
+                      amount,
+                      precision: 3,
+                      trim: true
+                    ) %>
+                  </span>
+                </div>
+              <% end %>
+          </div>
+        <% end %>
+      </div>
+      <!-- RECEIEVED RESOURCES -->
+      <div class="flex flex-col gap-2 py-1">
+        <div class="group relative inline-block">
+          <h3 class="text-l first-letter:uppercase decoration-1	underline underline-offset-4 cursor-help decoration-neutral-800/40 decoration-dotted	">
+            Resources Receieved
+          </h3>
+
+          <div class="tooltip w-40">
+            Resources this city has received from others.
+          </div>
+        </div>
+
+        <%= for {city, resource_map} <- @city2.logs_received do %>
+          <div class="flex flex-col justify-between gap-2 my-0 leading-none">
+            <span><a class="underline" href={"/city/#{city}"}><%= city %></a></span>
+             <%= for {resource, amount} <- resource_map do %>
+                <div class="flex flex-row items-center justify-between gap-2 my-0 leading-none">
+                  <span><%= resource %></span>
+                  <hr class="border-neutral-300 flex-1" />
+                  <span>
+                    <%= Number.SI.number_to_si(
+                      amount,
+                      precision: 3,
+                      trim: true
+                    ) %>
+                  </span>
+                </div>
+              <% end %>
+          </div>
+        <% end %>
+      </div>
+
       <!-- ATTACKS -->
       <div class="flex flex-col gap-2 py-1">
         <div class="group relative inline-block">

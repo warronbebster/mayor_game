@@ -55,6 +55,8 @@ defmodule MayorGame.City.Town do
             logs_immigration: map,
             logs_attacks: map,
             logs_edu: map,
+            logs_sent: map,
+            logs_received: map,
             logs_deaths_pollution: integer,
             logs_deaths_age: integer,
             logs_deaths_housing: integer,
@@ -138,6 +140,8 @@ defmodule MayorGame.City.Town do
     field :logs_immigration, :map, default: %{}
     field :logs_attacks, :map, default: %{}
     field :logs_edu, :map, default: %{}
+    field :logs_sent, :map, default: %{}
+    field :logs_received, :map, default: %{}
     field :logs_deaths_pollution, :integer, default: 0
     field :logs_deaths_age, :integer, default: 0
     field :logs_deaths_housing, :integer, default: 0
@@ -210,7 +214,9 @@ defmodule MayorGame.City.Town do
         :logs_deaths_age,
         :logs_deaths_housing,
         :logs_deaths_attacks,
-        :logs_births
+        :logs_births,
+        :logs_sent,
+        :logs_received
       ] ++ Buildable.buildables_list()
     )
     |> validate_required([:title, :region, :climate, :user_id])

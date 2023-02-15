@@ -640,7 +640,7 @@ defmodule MayorGame.City.Buildable do
       },
       # SCHOOLS ————————————————————————————————————
       schools: %BuildableMetadata{
-        priority: 2,
+        priority: 1,
         title: :schools,
         price: 200,
         education_level: 1,
