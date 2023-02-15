@@ -501,7 +501,7 @@
       <div class="divide-y divide-neutral-800/10">
         <%= for {building_type, building_stats} <- buildings do %>
           <div class="flex flex-wrap items-center gap-2 py-0.5">
-            <div class="basis-full md:basis-72 flex flex-row items-center justify-between">
+            <div class="basis-full md:basis-64 flex flex-row items-center justify-between">
               <!-- building title -->
               <div class="group relative inline-block">
                 <h3 class="text-l first-letter:uppercase decoration-1	underline underline-offset-4 cursor-help decoration-neutral-800/40 decoration-dotted	">
@@ -588,7 +588,11 @@
                       phx-throttle="200"
                       phx-value-building={building_type}
                     >
-                      $<%= Number.Delimit.number_to_delimited(building_stats.price) %>
+                      $<%= Number.SI.number_to_si(
+                           building_stats.price,
+                            precision: 3,
+                            trim: true
+                          ) %>
                     </button>
                   <% else %>
                     <div class="group relative inline-block">
@@ -596,7 +600,11 @@
                         disabled
                         class="opacity-50 rounded-none m-0 border border-neutral-800/25 leading-none h-6"
                       >
-                        $<%= Number.Delimit.number_to_delimited(building_stats.price) %>
+                       $<%= Number.SI.number_to_si(
+                           building_stats.price,
+                            precision: 3,
+                            trim: true
+                          ) %>
                       </button>
                       <div class="tooltip w-28"><%= building_stats.purchasable_reason %></div>
                     </div>

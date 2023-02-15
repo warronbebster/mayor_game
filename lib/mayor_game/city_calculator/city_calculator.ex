@@ -27,7 +27,6 @@ defmodule MayorGame.CityCalculator do
       buildables_list: Buildable.buildables_list(),
       buildables_ordered: Buildable.buildables_ordered(),
       buildables_ordered_flat: Buildable.buildables_ordered_flat(),
-      sorted_buildables: Buildable.sorted_buildables(),
       empty_buildable_map: Buildable.empty_buildable_map()
     }
 

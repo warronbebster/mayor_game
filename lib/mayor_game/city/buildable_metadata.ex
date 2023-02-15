@@ -4,7 +4,7 @@ defmodule MayorGame.City.BuildableMetadata do
 
   # defaults to nil for keys without values
   defstruct [
-    :priority,
+    :level,
     :title,
     :price,
     :jobs,
@@ -23,7 +23,7 @@ defmodule MayorGame.City.BuildableMetadata do
       this makes a type for %BuildableMetadata{} that's callable with MayorGame.City.BuildableMetadata.t()
   """
   @type t :: %__MODULE__{
-          priority: integer,
+          level: integer,
           title: atom,
           price: integer | nil,
           jobs: integer | nil,

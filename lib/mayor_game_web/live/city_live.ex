@@ -53,7 +53,6 @@ defmodule MayorGameWeb.CityLive do
       buildables_list: Buildable.buildables_list(),
       buildables_ordered: Buildable.buildables_ordered(),
       buildables_ordered_flat: Buildable.buildables_ordered_flat(),
-      sorted_buildables: Buildable.sorted_buildables(),
       empty_buildable_map: Buildable.empty_buildable_map()
     }
 
@@ -835,7 +834,7 @@ defmodule MayorGameWeb.CityLive do
       is_user_mayor =
         if !socket.assigns.in_dev,
           do: to_string(socket.assigns.user_id) == to_string(socket.assigns.current_user.id),
-          else: to_string(socket.assigns.user_id) == to_string(socket.assigns.current_user.id)
+          else: true
 
       socket |> assign(:is_user_mayor, is_user_mayor)
     else
