@@ -120,7 +120,30 @@ defmodule MayorGame.CityHelpers do
     }
 
     # this is probably the bottleneck
+
+    # for each citizen
+    # ok the core problem is
+    # if it hits a building with a requirement that hasn't been met yet
+    # it won't activate
+    # ok how about
+    # go through buildings by level
+    # rotate, do one building of each type at a time
+    # take requirements
+    # if not enough requirements, maybe check if all the buildings of that type have generated? follow the tree?
+    # generate resources
+    # fill jobs first?
+
     results = activation_rounds_recursive(results, ordered_buildables_flat, city, season, 0)
+
+    # buildables_ordered is in order
+
+    # IO.inspect(results.jobs)
+    # IO.inspect(results.total_jobs)
+
+    # ————————————————————————————————————————————————————————————————
+    # FILL LOWER LEVEL JOBS
+
+    # jobs_left = Enum.sum(Map.values(results.jobs))
 
     all_citizens =
       Enum.sort_by(results.employed_citizens ++ results.citizens, & &1.education, :desc)
@@ -451,6 +474,8 @@ defmodule MayorGame.CityHelpers do
     end)
     |> Enum.take(required_count)
   end
+
+  #
 
   defp activation_rounds_recursive(result_blob, buildables, city, season, education_diff) do
     count = result_blob.updated_buildable_count
