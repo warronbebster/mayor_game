@@ -175,7 +175,9 @@ defmodule MayorGameWeb.DashboardLive do
   defp assign_cities(socket) do
     # cities_count = MayorGame.Repo.aggregate(City.Town, :count, :id)
     all_cities_recent =
-      from(t in Town, select: [:citizen_count, :pollution, :id, :title, :user_id, :patron])
+      from(t in Town,
+        select: [:citizen_count, :pollution, :id, :title, :user_id, :patron, :contributor]
+      )
       |> MayorGame.Repo.all()
       |> MayorGame.Repo.preload(:user)
 

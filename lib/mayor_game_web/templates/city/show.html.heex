@@ -14,6 +14,16 @@
               </div>
             </div>
           <% end %>
+          <%= if @city2.contributor do %>
+            <div class="group relative flex flex-row items-center text-purple-600">
+              <a href="https://github.com/warronbebster/mayor_game" target="_blank">
+                <img src="/images/computer.svg" alt="contributor" height="12" width="12" />
+              </a>
+              <div class="tooltip w-72 top-[-6px] left-4">
+                This city has helped build the fragile.city codebase
+              </div>
+            </div>
+          <% end %>
         </span>
       </td>
       <td class="top_td">

@@ -178,6 +178,16 @@
               </div>
             </div>
           <% end %>
+          <%= if city.contributor do %>
+            <div class="group relative flex flex-row items-center text-purple-600">
+              <a href="https://github.com/warronbebster/mayor_game" target="_blank">
+                <img src="/images/computer.svg" alt="patron" height="12" width="12" />
+              </a>
+              <div class="tooltip w-32">
+                This city has contributed to the fragile.city codebase
+              </div>
+            </div>
+          <% end %>
           <%= if assigns[:current_user] && assigns[:current_user].nickname == city.user.nickname do %>
             <span class="opacity-50">
               My City

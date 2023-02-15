@@ -48,6 +48,7 @@ defmodule MayorGame.City.Town do
             citizen_count: integer,
             citizens_blob: list(map),
             patron: integer,
+            contributor: boolean,
             # logs ——————————————————————————————
             logs_emigration_housing: map,
             logs_emigration_taxes: map,
@@ -127,6 +128,7 @@ defmodule MayorGame.City.Town do
     field(:uranium, :integer)
 
     field(:patron, :integer)
+    field(:contributor, :boolean)
     field :citizens_blob, {:array, :map}, null: false, default: []
 
     # this corresponds to an elixir list
@@ -204,6 +206,7 @@ defmodule MayorGame.City.Town do
         :gold,
         :uranium,
         :patron,
+        :contributor,
         :citizens_blob,
         :logs_emigration_housing,
         :logs_emigration_taxes,
