@@ -772,9 +772,7 @@ defmodule MayorGameWeb.CityLive do
   defp assign_trade_set(socket) do
     changeset =
       %Town{}
-      |> Town.changeset(%{
-        user_id: socket.assigns[:current_user].id
-      })
+      |> Town.changeset(%{})
 
     assign(socket, :trade_set, changeset)
   end
