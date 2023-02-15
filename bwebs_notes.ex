@@ -73,8 +73,6 @@ attacks
 
 # add grocery stores? farmers markets? farms?
 
-# hide resources in codebase
-
 # add general "policy" options that aren't buildings
 # (speed limits — increase sprawl, increase health)
 # (bike lanes?)

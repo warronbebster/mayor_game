@@ -332,14 +332,14 @@
 <div class="flex flex-row flex-wrap relative h-full w-screen overflow-x-hidden overflow-y-scroll ">
   <div class="px-3 my-0 flex flex-col grow">
     <!--Taxes-->
-  <!--All building details-->
+    <!--All building details-->
     <h2 class="text-base pt-2 pb-1">
-      Job levels
+      Job/tax levels
     </h2>
     <div class="flex flex-row flex-wrap gap-x-8 gap-y-4 divide-solid leading-none">
       <%= for {job_level, rate} <- @city2.tax_rates do %>
         <div class="flex flex-col gap-1">
-          <span class="text-base">Level <%= job_level %></span>
+          <span class="text-sm">Level <%= job_level %></span>
           <%= if @is_user_mayor do %>
             <div class="flex flex-col gap-1">
               tax rate
@@ -386,9 +386,46 @@
         </div>
       <% end %>
     </div>
+    <!-- TRADE FORM -->
+
+      <%= if !@is_user_mayor && !is_nil(@current_user) do %>
+    <div class="flex-row items-center">
+          <h2 class="text-base pt-4 pb-1">
+      Send Resources
+    </h2>
+        <.form let={f} for={@trade_set} id="trade-form" phx_submit="trade" phx_change="validate">
+          <!-- <%= if @trade_set.action do %>
+            <div class="alert alert-danger">
+              uh oh, something's up! <%= @trade_set.action %>
+            </div>
+          <% end %> -->
+
+          <%= number_input(f, :amount,
+            required: true,
+            placeholder: "amount",
+            min: 0
+          ) %>
+          <%= error_tag(f, :amount) %>
+
+          <%= select(f, :resource, @resources,
+            required: true,
+            prompt: "Select a resource"
+          ) %>
+          <%= error_tag(f, :resource) %>
+
+          <%= submit("Send") %>
+        </.form>
+    </div>
+      <% end %>
+
+    <!-- COMBAT -->
+
 
     <%= if !@is_user_mayor && !is_nil(@current_user) do %>
-      <div class="py-4 flex flex-row items-center gap-2">
+      <h2 class="text-base pt-4 pb-1">
+        Combat
+      </h2>
+      <div class="pb-4 flex flex-row items-center gap-2">
         <%= if @city2.shields > 0 && @current_user.town.missiles > 0 do %>
           <button
             class="btn m-0 rounded-none border border-neutral-800/25 leading-none h-6"
