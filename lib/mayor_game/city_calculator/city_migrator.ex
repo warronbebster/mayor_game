@@ -31,6 +31,8 @@ defmodule MayorGame.CityMigrator do
       empty_buildable_map: Buildable.empty_buildable_map()
     }
 
+    in_dev = Application.get_env(:mayor_game, :env) == :dev
+
     IO.puts('init migrator')
     # initial_val is 1 here, set in application.ex then started with start_link
 
@@ -41,11 +43,14 @@ defmodule MayorGame.CityMigrator do
     Process.send_after(self(), :tax, 5000)
 
     # returns ok tuple when u start
-    {:ok, %{world: game_world, buildables_map: buildables_map}}
+    {:ok, %{world: game_world, buildables_map: buildables_map, in_dev: in_dev}}
   end
 
   # when :tax is sent
-  def handle_info(:tax, %{world: _world, buildables_map: buildables_map} = _sent_map) do
+  def handle_info(
+        :tax,
+        %{world: _world, buildables_map: buildables_map, in_dev: in_dev} = _sent_map
+      ) do
     # filter for
     cities = City.list_cities_preload() |> Enum.filter(fn city -> city.citizen_count > 20 end)
 
@@ -78,7 +83,8 @@ defmodule MayorGame.CityMigrator do
           db_world,
           pollution_ceiling,
           season,
-          buildables_map
+          buildables_map,
+          in_dev
         )
       end)
 
@@ -113,7 +119,7 @@ defmodule MayorGame.CityMigrator do
     health_min = Enum.min(Enum.map(leftovers, fn city -> city.health end))
     health_spread = health_max - health_min
 
-    home_city_advantage = 0.1
+    home_city_advantage = 0.05
 
     slotted_cities_by_id =
       leftovers
@@ -786,40 +792,6 @@ defmodule MayorGame.CityMigrator do
       end)
       |> Map.new()
 
-    # %{
-    #   city_id: [{choice(tuple)}]
-    # }
-
-    # shape:
-    # [
-    #   {%{
-    #      age: 313,
-    #      education: 0,
-    #      has_job: false,
-    #      last_moved: 376787,
-    #      preferences: 6,
-    #      town_id: 13
-    #    }, 17},
-    #   {%{
-    #      age: 314,
-    #      education: 0,
-    #      has_job: false,
-    #      last_moved: 376787,
-    #      preferences: 6,
-    #      town_id: 13
-    #    }, 17}
-    # ]
-    # [
-    #   {%{
-    #      age: 1,
-    #      education: 0,
-    #      has_job: false,
-    #      last_moved: 376788,
-    #      preferences: 4,
-    #      town_id: 12
-    #    }, 13}
-    # ]
-
     # :logs_emigration_jobs,
     for_jobs_logs =
       Enum.flat_map(unemployed_preferred_locations_by_level, fn {_key, val} ->
@@ -834,17 +806,6 @@ defmodule MayorGame.CityMigrator do
         {city_id, Enum.frequencies_by(array, &elem(&1, 0).education)}
       end)
       |> Map.new()
-
-    #  for_jobs_logs =
-    # Enum.map(unemployed_preferred_locations_by_level, fn {key, val} ->
-    #   {key,
-    #   val.choices |>
-    #    Enum.filter( fn {citizen, chosen_id} -> citizen.town_id != chosen_id end)
-    #    |> Enum.group_by(for_tax_logs, &elem(&1, 1))
-
-    #   }
-    # end)
-    # |> Enum.into(%{})
 
     # :logs_emigration_housing,
     for_unhoused_logs =
@@ -951,7 +912,7 @@ defmodule MayorGame.CityMigrator do
     Process.send_after(self(), :tax, 5000)
 
     # returns this to whatever calls ?
-    {:noreply, %{world: db_world, buildables_map: buildables_map}}
+    {:noreply, %{world: db_world, buildables_map: buildables_map, in_dev: in_dev}}
   end
 
   def update_logs(log, existing_logs) do

@@ -407,7 +407,8 @@ defmodule MayorGameWeb.CityLive do
         world,
         pollution_ceiling,
         season,
-        socket.assigns.buildables_map
+        socket.assigns.buildables_map,
+        socket.assigns.in_dev
       )
       |> Map.put(:season, season)
 
@@ -751,7 +752,7 @@ defmodule MayorGameWeb.CityLive do
       if trade_set.errors == [] do
         Map.put(trade_set, :changes, %{amount: amount, resource: city_form["resource"]})
       else
-        Map.put(trade_set, :changes, %{amount: amount, resource: city_form["resource"]})
+        Map.put(trade_set, :changes, %{amount: 0, resource: city_form["resource"]})
         |> Map.update!(:errors, fn current -> [amount: elem(hd(current), 1)] end)
         |> Map.put(:action, :insert)
       end

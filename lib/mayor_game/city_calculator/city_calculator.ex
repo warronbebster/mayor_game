@@ -31,6 +31,8 @@ defmodule MayorGame.CityCalculator do
       empty_buildable_map: Buildable.empty_buildable_map()
     }
 
+    in_dev = Application.get_env(:mayor_game, :env) == :dev
+
     IO.puts('init calculator')
     # initial_val is 1 here, set in application.ex then started with start_link
 
@@ -41,11 +43,14 @@ defmodule MayorGame.CityCalculator do
     Process.send_after(self(), :tax, 1000)
 
     # returns ok tuple when u start
-    {:ok, %{world: game_world, buildables_map: buildables_map}}
+    {:ok, %{world: game_world, buildables_map: buildables_map, in_dev: in_dev}}
   end
 
   # when :tax is sent
-  def handle_info(:tax, %{world: world, buildables_map: buildables_map} = _sent_map) do
+  def handle_info(
+        :tax,
+        %{world: world, buildables_map: buildables_map, in_dev: in_dev} = _sent_map
+      ) do
     cities = City.list_cities_preload()
 
     pollution_ceiling = 2_000_000_000 * Random.gammavariate(7.5, 1)
@@ -79,7 +84,8 @@ defmodule MayorGame.CityCalculator do
           db_world,
           pollution_ceiling,
           season,
-          buildables_map
+          buildables_map,
+          in_dev
         )
       end)
 
@@ -320,7 +326,7 @@ defmodule MayorGame.CityCalculator do
     Process.send_after(self(), :tax, 2000)
 
     # returns this to whatever calls ?
-    {:noreply, %{world: updated_world, buildables_map: buildables_map}}
+    {:noreply, %{world: updated_world, buildables_map: buildables_map, in_dev: in_dev}}
   end
 
   def update_logs(log, existing_logs) do

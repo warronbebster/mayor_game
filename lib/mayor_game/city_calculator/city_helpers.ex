@@ -45,7 +45,8 @@ defmodule MayorGame.CityHelpers do
         %World{} = world,
         pollution_ceiling,
         season,
-        buildables_map
+        buildables_map,
+        in_dev
       ) do
     city_preloaded = preload_city_check(city)
 
@@ -118,9 +119,8 @@ defmodule MayorGame.CityHelpers do
       updated_buildable_count: 0
     }
 
+    # this is probably the bottleneck
     results = activation_rounds_recursive(results, ordered_buildables_flat, city, season, 0)
-
-    # IO.inspect(results_after_2nd_round_jobs.jobs)
 
     all_citizens =
       Enum.sort_by(results.employed_citizens ++ results.citizens, & &1.education, :desc)
@@ -129,7 +129,7 @@ defmodule MayorGame.CityHelpers do
     # Iterate through citizens
     # ________________________________________________________________________
     pollution_reached = world.pollution > pollution_ceiling
-    time_to_learn = rem(world.day, 365) == 0
+    time_to_learn = if in_dev, do: rem(world.day, 50) == 0, else: rem(world.day, 365) == 0
 
     # I don't think this needs to be a reduce. this could me a map then flatten
     after_citizen_checks =
@@ -169,7 +169,7 @@ defmodule MayorGame.CityHelpers do
 
           will_citizen_reproduce =
             citizen.age > 500 and citizen.age < 3000 and acc.housing_left > 1 &&
-              :rand.uniform(citizen_count + 1) < max(results.health / 100, 5)
+              :rand.uniform(citizen_count + 1) < max(results.health / 1000, 5)
 
           housing_taken = if will_citizen_reproduce, do: 2, else: 1
 
@@ -275,28 +275,6 @@ defmodule MayorGame.CityHelpers do
   def describe_citizen(%Citizens{} = citizen) do
     "#{to_string(citizen.name)} (edu lvl #{citizen.education})"
   end
-
-  # @doc """
-  # returns a preference map for citizens
-  # """
-  # def create_citizen_preference_map() do
-  #   decision_factors = Enum.shuffle([:tax_rates, :sprawl, :fun, :health, :pollution])
-
-  #   random_preferences =
-  #     Enum.reduce(decision_factors, %{preference_map: %{}, room_taken: 0}, fn x, acc ->
-  #       value =
-  #         if x == List.last(decision_factors),
-  #           do: (1 - acc.room_taken) |> Float.round(2),
-  #           else: (:rand.uniform() * (1 - acc.room_taken)) |> Float.round(2)
-
-  #       %{
-  #         preference_map: Map.put(acc.preference_map, to_string(x), value),
-  #         room_taken: acc.room_taken + value
-  #       }
-  #     end)
-
-  #   random_preferences.preference_map
-  # end
 
   def get_production_map(production_map, multiplier_map, citizen_count, region, season) do
     # this is fetched by web live and server-side calculations
@@ -629,14 +607,24 @@ defmodule MayorGame.CityHelpers do
                 Map.update!(
                   current_jobs_map,
                   individual_buildable.requires.workers.level,
-                  &(&1 + if is_nil(individual_buildable.jobs) do required_worker_count else 0 end - checked_workers_count)
+                  &(&1 +
+                      if is_nil(individual_buildable.jobs) do
+                        required_worker_count
+                      else
+                        0
+                      end - checked_workers_count)
                 )
               end)
               |> Map.update!(:total_jobs, fn current_total_jobs_map ->
                 Map.update!(
                   current_total_jobs_map,
                   individual_buildable.requires.workers.level,
-                  &(&1 + if is_nil(individual_buildable.jobs) do required_worker_count else 0 end)
+                  &(&1 +
+                      if is_nil(individual_buildable.jobs) do
+                        required_worker_count
+                      else
+                        0
+                      end)
                 )
               end)
               |> Map.update!(:result_buildables, fn current ->
