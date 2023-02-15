@@ -126,6 +126,7 @@ defmodule MayorGame.City.Buildable do
       ],
       energy: [
         coal_plants: buildables_flat().coal_plants,
+        natural_gas_plants: buildables_flat().natural_gas_plants,
         wind_turbines: buildables_flat().wind_turbines,
         solar_plants: buildables_flat().solar_plants,
         nuclear_plants: buildables_flat().nuclear_plants,
