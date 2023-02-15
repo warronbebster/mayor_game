@@ -103,6 +103,7 @@ defmodule MayorGame.City.Town do
             factories: integer,
             mines: integer,
             office_buildings: integer,
+            distribution_centers: integer,
             theatres: integer,
             arenas: integer,
             hospitals: integer,
