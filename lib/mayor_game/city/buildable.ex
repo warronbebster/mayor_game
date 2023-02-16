@@ -268,7 +268,6 @@ defmodule MayorGame.City.Buildable do
       },
       # high rises ————————————————————————————————————
       high_rises: %BuildableMetadata{
-        category: :housing,
         level: 0,
         title: :high_rises,
         price: 20_000,
@@ -285,6 +284,7 @@ defmodule MayorGame.City.Buildable do
       },
       # Megablocks ————————————————————————————————————
       megablocks: %BuildableMetadata{
+        category: :housing,
         level: 0,
         title: :megablocks,
         price: 5_000_000,
