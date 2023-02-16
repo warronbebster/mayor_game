@@ -59,7 +59,7 @@ defmodule MayorGame.CityHelpers do
     ordered_buildables =
       Enum.map(buildables_map.buildables_ordered_flat, fn x -> {x, all_buildables[x]} end)
 
-    ordered_buildables_flat = Enum.flat_map(ordered_buildables, fn {_, v} -> v end)
+    # ordered_buildables_flat = Enum.flat_map(ordered_buildables, fn {_, v} -> v end)
 
     # sorted_citizens = Enum.sort_by(city_baked_direct.citizens, & &1.education, :desc)
 
@@ -359,16 +359,6 @@ defmodule MayorGame.CityHelpers do
         end
       )
 
-    # buildables_ordered is in order
-
-    # IO.inspect(results.jobs)
-    # IO.inspect(results.total_jobs)
-
-    # ————————————————————————————————————————————————————————————————
-    # FILL LOWER LEVEL JOBS
-
-    # jobs_left = Enum.sum(Map.values(results.jobs))
-
     all_citizens =
       Enum.sort_by(results.employed_citizens ++ results.citizens, & &1.education, :desc)
 
@@ -507,8 +497,6 @@ defmodule MayorGame.CityHelpers do
       )
       |> Enum.into(%{})
 
-    # IO.inspect(after_citizen_checks.housing_left)
-
     city_baked_direct
     |> Map.from_struct()
     |> Map.merge(results)
@@ -594,10 +582,20 @@ defmodule MayorGame.CityHelpers do
         prod_map_mult
       end
 
+    edu_luck = if :rand.uniform() > 0.95, do: 1, else: 0
+
+    results2 =
+      if !prod_nil && Map.has_key?(results, :education) &&
+           is_function(results.education) do
+        Map.replace(results, :education, results.education.(:rand.uniform(5), edu_luck))
+      else
+        results
+      end
+
     if prod_nil do
       totals
     else
-      Map.merge(results, totals)
+      Map.merge(results2, totals)
     end
   end
 
@@ -707,234 +705,234 @@ defmodule MayorGame.CityHelpers do
 
   #
 
-  defp activation_rounds_recursive(result_blob, buildables, city, season, education_diff) do
-    count = result_blob.updated_buildable_count
-    result_blob = activation_round(result_blob, buildables, city, season, education_diff)
+  # defp activation_rounds_recursive(result_blob, buildables, city, season, education_diff) do
+  #   count = result_blob.updated_buildable_count
+  #   result_blob = activation_round(result_blob, buildables, city, season, education_diff)
 
-    # enforce up to the full range of education level differences is considered, to prevent recursion from stopping early
-    if result_blob.updated_buildable_count > count || education_diff < 5 do
-      # filter buildables for the next round of checks
-      buildables_split_by_jobs =
-        Enum.split_with(result_blob.result_buildables, fn y ->
-          !y.enabled && (is_nil(y.jobs) || y.jobs > 0)
-        end)
+  #   # enforce up to the full range of education level differences is considered, to prevent recursion from stopping early
+  #   if result_blob.updated_buildable_count > count || education_diff < 5 do
+  #     # filter buildables for the next round of checks
+  #     buildables_split_by_jobs =
+  #       Enum.split_with(result_blob.result_buildables, fn y ->
+  #         !y.enabled && (is_nil(y.jobs) || y.jobs > 0)
+  #       end)
 
-      result_blob_input =
-        result_blob |> Map.put(:result_buildables, elem(buildables_split_by_jobs, 1))
+  #     result_blob_input =
+  #       result_blob |> Map.put(:result_buildables, elem(buildables_split_by_jobs, 1))
 
-      activation_rounds_recursive(
-        result_blob_input,
-        elem(buildables_split_by_jobs, 0),
-        city,
-        season,
-        education_diff + 1
-      )
-    else
-      result_blob
-    end
-  end
+  #     activation_rounds_recursive(
+  #       result_blob_input,
+  #       elem(buildables_split_by_jobs, 0),
+  #       city,
+  #       season,
+  #       education_diff + 1
+  #     )
+  #   else
+  #     result_blob
+  #   end
+  # end
 
-  defp activation_round(result_blob, buildables, city, season, education_diff) do
-    Enum.reduce(
-      buildables,
-      result_blob,
-      fn individual_buildable, acc ->
-        # if the building has no requirements
-        # if building has requirements
-        if individual_buildable.requires == nil do
-          updated_buildable =
-            individual_buildable
-            |> Map.merge(%{
-              reason: [],
-              enabled: true,
-              jobs: 0
-            })
+  # defp activation_round(result_blob, buildables, city, season, education_diff) do
+  #   Enum.reduce(
+  #     buildables,
+  #     result_blob,
+  #     fn individual_buildable, acc ->
+  #       # if the building has no requirements
+  #       # if building has requirements
+  #       if individual_buildable.requires == nil do
+  #         updated_buildable =
+  #           individual_buildable
+  #           |> Map.merge(%{
+  #             reason: [],
+  #             enabled: true,
+  #             jobs: 0
+  #           })
 
-          # generate final production map
-          update_generated_acc(
-            updated_buildable,
-            length(acc.citizens),
-            city.region,
-            season,
-            acc
-          )
-          |> Map.update!(:result_buildables, fn current ->
-            [updated_buildable | current]
-          end)
-        else
-          reqs_minus_workers = Map.drop(individual_buildable.requires, [:workers])
-          checked_reqs = check_reqs(reqs_minus_workers, acc)
+  #         # generate final production map
+  #         update_generated_acc(
+  #           updated_buildable,
+  #           length(acc.citizens),
+  #           city.region,
+  #           season,
+  #           acc
+  #         )
+  #         |> Map.update!(:result_buildables, fn current ->
+  #           [updated_buildable | current]
+  #         end)
+  #       else
+  #         reqs_minus_workers = Map.drop(individual_buildable.requires, [:workers])
+  #         checked_reqs = check_reqs(reqs_minus_workers, acc)
 
-          # if all reqs are met
-          if checked_reqs == [] do
-            money_required =
-              if Map.has_key?(individual_buildable.requires, :money),
-                do: individual_buildable.requires.money,
-                else: 0
+  #         # if all reqs are met
+  #         if checked_reqs == [] do
+  #           money_required =
+  #             if Map.has_key?(individual_buildable.requires, :money),
+  #               do: individual_buildable.requires.money,
+  #               else: 0
 
-            # if it requires workers
+  #           # if it requires workers
 
-            if Map.has_key?(individual_buildable.requires, :workers) &&
-                 individual_buildable.jobs != 0 do
-              # here I could just mark that buildable as "enabled pre_workers" or "ready_for_workers" I think?
-              # then loop through jobs outside this loop
-              # could also just look through the jobs not taken outside the loop and check citizens there?
+  #           if Map.has_key?(individual_buildable.requires, :workers) &&
+  #                individual_buildable.jobs != 0 do
+  #             # here I could just mark that buildable as "enabled pre_workers" or "ready_for_workers" I think?
+  #             # then loop through jobs outside this loop
+  #             # could also just look through the jobs not taken outside the loop and check citizens there?
 
-              required_worker_count =
-                if individual_buildable.jobs == nil do
-                  individual_buildable.requires.workers.count
-                else
-                  individual_buildable.jobs
-                end
+  #             required_worker_count =
+  #               if individual_buildable.jobs == nil do
+  #                 individual_buildable.requires.workers.count
+  #               else
+  #                 individual_buildable.jobs
+  #               end
 
-              checked_workers =
-                check_workers(
-                  individual_buildable.requires,
-                  acc.citizens,
-                  required_worker_count,
-                  education_diff
-                )
+  #             checked_workers =
+  #               check_workers(
+  #                 individual_buildable.requires,
+  #                 acc.citizens,
+  #                 required_worker_count,
+  #                 education_diff
+  #               )
 
-              checked_workers_count = length(checked_workers)
+  #             checked_workers_count = length(checked_workers)
 
-              enough_workers = checked_workers_count >= required_worker_count
+  #             enough_workers = checked_workers_count >= required_worker_count
 
-              updated_buildable =
-                if !enough_workers do
-                  individual_buildable
-                  |> Map.merge(%{
-                    reason: [:workers],
-                    enabled: false,
-                    jobs: required_worker_count - checked_workers_count
-                  })
-                else
-                  # if all conditions are met
-                  individual_buildable
-                  |> Map.merge(%{
-                    reason: [],
-                    enabled: true,
-                    jobs: 0
-                  })
-                end
+  #             updated_buildable =
+  #               if !enough_workers do
+  #                 individual_buildable
+  #                 |> Map.merge(%{
+  #                   reason: [:workers],
+  #                   enabled: false,
+  #                   jobs: required_worker_count - checked_workers_count
+  #                 })
+  #               else
+  #                 # if all conditions are met
+  #                 individual_buildable
+  #                 |> Map.merge(%{
+  #                   reason: [],
+  #                   enabled: true,
+  #                   jobs: 0
+  #                 })
+  #               end
 
-              tax_earned =
-                calculate_earnings(
-                  checked_workers_count,
-                  individual_buildable.requires.workers.level,
-                  city.tax_rates[
-                    to_string(individual_buildable.requires.workers.level)
-                  ]
-                )
+  #             tax_earned =
+  #               calculate_earnings(
+  #                 checked_workers_count,
+  #                 individual_buildable.requires.workers.level,
+  #                 city.tax_rates[
+  #                   to_string(individual_buildable.requires.workers.level)
+  #                 ]
+  #               )
 
-              acc_after_workers =
-                if enough_workers,
-                  do:
-                    update_generated_acc(
-                      updated_buildable,
-                      length(acc.citizens),
-                      city.region,
-                      season,
-                      acc
-                    )
-                    |> Map.merge(reqs_minus_workers, fn _k, v1, v2 -> v1 - v2 end)
-                    |> Map.merge(%{
-                      income: acc.income + tax_earned,
-                      daily_cost: acc.daily_cost + money_required,
-                      money: acc.money + tax_earned - money_required,
-                      updated_buildable_count: acc.updated_buildable_count + 1
-                    }),
-                  else: acc
+  #             acc_after_workers =
+  #               if enough_workers,
+  #                 do:
+  #                   update_generated_acc(
+  #                     updated_buildable,
+  #                     length(acc.citizens),
+  #                     city.region,
+  #                     season,
+  #                     acc
+  #                   )
+  #                   |> Map.merge(reqs_minus_workers, fn _k, v1, v2 -> v1 - v2 end)
+  #                   |> Map.merge(%{
+  #                     income: acc.income + tax_earned,
+  #                     daily_cost: acc.daily_cost + money_required,
+  #                     money: acc.money + tax_earned - money_required,
+  #                     updated_buildable_count: acc.updated_buildable_count + 1
+  #                   }),
+  #                 else: acc
 
-              # update acc with disabled buildable
+  #             # update acc with disabled buildable
 
-              acc_after_workers
-              |> Map.update!(:employed_citizens, fn currently_employed ->
-                Enum.map(checked_workers, fn cit -> Map.put(cit, :has_job, true) end) ++
-                  currently_employed
-              end)
-              |> Map.update!(:citizens, fn current_citizens ->
-                # this is where I need to filter by the job level
-                # I thought this would do it
-                # TODO: OPTIMIZE THIS
-                current_citizens -- checked_workers
-              end)
-              |> Map.update!(:jobs, fn current_jobs_map ->
-                Map.update!(
-                  current_jobs_map,
-                  individual_buildable.requires.workers.level,
-                  &(&1 +
-                      if is_nil(individual_buildable.jobs) do
-                        required_worker_count
-                      else
-                        0
-                      end - checked_workers_count)
-                )
-              end)
-              |> Map.update!(:total_jobs, fn current_total_jobs_map ->
-                Map.update!(
-                  current_total_jobs_map,
-                  individual_buildable.requires.workers.level,
-                  &(&1 +
-                      if is_nil(individual_buildable.jobs) do
-                        required_worker_count
-                      else
-                        0
-                      end)
-                )
-              end)
-              |> Map.update!(:result_buildables, fn current ->
-                [updated_buildable | current]
-              end)
+  #             acc_after_workers
+  #             |> Map.update!(:employed_citizens, fn currently_employed ->
+  #               Enum.map(checked_workers, fn cit -> Map.put(cit, :has_job, true) end) ++
+  #                 currently_employed
+  #             end)
+  #             |> Map.update!(:citizens, fn current_citizens ->
+  #               # this is where I need to filter by the job level
+  #               # I thought this would do it
+  #               # TODO: OPTIMIZE THIS
+  #               current_citizens -- checked_workers
+  #             end)
+  #             |> Map.update!(:jobs, fn current_jobs_map ->
+  #               Map.update!(
+  #                 current_jobs_map,
+  #                 individual_buildable.requires.workers.level,
+  #                 &(&1 +
+  #                     if is_nil(individual_buildable.jobs) do
+  #                       required_worker_count
+  #                     else
+  #                       0
+  #                     end - checked_workers_count)
+  #               )
+  #             end)
+  #             |> Map.update!(:total_jobs, fn current_total_jobs_map ->
+  #               Map.update!(
+  #                 current_total_jobs_map,
+  #                 individual_buildable.requires.workers.level,
+  #                 &(&1 +
+  #                     if is_nil(individual_buildable.jobs) do
+  #                       required_worker_count
+  #                     else
+  #                       0
+  #                     end)
+  #               )
+  #             end)
+  #             |> Map.update!(:result_buildables, fn current ->
+  #               [updated_buildable | current]
+  #             end)
 
-              # if number is less than reqs.workers.count, buildable is disabled, reason workers
-              # add jobs equal to workers.count - length
+  #             # if number is less than reqs.workers.count, buildable is disabled, reason workers
+  #             # add jobs equal to workers.count - length
 
-              # remove citizens from acc.citizens
-              # add them to acc.employed_citizens
-            else
-              # if it's operating fine & doesn't require workers
-              updated_buildable =
-                individual_buildable
-                |> Map.merge(%{
-                  reason: [],
-                  enabled: true,
-                  jobs: 0
-                })
+  #             # remove citizens from acc.citizens
+  #             # add them to acc.employed_citizens
+  #           else
+  #             # if it's operating fine & doesn't require workers
+  #             updated_buildable =
+  #               individual_buildable
+  #               |> Map.merge(%{
+  #                 reason: [],
+  #                 enabled: true,
+  #                 jobs: 0
+  #               })
 
-              update_generated_acc(
-                updated_buildable,
-                length(acc.citizens),
-                city.region,
-                season,
-                acc
-              )
-              |> Map.merge(reqs_minus_workers, fn _k, v1, v2 -> v1 - v2 end)
-              |> Map.update!(:result_buildables, fn current ->
-                [updated_buildable | current]
-              end)
-              |> Map.merge(%{
-                daily_cost: acc.daily_cost + money_required,
-                updated_buildable_count: acc.updated_buildable_count + 1
-              })
-            end
-          else
-            # if requirements not met
-            updated_buildable =
-              individual_buildable
-              |> Map.merge(%{
-                reason: checked_reqs,
-                enabled: false
-              })
+  #             update_generated_acc(
+  #               updated_buildable,
+  #               length(acc.citizens),
+  #               city.region,
+  #               season,
+  #               acc
+  #             )
+  #             |> Map.merge(reqs_minus_workers, fn _k, v1, v2 -> v1 - v2 end)
+  #             |> Map.update!(:result_buildables, fn current ->
+  #               [updated_buildable | current]
+  #             end)
+  #             |> Map.merge(%{
+  #               daily_cost: acc.daily_cost + money_required,
+  #               updated_buildable_count: acc.updated_buildable_count + 1
+  #             })
+  #           end
+  #         else
+  #           # if requirements not met
+  #           updated_buildable =
+  #             individual_buildable
+  #             |> Map.merge(%{
+  #               reason: checked_reqs,
+  #               enabled: false
+  #             })
 
-            # update acc with disabled buildable
-            Map.update!(acc, :result_buildables, fn current ->
-              [updated_buildable | current]
-            end)
-          end
-        end
-      end
-    )
-  end
+  #           # update acc with disabled buildable
+  #           Map.update!(acc, :result_buildables, fn current ->
+  #             [updated_buildable | current]
+  #           end)
+  #         end
+  #       end
+  #     end
+  #   )
+  # end
 
   @doc """
    Takes (buildable, citizen_count, region, season, acc), returns acc with production rendered
