@@ -118,7 +118,7 @@ defmodule MayorGame.CityMigrator do
     health_min = Enum.min(Enum.map(leftovers, fn city -> city.health end))
     health_spread = health_max - health_min
 
-    home_city_advantage = 0.05
+    home_city_advantage = 0.03
 
     slotted_cities_by_id =
       leftovers
