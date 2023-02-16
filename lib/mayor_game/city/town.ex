@@ -77,6 +77,7 @@ defmodule MayorGame.City.Town do
             homeless_shelters: integer,
             apartments: integer,
             high_rises: integer,
+            megablocks: integer,
             roads: integer,
             highways: integer,
             airports: integer,

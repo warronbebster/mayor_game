@@ -53,7 +53,8 @@ defmodule MayorGame.City.Buildable do
         homeless_shelters: buildables_flat().homeless_shelters,
         apartments: buildables_flat().apartments,
         micro_apartments: buildables_flat().micro_apartments,
-        high_rises: buildables_flat().high_rises
+        high_rises: buildables_flat().high_rises,
+        megablocks: buildables_flat().megablocks
       },
       transit: %{
         roads: buildables_flat().roads,
@@ -125,7 +126,8 @@ defmodule MayorGame.City.Buildable do
         homeless_shelters: buildables_flat().homeless_shelters,
         apartments: buildables_flat().apartments,
         micro_apartments: buildables_flat().micro_apartments,
-        high_rises: buildables_flat().high_rises
+        high_rises: buildables_flat().high_rises,
+        megablocks: buildables_flat().megablocks
       ],
       energy: [
         coal_plants: buildables_flat().coal_plants,
@@ -285,6 +287,23 @@ defmodule MayorGame.City.Buildable do
         produces: %{
           housing: 100,
           pollution: 10
+        }
+      },
+      # Megablocks ————————————————————————————————————
+      megablocks: %BuildableMetadata{
+        category: :housing,
+        level: 0,
+        title: :megablocks,
+        price: 5_000_000,
+        purchasable: true,
+        purchasable_reason: "valid",
+        requires: %{
+          area: 100,
+          energy: 2000
+        },
+        produces: %{
+          housing: 3000,
+          pollution: 50
         }
       },
       # roads ————————————————————————————————————
