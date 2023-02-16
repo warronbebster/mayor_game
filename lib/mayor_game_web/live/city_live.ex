@@ -69,7 +69,7 @@ defmodule MayorGameWeb.CityLive do
       |> assign(:buildables_map, buildables_map)
       |> assign(:building_requirements, ["workers", "energy", "area", "money", "steel", "sulfur"])
       |> assign(:category_explanations, explanations)
-      |> assign(resources: ["money", "steel", "sulfur", "missiles"])
+      |> assign(resources: ["money", "steel", "sulfur", "missiles", "shields"])
       |> mount_city_by_title()
       |> update_city_by_title()
       |> assign_auth(session)
