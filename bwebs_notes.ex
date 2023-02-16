@@ -32,6 +32,7 @@
 # fix "add citizen" button
 # spread workers over buildables instead of only filling one type first
 # batch citizen counts. make age way broader
+# cluster citizen preferences to check cities
 
 logs:
 move-outs by reason
