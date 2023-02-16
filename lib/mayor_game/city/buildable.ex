@@ -816,7 +816,7 @@ defmodule MayorGame.City.Buildable do
       office_buildings: %BuildableMetadata{
         level: 1,
         title: :office_buildings,
-        price: 40_000,
+        price: 8000,
         purchasable: true,
         purchasable_reason: "valid",
         requires: %{
@@ -866,7 +866,7 @@ defmodule MayorGame.City.Buildable do
       arenas: %BuildableMetadata{
         level: 0,
         title: :arenas,
-        price: 60_000,
+        price: 12_000,
         purchasable: true,
         purchasable_reason: "valid",
         requires: %{
@@ -883,7 +883,7 @@ defmodule MayorGame.City.Buildable do
       hospitals: %BuildableMetadata{
         level: 2,
         title: :hospitals,
-        price: 60_000,
+        price: 12_000,
         purchasable: true,
         purchasable_reason: "valid",
         requires: %{
@@ -900,7 +900,7 @@ defmodule MayorGame.City.Buildable do
       doctor_offices: %BuildableMetadata{
         level: 4,
         title: :doctor_offices,
-        price: 30_000,
+        price: 6000,
         purchasable: true,
         purchasable_reason: "valid",
         requires: %{
