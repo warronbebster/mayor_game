@@ -394,11 +394,11 @@ defmodule MayorGame.CityHelpers do
           employed_looking_citizens: [],
           unhoused_citizens: [],
           polluted_citizens: [],
-          old_citizens: Enum.filter(all_citizens, &(&1.age > 1000 * (&1.education + 1))),
+          old_citizens: Enum.filter(all_citizens, &(&1.age > 3000 * (&1.education + 1))),
           reproducing_citizens: 0
         },
         fn citizen, acc ->
-          citizen_not_too_old = citizen.age < 1000 * (citizen.education + 1)
+          citizen_not_too_old = citizen.age < 3000 * (citizen.education + 1)
 
           pollution_death =
             if(pollution_reached, do: pollution_reached and :rand.uniform() > 0.95, else: false)
@@ -418,7 +418,7 @@ defmodule MayorGame.CityHelpers do
 
           will_citizen_reproduce =
             citizen.age > 500 and citizen.age < 3000 and acc.housing_left > 1 &&
-              :rand.uniform(round(:math.pow(citizen_count, 3))) < max(results.health / 1000, 5)
+              :rand.uniform(round(:math.pow(citizen_count, 2))) < max(results.health / 1000, 5)
 
           housing_taken = if will_citizen_reproduce, do: 2, else: 1
 
