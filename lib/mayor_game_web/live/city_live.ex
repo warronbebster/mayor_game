@@ -254,8 +254,6 @@ defmodule MayorGameWeb.CityLive do
     new_purchase_price =
       MayorGame.CityHelpers.building_price(initial_purchase_price, buildable_count + 1)
 
-    IO.inspect(socket.assigns.buildables)
-
     new_buildables =
       socket.assigns.buildables
       |> put_in(
@@ -267,12 +265,6 @@ defmodule MayorGameWeb.CityLive do
         new_purchase_price
       )
 
-    IO.inspect(new_buildables)
-
-    # IO.inspect(city)
-    # put new disabled building in the city
-
-    # this is all ya gotta do to update, baybee
     {:noreply,
      socket
      |> assign(:operating_count, new_operating_count)
