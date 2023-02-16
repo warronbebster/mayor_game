@@ -489,7 +489,8 @@ defmodule MayorGameWeb.CityLive do
         pollution_ceiling,
         season,
         socket.assigns.buildables_map,
-        socket.assigns.in_dev
+        socket.assigns.in_dev,
+        false
       )
       |> Map.put(:season, season)
 

@@ -84,7 +84,8 @@ defmodule MayorGame.CityCalculator do
           pollution_ceiling,
           season,
           buildables_map,
-          in_dev
+          in_dev,
+          false
         )
       end)
 

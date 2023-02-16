@@ -46,7 +46,8 @@ defmodule MayorGame.CityHelpers do
         pollution_ceiling,
         season,
         buildables_map,
-        in_dev
+        in_dev,
+        time_to_learn
       ) do
     city_preloaded = preload_city_check(city)
 
@@ -377,7 +378,6 @@ defmodule MayorGame.CityHelpers do
     # Iterate through citizens
     # ________________________________________________________________________
     pollution_reached = world.pollution > pollution_ceiling
-    time_to_learn = if in_dev, do: rem(world.day, 10) == 0, else: rem(world.day, 90) == 0
 
     # I don't think this needs to be a reduce. this could me a map then flatten
 

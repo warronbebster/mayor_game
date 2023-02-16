@@ -42,13 +42,18 @@ defmodule MayorGame.CityMigrator do
     Process.send_after(self(), :tax, 5000)
 
     # returns ok tuple when u start
-    {:ok, %{world: game_world, buildables_map: buildables_map, in_dev: in_dev}}
+    {:ok, %{world: game_world, buildables_map: buildables_map, in_dev: in_dev, migration_tick: 0}}
   end
 
   # when :tax is sent
   def handle_info(
         :tax,
-        %{world: _world, buildables_map: buildables_map, in_dev: in_dev} = _sent_map
+        %{
+          world: _world,
+          buildables_map: buildables_map,
+          in_dev: in_dev,
+          migration_tick: migration_tick
+        } = _sent_map
       ) do
     # filter for
     cities = City.list_cities_preload() |> Enum.filter(fn city -> city.citizen_count > 20 end)
@@ -72,6 +77,7 @@ defmodule MayorGame.CityMigrator do
     cities_list = Enum.shuffle(cities)
 
     # :eprof.start_profiling([self()])
+    time_to_learn = rem(migration_tick, 5) == 0
 
     leftovers =
       cities_list
@@ -83,7 +89,8 @@ defmodule MayorGame.CityMigrator do
           pollution_ceiling,
           season,
           buildables_map,
-          in_dev
+          in_dev,
+          time_to_learn
         )
       end)
 
@@ -118,7 +125,7 @@ defmodule MayorGame.CityMigrator do
     health_min = Enum.min(Enum.map(leftovers, fn city -> city.health end))
     health_spread = health_max - health_min
 
-    home_city_advantage = 0.03
+    home_city_advantage = 0.05
 
     slotted_cities_by_id =
       leftovers
@@ -911,7 +918,13 @@ defmodule MayorGame.CityMigrator do
     Process.send_after(self(), :tax, 5000)
 
     # returns this to whatever calls ?
-    {:noreply, %{world: db_world, buildables_map: buildables_map, in_dev: in_dev}}
+    {:noreply,
+     %{
+       world: db_world,
+       buildables_map: buildables_map,
+       in_dev: in_dev,
+       migration_tick: migration_tick + 1
+     }}
   end
 
   def update_logs(log, existing_logs) do
