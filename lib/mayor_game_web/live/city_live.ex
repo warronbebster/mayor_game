@@ -79,7 +79,15 @@ defmodule MayorGameWeb.CityLive do
       |> assign(:in_dev, in_dev)
       # |> assign(:form, City.update_town(%Town{}))
       |> assign(:buildables_map, buildables_map)
-      |> assign(:building_requirements, ["workers", "energy", "area", "money", "steel", "sulfur"])
+      |> assign(:building_requirements, [
+        "workers",
+        "energy",
+        "area",
+        "money",
+        "steel",
+        "sulfur",
+        "uranium"
+      ])
       |> assign(:category_explanations, explanations)
       |> assign(:subtotal_types, subtotal_types)
       |> assign(resources: ["money", "steel", "sulfur", "missiles", "shields"])
