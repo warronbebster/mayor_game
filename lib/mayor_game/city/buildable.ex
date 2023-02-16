@@ -286,7 +286,7 @@ defmodule MayorGame.City.Buildable do
       megablocks: %BuildableMetadata{
         level: 0,
         title: :megablocks,
-        price: 500_000,
+        price: 5_000_000,
         purchasable: true,
         purchasable_reason: "valid",
         requires: %{
