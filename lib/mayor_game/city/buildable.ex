@@ -619,7 +619,7 @@ defmodule MayorGame.City.Buildable do
         category: :energy,
         level: 5,
         title: :carbon_capture_plants,
-        price: 10000,
+        price: 100_000,
         purchasable: true,
         purchasable_reason: "valid",
         requires: %{
@@ -633,7 +633,7 @@ defmodule MayorGame.City.Buildable do
       },
       # PARKS ————————————————————————————————————
       parks: %BuildableMetadata{
-        category: :energy,
+        category: :civic,
         level: 0,
         title: :parks,
         price: 20,
@@ -669,7 +669,7 @@ defmodule MayorGame.City.Buildable do
       },
       # LIBRARIES ————————————————————————————————————
       libraries: %BuildableMetadata{
-        category: :energy,
+        category: :civic,
         level: 2,
         title: :libraries,
         price: 1000,
@@ -680,11 +680,11 @@ defmodule MayorGame.City.Buildable do
           area: 2,
           energy: 200,
           workers: %{count: 4, level: 2}
-        }
+        },
         # todo: make random
-        # produces: %{
-        #   education: &%{5 => &1}
-        # }
+        produces: %{
+          education: fn level, num -> %{level => num} end
+        }
       },
       # SCHOOLS ————————————————————————————————————
       schools: %BuildableMetadata{
@@ -901,7 +901,7 @@ defmodule MayorGame.City.Buildable do
         category: :entertainment,
         level: 0,
         title: :arenas,
-        price: 60_000,
+        price: 5_000,
         purchasable: true,
         purchasable_reason: "valid",
         requires: %{
