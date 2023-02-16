@@ -569,6 +569,11 @@ defmodule MayorGame.CityHelpers do
           do: prod_map_mult.gold,
           else: 0
         ),
+      new_steel:
+        if(!prod_nil and Map.has_key?(prod_map_mult, :steel),
+          do: prod_map_mult.steel,
+          else: 0
+        ),
       new_uranium:
         if(!prod_nil and Map.has_key?(prod_map_mult, :uranium),
           do: prod_map_mult.uranium,

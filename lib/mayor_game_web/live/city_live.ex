@@ -29,6 +29,18 @@ defmodule MayorGameWeb.CityLive do
     world = Repo.get!(MayorGame.City.World, 1)
     in_dev = Application.get_env(:mayor_game, :env) == :dev
 
+    subtotal_types = [
+      {:health, "text-rose-700"},
+      {:area, "text-cyan-700"},
+      {:housing, "text-amber-700"},
+      {:energy, "text-yellow-700"},
+      {:sulfur, "text-orange-700"},
+      {:steel, "text-slate-700"},
+      {:fun, "text-fuchsia-700"},
+      {:missile, "text-slate-700"},
+      {:shields, "text-slate-700"}
+    ]
+
     explanations = %{
       transit:
         "Build transit to add area to your city. Area is required to build most other buildings.",
@@ -69,6 +81,7 @@ defmodule MayorGameWeb.CityLive do
       |> assign(:buildables_map, buildables_map)
       |> assign(:building_requirements, ["workers", "energy", "area", "money", "steel", "sulfur"])
       |> assign(:category_explanations, explanations)
+      |> assign(:subtotal_types, subtotal_types)
       |> assign(resources: ["money", "steel", "sulfur", "missiles", "shields"])
       |> mount_city_by_title()
       |> update_city_by_title()
@@ -80,10 +93,6 @@ defmodule MayorGameWeb.CityLive do
   end
 
   # this handles different events
-  @spec handle_event(<<_::40, _::_*8>>, any, %{
-          :assigns => %{:current_user => atom | map, optional(any) => any},
-          optional(any) => any
-        }) :: nil | {:noreply, map}
   def handle_event(
         "add_citizen",
         _value,
@@ -179,9 +188,9 @@ defmodule MayorGameWeb.CityLive do
         %{assigns: %{city2: city}} = socket
       ) do
     # check if user is mayor here?
-    if socket.assigns.current_user.id == city.user_id do
-      building_to_buy_atom = String.to_existing_atom(building_to_buy)
+    building_to_buy_atom = String.to_existing_atom(building_to_buy)
 
+    if socket.assigns.current_user.id == city.user_id do
       # get exponential price — don't want to set price on front-end for cheating reasons
       initial_purchase_price = get_in(Buildable.buildables_flat(), [building_to_buy_atom, :price])
       buildable_count = length(city[building_to_buy_atom])
@@ -206,8 +215,32 @@ defmodule MayorGameWeb.CityLive do
       end
     end
 
+    new_buildable =
+      Map.put(
+        socket.assigns.buildables_map.buildables_flat[building_to_buy_atom],
+        :reason,
+        socket.assigns.buildables_map.buildables_flat[building_to_buy_atom].requires
+        |> Map.keys()
+      )
+
+    requires_keys =
+      socket.assigns.buildables_map.buildables_flat[building_to_buy_atom].requires
+      |> Map.keys()
+
+    new_city =
+      city |> Map.update!(building_to_buy_atom, fn current -> [new_buildable | current] end)
+
+    new_operating_count =
+      Map.update!(socket.assigns.operating_count, building_to_buy_atom, fn current_map ->
+        Map.update(current_map, requires_keys, 1, &(&1 + 1))
+      end)
+
+    # IO.inspect(city)
+    # put new disabled building in the city
+
     # this is all ya gotta do to update, baybee
-    {:noreply, socket |> update_city_by_title()}
+    {:noreply,
+     socket |> assign(:operating_count, new_operating_count) |> assign(:city2, new_city)}
   end
 
   def handle_event(
@@ -503,30 +536,159 @@ defmodule MayorGameWeb.CityLive do
       ])
 
     # this controls what (and in what order) resource change categories will be displayed to the right of the buildable
-    subtotal_types = [
-      {:health, "text-rose-700"},
-      {:area, "text-cyan-700"},
-      {:housing, "text-amber-700"},
-      {:energy, "text-yellow-700"},
-      {:sulfur, "text-orange-700"},
-      {:steel, "text-slate-700"},
-      {:fun, "text-fuchsia-700"},
-      {:missile, "text-slate-700"},
-      {:shields, "text-slate-700"}
-    ]
 
     socket
     |> assign(:season, season)
     |> assign(:buildables, buildables_with_status)
     # |> assign(:user_id, city_user.id)
     # |> assign(:username, city_user.nickname)
-    |> assign(:subtotal_types, subtotal_types)
+
     |> assign(:city2, city2_without_citizens)
     |> assign(:operating_count, operating_count)
     |> assign(:operating_tax, operating_tax)
     |> assign(:tax_by_level, tax_by_level)
     |> assign(:citizens_by_edu, citizen_edu_count)
     |> assign(:total_citizens, length(city_with_stats2.all_citizens))
+  end
+
+  # function to update city
+  # maybe i should make one just for "updating" — e.g. only pull details and citizens from DB
+  defp lighter_update(%{assigns: %{world: world, city2: city}} = socket) do
+    # cities_count = MayorGame.Repo.aggregate(City.Town, :count, :id)
+
+    # pollution_ceiling = 2_000_000_000 * Random.gammavariate(7.5, 1)
+
+    # IO.inspect(city)
+
+    # season =
+    #   cond do
+    #     rem(world.day, 365) < 91 -> :winter
+    #     rem(world.day, 365) < 182 -> :spring
+    #     rem(world.day, 365) < 273 -> :summer
+    #     true -> :fall
+    #   end
+
+    # this shouuuuld be fresh…
+    # IO.inspect(city)
+
+    # city =
+    #   City.get_town_by_title!(title)
+    #   |> MayorGame.CityHelpers.preload_city_check()
+
+    # IO.inspect(city)
+
+    # city_with_stats2 =
+    #   MayorGame.CityHelpers.calculate_city_stats(
+    #     city,
+    #     world,
+    #     pollution_ceiling,
+    #     socket.assigns.season,
+    #     socket.assigns.buildables_map,
+    #     socket.assigns.in_dev
+    #   )
+
+    # ok, here the price is updated per each CombinedBuildable
+
+    # have to have this separate from the actual city because the city might not have some buildables, but they're still purchasable
+    # this status is for the whole category
+    buildables_with_status =
+      calculate_buildables_statuses(
+        city,
+        socket.assigns.buildables_map.buildables_kw_list
+      )
+
+    mapped_details_2 =
+      Enum.reduce(
+        city.result_buildables,
+        socket.assigns.buildables_map.empty_buildable_map,
+        fn buildable, acc ->
+          Map.update!(acc, buildable.title, fn current_list ->
+            [buildable | current_list]
+          end)
+        end
+      )
+
+    # need to get a map with the key
+
+    operating_count =
+      Enum.map(mapped_details_2, fn {category, list} ->
+        {category, Enum.frequencies_by(list, fn x -> x.reason end)}
+      end)
+      |> Enum.into(%{})
+
+    # operating_tax =
+    #   Enum.map(mapped_details_2, fn {category, _} ->
+    #     {category,
+    #      (
+    #        buildable = socket.assigns.buildables_map.buildables_flat[category]
+
+    #        if operating_count[category][[]] != nil && Map.has_key?(buildable, :requires) &&
+    #             buildable.requires != nil,
+    #           do:
+    #             if(Map.has_key?(buildable.requires, :workers),
+    #               do:
+    #                 MayorGame.CityHelpers.calculate_earnings(
+    #                   operating_count[category][[]] * buildable.requires.workers.count,
+    #                   buildable.requires.workers.level,
+    #                   city.tax_rates[to_string(buildable.requires.workers.level)]
+    #                 ),
+    #               else: 0
+    #             ),
+    #           else: 0
+    #      )}
+    #   end)
+    #   |> Enum.into(%{})
+
+    # tax_by_level =
+    #   Enum.map(
+    #     Enum.group_by(
+    #       operating_tax,
+    #       fn {category, _} ->
+    #         buildable = socket.assigns.buildables_map.buildables_flat[category]
+
+    #         if operating_count[category][[]] != nil && Map.has_key?(buildable, :requires) &&
+    #              buildable.requires != nil,
+    #            do:
+    #              if(Map.has_key?(buildable.requires, :workers),
+    #                do: buildable.requires.workers.level,
+    #                else: 0
+    #              ),
+    #            else: 0
+    #       end,
+    #       fn {_, value} -> value end
+    #     ),
+    #     fn {level, array} -> {level, Enum.sum(array)} end
+    #   )
+    #   |> Enum.into(%{})
+
+    # citizen_edu_count =
+    # Enum.frequencies_by(city_with_stats2.all_citizens, fn x -> x.education end)
+
+    # city2_without_citizens =
+    #   Map.drop(city_with_stats2, [
+    #     :citizens,
+    #     :citizens_looking,
+    #     :citizens_to_reproduce,
+    #     :citizens_polluted,
+    #     :citizens_looking,
+    #     :education,
+    #     :patron,
+    #     :contributor
+    #   ])
+
+    # this controls what (and in what order) resource change categories will be displayed to the right of the buildable
+
+    socket
+    |> assign(:buildables, buildables_with_status)
+    # |> assign(:user_id, city_user.id)
+    # |> assign(:username, city_user.nickname)
+
+    |> assign(:city2, city)
+    |> assign(:operating_count, operating_count)
+    # |> assign(:operating_tax, operating_tax)
+    # |> assign(:tax_by_level, tax_by_level)
+    # |> assign(:citizens_by_edu, citizen_edu_count)
+    |> assign(:total_citizens, length(city.all_citizens))
   end
 
   # function to mount city
@@ -753,9 +915,9 @@ defmodule MayorGameWeb.CityLive do
     # validation for form
     trade_set =
       if trade_set.errors == [] do
-        Map.put(trade_set, :changes, %{amount: amount, resource: city_form["resource"]})
-      else
         Map.put(trade_set, :changes, %{amount: 0, resource: city_form["resource"]})
+      else
+        Map.put(trade_set, :changes, %{amount: amount, resource: city_form["resource"]})
         |> Map.update!(:errors, fn current -> [amount: elem(hd(current), 1)] end)
         |> Map.put(:action, :insert)
       end

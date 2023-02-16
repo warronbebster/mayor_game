@@ -9,7 +9,6 @@ defmodule MayorGame.City.Town do
       title: String.t(),
       region: String.t(),
       climate: String.t(),
-      logs: list(String.t()),
       tax_rates: map,
       user: %MayorGame.Auth.User{},
       citizens: list(Citizens.t()),
@@ -25,7 +24,7 @@ defmodule MayorGame.City.Town do
   @timestamps_opts [type: :utc_datetime]
 
   # don't print these on inspect
-  @derive {Inspect, except: [:logs, :citizens]}
+  @derive {Inspect, except: [:citizens]}
 
   @typedoc """
       Type for %Town{} that's callable with MayorGame.City.Buildable.t()
@@ -39,7 +38,6 @@ defmodule MayorGame.City.Town do
             title: String.t(),
             region: String.t(),
             climate: String.t(),
-            logs: list(String.t()),
             tax_rates: map,
             user: %MayorGame.Auth.User{},
             citizens: list(Citizens.t()),
@@ -132,7 +130,6 @@ defmodule MayorGame.City.Town do
     field :citizens_blob, {:array, :map}, null: false, default: []
 
     # this corresponds to an elixir list
-    field(:logs, {:array, :string})
     field(:tax_rates, :map)
     belongs_to(:user, MayorGame.Auth.User)
 
@@ -197,7 +194,6 @@ defmodule MayorGame.City.Town do
         :region,
         :climate,
         :user_id,
-        :logs,
         :tax_rates,
         :steel,
         :missiles,

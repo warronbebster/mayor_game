@@ -173,34 +173,6 @@ defmodule MayorGame.City do
     |> Repo.update()
   end
 
-  # might not need to type guard here because DB does it; but
-  @doc """
-  updates log for a city. Expects the town(city) struct & a single string.
-
-  ## Examples
-      iex> update_log(town, "string to add to log")
-      {:ok, %Town{}}
-
-      iex> update_town(town, bad_value)
-      {:error, %Ecto.Changeset{}}
-  """
-  def update_log(%Town{} = town, log_item) do
-    # add new item to head of list
-    updated_log = [log_item | town.logs]
-
-    # if list is longer than 50, remove last item
-    limited_log =
-      if length(updated_log) > 50 do
-        updated_log |> Enum.reverse() |> tl() |> Enum.reverse()
-      else
-        updated_log
-      end
-
-    town
-    |> Town.changeset(%{logs: limited_log})
-    |> Repo.update()
-  end
-
   @doc """
   Deletes a town.
 
@@ -306,48 +278,6 @@ defmodule MayorGame.City do
     |> Citizens.changeset(attrs_plus_preferences)
     |> Repo.insert()
   end
-
-  @doc """
-  Creates a citizens changeset
-
-  ## Examples
-
-      iex> create_citizens(%{field: value})
-      {:ok, %Citizens{}}
-
-      iex> create_citizens(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-
-  # def create_citizens_changeset(attrs \\ %{}) do
-  #   # this makes a map with random values that add up to 1
-  #   random_preferences =
-  #     Enum.reduce(Citizens.decision_factors(), %{preference_map: %{}, room_taken: 0}, fn x, acc ->
-  #       value =
-  #         if x == List.last(Citizens.decision_factors()),
-  #           do: (1 - acc.room_taken) |> Float.round(2),
-  #           else: (:rand.uniform() * (1 - acc.room_taken)) |> Float.round(2)
-
-  #       %{
-  #         preference_map: Map.put(acc.preference_map, to_string(x), value),
-  #         room_taken: acc.room_taken + value
-  #       }
-  #     end)
-
-  #   # Map.new(Citizens.decision_factors(), fn x ->
-  #   #   {to_string(x), :rand.uniform() |> Float.round(2)}
-  #   # end)
-
-  #   # add new attribute if not set
-  #   attrs_plus_preferences =
-  #     attrs
-  #     |> Map.put_new(:name, Faker.Person.name())
-  #     |> Map.put(:preferences, random_preferences.preference_map)
-
-  #   %Citizens{}
-  #   |> Citizens.changeset(attrs_plus_preferences)
-  # end
 
   @doc """
   Updates a citizens.
