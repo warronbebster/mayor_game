@@ -402,8 +402,15 @@ defmodule MayorGameWeb.CityLive do
       end
     end
 
+    updated_city =
+      city
+      |> Map.update!(:shields, &(&1 - 1))
+      |> Map.update!(:logs_attacks, fn current ->
+        Map.update(current, attacking_town_struct.title, 1, &(&1 + 1))
+      end)
+
     # this is all ya gotta do to update, baybee
-    {:noreply, socket |> update_city_by_title() |> update_current_user()}
+    {:noreply, socket |> assign(city2: updated_city) |> update_current_user()}
   end
 
   def handle_event(
@@ -434,8 +441,9 @@ defmodule MayorGameWeb.CityLive do
       end
 
       # this is all ya gotta do to update, baybee
-      {:noreply, socket |> update_city_by_title()}
     end
+
+    {:noreply, socket |> update_city_by_title()}
   end
 
   # this is what gets messages from CityCalculator
@@ -1037,7 +1045,7 @@ defmodule MayorGameWeb.CityLive do
       is_user_mayor =
         if !socket.assigns.in_dev,
           do: to_string(socket.assigns.user_id) == to_string(socket.assigns.current_user.id),
-          else: true
+          else: to_string(socket.assigns.user_id) == to_string(socket.assigns.current_user.id)
 
       socket |> assign(:is_user_mayor, is_user_mayor)
     else
