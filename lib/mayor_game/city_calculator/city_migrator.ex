@@ -142,6 +142,28 @@ defmodule MayorGame.CityMigrator do
         {city.id, city}
       end)
 
+    city_preference_scores =
+      Enum.map(1..10, fn x ->
+        {x,
+         Enum.map(0..5, fn edu_level ->
+           {edu_level,
+            Enum.map(slotted_cities_by_id, fn {id, city} ->
+              {id,
+               Float.round(
+                 citizen_score(
+                   Citizens.preset_preferences()[x],
+                   edu_level,
+                   city
+                 ),
+                 4
+               )}
+            end)
+            |> Enum.into(%{})}
+         end)
+         |> Enum.into(%{})}
+      end)
+      |> Enum.into(%{})
+
     # jobs still valid here
     # and housing
 
@@ -285,14 +307,7 @@ defmodule MayorGame.CityMigrator do
            },
            fn citizen, acc ->
              current_city_score =
-               Float.round(
-                 citizen_score(
-                   Citizens.preset_preferences()[citizen.preferences],
-                   citizen.education,
-                   slotted_cities_by_id[citizen.town_id]
-                 ),
-                 4
-               )
+               city_preference_scores[citizen.preferences][citizen.education][citizen.town_id]
 
              chosen_city =
                Enum.reduce(acc.slots, %{chosen_id: citizen.town_id, top_score: -1}, fn {city_id,
@@ -300,14 +315,7 @@ defmodule MayorGame.CityMigrator do
                                                                                        acc2 ->
                  score =
                    if count > 0 do
-                     Float.round(
-                       citizen_score(
-                         Citizens.preset_preferences()[citizen.preferences],
-                         citizen.education,
-                         slotted_cities_by_id[city_id]
-                       ),
-                       4
-                     )
+                     city_preference_scores[citizen.preferences][citizen.education][city_id]
                    else
                      0
                    end
@@ -441,14 +449,7 @@ defmodule MayorGame.CityMigrator do
                  fn {city_id, count}, acc2 ->
                    score =
                      if count > 0 && city_id != citizen.town_id do
-                       Float.round(
-                         citizen_score(
-                           Citizens.preset_preferences()[citizen.preferences],
-                           citizen.education,
-                           slotted_cities_by_id[city_id]
-                         ),
-                         4
-                       )
+                       city_preference_scores[citizen.preferences][citizen.education][city_id]
                      else
                        0
                      end
@@ -589,14 +590,7 @@ defmodule MayorGame.CityMigrator do
                  fn {city_id, count}, acc2 ->
                    score =
                      if count > 0 && city_id != citizen.town_id do
-                       Float.round(
-                         citizen_score(
-                           Citizens.preset_preferences()[citizen.preferences],
-                           citizen.education,
-                           slotted_cities_by_id[city_id]
-                         ),
-                         4
-                       )
+                       city_preference_scores[citizen.preferences][citizen.education][city_id]
                      else
                        0
                      end
@@ -713,14 +707,7 @@ defmodule MayorGame.CityMigrator do
         %{choices: [], slots: slots_after_job_filtered},
         fn citizen, acc ->
           current_city_score =
-            Float.round(
-              citizen_score(
-                Citizens.preset_preferences()[citizen.preferences],
-                citizen.education,
-                slotted_cities_by_id[citizen.town_id]
-              ),
-              4
-            )
+            city_preference_scores[citizen.preferences][citizen.education][citizen.town_id]
 
           chosen_city =
             Enum.reduce(
@@ -729,14 +716,7 @@ defmodule MayorGame.CityMigrator do
               fn {city_id, count}, acc2 ->
                 score =
                   if count > 0 do
-                    Float.round(
-                      citizen_score(
-                        Citizens.preset_preferences()[citizen.preferences],
-                        citizen.education,
-                        slotted_cities_by_id[city_id]
-                      ),
-                      4
-                    )
+                    city_preference_scores[citizen.preferences][citizen.education][city_id]
                   else
                     0
                   end

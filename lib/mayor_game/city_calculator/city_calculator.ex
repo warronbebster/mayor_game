@@ -156,15 +156,11 @@ defmodule MayorGame.CityCalculator do
                 v1 + v2
               end)
 
-            # :logs_emigration_housing,
-            # :logs_emigration_taxes,
-            # :logs_emigration_jobs,
-            # :logs_immigration,
             # :logs_attacks,
             # :logs_deaths_housing,
-            # :logs_deaths_attacks,
 
-            # shields_cap = length(city.defense_bases) * 100
+            # shields_cap = length(city.defense_bases) * 1000
+            # new_shields = min(city.shields, shields_cap)
 
             from(t in Town,
               where: t.id == ^city.id,

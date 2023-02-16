@@ -1045,10 +1045,10 @@ defmodule MayorGame.City.Buildable do
       # ^ bus lines and subways
       get_requirements_keys([:area, :workers]),
       # this is basically all energy gen
-      get_requirements_keys([:money, :energy]),
-      # ^ airports
       get_requirements_keys([:area, :money, :workers]),
       # this is basically all energy gen
+      get_requirements_keys([:money, :energy]),
+      # ^ airports
 
       Enum.sort_by(rest_of_them, &buildables_flat()[&1].level, :desc)
 
