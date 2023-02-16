@@ -111,7 +111,7 @@ defmodule MayorGame.CityCalculator do
               if city.citizen_count > 20 do
                 city.reproducing_citizens
               else
-                if :rand.uniform() > 0.5 do
+                if :rand.uniform() > 0.8 do
                   1
                 else
                   0

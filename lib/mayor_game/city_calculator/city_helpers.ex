@@ -406,7 +406,7 @@ defmodule MayorGame.CityHelpers do
 
           will_citizen_reproduce =
             citizen.age > 500 and citizen.age < 3000 and acc.housing_left > 1 &&
-              :rand.uniform(citizen_count + 1) < max(results.health / 1000, 5)
+              :rand.uniform(round(:math.pow(citizen_count, 3))) < max(results.health / 1000, 5)
 
           housing_taken = if will_citizen_reproduce, do: 2, else: 1
 
