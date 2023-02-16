@@ -189,14 +189,13 @@ defmodule MayorGameWeb.CityLive do
       ) do
     # check if user is mayor here?
     building_to_buy_atom = String.to_existing_atom(building_to_buy)
+    initial_purchase_price = get_in(Buildable.buildables_flat(), [building_to_buy_atom, :price])
+    buildable_count = length(city[building_to_buy_atom])
+
+    purchase_price = MayorGame.CityHelpers.building_price(initial_purchase_price, buildable_count)
 
     if socket.assigns.current_user.id == city.user_id do
       # get exponential price — don't want to set price on front-end for cheating reasons
-      initial_purchase_price = get_in(Buildable.buildables_flat(), [building_to_buy_atom, :price])
-      buildable_count = length(city[building_to_buy_atom])
-
-      purchase_price =
-        MayorGame.CityHelpers.building_price(initial_purchase_price, buildable_count)
 
       city_struct = struct(City.Town, city)
 
@@ -215,32 +214,70 @@ defmodule MayorGameWeb.CityLive do
       end
     end
 
-    new_buildable =
-      Map.put(
+    has_requirements =
+      Map.has_key?(
         socket.assigns.buildables_map.buildables_flat[building_to_buy_atom],
-        :reason,
-        socket.assigns.buildables_map.buildables_flat[building_to_buy_atom].requires
-        |> Map.keys()
-      )
+        :requires
+      ) &&
+        !is_nil(socket.assigns.buildables_map.buildables_flat[building_to_buy_atom].requires)
+
+    new_buildable =
+      if has_requirements do
+        Map.put(
+          socket.assigns.buildables_map.buildables_flat[building_to_buy_atom],
+          :reason,
+          socket.assigns.buildables_map.buildables_flat[building_to_buy_atom].requires
+          |> Map.keys()
+        )
+      else
+        socket.assigns.buildables_map.buildables_flat[building_to_buy_atom]
+      end
 
     requires_keys =
-      socket.assigns.buildables_map.buildables_flat[building_to_buy_atom].requires
-      |> Map.keys()
+      if has_requirements do
+        socket.assigns.buildables_map.buildables_flat[building_to_buy_atom].requires
+        |> Map.keys()
+      else
+        []
+      end
 
     new_city =
-      city |> Map.update!(building_to_buy_atom, fn current -> [new_buildable | current] end)
+      city
+      |> Map.update!(building_to_buy_atom, fn current -> [new_buildable | current] end)
+      |> Map.update!(:treasury, &(&1 - purchase_price))
 
     new_operating_count =
       Map.update!(socket.assigns.operating_count, building_to_buy_atom, fn current_map ->
         Map.update(current_map, requires_keys, 1, &(&1 + 1))
       end)
 
+    new_purchase_price =
+      MayorGame.CityHelpers.building_price(initial_purchase_price, buildable_count + 1)
+
+    IO.inspect(socket.assigns.buildables)
+
+    new_buildables =
+      socket.assigns.buildables
+      |> put_in(
+        [
+          socket.assigns.buildables_map.buildables_flat[building_to_buy_atom].category,
+          building_to_buy_atom,
+          :price
+        ],
+        new_purchase_price
+      )
+
+    IO.inspect(new_buildables)
+
     # IO.inspect(city)
     # put new disabled building in the city
 
     # this is all ya gotta do to update, baybee
     {:noreply,
-     socket |> assign(:operating_count, new_operating_count) |> assign(:city2, new_city)}
+     socket
+     |> assign(:operating_count, new_operating_count)
+     |> assign(:buildables, new_buildables)
+     |> assign(:city2, new_city)}
   end
 
   def handle_event(
