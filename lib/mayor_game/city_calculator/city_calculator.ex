@@ -50,7 +50,13 @@ defmodule MayorGame.CityCalculator do
         :tax,
         %{world: world, buildables_map: buildables_map, in_dev: in_dev} = _sent_map
       ) do
-    cities = City.list_cities_preload()
+    cities =
+      City.list_cities_preload()
+      |> Enum.filter(fn city ->
+        city.huts > 0 || city.single_family_homes > 0 || city.apartments > 0 ||
+          city.homeless_shelters > 0 || city.micro_apartments > 0 || city.high_rises > 0 ||
+          city.megablocks > 0
+      end)
 
     pollution_ceiling = 2_000_000_000 * Random.gammavariate(7.5, 1)
 

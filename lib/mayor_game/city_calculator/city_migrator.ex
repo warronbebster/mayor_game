@@ -77,7 +77,7 @@ defmodule MayorGame.CityMigrator do
     cities_list = Enum.shuffle(cities)
 
     # :eprof.start_profiling([self()])
-    time_to_learn = rem(migration_tick, 5) == 0
+    time_to_learn = rem(migration_tick, 10) == 0
 
     leftovers =
       cities_list
