@@ -80,6 +80,10 @@ defmodule MayorGameWeb.CityLive do
   end
 
   # this handles different events
+  @spec handle_event(<<_::40, _::_*8>>, any, %{
+          :assigns => %{:current_user => atom | map, optional(any) => any},
+          optional(any) => any
+        }) :: nil | {:noreply, map}
   def handle_event(
         "add_citizen",
         _value,
@@ -696,7 +700,7 @@ defmodule MayorGameWeb.CityLive do
             Map.update(
               city.logs_received[giving_town_struct.title],
               to_string(resource_key),
-              0,
+              amount,
               &(&1 + amount)
             )
 
@@ -715,7 +719,7 @@ defmodule MayorGameWeb.CityLive do
             Map.update(
               giving_town_struct.logs_sent[city.title],
               to_string(resource_key),
-              0,
+              amount,
               &(&1 + amount)
             )
 
