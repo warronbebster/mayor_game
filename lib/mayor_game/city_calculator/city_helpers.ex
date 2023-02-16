@@ -359,6 +359,17 @@ defmodule MayorGame.CityHelpers do
         end
       )
 
+    shields_cap = city.defense_bases * 1000
+
+    shields_capped = results.shields > shields_cap
+
+    results_capped =
+      if shields_capped do
+        results |> Map.put(:shields, shields_cap) |> Map.put(:new_shields, 0)
+      else
+        results
+      end
+
     all_citizens =
       Enum.sort_by(results.employed_citizens ++ results.citizens, & &1.education, :desc)
 
@@ -499,7 +510,7 @@ defmodule MayorGame.CityHelpers do
 
     city_baked_direct
     |> Map.from_struct()
-    |> Map.merge(results)
+    |> Map.merge(results_capped)
     |> Map.put(:all_citizens, all_citizens)
     |> Map.merge(after_citizen_checks)
   end

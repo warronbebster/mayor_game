@@ -157,6 +157,9 @@ defmodule MayorGame.CityCalculator do
             # :logs_deaths_housing,
             # :logs_deaths_attacks,
 
+            shields_cap = length(city.defense_bases) * 1000
+            new_shields = min(city.shields, shields_cap)
+
             from(t in Town,
               where: t.id == ^city.id,
               update: [
@@ -167,7 +170,7 @@ defmodule MayorGame.CityCalculator do
                   sulfur: ^city.new_sulfur,
                   gold: ^city.new_gold,
                   uranium: ^city.new_uranium,
-                  shields: ^city.new_shields,
+                  # shields: ^city.new_shields,
                   # logs—————————
                   logs_births: ^births_count,
                   logs_deaths_pollution: ^length(city.polluted_citizens),
@@ -177,7 +180,8 @@ defmodule MayorGame.CityCalculator do
                   citizen_count: ^city.citizen_count,
                   pollution: ^city.pollution,
                   citizens_blob: ^citizens_blob,
-                  logs_edu: ^updated_edu_logs
+                  logs_edu: ^updated_edu_logs,
+                  shields: ^new_shields
                 ]
               ]
             )
