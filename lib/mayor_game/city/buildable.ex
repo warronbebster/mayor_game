@@ -238,7 +238,7 @@ defmodule MayorGame.City.Buildable do
       apartments: %BuildableMetadata{
         level: 0,
         title: :apartments,
-        price: 5_000,
+        price: 800,
         purchasable: true,
         purchasable_reason: "valid",
         requires: %{
@@ -253,7 +253,7 @@ defmodule MayorGame.City.Buildable do
       micro_apartments: %BuildableMetadata{
         level: 0,
         title: :micro_apartments,
-        price: 10_000,
+        price: 1_300,
         purchasable: true,
         purchasable_reason: "valid",
         requires: %{
@@ -268,7 +268,7 @@ defmodule MayorGame.City.Buildable do
       high_rises: %BuildableMetadata{
         level: 0,
         title: :high_rises,
-        price: 20_000,
+        price: 6_000,
         purchasable: true,
         purchasable_reason: "valid",
         requires: %{
