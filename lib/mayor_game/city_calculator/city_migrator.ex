@@ -64,8 +64,6 @@ defmodule MayorGame.CityMigrator do
 
     db_world = City.get_world!(1)
 
-    IO.puts("MOVED————————————————————————————————————————————")
-
     season =
       cond do
         rem(db_world.day, 365) < 91 -> :winter
@@ -885,6 +883,8 @@ defmodule MayorGame.CityMigrator do
         timeout: 6_000_000
       )
     end)
+
+    IO.puts("MOVED————————————————————————————————————————————")
 
     # SEND RESULTS TO CLIENTS
     # send val to liveView process that manages front-end; this basically sends to every client.
