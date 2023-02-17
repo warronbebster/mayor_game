@@ -597,7 +597,7 @@ defmodule MayorGame.CityHelpers do
 
           tax_too_high =
             :rand.uniform() <
-              :math.pow(city.tax_rates[to_string(citizen.education)], 6 - citizen.education) &&
+              :math.pow(city.tax_rates[to_string(citizen.education)], 7 - citizen.education) &&
               !pollution_death
 
           employable =

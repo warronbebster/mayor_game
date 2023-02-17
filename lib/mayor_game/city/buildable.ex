@@ -179,8 +179,6 @@ defmodule MayorGame.City.Buildable do
         level: 0,
         title: :huts,
         price: 10,
-        purchasable: true,
-        purchasable_reason: "valid",
         requires: %{
           area: 1
         },
@@ -195,8 +193,6 @@ defmodule MayorGame.City.Buildable do
         level: 0,
         title: :single_family_homes,
         price: 100,
-        purchasable: true,
-        purchasable_reason: "valid",
         requires: %{
           area: 1,
           energy: 12
@@ -212,8 +208,6 @@ defmodule MayorGame.City.Buildable do
         level: 0,
         title: :multi_family_homes,
         price: 200,
-        purchasable: true,
-        purchasable_reason: "valid",
         requires: %{
           area: 1,
           energy: 18
@@ -229,8 +223,6 @@ defmodule MayorGame.City.Buildable do
         level: 0,
         title: :homeless_shelters,
         price: 100,
-        purchasable: true,
-        purchasable_reason: "valid",
         requires: %{
           area: 5,
           money: 100,
@@ -246,8 +238,6 @@ defmodule MayorGame.City.Buildable do
         level: 0,
         title: :apartments,
         price: 800,
-        purchasable: true,
-        purchasable_reason: "valid",
         requires: %{
           area: 10,
           energy: 90
@@ -262,8 +252,6 @@ defmodule MayorGame.City.Buildable do
         level: 0,
         title: :micro_apartments,
         price: 1_300,
-        purchasable: true,
-        purchasable_reason: "valid",
         requires: %{
           area: 5,
           energy: 50
@@ -278,8 +266,6 @@ defmodule MayorGame.City.Buildable do
         level: 0,
         title: :high_rises,
         price: 6_000,
-        purchasable: true,
-        purchasable_reason: "valid",
         requires: %{
           area: 2,
           energy: 150
@@ -295,8 +281,6 @@ defmodule MayorGame.City.Buildable do
         level: 0,
         title: :megablocks,
         price: 5_000_000,
-        purchasable: true,
-        purchasable_reason: "valid",
         requires: %{
           area: 100,
           energy: 2000
@@ -312,8 +296,6 @@ defmodule MayorGame.City.Buildable do
         level: 0,
         title: :roads,
         price: 200,
-        purchasable: true,
-        purchasable_reason: "valid",
         produces: %{
           health: -1,
           sprawl: 10,
@@ -333,8 +315,6 @@ defmodule MayorGame.City.Buildable do
             health: %{forest: 0.7, mountain: 0.7, desert: 0.9, lake: 0.7}
           }
         },
-        purchasable: true,
-        purchasable_reason: "valid",
         produces: %{
           health: -4,
           sprawl: 20,
@@ -349,8 +329,6 @@ defmodule MayorGame.City.Buildable do
         level: 0,
         title: :airports,
         price: 2000,
-        purchasable: true,
-        purchasable_reason: "valid",
         requires: %{
           workers: %{count: 10, level: 0},
           energy: 150
@@ -368,8 +346,6 @@ defmodule MayorGame.City.Buildable do
         level: 0,
         title: :subway_lines,
         price: 2000,
-        purchasable: true,
-        purchasable_reason: "valid",
         requires: %{
           workers: %{count: 10, level: 0},
           money: 40
@@ -385,8 +361,6 @@ defmodule MayorGame.City.Buildable do
         level: 0,
         title: :bus_lines,
         price: 70,
-        purchasable: true,
-        purchasable_reason: "valid",
         requires: %{
           workers: %{count: 10, level: 0},
           money: 30
@@ -403,8 +377,6 @@ defmodule MayorGame.City.Buildable do
         level: 0,
         title: :bike_lanes,
         price: 60,
-        purchasable: true,
-        purchasable_reason: "valid",
         multipliers: %{
           region: %{
             health: %{
@@ -432,8 +404,6 @@ defmodule MayorGame.City.Buildable do
         level: 0,
         title: :bikeshare_stations,
         price: 70,
-        purchasable: true,
-        purchasable_reason: "valid",
         multipliers: %{
           region: %{
             health: %{
@@ -458,8 +428,6 @@ defmodule MayorGame.City.Buildable do
         level: 0,
         title: :coal_plants,
         price: 500,
-        purchasable: true,
-        purchasable_reason: "valid",
         multipliers: %{
           region: %{
             energy: %{
@@ -484,8 +452,6 @@ defmodule MayorGame.City.Buildable do
         level: 1,
         title: :natural_gas_plants,
         price: 800,
-        purchasable: true,
-        purchasable_reason: "valid",
         multipliers: %{
           region: %{
             energy: %{
@@ -510,8 +476,6 @@ defmodule MayorGame.City.Buildable do
         level: 1,
         title: :wind_turbines,
         price: 1000,
-        purchasable: true,
-        purchasable_reason: "valid",
         multipliers: %{
           region: %{
             energy: %{
@@ -541,8 +505,6 @@ defmodule MayorGame.City.Buildable do
         level: 2,
         title: :solar_plants,
         price: 2000,
-        purchasable: true,
-        purchasable_reason: "valid",
         multipliers: %{
           region: %{
             energy: %{
@@ -574,8 +536,6 @@ defmodule MayorGame.City.Buildable do
         level: 3,
         title: :nuclear_plants,
         price: 5000,
-        purchasable: true,
-        purchasable_reason: "valid",
         requires: %{
           money: 500,
           area: 10,
@@ -591,8 +551,6 @@ defmodule MayorGame.City.Buildable do
         level: 2,
         title: :dams,
         price: 5000,
-        purchasable: true,
-        purchasable_reason: "valid",
         multipliers: %{
           region: %{
             energy: %{
@@ -621,8 +579,6 @@ defmodule MayorGame.City.Buildable do
         level: 4,
         title: :fusion_reactors,
         price: 50_000_000,
-        purchasable: true,
-        purchasable_reason: "valid",
         requires: %{
           money: 10_000,
           uranium: 50,
@@ -639,8 +595,6 @@ defmodule MayorGame.City.Buildable do
         level: 5,
         title: :carbon_capture_plants,
         price: 100_000,
-        purchasable: true,
-        purchasable_reason: "valid",
         requires: %{
           money: 50,
           area: 10,
@@ -656,8 +610,6 @@ defmodule MayorGame.City.Buildable do
         level: 0,
         title: :parks,
         price: 20,
-        purchasable: true,
-        purchasable_reason: "valid",
         multipliers: %{
           region: %{
             health: %{
@@ -692,8 +644,6 @@ defmodule MayorGame.City.Buildable do
         level: 2,
         title: :libraries,
         price: 1000,
-        purchasable: true,
-        purchasable_reason: "valid",
         requires: %{
           money: 10,
           area: 2,
@@ -713,8 +663,6 @@ defmodule MayorGame.City.Buildable do
         price: 2000,
         education_level: 1,
         capacity: 10,
-        purchasable: true,
-        purchasable_reason: "valid",
         requires: %{
           money: 10,
           energy: 600,
@@ -733,8 +681,6 @@ defmodule MayorGame.City.Buildable do
         price: 3000,
         education_level: 2,
         capacity: 10,
-        purchasable: true,
-        purchasable_reason: "valid",
         requires: %{
           money: 40,
           energy: 800,
@@ -753,8 +699,6 @@ defmodule MayorGame.City.Buildable do
         price: 4000,
         education_level: 3,
         capacity: 10,
-        purchasable: true,
-        purchasable_reason: "valid",
         requires: %{
           money: 70,
           energy: 800,
@@ -773,8 +717,6 @@ defmodule MayorGame.City.Buildable do
         price: 6500,
         education_level: 4,
         capacity: 10,
-        purchasable: true,
-        purchasable_reason: "valid",
         requires: %{
           money: 150,
           energy: 1200,
@@ -793,8 +735,6 @@ defmodule MayorGame.City.Buildable do
         price: 9000,
         education_level: 5,
         capacity: 5,
-        purchasable: true,
-        purchasable_reason: "valid",
         requires: %{
           money: 200,
           energy: 1200,
@@ -811,8 +751,6 @@ defmodule MayorGame.City.Buildable do
         level: 5,
         title: :retail_shops,
         price: 1000,
-        purchasable: true,
-        purchasable_reason: "valid",
         requires: %{
           money: 2,
           energy: 100,
@@ -826,8 +764,6 @@ defmodule MayorGame.City.Buildable do
         level: 0,
         title: :factories,
         price: 5000,
-        purchasable: true,
-        purchasable_reason: "valid",
         requires: %{
           money: 50,
           energy: 1900,
@@ -846,8 +782,6 @@ defmodule MayorGame.City.Buildable do
         level: 0,
         title: :mines,
         price: 5000,
-        purchasable: true,
-        purchasable_reason: "valid",
         requires: %{
           money: 250,
           energy: 1900,
@@ -868,8 +802,6 @@ defmodule MayorGame.City.Buildable do
         level: 1,
         title: :office_buildings,
         price: 8000,
-        purchasable: true,
-        purchasable_reason: "valid",
         requires: %{
           money: 5,
           energy: 800,
@@ -883,8 +815,6 @@ defmodule MayorGame.City.Buildable do
         level: 0,
         title: :distribution_centers,
         price: 100_000,
-        purchasable: true,
-        purchasable_reason: "valid",
         requires: %{
           money: 25,
           energy: 1500,
@@ -903,8 +833,6 @@ defmodule MayorGame.City.Buildable do
         level: 0,
         title: :theatres,
         price: 3000,
-        purchasable: true,
-        purchasable_reason: "valid",
         requires: %{
           money: 10,
           energy: 300,
@@ -921,8 +849,6 @@ defmodule MayorGame.City.Buildable do
         level: 0,
         title: :arenas,
         price: 5_000,
-        purchasable: true,
-        purchasable_reason: "valid",
         requires: %{
           money: 100,
           energy: 500,
@@ -939,8 +865,6 @@ defmodule MayorGame.City.Buildable do
         level: 2,
         title: :hospitals,
         price: 12_000,
-        purchasable: true,
-        purchasable_reason: "valid",
         requires: %{
           money: 100,
           energy: 400,
@@ -957,8 +881,6 @@ defmodule MayorGame.City.Buildable do
         level: 4,
         title: :doctor_offices,
         price: 6000,
-        purchasable: true,
-        purchasable_reason: "valid",
         requires: %{
           money: 50,
           energy: 50,
@@ -975,8 +897,6 @@ defmodule MayorGame.City.Buildable do
         level: 5,
         title: :air_bases,
         price: 100_000_000,
-        purchasable: true,
-        purchasable_reason: "valid",
         requires: %{
           money: 5000,
           steel: 50,
@@ -995,8 +915,6 @@ defmodule MayorGame.City.Buildable do
         level: 2,
         title: :defense_bases,
         price: 50_000_000,
-        purchasable: true,
-        purchasable_reason: "valid",
         requires: %{
           money: 2000,
           energy: 2500,
@@ -1041,10 +959,10 @@ defmodule MayorGame.City.Buildable do
       needs_nothing,
       get_requirements_keys([:area]),
       get_requirements_keys([:money]),
-      get_requirements_keys([:money, :workers]),
-      # ^ bus lines and subways
       get_requirements_keys([:area, :workers]),
       # this is basically all energy gen
+      get_requirements_keys([:money, :workers]),
+      # ^ bus lines and subways
       get_requirements_keys([:area, :money, :workers]),
       # this is basically all energy gen
       get_requirements_keys([:money, :energy]),

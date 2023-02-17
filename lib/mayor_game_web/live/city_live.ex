@@ -418,18 +418,18 @@ defmodule MayorGameWeb.CityLive do
         %{"job_level" => job_level, "value" => updated_value},
         %{assigns: %{city2: city}} = socket
       ) do
-    if socket.assigns.current_user.id == city.user_id do
-      # check if user is mayor here?
-      updated_value_float = Float.parse(updated_value)
+    updated_value_float = Float.parse(updated_value)
 
-      if updated_value_float != :error do
-        updated_value_constrained =
-          elem(updated_value_float, 0) |> max(0.0) |> min(1.0) |> Float.round(2)
+    if updated_value_float != :error do
+      updated_value_constrained =
+        elem(updated_value_float, 0) |> max(0.0) |> min(1.0) |> Float.round(2)
 
-        # check if it's below 0 or above 1 or not a number
+      # check if it's below 0 or above 1 or not a number
 
-        updated_tax_rates =
-          city.tax_rates |> Map.put(job_level, updated_value_constrained) |> Map.drop(["6"])
+      updated_tax_rates = city.tax_rates |> Map.put(job_level, updated_value_constrained)
+
+      if socket.assigns.current_user.id == city.user_id do
+        # check if user is mayor here?
 
         case City.update_town_by_id(city.id, %{tax_rates: updated_tax_rates}) do
           {:ok, _updated_details} ->
@@ -441,9 +441,10 @@ defmodule MayorGameWeb.CityLive do
       end
 
       # this is all ya gotta do to update, baybee
-    end
+      new_city = Map.put(city, :tax_rates, updated_tax_rates)
 
-    {:noreply, socket |> update_city_by_title()}
+      {:noreply, socket |> assign(city2: new_city)}
+    end
   end
 
   # this is what gets messages from CityCalculator
@@ -498,6 +499,7 @@ defmodule MayorGameWeb.CityLive do
 
     # have to have this separate from the actual city because the city might not have some buildables, but they're still purchasable
     # this status is for the whole category
+    # this could be much simpler
     buildables_with_status =
       calculate_buildables_statuses(
         city_with_stats2,
@@ -655,48 +657,11 @@ defmodule MayorGameWeb.CityLive do
 
   # this takes a buildable, and builds purchasable status from database
   # TODO: Clean this shit upppp
+  # why do I even need this lol. let you build but just
   defp calculate_buildable_status(buildable, city_with_stats, buildable_count) do
     updated_price = MayorGame.CityHelpers.building_price(buildable.price, buildable_count)
 
-    buildable_stats =
-      if city_with_stats.treasury > updated_price do
-        if is_nil(buildable.requires) do
-          %{buildable | purchasable: true, purchasable_reason: "valid", price: updated_price}
-        else
-          purchase_requirements = [:energy, :area]
-
-          unfulfilled_requirements =
-            Enum.reduce(purchase_requirements, [], fn requirement, acc ->
-              if Map.has_key?(buildable.requires, requirement) &&
-                   city_with_stats[requirement] < buildable.requires[requirement] do
-                acc ++ [requirement]
-              else
-                acc
-              end
-            end)
-
-          if length(unfulfilled_requirements) > 0 do
-            %{
-              buildable
-              | purchasable: false,
-                purchasable_reason:
-                  "not enough " <> Enum.join(unfulfilled_requirements, " or ") <> " to build",
-                price: updated_price
-            }
-          else
-            %{buildable | purchasable: true, purchasable_reason: "valid", price: updated_price}
-          end
-        end
-      else
-        %{
-          buildable
-          | purchasable: false,
-            purchasable_reason: "not enough money",
-            price: updated_price
-        }
-      end
-
-    buildable_stats
+    buildable
     |> Map.put(
       :actual_produces,
       MayorGame.CityHelpers.get_production_map(
@@ -707,6 +672,7 @@ defmodule MayorGameWeb.CityLive do
         city_with_stats.season
       )
     )
+    |> Map.put(:price, updated_price)
   end
 
   # TRADING —————————————————————————————————————————————————————————————————————————————————————
