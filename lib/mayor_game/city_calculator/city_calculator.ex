@@ -137,6 +137,13 @@ defmodule MayorGame.CityCalculator do
                       last_moved: db_world.day,
                       preferences: :rand.uniform(10)
                     }
+
+                    # %{
+                    #   age: 0,
+                    #   education: :rand.uniform(6) - 1,
+                    #   last_moved: world.day,
+                    #   preferences: :rand.uniform(10)
+                    # }
                   end)
               else
                 simplified_citizens
@@ -181,6 +188,7 @@ defmodule MayorGame.CityCalculator do
                 set: [
                   citizen_count: ^city.citizen_count,
                   pollution: ^city.pollution,
+                  # I think the "set" here is what's funky
                   citizens_blob: ^citizens_blob,
                   logs_edu: ^updated_edu_logs
                   # shields: ^new_shields

@@ -114,7 +114,7 @@ defmodule MayorGameWeb.CityLive do
         education: 0,
         has_job: false,
         last_moved: socket.assigns.world.day,
-        preferences: :rand.uniform(6)
+        preferences: :rand.uniform(10)
       }
 
       from(t in Town,
