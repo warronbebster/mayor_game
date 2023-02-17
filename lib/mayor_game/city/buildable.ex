@@ -652,8 +652,6 @@ defmodule MayorGame.City.Buildable do
         level: 0,
         title: :campgrounds,
         price: 250,
-        purchasable: true,
-        purchasable_reason: "valid",
         multipliers: %{
           region: %{
             health: %{
@@ -688,8 +686,6 @@ defmodule MayorGame.City.Buildable do
         level: 0,
         title: :nature_preserves,
         price: 2_350,
-        purchasable: true,
-        purchasable_reason: "valid",
         multipliers: %{
           region: %{
             health: %{
@@ -946,8 +942,6 @@ defmodule MayorGame.City.Buildable do
         level: 0,
         title: :zoos,
         price: 2_500,
-        purchasable: true,
-        purchasable_reason: "valid",
         multipliers: %{
           region: %{
             energy: %{
@@ -982,8 +976,6 @@ defmodule MayorGame.City.Buildable do
         level: 0,
         title: :aquariums,
         price: 7_500,
-        purchasable: true,
-        purchasable_reason: "valid",
         multipliers: %{
           region: %{
             energy: %{
