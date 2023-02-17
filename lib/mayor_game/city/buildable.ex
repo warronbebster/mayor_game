@@ -77,6 +77,8 @@ defmodule MayorGame.City.Buildable do
       ],
       civic: %{
         parks: buildables_flat().parks,
+        campgrounds: buildables_flat().campgrounds,
+        nature_preserves: buildables_flat().nature_preserves,
         libraries: buildables_flat().libraries
       },
       education: %{
@@ -95,7 +97,9 @@ defmodule MayorGame.City.Buildable do
       },
       entertainment: %{
         theatres: buildables_flat().theatres,
-        arenas: buildables_flat().arenas
+        arenas: buildables_flat().arenas,
+        zoos: buildables_flat().zoos,
+        aquariums: buildables_flat().aquariums
       },
       health: %{
         hospitals: buildables_flat().hospitals,
@@ -148,6 +152,8 @@ defmodule MayorGame.City.Buildable do
       ],
       civic: [
         parks: buildables_flat().parks,
+        campgrounds: buildables_flat().campgrounds,
+        nature_preserves: buildables_flat().nature_preserves,
         libraries: buildables_flat().libraries
       ],
       work: [
@@ -159,7 +165,9 @@ defmodule MayorGame.City.Buildable do
       ],
       entertainment: [
         theatres: buildables_flat().theatres,
-        arenas: buildables_flat().arenas
+        arenas: buildables_flat().arenas,
+        zoos: buildables_flat().zoos,
+        aquariums: buildables_flat().aquariums
       ],
       health: [
         hospitals: buildables_flat().hospitals,
@@ -686,6 +694,79 @@ defmodule MayorGame.City.Buildable do
           pollution: -1
         }
       },
+      # CAMPGROUNDS ————————————————————————————————————
+      campgrounds: %BuildableMetadata{
+        category: :civic,
+        level: 0,
+        title: :campgrounds,
+        price: 250,
+        purchasable: true,
+        purchasable_reason: "valid",
+        multipliers: %{
+          region: %{
+            health: %{
+              ocean: 1.5,
+              mountain: 1.4,
+              forest: 1.3,
+              lake: 1.2
+            },
+            fun: %{
+              ocean: 1.75,
+              mountain: 0.9,
+              desert: 0.7,
+              forest: 1.25,
+              lake: 1.4
+            }
+          }
+        },
+        requires: %{
+          money: 30,
+          area: 50,
+          workers: %{count: 6, level: 1}
+        },
+        produces: %{
+          fun: 7,
+          health: 6,
+          pollution: -3
+        }
+      },
+      # NATURE PRESERVES ————————————————————————————————————
+      nature_preserves: %BuildableMetadata{
+        category: :civic,
+        level: 0,
+        title: :nature_preserves,
+        price: 2_350,
+        purchasable: true,
+        purchasable_reason: "valid",
+        multipliers: %{
+          region: %{
+            health: %{
+              ocean: 1.1,
+              mountain: 1.4,
+              desert: 0.7,
+              forest: 1.6,
+              lake: 1.2
+            },
+            fun: %{
+              ocean: 1.5,
+              mountain: 0.7,
+              desert: 1.1,
+              forest: 1.5,
+              lake: 1.3
+            }
+          }
+        },
+        requires: %{
+          money: 100,
+          area: 100,
+          workers: %{count: 6, level: 3}
+        },
+        produces: %{
+          fun: 10,
+          health: 5,
+          pollution: -12
+        }
+      },
       # LIBRARIES ————————————————————————————————————
       libraries: %BuildableMetadata{
         category: :civic,
@@ -931,6 +1012,80 @@ defmodule MayorGame.City.Buildable do
         },
         produces: %{
           fun: 10
+        }
+      },
+      # ZOOS ————————————————————————————————————
+      zoos: %BuildableMetadata{
+        category: :entertainment,
+        level: 0,
+        title: :zoos,
+        price: 2_500,
+        purchasable: true,
+        purchasable_reason: "valid",
+        multipliers: %{
+          region: %{
+            energy: %{
+              desert: 1.2
+            },
+            money: %{
+              desert: 1.2,
+              mountain: 1.3
+            }
+          },
+          season: %{
+            energy: %{
+              winter: 1.2,
+              summer: 1.2
+            }
+          }
+        },
+        requires: %{
+          money: 250,
+          energy: 250,
+          area: 70,
+          workers: %{count: 10, level: 3}
+        },
+        produces: %{
+          fun: 8,
+          pollution: -1
+        }
+      },
+      # AQUARIUMS ————————————————————————————————————
+      aquariums: %BuildableMetadata{
+        category: :entertainment,
+        level: 0,
+        title: :aquariums,
+        price: 7_500,
+        purchasable: true,
+        purchasable_reason: "valid",
+        multipliers: %{
+          region: %{
+            energy: %{
+              desert: 1.2,
+              ocean: 0.8,
+              lake: 0.9
+            },
+            money: %{
+              ocean: 0.75,
+              lake: 0.75
+            }
+          },
+          season: %{
+            energy: %{
+              winter: 1.25,
+              summer: 1.25
+            }
+          }
+        },
+        requires: %{
+          money: 380,
+          energy: 450,
+          area: 60,
+          workers: %{count: 10, level: 4}
+        },
+        produces: %{
+          fun: 20,
+          pollution: -1
         }
       },
       # HOSPITALS ————————————————————————————————————
