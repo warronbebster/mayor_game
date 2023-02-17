@@ -597,7 +597,7 @@ defmodule MayorGame.CityHelpers do
 
           tax_too_high =
             :rand.uniform() <
-              :math.pow(city.tax_rates[to_string(citizen.education)], 6 - citizen.education) &&
+              :math.pow(city.tax_rates[to_string(citizen.education)], 7 - citizen.education) &&
               !pollution_death
 
           employable =
@@ -610,7 +610,7 @@ defmodule MayorGame.CityHelpers do
 
           will_citizen_reproduce =
             citizen.age > 500 and citizen.age < 3000 and acc.housing_left > 1 &&
-              :rand.uniform(round(:math.pow(citizen_count, 2))) < max(results.health / 1000, 5)
+              :rand.uniform(min(citizen_count, 5000)) < max(results.health / 10, 5)
 
           housing_taken = if will_citizen_reproduce, do: 2, else: 1
 
@@ -806,7 +806,7 @@ defmodule MayorGame.CityHelpers do
              else: v
 
         v_x_region =
-          if Map.has_key?(multipliers, :season) && Map.has_key?(multipliers.region, k) &&
+          if Map.has_key?(multipliers, :region) && Map.has_key?(multipliers.region, k) &&
                Map.has_key?(multipliers.region[k], region),
              do: round(v_x_season * multipliers.region[k]),
              else: v_x_season

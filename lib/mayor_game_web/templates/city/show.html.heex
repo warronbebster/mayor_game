@@ -597,7 +597,7 @@
               <!-- build & delete buttons -->
               <div class="flex flex-row ">
                 <%= if @is_user_mayor do %>
-                  <%= if building_stats.purchasable do %>
+                  <%= if @city2.treasury > building_stats.price do %>
                     <button
                       class="btn m-0 rounded-none border border-neutral-800/25 leading-none h-6"
                       phx-click="purchase_building"
@@ -622,7 +622,7 @@
                             trim: true
                           ) %>
                       </button>
-                      <div class="tooltip w-28"><%= building_stats.purchasable_reason %></div>
+                      <div class="tooltip w-28">not enough money</div>
                     </div>
                   <% end %>
                   <%= if not Enum.empty?(Map.get(@operating_count, building_type)) do %>

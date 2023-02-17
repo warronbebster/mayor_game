@@ -11,13 +11,11 @@ defmodule MayorGame.City.BuildableMetadata do
     :jobs,
     :education_level,
     :capacity,
-    :purchasable_reason,
     :requires,
     :produces,
     :multipliers,
     reason: [],
-    enabled: false,
-    purchasable: true
+    enabled: false
   ]
 
   @typedoc """
@@ -31,8 +29,6 @@ defmodule MayorGame.City.BuildableMetadata do
           jobs: integer | nil,
           education_level: 1..5,
           capacity: integer | nil,
-          purchasable_reason: list(String.t()) | nil,
-          purchasable: boolean,
           produces: map | nil,
           requires: map | nil,
           multipliers: map | nil,
