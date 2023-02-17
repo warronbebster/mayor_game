@@ -941,7 +941,8 @@ defmodule MayorGame.CityMigrator do
   end
 
   def citizen_score(citizen_preferences, education_level, normalized_city) do
-    (1 - normalized_city.tax_rates[to_string(education_level)]) * citizen_preferences.tax_rates +
+    (1 - :math.pow(normalized_city.tax_rates[to_string(education_level)], education_level + 1)) *
+      citizen_preferences.tax_rates +
       (1 - normalized_city.pollution_normalized) * citizen_preferences.pollution +
       (1 - normalized_city.sprawl_normalized) * citizen_preferences.sprawl +
       normalized_city.fun_normalized * citizen_preferences.fun +
