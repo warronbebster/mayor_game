@@ -74,6 +74,22 @@ MayorGame.City.update_world(world, %{pollution: 1000000})
 city = MayorGame.City.get_town_by_title!("wat")
 MayorGame.City.update_town(city, %{patron: 1})
 
+MayorGame.City.update_town(city, %{tax_rates:  %{
+                "0" => 0.1,
+                "1" => 0.2,
+                "2" => 0.3,
+                "3" => 0.4,
+                "4" => 0.5,
+                "5" => 0.5
+              }})
+
+citizens = for _ -> 1000, do:
+ %{
+                      age: 0,
+                      education: :rand.uniform(6) -1,
+                      last_moved: world.day,
+                      preferences: :rand.uniform(10)
+                    }
 
 ```
 

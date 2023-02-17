@@ -862,6 +862,41 @@ defmodule MayorGame.CityMigrator do
                 slotted_cities_by_id[id].city.logs_emigration_housing
               end
 
+            updated_edu_logs =
+              Map.merge(
+                CityHelpers.integerize_keys(slotted_cities_by_id[id].city.logs_edu),
+                slotted_cities_by_id[id].city.educated_citizens,
+                fn _k, v1, v2 ->
+                  v1 + v2
+                end
+              )
+
+            births_count =
+              if slotted_cities_by_id[id].city.citizen_count > 20 do
+                slotted_cities_by_id[id].city.reproducing_citizens
+              else
+                if :rand.uniform() > 0.8 do
+                  1
+                else
+                  0
+                end
+              end
+
+            updated_citizens =
+              if births_count > 0 do
+                list ++
+                  Enum.map(1..births_count, fn _citizen ->
+                    %{
+                      age: 0,
+                      education: 0,
+                      last_moved: db_world.day,
+                      preferences: :rand.uniform(10)
+                    }
+                  end)
+              else
+                list
+              end
+
             from(t in Town,
               where: t.id == ^id,
               update: [
@@ -869,11 +904,15 @@ defmodule MayorGame.CityMigrator do
                   logs_emigration_taxes: ^logs_emigration_taxes,
                   logs_emigration_jobs: ^logs_emigration_jobs,
                   logs_emigration_housing: ^logs_emigration_housing,
+                  logs_edu: ^updated_edu_logs,
                   citizen_count: ^length(list),
-                  citizens_blob: ^list
+                  citizens_blob: ^updated_citizens
                 ],
                 inc: [
-                  logs_deaths_housing: ^unhoused_deaths[id]
+                  logs_deaths_housing: ^unhoused_deaths[id],
+                  logs_deaths_pollution: ^length(slotted_cities_by_id[id].city.polluted_citizens),
+                  logs_deaths_age: ^length(slotted_cities_by_id[id].city.old_citizens),
+                  logs_births: ^births_count
                 ]
               ]
             )
@@ -943,10 +982,16 @@ defmodule MayorGame.CityMigrator do
   def citizen_score(citizen_preferences, education_level, normalized_city) do
     # Clamp tax calculation preference between 0 & 1
     # Follows the following graph: https://www.desmos.com/calculator/69fewtjvma
-    min(max(:math.pow(
-      1 - normalized_city.tax_rates[to_string(education_level)], 
-      1.16 - citizen_preferences.tax_rates
-    ), 0), 1) +
+    min(
+      max(
+        :math.pow(
+          1 - normalized_city.tax_rates[to_string(education_level)],
+          1.16 - citizen_preferences.tax_rates
+        ),
+        0
+      ),
+      1
+    ) +
       (1 - normalized_city.pollution_normalized) * citizen_preferences.pollution +
       (1 - normalized_city.sprawl_normalized) * citizen_preferences.sprawl +
       normalized_city.fun_normalized * citizen_preferences.fun +

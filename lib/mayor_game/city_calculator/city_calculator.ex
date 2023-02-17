@@ -114,54 +114,54 @@ defmodule MayorGame.CityCalculator do
                 end
               )
 
-            births_count =
-              if city.citizen_count > 20 do
-                city.reproducing_citizens
-              else
-                if :rand.uniform() > 0.8 do
-                  1
-                else
-                  0
-                end
-              end
+            # births_count =
+            #   if city.citizen_count > 20 do
+            #     city.reproducing_citizens
+            #   else
+            #     if :rand.uniform() > 0.8 do
+            #       1
+            #     else
+            #       0
+            #     end
+            #   end
 
-            updated_citizens =
-              if births_count > 0 do
-                simplified_citizens ++
-                  Enum.map(1..births_count, fn _citizen ->
-                    %{
-                      town_id: city.id,
-                      age: 0,
-                      education: 0,
-                      has_job: false,
-                      last_moved: db_world.day,
-                      preferences: :rand.uniform(10)
-                    }
+            # updated_citizens =
+            #   if births_count > 0 do
+            #     simplified_citizens ++
+            #       Enum.map(1..births_count, fn _citizen ->
+            #         %{
+            #           town_id: city.id,
+            #           age: 0,
+            #           education: 0,
+            #           has_job: false,
+            #           last_moved: db_world.day,
+            #           preferences: :rand.uniform(10)
+            #         }
+            #       end)
+            #   else
+            #     simplified_citizens
+            #   end
 
-                    # %{
-                    #   age: 0,
-                    #   education: :rand.uniform(6) - 1,
-                    #   last_moved: world.day,
-                    #   preferences: :rand.uniform(10)
-                    # }
-                  end)
-              else
-                simplified_citizens
-              end
+            # birthed_citizens =
+            #   if births_count > 0 do
+            #     Enum.map(1..births_count, fn _citizen ->
+            #       %{
+            #         age: 0,
+            #         education: 0,
+            #         last_moved: db_world.day,
+            #         preferences: :rand.uniform(10)
+            #       }
+            #     end)
+            #   else
+            #     []
+            #   end
 
-            citizens_blob =
-              if length(updated_citizens) < 20 do
-                Enum.take(updated_citizens, city.total_housing)
-              else
-                updated_citizens
-              end
-
-            updated_edu_logs =
-              Map.merge(CityHelpers.integerize_keys(city.logs_edu), city.educated_citizens, fn _k,
-                                                                                               v1,
-                                                                                               v2 ->
-                v1 + v2
-              end)
+            # citizens_blob =
+            #   if length(updated_citizens) < 20 do
+            #     Enum.take(updated_citizens, city.total_housing)
+            #   else
+            #     updated_citizens
+            #   end
 
             # :logs_attacks,
             # :logs_deaths_housing,
@@ -179,18 +179,15 @@ defmodule MayorGame.CityCalculator do
                   sulfur: ^city.new_sulfur,
                   gold: ^city.new_gold,
                   uranium: ^city.new_uranium,
-                  shields: ^city.new_shields,
+                  shields: ^city.new_shields
                   # logs—————————
-                  logs_births: ^births_count,
-                  logs_deaths_pollution: ^length(city.polluted_citizens),
-                  logs_deaths_age: ^length(city.old_citizens)
                 ],
                 set: [
-                  citizen_count: ^city.citizen_count,
-                  pollution: ^city.pollution,
-                  # I think the "set" here is what's funky
-                  citizens_blob: ^citizens_blob,
-                  logs_edu: ^updated_edu_logs
+                  # citizen_count: ^city.citizen_count,
+                  pollution: ^city.pollution
+                  # citizens_blob: ^citizens_blob
+                  # ^ I think the "set" here is what's funky and causes jumps
+                  # migrator could set smaller set and then this could set larger
                   # shields: ^new_shields
                 ]
               ]
