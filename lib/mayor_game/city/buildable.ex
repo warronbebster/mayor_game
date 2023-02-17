@@ -1108,10 +1108,10 @@ defmodule MayorGame.City.Buildable do
       get_requirements_keys([:money]),
       get_requirements_keys([:area, :workers]),
       # this is basically all energy gen
-      get_requirements_keys([:money, :workers]),
       # ^ bus lines and subways
       get_requirements_keys([:area, :money, :workers]),
       # this is basically all energy gen
+      get_requirements_keys([:money, :workers]),
       get_requirements_keys([:money, :energy]),
       # ^ airports
 
