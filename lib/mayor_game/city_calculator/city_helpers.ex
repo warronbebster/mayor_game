@@ -806,7 +806,7 @@ defmodule MayorGame.CityHelpers do
              else: v
 
         v_x_region =
-          if Map.has_key?(multipliers, :season) && Map.has_key?(multipliers.region, k) &&
+          if Map.has_key?(multipliers, :region) && Map.has_key?(multipliers.region, k) &&
                Map.has_key?(multipliers.region[k], region),
              do: round(v_x_season * multipliers.region[k]),
              else: v_x_season
