@@ -385,7 +385,7 @@ defmodule MayorGame.CityHelpers do
           # i can just calculate this globally. doesn't really matter on a per-citizen basis
           will_citizen_reproduce =
             citizen.age > 15 and acc.housing_left > 1 &&
-              :rand.uniform(citizen_count) < max(results.health / 100, 5)
+              :rand.uniform(citizen_count) < max(results.health / 10, 10)
 
           housing_taken = if will_citizen_reproduce, do: 2, else: 1
 
