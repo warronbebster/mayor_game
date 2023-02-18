@@ -44,6 +44,7 @@ defmodule MayorGameWeb.Router do
     get "/", PageController, :index
     # live "/cities/:town_id/users/:user_id", CityLive, as: :city
     live "/city/:title", CityLive, as: :city
+    live "/wiki", WikiLive, as: :wiki
 
     # get "/cities/:town_id/users/:user_id", CityController, :index
   end

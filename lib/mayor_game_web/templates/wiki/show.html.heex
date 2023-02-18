@@ -1,0 +1,342 @@
+<div class="flex overflow-hidden">
+  <div class="w-64 overflow-auto gap-2 px-2 py-0.5 pb-2 ">
+    <div class="text-lg gap-x-1">
+      info.pedia
+    </div>
+    <div class="text-base py-2 hover:underline"><a href="#section_intro" phx-click="nav_to_section" phx-throttle="100" phx-value-section="intro">Intro</a></div>
+    <div class="text-base py-2 hover:underline"><a href="#section_resources" phx-click="nav_to_section" phx-throttle="100" phx-value-section="resources">Resources</a></div>
+    <%= if !is_nil(@section) && @section == "resources" do %>
+      <%= for {category, resources} <- @resources do %>
+        <li class="text-sm hover:underline first-letter:uppercase ml-4"><a href={"#section_resource_" <> to_string(category)} phx-click="nav_to_section" phx-throttle="100" phx-value-section="resources"><%= category %></a></li>
+      <% end %>
+    <% end %>
+    <div class="text-base py-2 hover:underline"><a href="#section_buildables" phx-click="nav_to_section" phx-throttle="100" phx-value-section="buildables">Buildables</a></div>
+    <%= if !is_nil(@section) && @section == "buildables" do %>
+      <%= for {category, buildable} <- @buildables do %>
+        <li class="text-sm hover:underline first-letter:uppercase ml-4"><a href={"#section_buildable_" <> to_string(category)} phx-click="nav_to_section" phx-throttle="100" phx-value-section="buildables"><%= category %></a></li>
+      <% end %>
+    <% end %>
+  </div>
+  <div class="px-3 my-0 flex flex-1 flex-col overflow-auto">
+    <!-- INTRO -->
+    <%= if is_nil(@section) || @section == "intro" do %>
+      <span id="section_intro" class="text-xl gap-x-1 py-2">
+        Intro
+      </span>
+      <div class="text-base pb-4 ml-8">
+        <p class="text-justify">Welcome to the fragile.city infopedia! This page contains infomation about elements used in the game.</p>
+        <br/>
+        <p class="text-justify">Click on one of the links on the left side of the page to navigate.</p>
+      </div>
+    <%= end %>
+    <!-- RESOURCES -->
+    <%= if !is_nil(@section) && @section == "resources" do %>
+      <span id="section_resources" class="text-xl gap-x-1 py-2">
+        Resources
+      </span>
+      <div>
+        <div class="text-sm pb-4 ml-8">
+          <div class="flex flex-row gap-4 py-2">
+            <%= for {category, resources} <- @resources do %>
+              <%= for {resource_type, resource_stats} <- resources do %>
+                <%= if !is_nil(resource_stats.image_source) do %>
+                  <img
+                    src={resource_stats.image_source}
+                    onerror="this.style.src=''"
+                    height="24"
+                    width="24"
+                  />
+                <%= end %>
+              <%= end %>
+            <%= end %>
+          </div>
+          <p class="text-justify">These resource tokens represent the inventory and attributes that affect your city's growth</p>
+          <br/>
+          <p class="text-justify">Some resources are beneficial, and some are harmful. Be careful about accumulating them!</p>
+        </div>
+        <%= for {category, resources} <- @resources do %>
+          <div class="border-b border-neutral-300 ml-8">
+            <div class="group flex-shrink self-start pb-4">
+              <h3 id={"section_resource_" <> to_string(category)} class="text-lg pt-2 first-letter:uppercase underline underline-offset-4 decoration-neutral-800/40 decoration-dotted	cursor-help">
+                <%= category %>
+              </h3>
+              <div class="min-w-[240px] ">
+                <%= @resource_category_descriptions[category] %>
+              </div>
+            </div>
+            <div class="pb-4 ml-8">
+              <%= for {resource_type, resource_stats} <- resources do %>
+                <div class="flex flex-wrap items-center gap-2 py-0.5">
+                  <div class="border-4 border-neutral-800/40 basis-full md:basis-64 flex flex-row items-center justify-between p-2">
+                    <!-- building title -->
+                    <div class="flex flex-row gap-1">
+                      <div class="w-48 flex flex-row items-center gap-1">
+                        <img
+                          src={resource_stats.image_source}
+                          onerror="this.style.src=''"
+                          height="16"
+                          width="16"
+                        />
+                        <div class={[resource_stats.text_color_class]}><%= to_string(resource_type) %></div>
+                        <hr class="flex-1" />
+                      </div>
+                      <%= if resource_stats.description != nil do %>
+                        <div class="w-72">
+                          <%= to_string(resource_stats.description) %>
+                        </div>
+                      <% end %>
+                    </div>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+        <!-- gap for anchor navigation -->
+        <div class="h-screen"/>
+      </div>
+    <% end %>
+    <!-- BUILDABLES -->
+    <%= if !is_nil(@section) && @section == "buildables" do %>
+      <span id="section_buildables" class="text-xl gap-x-1 py-2">
+        Buildables
+      </span>
+      <div>
+        <%= for {category, buildings} <- @buildables do %>
+          <div class="border-b border-neutral-300 ml-8">
+            <div class="group flex-shrink self-start pb-4">
+              <h3 id={"section_buildable_" <> to_string(category)} class="text-lg pt-2 first-letter:uppercase underline underline-offset-4 decoration-neutral-800/40 decoration-dotted	cursor-help">
+                <%= category %>
+              </h3>
+              <div class="min-w-[240px] ">
+                <%= @buildable_category_descriptions[category] %>
+              </div>
+            </div>
+            <div class="pb-4 ml-8">
+              <%= for {building_type, building_stats} <- buildings do %>
+                <div class="flex flex-wrap items-center gap-2 py-0.5">
+                  <div class="border-4 border-neutral-800/40 basis-full md:basis-64 flex flex-row items-center justify-between p-2">
+                    <!-- building title -->
+                    <div class="group inline-block">
+                      <h2 class="text-base first-letter:uppercase decoration-1 underline underline-offset-4 cursor-help decoration-neutral-800/40">
+                        <%= building_type %>
+                      </h2>
+                      <div class="ml-4">
+                        <div class="w-72 py-0.5 pb-2">
+                          <%= if building_stats.price != nil do %>
+                            <div class="flex items-center gap-1">
+                              <div class="">base purchase price</div>
+                              <hr class="flex-1" />
+                              <%= Number.Delimit.number_to_delimited(building_stats.price) %>
+                            </div>
+                          <% end %>
+                          <%= for {building_stat, value} <- building_stats do %>
+                            <%= if !String.contains?(Atom.to_string(building_stat), ["description", "price", "multipliers", "purchasable", "produces", "requires", "enabled", "priority", "reason", "title", "category", "level"]) && value != nil do %>
+                              <div class="flex items-center gap-1">
+                                <div class=""><%= building_stat %></div>
+                                <hr class="flex-1" />
+                                <%= value %>
+                              </div>
+                            <% end %>
+                          <% end %>
+                        </div>
+                        <div class="flex flex-row">
+                          <div class="w-72">
+                            <span class="font-semibold">Requires:</span>
+                            <%= if building_stats.requires != nil do %>
+                              <div class="w-68 ml-4">
+                                <%= for {requires_type, value} <- building_stats.requires do %>
+                                  <%= if is_number(value) do %>
+                                    <%= if is_nil(@resources_flat[requires_type]) do %>
+                                      <div class="flex items-center gap-1">
+                                        <div><%= to_string(requires_type) %></div>
+                                        <hr class="flex-1" />
+                                        <%= to_string(Number.Delimit.number_to_delimited(value)) %>
+                                      </div>
+                                    <%= else %>
+                                      <div class="flex items-center gap-1">
+                                        <img
+                                          src={@resources_flat[requires_type].image_source}
+                                          onerror="this.style.src=''"
+                                          height="10"
+                                          width="10"
+                                        />
+                                        <div class={[@resources_flat[requires_type].text_color_class]}><%= to_string(requires_type) %></div>
+                                        <hr class="flex-1" />
+                                        <%= to_string(Number.Delimit.number_to_delimited(value)) %>
+                                      </div>
+                                    <% end %>
+                                  <% else %>
+                                    <%= if requires_type == :workers do %>
+                                      <div class="flex items-center gap-1">
+                                        <img
+                                          src="/images/workers-fulfilled.svg"
+                                          height="10"
+                                          width="10"
+                                        />
+                                        <div class="text-green-700">
+                                          lvl <%= to_string(value.level) <> " " <> to_string(requires_type) %>
+                                        </div>
+                                        <hr class="flex-1" />
+                                        <%= to_string(Number.Delimit.number_to_delimited(value.count)) %>
+                                      </div>
+                                    <% end %>
+                                  <% end %>
+                                <% end %>
+                              </div>
+                            <% end %>
+                          </div>
+                          <div class="w-72 ml-4">
+                            <span class="font-semibold">Produces:</span>
+                            <%= if building_stats.produces != nil do %>
+                              <div class="w-68 ml-4">
+                                <%= for {produces_type, value} <- building_stats.produces do %>
+                                  <%= if is_number(value) do %>
+                                    <%= if is_nil(@resources_flat[produces_type]) do %>
+                                      <div class="flex items-center gap-1">
+                                        <div><%= to_string(produces_type) %></div>
+                                        <hr class="flex-1" />
+                                        <%= to_string(value) %>
+                                      </div>
+                                    <%= else %>
+                                      <div class="flex items-center gap-1">
+                                        <img
+                                          src={@resources_flat[produces_type].image_source}
+                                          onerror="this.style.src=''"
+                                          height="10"
+                                          width="10"
+                                        />
+                                        <div class={[@resources_flat[produces_type].text_color_class]}><%= to_string(produces_type) %></div>
+                                        <hr class="flex-1" />
+                                        <%= to_string(Number.Delimit.number_to_delimited(value)) %>
+                                      </div>
+                                    <%= end %>
+                                  <% else %>
+                                    <%= if is_function(value, 1) do %>
+                                      <%= if is_nil(@resources_flat[produces_type]) do %>
+                                        <div class="flex items-center gap-1">
+                                          <div><%= to_string(produces_type) %></div>
+                                          <hr class="flex-1" />
+                                          <%= Number.Delimit.number_to_delimited(value.(1)) %>
+                                        </div>
+                                      <%= else %>
+                                        <div class="flex items-center gap-1">
+                                          <img
+                                           src={@resources_flat[produces_type].image_source}
+                                            onerror="this.style.src=''"
+                                            height="10"
+                                            width="10"
+                                          />
+                                          <div class={[@resources_flat[produces_type].text_color_class]}><%= to_string(produces_type) %> per pop</div>
+                                          <hr class="flex-1" />
+                                          <%= Number.Delimit.number_to_delimited(value.(1)) %>
+                                        </div>
+                                      <% end %>
+                                    <% end %>
+                                    <%= if is_function(value, 2) do %>
+                                      <%= if is_nil(@resources_flat[produces_type]) do %>
+                                        <div class="flex items-center gap-1">
+                                          <div><%= to_string(produces_type) %></div>
+                                          <hr class="flex-1" />
+                                          random drop
+                                        </div>
+                                      <%= else %>
+                                        <div class="flex items-center gap-1">
+                                          <img
+                                           src={@resources_flat[produces_type].image_source}
+                                            onerror="this.style.src=''"
+                                            height="10"
+                                            width="10"
+                                          />
+                                          <div class={[@resources_flat[produces_type].text_color_class]}><%= to_string(produces_type) %></div>
+                                          <hr class="flex-1" />
+                                          random drop
+                                        </div>
+                                      <% end %>
+                                    <% end %>
+                                    <%= if is_map(value) do %>
+                                      <%= if is_nil(@resources_flat[produces_type]) do %>
+                                        <div class="flex items-center gap-1">
+                                          <div>
+                                            lvl <%= to_string(hd(Map.keys(value))) %>
+                                            <%= to_string(produces_type) %>
+                                          </div>
+                                          <hr class="flex-1" />
+                                          <%= to_string(hd(Map.values(value))) %>
+                                        </div>
+                                      <%= else %>
+                                        <div class="flex items-center gap-1">
+                                          <img
+                                            src={@resources_flat[produces_type].image_source}
+                                            onerror="this.style.src=''"
+                                            height="10"
+                                            width="10"
+                                          />
+                                          <div class={[@resources_flat[produces_type].text_color_class]}>
+                                            lvl <%= to_string(hd(Map.keys(value))) %>
+                                            <%= to_string(produces_type) %>
+                                          </div>
+                                          <hr class="flex-1" />
+                                          <%= to_string(hd(Map.values(value))) %>
+                                        </div>
+                                      <% end %>
+                                    <% end %>
+                                  <% end %>
+                                <% end %>
+                              </div>
+                            <% end %>
+                            <%= if !is_nil(building_stats.multipliers) do %>
+                              <hr class="flex-1 my-2" />
+                              <span class="font-semibold">Production Multiplers:</span>
+                              <%= for {multiply_category, multiply_effects} <- building_stats.multipliers do %>
+                                <div class="w-68 ml-4 pb-2">
+                                  <div class="first-letter:uppercase font-semibold">
+                                    <%= multiply_category %>
+                                  </div>
+                                  <%= if String.contains?(Atom.to_string(multiply_category), ["region", "season"]) && multiply_category != nil do %>
+                                    <%= for {produces_type, modifier_list} <- multiply_effects do %>
+                                      <div class="w-68 ml-4 pb-2">
+                                        <%= if is_nil(@resources_flat[produces_type]) do %>
+                                          <div class="flex items-center gap-1">
+                                            <%= to_string(produces_type) %>
+                                          </div>
+                                        <%= else %>
+                                          <div class="flex items-center gap-1">
+                                            <img
+                                              src={@resources_flat[produces_type].image_source}
+                                              onerror="this.style.src=''"
+                                              height="10"
+                                              width="10"
+                                            />
+                                            <div class={[@resources_flat[produces_type].text_color_class]}><%= to_string(produces_type) %></div>
+                                          </div>
+                                          <%= for {multiply_type, modifier_effect} <- modifier_list do %>
+                                            <div class="flex gap-1 items-center ml-8">
+                                              <div><%= multiply_type %></div>
+                                              <hr class="flex-1" />
+                                              <div>x<%= modifier_effect %></div>
+                                            </div>
+                                          <% end %>
+                                        <% end %>
+                                      </div>
+                                    <% end %>
+                                  <% end %>
+                                </div>
+                              <% end %>
+                            <% end %>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+        <!-- gap for anchor navigation -->
+        <div class="h-screen"/>
+      </div>
+    <% end %>
+  </div>
+</div>
