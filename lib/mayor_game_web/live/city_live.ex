@@ -90,8 +90,8 @@ defmodule MayorGameWeb.CityLive do
       ])
       |> assign(:category_explanations, explanations)
       |> assign(:subtotal_types, subtotal_types)
-      |> assign(resources: ["money", "steel", "sulfur", "missiles", "shields"])
-      |> mount_city_by_title()
+      |> assign(resources: ["money", "steel", "sulfur", "missiles", "shields", "uranium"])
+      # |> mount_city_by_title()
       |> update_city_by_title()
       |> assign_auth(session)
       |> update_current_user()
@@ -318,9 +318,13 @@ defmodule MayorGameWeb.CityLive do
       end
     end
 
+    IO.inspect(city[buildable_to_demolish_atom])
+
     new_city =
       city
-      |> Map.update!(buildable_to_demolish_atom, fn current -> tl(current) end)
+      |> Map.update!(buildable_to_demolish_atom, fn current ->
+        if length(current) >= 1, do: tl(current), else: []
+      end)
       |> Map.update!(:treasury, &round(&1 + purchase_price / 2))
 
     # this is useful
@@ -499,6 +503,8 @@ defmodule MayorGameWeb.CityLive do
   end
 
   # this is what gets messages from CityCalculator
+  # kinda weird that it recalculates so much
+  # is it possible to just send the updated contents over the wire to each city?
   def handle_info(%{event: "ping", payload: world}, socket) do
     {:noreply, socket |> assign(:world, world) |> update_city_by_title()}
   end
@@ -551,33 +557,39 @@ defmodule MayorGameWeb.CityLive do
     # have to have this separate from the actual city because the city might not have some buildables, but they're still purchasable
     # this status is for the whole category
     # this could be much simpler
+    # this is ok, just bakes
     buildables_with_status =
       calculate_buildables_statuses(
         city_with_stats2,
         socket.assigns.buildables_map.buildables_kw_list
       )
 
-    mapped_details_2 =
-      Enum.reduce(
-        city_with_stats2.result_buildables,
-        socket.assigns.buildables_map.empty_buildable_map,
-        fn buildable, acc ->
-          Map.update!(acc, buildable.title, fn current_list ->
-            [buildable | current_list]
-          end)
-        end
-      )
+    # mapped_details_2 =
+    #   Enum.reduce(
+    #     city_with_stats2.result_buildables,
+    #     socket.assigns.buildables_map.empty_buildable_map,
+    #     fn buildable, acc ->
+    #       Map.update!(acc, buildable.title, fn current_list ->
+    #         [buildable | current_list]
+    #       end)
+    #     end
+    #   )
+
+    # IO.inspect(buildables_with_status, label: "buildables_w_status")
+    IO.inspect(socket.assigns.buildables_map.empty_buildable_map)
+    IO.inspect(city_with_stats2.result_buildables)
+    # IO.inspect(mapped_details_2, label: "mapped_details")c
 
     # need to get a map with the key
 
     operating_count =
-      Enum.map(mapped_details_2, fn {category, list} ->
+      Enum.map(city_with_stats2.result_buildables, fn {category, list} ->
         {category, Enum.frequencies_by(list, fn x -> x.reason end)}
       end)
       |> Enum.into(%{})
 
     operating_tax =
-      Enum.map(mapped_details_2, fn {category, _} ->
+      Enum.map(city_with_stats2.result_buildables, fn {category, _} ->
         {category,
          (
            buildable = socket.assigns.buildables_map.buildables_flat[category]
@@ -627,21 +639,66 @@ defmodule MayorGameWeb.CityLive do
     city2_without_citizens =
       Map.drop(city_with_stats2, [
         :citizens,
-        :citizens_looking,
-        :citizens_to_reproduce,
         :citizens_polluted,
-        :citizens_looking,
-        :education
+        :education,
+        :new_money,
+        :new_steel,
+        :new_gold,
+        :new_sulfur,
+        :new_missiles,
+        :new_shields,
+        :employed_looking_citizens,
+        :unhoused_citizens,
+        :polluted_citizens,
+        :unemployed_citizens,
+        :housed_employed_staying_citizens,
+        :old_citizens,
+        :reproducing_citizens,
+        :housing_left,
+        :education_left,
+        :educated_citizens
       ])
 
+    # #
+    # money: city_baked_direct.treasury,
+    # steel: city_baked_direct.steel,
+    # uranium: city_baked_direct.uranium,
+    # gold: city_baked_direct.gold,
+    # sulfur: city_baked_direct.sulfur,
+    # missiles: city_baked_direct.missiles,
+    # shields: city_baked_direct.shields,
+    # #
+    # income: 0,
+    # daily_cost: 0,
+    # citizen_count: citizen_count,
+    # citizens: sorted_blob_citizens,
+    # employed_citizens: [],
+    # fun: 0,
+    # health: 0,
+    # sprawl: 0,
+    # total_housing: 0,
+    # housing: 0,
+    # total_energy: 0,
+    # energy: 0,
+    # pollution: 0,
+    # jobs: %{0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0},
+    # total_jobs: %{0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0},
+    # education: %{1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0},
+    # total_area: 0,
+    # area: 0,
+    # buildables: ordered_buildables,
+    # result_buildables: buildables_map.empty_buildable_map
+
     # this controls what (and in what order) resource change categories will be displayed to the right of the buildable
+
+    # |> assign(:user_id, city_user.id)
+    # |> assign(:username, city_user.nickname)
 
     socket
     |> assign(:season, season)
     |> assign(:buildables, buildables_with_status)
-    # |> assign(:user_id, city_user.id)
-    # |> assign(:username, city_user.nickname)
-
+    |> assign(:user_id, city.user.id)
+    |> assign(:username, city.user.nickname)
     |> assign(:city2, city2_without_citizens)
     |> assign(:operating_count, operating_count)
     |> assign(:operating_tax, operating_tax)
@@ -650,18 +707,18 @@ defmodule MayorGameWeb.CityLive do
     |> assign(:total_citizens, length(city_with_stats2.all_citizens))
   end
 
-  # function to mount city
-  defp mount_city_by_title(%{assigns: %{title: title}} = socket) do
-    # this shouuuuld be fresh…
-    city = City.get_town_by_title!(title)
+  # # function to mount city
+  # defp mount_city_by_title(%{assigns: %{title: title}} = socket) do
+  #   # this shouuuuld be fresh…
+  #   city = City.get_town_by_title!(title)
 
-    # grab whole user struct
-    city_user = Auth.get_user!(city.user_id)
+  #   # grab whole user struct
+  #   city_user = Auth.get_user!(city.user_id)
 
-    socket
-    |> assign(:user_id, city_user.id)
-    |> assign(:username, city_user.nickname)
-  end
+  #   socket
+  #   |> assign(:user_id, city_user.id)
+  #   |> assign(:username, city_user.nickname)
+  # end
 
   # function to update city
   # maybe i should make one just for "updating" — e.g. only pull details and citizens from DB

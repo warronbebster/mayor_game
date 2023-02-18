@@ -75,7 +75,6 @@ defmodule MayorGame.CityMigrator do
 
     cities_list = Enum.shuffle(cities)
 
-    # :eprof.start_profiling([self()])
     time_to_learn = if in_dev, do: rem(migration_tick, 2) == 0, else: rem(migration_tick, 10) == 0
 
     leftovers =
@@ -92,15 +91,6 @@ defmodule MayorGame.CityMigrator do
           time_to_learn
         )
       end)
-
-    # maybe do this one step at a time
-    # employed should only jump if there's something better
-    # citizens_looking =
-    #   List.flatten(
-    #     Enum.map(leftovers, fn city ->
-    #       city.unemployed_citizens ++ city.employed_looking_citizens
-    #     end)
-    #   )
 
     employed_looking_citizens =
       List.flatten(Enum.map(leftovers, fn city -> city.employed_looking_citizens end))
@@ -178,9 +168,6 @@ defmodule MayorGame.CityMigrator do
     # housed_employed_staying_citizens: [],
     # employed_looking_citizens: [],
     # unhoused_citizens: [],
-
-    # :eprof.stop_profiling()
-    # :eprof.analyze()
 
     # ——————————————————————————————————————————————————————————————————————————————————
     # ————————————————————————————————————————— ROUND 1: MOVE CITIZENS PER JOB LEVEL
