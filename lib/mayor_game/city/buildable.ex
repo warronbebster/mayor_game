@@ -1092,6 +1092,7 @@ defmodule MayorGame.City.Buildable do
       Map.filter(buildables_flat(), fn {_cat, stats} -> stats.requires == nil end)
       |> Map.keys()
 
+    # ^ airports
     rest_of_them =
       get_requirements_keys([:energy, :money, :workers]) ++
         get_requirements_keys([:energy, :area]) ++
@@ -1109,13 +1110,11 @@ defmodule MayorGame.City.Buildable do
       get_requirements_keys([:area, :workers]),
       # this is basically all energy gen
       # ^ bus lines and subways
-      get_requirements_keys([:money, :workers]) ++
-        get_requirements_keys([:area, :money, :workers]),
+      get_requirements_keys([:area, :money, :workers]) ++
+        get_requirements_keys([:money, :workers]),
       # this is basically all energy gen
 
       get_requirements_keys([:money, :energy]),
-      # ^ airports
-
       Enum.sort_by(rest_of_them, &buildables_flat()[&1].level, :desc)
 
       # get_requirements_keys([:energy, :money, :workers]),

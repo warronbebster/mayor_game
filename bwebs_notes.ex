@@ -31,6 +31,7 @@
 # I should do that. The only thing stopping it is discrete age. Maybe I just capture the "origin date" for an entire class
 # spread workers over buildables instead of only filling one type first
 # batch citizen counts. make age way broader
+# don't need to actually encode city buildables as full maps, i think operating count is enough. maybe the only point is for job gen?
 
 logs:
 move-outs by reason

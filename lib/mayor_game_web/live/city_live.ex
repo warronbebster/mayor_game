@@ -190,6 +190,8 @@ defmodule MayorGameWeb.CityLive do
     {:noreply, socket |> update_city_by_title()}
   end
 
+  # PURCHASE BUILDING——————————————————————————————————————————————————————————————————————————
+
   def handle_event(
         "purchase_building",
         %{"building" => building_to_buy},
@@ -210,7 +212,7 @@ defmodule MayorGameWeb.CityLive do
       # check for upgrade requirements?
 
       case City.purchase_buildable(city_struct, building_to_buy_atom, purchase_price) do
-        {_x, nil} ->
+        {_, nil} ->
           nil
           IO.puts('purchase success')
 
@@ -252,7 +254,7 @@ defmodule MayorGameWeb.CityLive do
     new_city =
       city
       |> Map.update!(building_to_buy_atom, fn current -> [new_buildable | current] end)
-      |> Map.update!(:treasury, &(&1 - purchase_price))
+      |> Map.update!(:treasury, &round(&1 - purchase_price))
 
     new_operating_count =
       Map.update!(socket.assigns.operating_count, building_to_buy_atom, fn current_map ->
@@ -280,19 +282,29 @@ defmodule MayorGameWeb.CityLive do
      |> assign(:city2, new_city)}
   end
 
+  # DEMOLISH ———————————————————————————————————————————————————————————————————————————
+  # DEMOLISH ———————————————————————————————————————————————————————————————————————————
+  # DEMOLISH ———————————————————————————————————————————————————————————————————————————
+
   def handle_event(
         "demolish_building",
         %{"building" => building_to_demolish},
         %{assigns: %{city2: city}} = socket
       ) do
     # check if user is mayor here?
+
+    buildable_to_demolish_atom = String.to_existing_atom(building_to_demolish)
+
+    initial_purchase_price =
+      get_in(Buildable.buildables_flat(), [buildable_to_demolish_atom, :price])
+
+    buildable_count = length(city[buildable_to_demolish_atom])
+
+    purchase_price = MayorGame.CityHelpers.building_price(initial_purchase_price, buildable_count)
+
+    city_struct = struct(City.Town, city)
+
     if socket.assigns.current_user.id == city.user_id do
-      buildable_to_demolish_atom = String.to_existing_atom(building_to_demolish)
-
-      city_struct = struct(City.Town, city)
-
-      buildable_count = length(city[buildable_to_demolish_atom])
-
       if buildable_count > 0 do
         case City.demolish_buildable(city_struct, buildable_to_demolish_atom) do
           {_x, nil} ->
@@ -304,10 +316,50 @@ defmodule MayorGameWeb.CityLive do
       else
         City.update_town(city_struct, %{buildable_to_demolish_atom => 0})
       end
-
-      # this is all ya gotta do to update, baybee
-      {:noreply, socket |> update_city_by_title()}
     end
+
+    IO.inspect(city[buildable_to_demolish_atom])
+
+    new_city =
+      city
+      |> Map.update!(buildable_to_demolish_atom, fn current -> tl(current) end)
+      |> Map.update!(:treasury, &round(&1 + purchase_price / 2))
+
+    # this is useful
+
+    op_count_to_subtract =
+      socket.assigns.operating_count[buildable_to_demolish_atom]
+      |> Map.keys()
+      |> Enum.reverse()
+      |> hd()
+
+    new_operating_count =
+      Map.update!(socket.assigns.operating_count, buildable_to_demolish_atom, fn current_map ->
+        Map.update(current_map, op_count_to_subtract, 1, &(&1 - 1))
+      end)
+
+    new_purchase_price =
+      MayorGame.CityHelpers.building_price(initial_purchase_price, buildable_count - 1)
+
+    new_buildables =
+      socket.assigns.buildables
+      |> put_in(
+        [
+          socket.assigns.buildables_map.buildables_flat[buildable_to_demolish_atom].category,
+          buildable_to_demolish_atom,
+          :price
+        ],
+        new_purchase_price
+      )
+
+    {:noreply,
+     socket
+     |> assign(:operating_count, new_operating_count)
+     |> assign(:buildables, new_buildables)
+     |> assign(:city2, new_city)}
+
+    # this is all ya gotta do to update, baybee
+    # {:noreply, socket |> update_city_by_title()}
   end
 
   def handle_event(
