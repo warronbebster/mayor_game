@@ -62,13 +62,6 @@ defmodule MayorGame.CityCalculator do
 
     db_world = City.get_world!(1)
 
-    IO.puts(
-      "day: " <>
-        to_string(db_world.day) <>
-        " | pollution: " <>
-        to_string(db_world.pollution) <> " | —————————————————————————————————————————————"
-    )
-
     season =
       cond do
         rem(world.day, 365) < 91 -> :winter
@@ -95,7 +88,10 @@ defmodule MayorGame.CityCalculator do
         )
       end)
 
-    new_world_pollution = Enum.sum(Enum.map(leftovers, fn city -> city.pollution end))
+    new_world_pollution =
+      leftovers
+      |> Enum.map(fn city -> city.pollution end)
+      |> Enum.sum()
 
     leftovers
     |> Enum.sort_by(& &1.id)
@@ -105,15 +101,6 @@ defmodule MayorGame.CityCalculator do
         fn ->
           # town_ids = Enum.map(chunk, fn city -> city.id end)
           Enum.each(chunk, fn city ->
-            # ok this seems to be working
-            simplified_citizens =
-              Enum.map(
-                city.all_citizens_persisting,
-                fn citizen ->
-                  Map.take(citizen, [:age, :education, :last_moved, :preferences])
-                end
-              )
-
             from(t in Town,
               where: t.id == ^city.id,
               update: [
@@ -128,12 +115,7 @@ defmodule MayorGame.CityCalculator do
                   # logs—————————
                 ],
                 set: [
-                  # citizen_count: ^city.citizen_count,
                   pollution: ^city.pollution
-                  # citizens_blob: ^citizens_blob
-                  # ^ I think the "set" here is what's funky and causes jumps
-                  # migrator could set smaller set and then this could set larger
-                  # shields: ^new_shields
                 ]
               ]
             )
@@ -146,114 +128,6 @@ defmodule MayorGame.CityCalculator do
         timeout: 6_000_000
       )
     end)
-
-    # MULTI CHANGESET EDUCATE ——————————————————————————————————————————————————— DB UPDATE
-
-    # citizens_learning
-    # |> Enum.each(fn {level, list} ->
-    #   list
-    #   |> Enum.sort_by(& &1.id)
-    #   |> Enum.chunk_every(200)
-    #   |> Enum.each(fn chunk ->
-    #     # potentially use list.keysort instead of sort_by for perf reasons
-    #     # citizen_ids = chunk |> Enum.map(fn citizen -> citizen.id end)
-
-    #     town_ids = chunk |> Enum.map(fn citizen -> citizen.town_id end) |> Enum.sort()
-
-    #     # from(c in Citizens, where: c.id in ^citizen_ids)
-    #     # |> Repo.update_all(inc: [education: 1])
-
-    #     from(t in Town,
-    #       where: t.id in ^town_ids,
-    #       update: [push: [logs: ^"A citizen graduated to level #{level}"]]
-    #     )
-    #     |> Repo.update_all([])
-    #   end)
-    # end)
-
-    # MULTI CHANGESET AGE
-
-    # Repo.update_all(MayorGame.City.Citizens, inc: [age: 1])
-
-    # MULTI CHANGESET KILL OLD CITIZENS ——————————————————————————————————————————————————— DB UPDATE
-
-    # citizens_too_old
-    # |> Enum.sort_by(& &1.id)
-    # |> Enum.chunk_every(200)
-    # |> Enum.each(fn chunk ->
-    #   # citizen_ids = chunk |> Enum.map(fn citizen -> citizen.id end)
-
-    #   town_ids = chunk |> Enum.map(fn citizen -> citizen.town_id end) |> Enum.sort()
-
-    #   # from(c in Citizens, where: c.id in ^citizen_ids)
-    #   # |> Repo.delete_all()
-
-    #   from(t in Town,
-    #     where: t.id in ^town_ids,
-    #     update: [push: [logs: "A citizen died from old age. RIP"]]
-    #   )
-    #   |> Repo.update_all([])
-    # end)
-
-    # end)
-
-    # Ok the way to do this with the list is just to remove them from the list I think
-
-    # MULTI KILL POLLUTED CITIZENS ——————————————————————————————————————————————————— DB UPDATE
-    # citizens_polluted
-    # # |> Enum.sort_by(&elem(&1, 0).id)
-    # |> Enum.chunk_every(200)
-    # |> Enum.each(fn chunk ->
-    #   # citizen_ids = chunk |> Enum.map(fn citizen -> citizen.id end)
-
-    #   town_ids = chunk |> Enum.map(fn citizen -> citizen.town_id end) |> Enum.sort()
-
-    #   # from(c in Citizens, where: c.id in ^citizen_ids)
-    #   # |> Repo.delete_all()
-
-    #   from(t in Town,
-    #     where: t.id in ^town_ids,
-    #     update: [push: [logs: "A citizen died from pollution. RIP"]]
-    #   )
-    #   |> Repo.update_all([])
-    # end)
-
-    # MULTI REPRODUCE ——————————————————————————————————————————————————— DB UPDATE
-
-    # now_utc = DateTime.truncate(DateTime.utc_now(), :second)
-
-    # citizens_to_reproduce
-    # # |> Enum.sort_by(& &1.id)
-    # |> Enum.chunk_every(200)
-    # |> Enum.each(fn chunk ->
-    #   births =
-    #     Enum.map(chunk, fn citizen ->
-    #       %{
-    #         town_id: citizen.town_id,
-    #         age: 0,
-    #         education: 0,
-    #         has_job: false,
-    #         last_moved: db_world.day,
-    #         name: Faker.Person.name(),
-    #         preferences: CityHelpers.create_citizen_preference_map(),
-    #         inserted_at: now_utc,
-    #         updated_at: now_utc
-    #       }
-    #     end)
-
-    #   if births != [] do
-    #     Repo.insert_all(Citizens, births)
-    #   end
-
-    #   town_ids =
-    #     chunk |> Enum.sort_by(& &1.town_id) |> Enum.map(fn citizen -> citizen.town_id end)
-
-    #   from(t in Town,
-    #     where: t.id in ^town_ids,
-    #     update: [push: [logs: "A child was born"]]
-    #   )
-    #   |> Repo.update_all([])
-    # end)
 
     updated_pollution =
       if db_world.pollution + new_world_pollution < 0 do
@@ -271,6 +145,14 @@ defmodule MayorGame.CityCalculator do
 
     # SEND RESULTS TO CLIENTS
     # send val to liveView process that manages front-end; this basically sends to every client.
+
+    IO.puts(
+      "day: " <>
+        to_string(db_world.day) <>
+        " | pollution: " <>
+        to_string(db_world.pollution) <> " | —————————————————————————————————————————————"
+    )
+
     MayorGameWeb.Endpoint.broadcast!(
       "cityPubSub",
       "ping",
