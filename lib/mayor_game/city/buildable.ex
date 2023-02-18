@@ -35,6 +35,25 @@ defmodule MayorGame.City.Buildable do
     end
   end
 
+  def buildable_category_descriptions do
+    %{
+      transit:
+        "Build transit to add area to your city. Area is required to build most other buildings.",
+      energy:
+        "Energy buildings produce energy when they're operational. Energy is required to operate most other buildings. You need citizens to operate most of the energy buildings.",
+      housing:
+        "Housing is required to retain citizens — otherwise, they'll die. Housing requires energy and area; if you run out of energy, you might run out of housing rather quickly!",
+      education:
+        "Education buildings will, once a year, move citizens up an education level. This allows them to work at buildings with higher job levels, and make more money (and you, too, through taxes!",
+      civic: "Civic buildings add other benefits citizens like — jobs, fun, etc.",
+      work: "Work buildings have lots of jobs to attract citizens to your city",
+      entertainment: "Entertainment buildings have jobs, and add other intangibles to your city.",
+      health:
+        "Health buildings increase the health of your citizens, and make them less likely to die",
+      combat: "Combat buildings let you attack other cities, or defend your city from attack."
+    }
+  end
+
   @doc """
   Map of buildables with format %{
     category: %{
