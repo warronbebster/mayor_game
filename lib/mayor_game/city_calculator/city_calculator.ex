@@ -143,7 +143,8 @@ defmodule MayorGame.CityCalculator do
                 where: t.id == ^city.id,
                 update: [
                   set: [
-                    citizens_blob: ^citizens
+                    citizens_blob: ^citizens,
+                    citizen_count: ^city.citizen_count
                   ]
                 ]
               )

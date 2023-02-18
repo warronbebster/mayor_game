@@ -57,7 +57,7 @@ defmodule MayorGame.CityMigrator do
       ) do
     # filter for
     cities =
-      City.list_cities_preload() |> Enum.filter(fn city -> length(city.citizens_blob) > 20 end)
+      City.list_cities_preload() |> Enum.filter(fn city -> length(city.citizens_blob) >= 20 end)
 
     # cities_count = Enum.count(cities)
 

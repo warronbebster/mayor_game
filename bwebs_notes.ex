@@ -33,7 +33,7 @@
 # batch citizen counts. make age way broader
 # don't need to actually encode city buildables as full maps, i think operating count is enough. maybe the only point is for job gen?
 # ok day ticks aren't that much longer than move ticks now that some cities are filtered out. Either need to make resource ticks much faster or combine again
-# on purchases, actually check requirements
+# on purchases, actually check requirements and enforce them before sending building back
 
 logs:
 move-outs by reason
