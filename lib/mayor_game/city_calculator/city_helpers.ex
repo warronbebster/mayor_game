@@ -362,7 +362,7 @@ defmodule MayorGame.CityHelpers do
                 list
               else
                 filler_list = for _ <- 1..length_gap, do: nil
-                list ++ filler_list
+                [list | filler_list]
               end
             end)
 

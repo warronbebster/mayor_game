@@ -430,14 +430,15 @@ defmodule MayorGameWeb.CityLive do
 
       if socket.assigns.current_user.id == city.user_id do
         # check if user is mayor here?
-
-        case City.update_town_by_id(city.id, %{tax_rates: updated_tax_rates}) do
-          {:ok, _updated_details} ->
-            IO.puts("tax rates updated")
-
-          {:error, err} ->
-            Logger.error(inspect(err))
-        end
+        from(t in Town,
+          where: t.id == ^city.id,
+          update: [
+            set: [
+              tax_rates: ^updated_tax_rates
+            ]
+          ]
+        )
+        |> Repo.update_all([])
       end
 
       # this is all ya gotta do to update, baybee

@@ -334,7 +334,7 @@ defmodule MayorGame.CityMigrator do
                |> Map.update(citizen.town_id, 0, &(&1 + 1))
 
              %{
-               choices: acc.choices ++ [{citizen, chosen_city.chosen_id}],
+               choices: [{citizen, chosen_city.chosen_id} | acc.choices],
                slots: updated_slots
              }
            end
@@ -344,7 +344,7 @@ defmodule MayorGame.CityMigrator do
     # find a way to return these to origin city
     looking_but_not_in_job_race =
       Enum.reduce(employed_citizens_split, [], fn {_k, v}, acc ->
-        acc ++ elem(v, 1)
+        List.flatten([elem(v, 1) | acc])
       end)
 
     # ^ array of citizens who are still looking, that didn't make it into the level-specific comparisons
@@ -481,7 +481,7 @@ defmodule MayorGame.CityMigrator do
     # find a way to return these to origin city
     unemployed_split_2 =
       Enum.reduce(unemployed_citizens_split, [], fn {_k, v}, acc ->
-        acc ++ elem(v, 1)
+        List.flatten([elem(v, 1) | acc])
       end)
 
     # update the citizen's choice
@@ -609,7 +609,7 @@ defmodule MayorGame.CityMigrator do
                |> Map.update(chosen_city.chosen_id, 0, &(&1 - 1))
 
              %{
-               choices: acc.choices ++ [{citizen, chosen_city.chosen_id}],
+               choices: [{citizen, chosen_city.chosen_id} | acc.choices],
                slots: updated_slots
              }
            end
@@ -619,7 +619,7 @@ defmodule MayorGame.CityMigrator do
     # find a way to return these to origin city
     unhoused_split_2 =
       Enum.reduce(unhoused_citizens_split, [], fn {_k, v}, acc ->
-        acc ++ elem(v, 1)
+        List.flatten([elem(v, 1) | acc])
       end)
 
     # ^ array of citizens who are still looking, that didn't make it into the level-specific comparisons
@@ -740,7 +740,7 @@ defmodule MayorGame.CityMigrator do
               if chosen_city.chosen_id == 0 do
                 acc.choices
               else
-                acc.choices ++ [{citizen, chosen_city.chosen_id}]
+                [{citizen, chosen_city.chosen_id} | acc.choices]
               end,
             slots: updated_slots
           }
@@ -884,15 +884,16 @@ defmodule MayorGame.CityMigrator do
 
             updated_citizens =
               if births_count > 0 do
-                list ++
-                  Enum.map(1..births_count, fn _citizen ->
-                    %{
-                      age: 0,
-                      education: 0,
-                      last_moved: db_world.day,
-                      preferences: :rand.uniform(10)
-                    }
-                  end)
+                Enum.map(1..births_count, fn _citizen ->
+                  %{
+                    age: 0,
+                    town_id: id,
+                    education: 0,
+                    last_moved: db_world.day,
+                    has_job: false,
+                    preferences: :rand.uniform(10)
+                  }
+                end) ++ list
               else
                 list
               end

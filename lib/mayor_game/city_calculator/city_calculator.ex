@@ -114,61 +114,6 @@ defmodule MayorGame.CityCalculator do
                 end
               )
 
-            # births_count =
-            #   if city.citizen_count > 20 do
-            #     city.reproducing_citizens
-            #   else
-            #     if :rand.uniform() > 0.8 do
-            #       1
-            #     else
-            #       0
-            #     end
-            #   end
-
-            # updated_citizens =
-            #   if births_count > 0 do
-            #     simplified_citizens ++
-            #       Enum.map(1..births_count, fn _citizen ->
-            #         %{
-            #           town_id: city.id,
-            #           age: 0,
-            #           education: 0,
-            #           has_job: false,
-            #           last_moved: db_world.day,
-            #           preferences: :rand.uniform(10)
-            #         }
-            #       end)
-            #   else
-            #     simplified_citizens
-            #   end
-
-            # birthed_citizens =
-            #   if births_count > 0 do
-            #     Enum.map(1..births_count, fn _citizen ->
-            #       %{
-            #         age: 0,
-            #         education: 0,
-            #         last_moved: db_world.day,
-            #         preferences: :rand.uniform(10)
-            #       }
-            #     end)
-            #   else
-            #     []
-            #   end
-
-            # citizens_blob =
-            #   if length(updated_citizens) < 20 do
-            #     Enum.take(updated_citizens, city.total_housing)
-            #   else
-            #     updated_citizens
-            #   end
-
-            # :logs_attacks,
-            # :logs_deaths_housing,
-
-            # shields_cap = length(city.defense_bases) * 1000
-            # new_shields = min(city.shields, shields_cap)
-
             from(t in Town,
               where: t.id == ^city.id,
               update: [
