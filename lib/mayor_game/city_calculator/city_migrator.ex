@@ -56,7 +56,8 @@ defmodule MayorGame.CityMigrator do
         } = _sent_map
       ) do
     # filter for
-    cities = City.list_cities_preload() |> Enum.filter(fn city -> city.citizen_count > 20 end)
+    cities =
+      City.list_cities_preload() |> Enum.filter(fn city -> length(city.citizens_blob) > 20 end)
 
     # cities_count = Enum.count(cities)
 
@@ -276,9 +277,6 @@ defmodule MayorGame.CityMigrator do
         end
       )
 
-    # IO.inspect(job_and_housing_slots_normalized)
-    # ok this still ends up right
-
     # split by who will get to take the good slots
     # shape is map with key level, tuple
     # %{
@@ -422,11 +420,6 @@ defmodule MayorGame.CityMigrator do
          )}
       end)
 
-    # IO.inspect(elem(unemployed_citizens_split[5], 0))
-    # still good
-    # IO.inspect(preferred_locations_by_level[5].slots)
-    # still good
-
     unemployed_preferred_locations_by_level =
       Map.new(5..0, fn level ->
         {level,
@@ -475,9 +468,6 @@ defmodule MayorGame.CityMigrator do
          )}
       end)
 
-    # IO.inspect(unemployed_preferred_locations_by_level[5].choices)
-    # IO.inspect(unemployed_preferred_locations_by_level[5].slots)
-
     # find a way to return these to origin city
     unemployed_split_2 =
       Enum.reduce(unemployed_citizens_split, [], fn {_k, v}, acc ->
@@ -510,9 +500,6 @@ defmodule MayorGame.CityMigrator do
         # acc
         # end
       end)
-
-    # IO.inspect(length(updated_citizens_by_id_3[16]), label: "before")
-    # IO.inspect(length(updated_citizens_by_id_4[16]), label: "after")
 
     # add non-lookers back
     updated_citizens_by_id_5 =

@@ -84,14 +84,22 @@ defmodule MayorGame.City do
 
     intro_attrs =
       %{
-        treasury: 5000,
+        treasury: 10000,
         pollution: 0,
         citizen_count: 0,
         missiles: 0,
         shields: 0,
         gold: 0,
         sulfur: 0,
-        uranium: 0
+        uranium: 0,
+        tax_rates: %{
+          "0" => 0.1,
+          "1" => 0.2,
+          "2" => 0.3,
+          "3" => 0.4,
+          "4" => 0.5,
+          "5" => 0.6
+        }
       }
       |> Map.merge(buildables_zeroed)
 

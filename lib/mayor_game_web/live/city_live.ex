@@ -318,8 +318,6 @@ defmodule MayorGameWeb.CityLive do
       end
     end
 
-    IO.inspect(city[buildable_to_demolish_atom])
-
     new_city =
       city
       |> Map.update!(buildable_to_demolish_atom, fn current -> tl(current) end)

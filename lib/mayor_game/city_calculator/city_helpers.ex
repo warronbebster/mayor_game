@@ -352,7 +352,6 @@ defmodule MayorGame.CityHelpers do
       all_citizens
       |> Enum.reduce(
         %{
-          all_citizens_persisting: [],
           housing_left: results.housing,
           education_left: results.education,
           educated_citizens: %{1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0},
@@ -404,11 +403,6 @@ defmodule MayorGame.CityHelpers do
           # TODO
           # do this with merge instead of updates
           merged_acc_map = %{
-            all_citizens_persisting:
-              if(!pollution_death && citizen_not_too_old,
-                do: [updated_citizen | acc.all_citizens_persisting],
-                else: acc.all_citizens_persisting
-              ),
             housing_left:
               if(acc.housing_left > 0 and !pollution_death and citizen_not_too_old,
                 do: acc.housing_left - housing_taken,
@@ -441,6 +435,12 @@ defmodule MayorGame.CityHelpers do
                 do: [updated_citizen | acc.unemployed_citizens],
                 else: acc.unemployed_citizens
               ),
+            unhoused_citizens:
+              if(
+                acc.housing_left <= 0 && citizen_not_too_old && !pollution_death,
+                do: [updated_citizen | acc.unhoused_citizens],
+                else: acc.unhoused_citizens
+              ),
             housed_employed_staying_citizens:
               if(employable && !tax_too_high,
                 do: [updated_citizen | acc.housed_employed_staying_citizens],
@@ -469,6 +469,8 @@ defmodule MayorGame.CityHelpers do
         end
       )
       |> Enum.into(%{})
+
+    # IO.inspect(length(after_citizen_checks.unhoused_citizens), label: city.title)
 
     city_baked_direct
     |> Map.from_struct()
