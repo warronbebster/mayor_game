@@ -3,8 +3,8 @@
     <tr>
       <td class="top_td">
         <span class="flex flex-row items-center gap-x-1">
-          <%= @city2.title %>
-          <%= if @city2.patron > 0 do %>
+          <%= @city.title %>
+          <%= if @city.patron > 0 do %>
             <div class="group relative flex flex-row items-center text-amber-600">
               <a href="patreon.com/user?u=88349213" target="_blank">
                 <img src="/images/patron-1.svg" alt="patron" height="12" width="12" />
@@ -14,7 +14,7 @@
               </div>
             </div>
           <% end %>
-          <%= if @city2.contributor do %>
+          <%= if @city.contributor do %>
             <div class="group relative flex flex-row items-center text-purple-600">
               <a href="https://github.com/warronbebster/mayor_game" target="_blank">
                 <img src="/images/computer.svg" alt="contributor" height="12" width="12" />
@@ -196,7 +196,7 @@
       <td class="top_td">
         <span class="text-purple-800">
           <%= Number.SI.number_to_si(
-            @city2.pollution,
+            @city.pollution,
             precision: 3,
             trim: true
           ) %>/day
@@ -205,8 +205,8 @@
 
       <td class="top_td">
         <span class="text-amber-800">
-          <%= @city2.housing - @total_citizens %>/<%= Number.SI.number_to_si(
-            @city2.housing,
+          <%= @city.housing - @total_citizens %>/<%= Number.SI.number_to_si(
+            @city.housing,
             precision: 3,
             trim: true
           ) %>
@@ -214,13 +214,13 @@
       </td>
       <td class="top_td">
         <span class="text-green-800">
-          <%= Enum.sum(Map.values(@city2.jobs)) %>/<%= Enum.sum(Map.values(@city2.total_jobs)) %>
+          <%= Enum.sum(Map.values(@city.jobs)) %>/<%= Enum.sum(Map.values(@city.total_jobs)) %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-green-800">
           $<%= Number.SI.number_to_si(
-            @city2.income,
+            @city.income,
             precision: 3,
             trim: true
           ) %>/day
@@ -229,7 +229,7 @@
       <td class="top_td">
         <span class="text-red-800">
           $<%= Number.SI.number_to_si(
-            @city2.daily_cost,
+            @city.daily_cost,
             precision: 3,
             trim: true
           ) %>/day
@@ -238,7 +238,7 @@
       <td class="top_td">
         <span class="text-green-800">
           $<%= Number.SI.number_to_si(
-            @city2.treasury,
+            @city.treasury,
             precision: 3,
             trim: true
           ) %>
@@ -247,11 +247,11 @@
       <td class="top_td">
         <span class="text-yellow-800">
           <%= Number.SI.number_to_si(
-            @city2.energy,
+            @city.energy,
             precision: 3,
             trim: true
           ) %>/<%= Number.SI.number_to_si(
-            @city2.total_energy,
+            @city.total_energy,
             precision: 3,
             trim: true
           ) %>
@@ -260,28 +260,28 @@
       <td class="top_td">
         <span class="text-cyan-800">
           <%= Number.SI.number_to_si(
-            @city2.area,
+            @city.area,
             precision: 3,
             trim: true
           ) %>/<%= Number.SI.number_to_si(
-            @city2.total_area,
+            @city.total_area,
             precision: 3,
             trim: true
           ) %>
         </span>
       </td>
       <td class="group relative h-4 top_td text-fuchsia-800">
-        <%= Number.Delimit.number_to_delimited(@city2.fun) %>
+        <%= Number.Delimit.number_to_delimited(@city.fun) %>
       </td>
       <td class="top_td">
         <span class="text-rose-800">
-          <%= Number.Delimit.number_to_delimited(@city2.health) %>
+          <%= Number.Delimit.number_to_delimited(@city.health) %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-slate-800">
           <%= Number.SI.number_to_si(
-            @city2.steel,
+            @city.steel,
             precision: 3,
             trim: true
           ) %>
@@ -290,7 +290,7 @@
       <td class="top_td">
         <span class="text-orange-800">
           <%= Number.SI.number_to_si(
-            @city2.sulfur,
+            @city.sulfur,
             precision: 3,
             trim: true
           ) %>
@@ -299,7 +299,7 @@
       <td class="top_td">
         <span class="text-red-800">
           <%= Number.SI.number_to_si(
-            @city2.missiles,
+            @city.missiles,
             precision: 3,
             trim: true
           ) %>
@@ -308,7 +308,7 @@
       <td class="top_td">
         <span class="text-blue-800">
           <%= Number.SI.number_to_si(
-            @city2.shields,
+            @city.shields,
             precision: 3,
             trim: true
           ) %>
@@ -347,7 +347,7 @@
       Job/tax levels
     </h2>
     <div class="flex flex-row flex-wrap gap-x-8 gap-y-4 divide-solid leading-none">
-      <%= for {job_level, rate} <- @city2.tax_rates do %>
+      <%= for {job_level, rate} <- @city.tax_rates do %>
         <div class="flex flex-col gap-1">
           <span class="text-sm">Level <%= job_level %></span>
           <%= if @is_user_mayor do %>
@@ -378,16 +378,16 @@
           </div>
           <!--print job count at level-->
           <div>
-            <%= if @city2.total_jobs[String.to_integer(job_level)] !== nil do %>
-              <%= to_string(@city2.total_jobs[String.to_integer(job_level)]) %>
+            <%= if @city.total_jobs[String.to_integer(job_level)] !== nil do %>
+              <%= to_string(@city.total_jobs[String.to_integer(job_level)]) %>
             <% else %>
               0
             <% end %>
             total jobs
           </div>
           <div>
-            <%= if @city2.jobs[String.to_integer(job_level)] !== nil do %>
-              <%= to_string(@city2.jobs[String.to_integer(job_level)]) %>
+            <%= if @city.jobs[String.to_integer(job_level)] !== nil do %>
+              <%= to_string(@city.jobs[String.to_integer(job_level)]) %>
             <% else %>
               0
             <% end %>
@@ -436,7 +436,7 @@
         Combat
       </h2>
       <div class="pb-4 flex flex-row items-center gap-2">
-        <%= if @city2.shields > 0 && @current_user.town.missiles > 0 do %>
+        <%= if @city.shields > 0 && @current_user.town.missiles > 0 do %>
           <button
             class="btn m-0 rounded-none border border-neutral-800/25 leading-none h-6"
             phx-click="attack_shields"
@@ -458,10 +458,10 @@
               width="12"
               class="inline"
             />
-            <span><%= @city2.shields %></span>
+            <span><%= @city.shields %></span>
           </div>
         <% else %>
-          <%= if @city2.shields <= 0 do %>
+          <%= if @city.shields <= 0 do %>
             <button
               disabled
               class="opacity-50 btn m-0 rounded-none border border-neutral-800/25 leading-none h-6"
@@ -483,7 +483,7 @@
                 class="inline"
               /> Attack city shields |
             </button>
-            <%= @city2.shields %>
+            <%= @city.shields %>
           <% end %>
         <% end %>
       </div>
@@ -491,7 +491,7 @@
 
     <%= for {category, buildings} <- @buildables do %>
       <div class="group relative flex-shrink self-start">
-        <h2 class="text-base pt-2 first-letter:uppercase underline underline-offset-4 decoration-neutral-800/40 decoration-dotted	cursor-help">
+        <h2 class="text-base pt-4 first-letter:uppercase underline underline-offset-4 decoration-neutral-800/40 decoration-dotted	cursor-help">
           <%= category %>
         </h2>
         <div class="tooltip min-w-[240px]">
@@ -597,7 +597,7 @@
               <!-- build & delete buttons -->
               <div class="flex flex-row ">
                 <%= if @is_user_mayor do %>
-                  <%= if @city2.treasury > building_stats.price do %>
+                  <%= if @city.treasury > building_stats.price do %>
                     <button
                       class="btn m-0 rounded-none border border-neutral-800/25 leading-none h-6"
                       phx-click="purchase_building"
@@ -625,7 +625,7 @@
                       <div class="tooltip w-28">not enough money</div>
                     </div>
                   <% end %>
-                  <%= if not Enum.empty?(Map.get(@operating_count, building_type)) do %>
+                  <%= if length(Map.get(@city, building_type)) > 0 do %>
                     <button
                       phx-click="demolish_building"
                       class="btn m-0 rounded-none border border-l-0 border-neutral-800/25 leading-none h-6"
@@ -645,7 +645,7 @@
                 <% end %>
                 <%= if @current_user && !is_nil(@current_user.town) && !@is_user_mayor do %>
                   <%= if !Enum.empty?(Map.get(@operating_count, building_type)) && @current_user.town.missiles > 0 do %>
-                    <%= if @city2.shields == 0 do %>
+                    <%= if @city.shields == 0 do %>
                       <div class="relative group">
                         <button
                           phx-click="attack_building"
@@ -1029,7 +1029,7 @@
           </div>
         </div>
         <div>
-          <%= @city2.region %>
+          <%= @city.region %>
         </div>
       </div>
       <!-- CLIMATE -->
@@ -1043,7 +1043,7 @@
           </div>
         </div>
         <div>
-          <%= @city2.climate %>
+          <%= @city.climate %>
         </div>
       </div>
       <!-- BIRTH LOGS -->
@@ -1058,7 +1058,7 @@
         </div>
         <div>
           <%= Number.SI.number_to_si(
-            @city2.logs_births,
+            @city.logs_births,
             precision: 3,
             trim: true
           ) %>
@@ -1074,10 +1074,10 @@
             How many citizens have died from overpollution
           </div>
         </div>
-        <%= if !is_nil(@city2.logs_deaths_age) do %>
+        <%= if !is_nil(@city.logs_deaths_age) do %>
           <div>
             <%= Number.SI.number_to_si(
-              @city2.logs_deaths_pollution,
+              @city.logs_deaths_pollution,
               precision: 3,
               trim: true
             ) %>
@@ -1094,10 +1094,10 @@
             Citizens die when they reach 10,000 days of age.
           </div>
         </div>
-        <%= if !is_nil(@city2.logs_deaths_age) do %>
+        <%= if !is_nil(@city.logs_deaths_age) do %>
           <div>
             <%= Number.SI.number_to_si(
-              @city2.logs_deaths_age,
+              @city.logs_deaths_age,
               precision: 3,
               trim: true
             ) %>
@@ -1114,10 +1114,10 @@
             If a citizen runs out of housing and can't find any anywhere else, they'll die.
           </div>
         </div>
-        <%= if !is_nil(@city2.logs_deaths_housing) do %>
+        <%= if !is_nil(@city.logs_deaths_housing) do %>
           <div>
             <%= Number.SI.number_to_si(
-              @city2.logs_deaths_housing,
+              @city.logs_deaths_housing,
               precision: 3,
               trim: true
             ) %>
@@ -1136,7 +1136,7 @@
           </div>
         </div>
 
-        <%= for {edu_level, educated_citizens_count} <- @city2.logs_edu do %>
+        <%= for {edu_level, educated_citizens_count} <- @city.logs_edu do %>
           <div class="flex flex-row items-center justify-between gap-2 my-0 leading-none">
             <span><%= edu_level %></span>
             <hr class="border-neutral-300 flex-1" />
@@ -1162,7 +1162,7 @@
           </div>
         </div>
 
-        <%= for {city, resource_map} <- @city2.logs_sent do %>
+        <%= for {city, resource_map} <- @city.logs_sent do %>
           <div class="flex flex-col justify-between gap-2 my-0 leading-none">
             <span><a class="underline" href={"/city/#{city}"}><%= city %></a></span>
              <%= for {resource, amount} <- resource_map do %>
@@ -1193,7 +1193,7 @@
           </div>
         </div>
 
-        <%= for {city, resource_map} <- @city2.logs_received do %>
+        <%= for {city, resource_map} <- @city.logs_received do %>
           <div class="flex flex-col justify-between gap-2 my-0 leading-none">
             <span><a class="underline" href={"/city/#{city}"}><%= city %></a></span>
              <%= for {resource, amount} <- resource_map do %>
@@ -1225,7 +1225,7 @@
           </div>
         </div>
 
-        <%= for {attacking_town, attack_counts} <- @city2.logs_attacks do %>
+        <%= for {attacking_town, attack_counts} <- @city.logs_attacks do %>
           <div class="flex flex-row items-center justify-between gap-2 my-0 leading-none">
             <span><%= attacking_town %></span>
             <hr class="border-neutral-300 flex-1" />
@@ -1245,7 +1245,7 @@
           </div>
         </div>
 
-        <%= for {edu_level, emigration_count} <- @city2.logs_emigration_housing do %>
+        <%= for {edu_level, emigration_count} <- @city.logs_emigration_housing do %>
           <div class="flex flex-row items-center justify-between gap-2 my-0 leading-none">
             <span><%= edu_level %></span>
             <hr class="border-neutral-300 flex-1" />
@@ -1271,7 +1271,7 @@
           </div>
         </div>
 
-        <%= for {edu_level, emigration_count} <- @city2.logs_emigration_taxes do %>
+        <%= for {edu_level, emigration_count} <- @city.logs_emigration_taxes do %>
           <div class="flex flex-row items-center justify-between gap-2 my-0 leading-none">
             <span><%= edu_level %></span>
             <hr class="border-neutral-300 flex-1" />
@@ -1297,7 +1297,7 @@
           </div>
         </div>
 
-        <%= for {edu_level, emigration_count} <- @city2.logs_emigration_jobs do %>
+        <%= for {edu_level, emigration_count} <- @city.logs_emigration_jobs do %>
           <div class="flex flex-row items-center justify-between gap-2 my-0 leading-none">
             <span><%= edu_level %></span>
             <hr class="border-neutral-300 flex-1" />

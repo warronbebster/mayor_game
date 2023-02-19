@@ -73,8 +73,8 @@ defmodule MayorGameWeb.CityLive do
       ])
       |> assign(:buildable_category_descriptions, Buildable.buildable_category_descriptions())
       |> assign(:subtotal_types, subtotal_types)
-      |> assign(resources: ["money", "steel", "sulfur", "missiles", "shields"])
-      |> mount_city_by_title()
+      |> assign(resources: ["money", "steel", "sulfur", "missiles", "shields", "uranium"])
+      # |> mount_city_by_title()
       |> update_city_by_title()
       |> assign_auth(session)
       |> update_current_user()
@@ -88,7 +88,7 @@ defmodule MayorGameWeb.CityLive do
         "add_citizen",
         _value,
         # pull these variables out of the socket
-        %{assigns: %{city2: city}} = socket
+        %{assigns: %{city: city}} = socket
       ) do
     if socket.assigns.current_user.id == 1 do
       new_citizen = %{
@@ -118,7 +118,7 @@ defmodule MayorGameWeb.CityLive do
   def handle_event(
         "gib_money",
         _value,
-        %{assigns: %{city2: city}} = socket
+        %{assigns: %{city: city}} = socket
       ) do
     city_struct = struct(City.Town, city)
 
@@ -139,7 +139,7 @@ defmodule MayorGameWeb.CityLive do
   def handle_event(
         "reset_city",
         %{"userid" => _user_id},
-        %{assigns: %{city2: city}} = socket
+        %{assigns: %{city: city}} = socket
       ) do
     if socket.assigns.current_user.id == city.user_id do
       # reset = Map.new(Buildable.buildables_list(), fn x -> {x, []} end)
@@ -178,7 +178,7 @@ defmodule MayorGameWeb.CityLive do
   def handle_event(
         "purchase_building",
         %{"building" => building_to_buy},
-        %{assigns: %{city2: city}} = socket
+        %{assigns: %{city: city}} = socket
       ) do
     # check if user is mayor here?
     building_to_buy_atom = String.to_existing_atom(building_to_buy)
@@ -262,7 +262,7 @@ defmodule MayorGameWeb.CityLive do
      socket
      |> assign(:operating_count, new_operating_count)
      |> assign(:buildables, new_buildables)
-     |> assign(:city2, new_city)}
+     |> assign(:city, new_city)}
   end
 
   # DEMOLISH ———————————————————————————————————————————————————————————————————————————
@@ -272,7 +272,7 @@ defmodule MayorGameWeb.CityLive do
   def handle_event(
         "demolish_building",
         %{"building" => building_to_demolish},
-        %{assigns: %{city2: city}} = socket
+        %{assigns: %{city: city}} = socket
       ) do
     # check if user is mayor here?
 
@@ -303,7 +303,9 @@ defmodule MayorGameWeb.CityLive do
 
     new_city =
       city
-      |> Map.update!(buildable_to_demolish_atom, fn current -> tl(current) end)
+      |> Map.update!(buildable_to_demolish_atom, fn current ->
+        if length(current) >= 1, do: tl(current), else: []
+      end)
       |> Map.update!(:treasury, &round(&1 + purchase_price / 2))
 
     # this is useful
@@ -337,7 +339,7 @@ defmodule MayorGameWeb.CityLive do
      socket
      |> assign(:operating_count, new_operating_count)
      |> assign(:buildables, new_buildables)
-     |> assign(:city2, new_city)}
+     |> assign(:city, new_city)}
 
     # this is all ya gotta do to update, baybee
     # {:noreply, socket |> update_city_by_title()}
@@ -346,7 +348,7 @@ defmodule MayorGameWeb.CityLive do
   def handle_event(
         "attack_building",
         %{"building" => building_to_attack},
-        %{assigns: %{city2: city, current_user: current_user}} = socket
+        %{assigns: %{city: city, current_user: current_user}} = socket
       ) do
     # check if user is mayor here?
     building_to_attack_atom = String.to_existing_atom(building_to_attack)
@@ -398,7 +400,7 @@ defmodule MayorGameWeb.CityLive do
   def handle_event(
         "attack_shields",
         _value,
-        %{assigns: %{city2: city, current_user: current_user}} = socket
+        %{assigns: %{city: city, current_user: current_user}} = socket
       ) do
     # check if user is mayor here?
 
@@ -443,13 +445,13 @@ defmodule MayorGameWeb.CityLive do
       end)
 
     # this is all ya gotta do to update, baybee
-    {:noreply, socket |> assign(city2: updated_city) |> update_current_user()}
+    {:noreply, socket |> assign(city: updated_city) |> update_current_user()}
   end
 
   def handle_event(
         "update_tax_rates",
         %{"job_level" => job_level, "value" => updated_value},
-        %{assigns: %{city2: city}} = socket
+        %{assigns: %{city: city}} = socket
       ) do
     updated_value_float = Float.parse(updated_value)
 
@@ -477,11 +479,13 @@ defmodule MayorGameWeb.CityLive do
       # this is all ya gotta do to update, baybee
       new_city = Map.put(city, :tax_rates, updated_tax_rates)
 
-      {:noreply, socket |> assign(city2: new_city)}
+      {:noreply, socket |> assign(city: new_city)}
     end
   end
 
   # this is what gets messages from CityCalculator
+  # kinda weird that it recalculates so much
+  # is it possible to just send the updated contents over the wire to each city?
   def handle_info(%{event: "ping", payload: world}, socket) do
     {:noreply, socket |> assign(:world, world) |> update_city_by_title()}
   end
@@ -534,33 +538,22 @@ defmodule MayorGameWeb.CityLive do
     # have to have this separate from the actual city because the city might not have some buildables, but they're still purchasable
     # this status is for the whole category
     # this could be much simpler
+    # this is ok, just bakes
     buildables_with_status =
       calculate_buildables_statuses(
         city_with_stats2,
         socket.assigns.buildables_map.buildables_kw_list
       )
 
-    mapped_details_2 =
-      Enum.reduce(
-        city_with_stats2.result_buildables,
-        socket.assigns.buildables_map.empty_buildable_map,
-        fn buildable, acc ->
-          Map.update!(acc, buildable.title, fn current_list ->
-            [buildable | current_list]
-          end)
-        end
-      )
-
-    # need to get a map with the key
-
+    # this is still used
     operating_count =
-      Enum.map(mapped_details_2, fn {category, list} ->
+      Enum.map(city_with_stats2.result_buildables, fn {category, list} ->
         {category, Enum.frequencies_by(list, fn x -> x.reason end)}
       end)
       |> Enum.into(%{})
 
     operating_tax =
-      Enum.map(mapped_details_2, fn {category, _} ->
+      Enum.map(city_with_stats2.result_buildables, fn {category, _} ->
         {category,
          (
            buildable = socket.assigns.buildables_map.buildables_flat[category]
@@ -607,25 +600,70 @@ defmodule MayorGameWeb.CityLive do
     citizen_edu_count =
       Enum.frequencies_by(city_with_stats2.all_citizens, fn x -> x.education end)
 
-    city2_without_citizens =
+    city_simplified =
       Map.drop(city_with_stats2, [
         :citizens,
-        :citizens_looking,
-        :citizens_to_reproduce,
         :citizens_polluted,
-        :citizens_looking,
-        :education
+        :education,
+        :new_money,
+        :new_steel,
+        :new_gold,
+        :new_sulfur,
+        :new_missiles,
+        :new_shields,
+        :employed_looking_citizens,
+        :unhoused_citizens,
+        :polluted_citizens,
+        :unemployed_citizens,
+        :housed_employed_staying_citizens,
+        :old_citizens,
+        :reproducing_citizens,
+        :housing_left,
+        :education_left,
+        :educated_citizens,
+        :education,
+        :employed_citizens,
+        :buildables,
+        :result_buildables
       ])
 
+    # #
+    # money: city_baked_direct.treasury,
+    # steel: city_baked_direct.steel,
+    # uranium: city_baked_direct.uranium,
+    # gold: city_baked_direct.gold,
+    # sulfur: city_baked_direct.sulfur,
+    # missiles: city_baked_direct.missiles,
+    # shields: city_baked_direct.shields,
+    # #
+    # income: 0,
+    # daily_cost: 0,
+    # citizen_count: citizen_count,
+    # citizens: sorted_blob_citizens,
+    # fun: 0,
+    # health: 0,
+    # sprawl: 0,
+    # total_housing: 0,
+    # housing: 0,
+    # total_energy: 0,
+    # energy: 0,
+    # pollution: 0,
+    # total_area: 0,
+    # area: 0,
+    # buildables: ordered_buildables,
+    # result_buildables: buildables_map.empty_buildable_map
+
     # this controls what (and in what order) resource change categories will be displayed to the right of the buildable
+
+    # |> assign(:user_id, city_user.id)
+    # |> assign(:username, city_user.nickname)
 
     socket
     |> assign(:season, season)
     |> assign(:buildables, buildables_with_status)
-    # |> assign(:user_id, city_user.id)
-    # |> assign(:username, city_user.nickname)
-
-    |> assign(:city2, city2_without_citizens)
+    |> assign(:user_id, city.user.id)
+    |> assign(:username, city.user.nickname)
+    |> assign(:city, city_simplified)
     |> assign(:operating_count, operating_count)
     |> assign(:operating_tax, operating_tax)
     |> assign(:tax_by_level, tax_by_level)
@@ -633,18 +671,18 @@ defmodule MayorGameWeb.CityLive do
     |> assign(:total_citizens, length(city_with_stats2.all_citizens))
   end
 
-  # function to mount city
-  defp mount_city_by_title(%{assigns: %{title: title}} = socket) do
-    # this shouuuuld be fresh…
-    city = City.get_town_by_title!(title)
+  # # function to mount city
+  # defp mount_city_by_title(%{assigns: %{title: title}} = socket) do
+  #   # this shouuuuld be fresh…
+  #   city = City.get_town_by_title!(title)
 
-    # grab whole user struct
-    city_user = Auth.get_user!(city.user_id)
+  #   # grab whole user struct
+  #   city_user = Auth.get_user!(city.user_id)
 
-    socket
-    |> assign(:user_id, city_user.id)
-    |> assign(:username, city_user.nickname)
-  end
+  #   socket
+  #   |> assign(:user_id, city_user.id)
+  #   |> assign(:username, city_user.nickname)
+  # end
 
   # function to update city
   # maybe i should make one just for "updating" — e.g. only pull details and citizens from DB
@@ -721,7 +759,7 @@ defmodule MayorGameWeb.CityLive do
         # grab "town" map from response and cast it into city_form
         %{"town" => city_form},
         # pattern match to pull these variables out of the socket
-        %{assigns: %{city2: city, current_user: current_user}} = socket
+        %{assigns: %{city: city, current_user: current_user}} = socket
       ) do
     giving_town_struct = Repo.get!(Town, current_user.town.id)
     receiving_town_struct = struct(City.Town, city)

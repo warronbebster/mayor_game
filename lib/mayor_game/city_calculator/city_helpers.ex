@@ -116,7 +116,7 @@ defmodule MayorGame.CityHelpers do
           total_area: 0,
           area: 0,
           buildables: ordered_buildables,
-          result_buildables: []
+          result_buildables: buildables_map.empty_buildable_map
         },
         fn list_of_buildables, acc ->
           buildable_lists = Keyword.values(list_of_buildables)
@@ -164,8 +164,13 @@ defmodule MayorGame.CityHelpers do
                   season,
                   acc2
                 )
-                |> Map.update!(:result_buildables, fn current ->
-                  [individual_buildable | current]
+                |> Map.update!(:result_buildables, fn current_map ->
+                  Map.update(
+                    current_map,
+                    individual_buildable.title,
+                    [individual_buildable],
+                    &[individual_buildable | &1]
+                  )
                 end)
               else
                 reqs_minus_workers = Map.drop(individual_buildable.requires, [:workers])
@@ -281,8 +286,13 @@ defmodule MayorGame.CityHelpers do
                         &(&1 + individual_buildable.requires.workers.count)
                       )
                     end)
-                    |> Map.update!(:result_buildables, fn current ->
-                      [updated_buildable | current]
+                    |> Map.update!(:result_buildables, fn current_map ->
+                      Map.update(
+                        current_map,
+                        individual_buildable.title,
+                        [individual_buildable],
+                        &[individual_buildable | &1]
+                      )
                     end)
 
                     # if number is less than reqs.workers.count, buildable is disabled, reason workers
@@ -299,8 +309,13 @@ defmodule MayorGame.CityHelpers do
                       acc2
                     )
                     |> Map.merge(reqs_minus_workers, fn _k, v1, v2 -> v1 - v2 end)
-                    |> Map.update!(:result_buildables, fn current ->
-                      [individual_buildable | current]
+                    |> Map.update!(:result_buildables, fn current_map ->
+                      Map.update(
+                        current_map,
+                        individual_buildable.title,
+                        [individual_buildable],
+                        &[individual_buildable | &1]
+                      )
                     end)
                     |> Map.put(
                       :daily_cost,
@@ -317,8 +332,14 @@ defmodule MayorGame.CityHelpers do
                     })
 
                   # update acc with disabled buildable
-                  Map.update!(acc2, :result_buildables, fn current ->
-                    [updated_buildable | current]
+                  acc2
+                  |> Map.update!(:result_buildables, fn current_map ->
+                    Map.update(
+                      current_map,
+                      individual_buildable.title,
+                      [individual_buildable],
+                      &[individual_buildable | &1]
+                    )
                   end)
                 end
               end
@@ -384,8 +405,8 @@ defmodule MayorGame.CityHelpers do
 
           # i can just calculate this globally. doesn't really matter on a per-citizen basis
           will_citizen_reproduce =
-            citizen.age > 15 and citizen.age < 4000 and acc.housing_left > 1 &&
-              :rand.uniform(citizen_count) < max(results.health, 5)
+            citizen.age > 15 and acc.housing_left > 1 &&
+              :rand.uniform(citizen_count) < max(results.health / 10, 10)
 
           housing_taken = if will_citizen_reproduce, do: 2, else: 1
 
