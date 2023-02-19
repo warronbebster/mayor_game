@@ -318,8 +318,6 @@ defmodule MayorGameWeb.CityLive do
       end
     end
 
-    IO.inspect(city[buildable_to_demolish_atom])
-
     new_city =
       city
       |> Map.update!(buildable_to_demolish_atom, fn current ->
@@ -576,8 +574,6 @@ defmodule MayorGameWeb.CityLive do
     #   )
 
     # IO.inspect(buildables_with_status, label: "buildables_w_status")
-    IO.inspect(socket.assigns.buildables_map.empty_buildable_map)
-    IO.inspect(city_with_stats2.result_buildables)
     # IO.inspect(mapped_details_2, label: "mapped_details")c
 
     # need to get a map with the key
@@ -656,7 +652,11 @@ defmodule MayorGameWeb.CityLive do
         :reproducing_citizens,
         :housing_left,
         :education_left,
-        :educated_citizens
+        :educated_citizens,
+        :education,
+        :employed_citizens,
+        :buildables,
+        :result_buildables
       ])
 
     # #
@@ -672,7 +672,6 @@ defmodule MayorGameWeb.CityLive do
     # daily_cost: 0,
     # citizen_count: citizen_count,
     # citizens: sorted_blob_citizens,
-    # employed_citizens: [],
     # fun: 0,
     # health: 0,
     # sprawl: 0,
@@ -681,9 +680,6 @@ defmodule MayorGameWeb.CityLive do
     # total_energy: 0,
     # energy: 0,
     # pollution: 0,
-    # jobs: %{0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0},
-    # total_jobs: %{0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0},
-    # education: %{1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0},
     # total_area: 0,
     # area: 0,
     # buildables: ordered_buildables,
