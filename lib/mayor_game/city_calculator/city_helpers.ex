@@ -80,9 +80,9 @@ defmodule MayorGame.CityHelpers do
         citizen |> Map.merge(%{"has_job" => false, "town_id" => city.id})
       end)
 
-    if city.id == 2 do
-      :eprof.start_profiling([self()])
-    end
+    # if city.id == 2 do
+    #   :eprof.start_profiling([self()])
+    # end
 
     # sorted_blob_citizens = Enum.sort_by(citizens_blob_atoms, & &1.education, :desc)
 
@@ -281,9 +281,9 @@ defmodule MayorGame.CityHelpers do
 
                     acc_after_workers
                     |> Map.update!(:employed_citizens, fn currently_employed ->
-                      workers
-                      |> (Enum.map(fn cit -> Map.put(cit, "has_job", true) end) ++
-                            currently_employed)
+                      (workers
+                       |> Enum.map(fn cit -> Map.put(cit, "has_job", true) end)) ++
+                        currently_employed
                     end)
                     |> Map.put(
                       :citizens_by_level,
@@ -368,10 +368,10 @@ defmodule MayorGame.CityHelpers do
         end
       )
 
-    if city.id == 2 do
-      :eprof.stop_profiling()
-      :eprof.analyze()
-    end
+    # if city.id == 2 do
+    #   :eprof.stop_profiling()
+    #   :eprof.analyze()
+    # end
 
     shields_cap = max(city.defense_bases * 1000, 100)
 
