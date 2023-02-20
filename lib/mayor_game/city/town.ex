@@ -47,6 +47,7 @@ defmodule MayorGame.City.Town do
             citizens_blob: list(map),
             patron: integer,
             contributor: boolean,
+            priorities: map,
             # logs ——————————————————————————————
             logs_emigration_housing: map,
             logs_emigration_taxes: map,
@@ -133,6 +134,7 @@ defmodule MayorGame.City.Town do
     field(:patron, :integer)
     field(:contributor, :boolean)
     field :citizens_blob, {:array, :map}, null: false, default: []
+    field :priorities, :map, null: false, default: Buildable.buildables_default_priorities()
 
     # this corresponds to an elixir list
     field(:tax_rates, :map)

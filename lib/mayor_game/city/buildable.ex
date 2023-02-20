@@ -112,6 +112,56 @@ defmodule MayorGame.City.Buildable do
     }
   end
 
+  def buildables_default_priorities do
+    %{
+      huts: 1,
+      single_family_homes: 5,
+      multi_family_homes: 5,
+      homeless_shelters: 5,
+      apartments: 5,
+      micro_apartments: 5,
+      high_rises: 5,
+      megablocks: 5,
+      roads: 0,
+      highways: 0,
+      airports: 6,
+      bus_lines: 3,
+      subway_lines: 3,
+      bike_lanes: 0,
+      bikeshare_stations: 0,
+      coal_plants: 2,
+      natural_gas_plants: 4,
+      wind_turbines: 4,
+      solar_plants: 4,
+      nuclear_plants: 4,
+      fusion_reactors: 4,
+      dams: 4,
+      carbon_capture_plants: 8,
+      parks: 9,
+      campgrounds: 9,
+      nature_preserves: 9,
+      libraries: 9,
+      schools: 8,
+      middle_schools: 8,
+      high_schools: 8,
+      universities: 8,
+      research_labs: 8,
+      retail_shops: 9,
+      factories: 9,
+      mines: 9,
+      office_buildings: 9,
+      distribution_centers: 9,
+      theatres: 9,
+      arenas: 9,
+      zoos: 9,
+      aquariums: 9,
+      hospitals: 9,
+      doctor_offices: 9,
+      air_bases: 7,
+      defense_bases: 7
+    }
+  end
+
   def buildables_kw_list do
     [
       transit: [
@@ -320,7 +370,7 @@ defmodule MayorGame.City.Buildable do
         price: 400,
         multipliers: %{
           region: %{
-            health: %{forest: 0.7, mountain: 0.7, desert: 0.9, lake: 0.7}
+            health: %{forest: 0.8, mountain: 0.8, desert: 0.9, lake: 0.7}
           }
         },
         produces: %{
@@ -396,7 +446,7 @@ defmodule MayorGame.City.Buildable do
             },
             fun: %{
               ocean: 1.5,
-              mountain: 0.7,
+              mountain: 0.8,
               desert: 0.6
             }
           }
@@ -420,7 +470,7 @@ defmodule MayorGame.City.Buildable do
             },
             fun: %{
               ocean: 1.5,
-              mountain: 0.7,
+              mountain: 0.8,
               desert: 0.6
             }
           }
@@ -567,7 +617,7 @@ defmodule MayorGame.City.Buildable do
           },
           season: %{
             energy: %{
-              winter: 0.7,
+              winter: 0.8,
               spring: 1.3
             }
           }
@@ -602,7 +652,7 @@ defmodule MayorGame.City.Buildable do
         category: :energy,
         level: 5,
         title: :carbon_capture_plants,
-        price: 100_000,
+        price: 10,
         requires: %{
           money: 50,
           area: 10,
@@ -629,7 +679,7 @@ defmodule MayorGame.City.Buildable do
             },
             fun: %{
               ocean: 1.5,
-              mountain: 0.7,
+              mountain: 0.8,
               desert: 1.1,
               forest: 1.2,
               lake: 1.2
@@ -663,7 +713,7 @@ defmodule MayorGame.City.Buildable do
             fun: %{
               ocean: 1.75,
               mountain: 0.9,
-              desert: 0.7,
+              desert: 0.8,
               forest: 1.25,
               lake: 1.4
             }
@@ -675,7 +725,7 @@ defmodule MayorGame.City.Buildable do
           workers: %{count: 6, level: 1}
         },
         produces: %{
-          fun: 7,
+          fun: 8,
           health: 6,
           pollution: -3
         }
@@ -691,13 +741,13 @@ defmodule MayorGame.City.Buildable do
             health: %{
               ocean: 1.1,
               mountain: 1.4,
-              desert: 0.7,
+              desert: 0.8,
               forest: 1.6,
               lake: 1.2
             },
             fun: %{
               ocean: 1.5,
-              mountain: 0.7,
+              mountain: 0.8,
               desert: 1.1,
               forest: 1.5,
               lake: 1.3
@@ -761,7 +811,7 @@ defmodule MayorGame.City.Buildable do
         requires: %{
           money: 40,
           energy: 800,
-          area: 7,
+          area: 8,
           workers: %{count: 10, level: 1}
         },
         produces: %{
@@ -966,7 +1016,7 @@ defmodule MayorGame.City.Buildable do
           workers: %{count: 10, level: 3}
         },
         produces: %{
-          fun: 8,
+          fun: 9,
           pollution: -1
         }
       },
@@ -980,7 +1030,7 @@ defmodule MayorGame.City.Buildable do
           region: %{
             energy: %{
               desert: 1.2,
-              ocean: 0.8,
+              ocean: 0.9,
               lake: 0.9
             },
             money: %{
@@ -1043,7 +1093,7 @@ defmodule MayorGame.City.Buildable do
         category: :combat,
         level: 5,
         title: :air_bases,
-        price: 100_000_000,
+        price: 10,
         requires: %{
           money: 5000,
           steel: 50,
