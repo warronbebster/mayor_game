@@ -182,11 +182,6 @@ defmodule MayorGame.CityHelpers do
                   if Map.has_key?(individual_buildable.requires, :workers) do
                     required_worker_count = individual_buildable.requires.workers.count
 
-                    # shape: %{level => count, level => count}
-                    if city.id == 2 do
-                      :eprof.start_profiling([self()])
-                    end
-
                     checked_workers =
                       check_workers(
                         individual_buildable.requires.workers.level,
@@ -197,11 +192,6 @@ defmodule MayorGame.CityHelpers do
 
                     # here I gotta subtract the working_levels from acc2.citizens_by_level
                     # and update both in the acc
-
-                    if city.id == 2 do
-                      :eprof.stop_profiling()
-                      :eprof.analyze()
-                    end
 
                     enough_workers =
                       checked_workers.working_count >=
