@@ -616,10 +616,18 @@ defmodule MayorGame.CityHelpers do
         results
       end
 
+    results3 =
+      if !prod_nil && Map.has_key?(results2, :uranium) &&
+           is_function(results2.uranium) do
+        Map.replace(results, :uranium, results.uranium.(:rand.uniform() > 0.999))
+      else
+        results2
+      end
+
     if prod_nil do
       totals
     else
-      Map.merge(results2, totals)
+      Map.merge(results3, totals)
     end
   end
 
