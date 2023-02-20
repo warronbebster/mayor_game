@@ -941,7 +941,7 @@ defmodule MayorGame.City.Buildable do
           money: 70,
           energy: 600,
           area: 75,
-          workers: %{count: 50, level: 0}
+          workers: %{count: 30, level: 0}
         },
         produces: %{
           health: -1,
@@ -975,7 +975,7 @@ defmodule MayorGame.City.Buildable do
           money: 50,
           energy: 300,
           area: 150,
-          workers: %{count: 50, level: 0}
+          workers: %{count: 30, level: 0}
         },
         produces: %{
           health: 1,
