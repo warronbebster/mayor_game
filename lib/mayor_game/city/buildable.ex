@@ -1093,7 +1093,7 @@ defmodule MayorGame.City.Buildable do
         category: :combat,
         level: 5,
         title: :air_bases,
-        price: 10,
+        price: 100_000_000,
         requires: %{
           money: 5000,
           steel: 50,
