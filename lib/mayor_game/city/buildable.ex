@@ -993,7 +993,7 @@ defmodule MayorGame.City.Buildable do
         multipliers: %{
           region: %{
             energy: %{
-              desert: 1.5
+              desert: 1.1
             }
           }
         },
