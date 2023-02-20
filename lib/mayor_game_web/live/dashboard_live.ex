@@ -78,12 +78,12 @@ defmodule MayorGameWeb.DashboardLive do
 
     if socket.assigns.current_user.id == 1 do
       new_citizen = %{
-        town_id: city_id,
-        age: 0,
-        education: 0,
-        has_job: false,
-        last_moved: socket.assigns.world.day,
-        preferences: :rand.uniform(6)
+        "town_id" => city_id,
+        "age" => 0,
+        "education" => 0,
+        "has_job" => false,
+        "last_moved" => socket.assigns.world.day,
+        "preferences" => :rand.uniform(6)
       }
 
       from(t in Town,

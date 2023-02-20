@@ -1143,6 +1143,10 @@ select {
   margin-right: auto;
 }
 
+.ml-1 {
+  margin-left: 0.25rem;
+}
+
 .inline-block {
   display: inline-block;
 }
@@ -1205,6 +1209,10 @@ select {
 
 .w-28 {
   width: 7rem;
+}
+
+.w-10 {
+  width: 2.5rem;
 }
 
 .w-16 {
@@ -1498,6 +1506,10 @@ select {
   padding-bottom: 1rem;
 }
 
+.pl-2 {
+  padding-left: 0.5rem;
+}
+
 .pb-6 {
   padding-bottom: 1.5rem;
 }
@@ -1732,10 +1744,6 @@ select {
   opacity: 0.5;
 }
 
-.filter {
-  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
-}
-
 * {
   font-family: "Iosevka Etoile Web", "Courier New", monospace;
   font-weight: 300;
@@ -1856,8 +1864,8 @@ input[type="number"] {
 }
 
 @media (min-width: 768px) {
-  .md\:basis-64 {
-    flex-basis: 16rem;
+  .md\:basis-80 {
+    flex-basis: 20rem;
   }
 }
 

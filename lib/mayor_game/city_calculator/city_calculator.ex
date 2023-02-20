@@ -70,8 +70,6 @@ defmodule MayorGame.CityCalculator do
         true -> :fall
       end
 
-    # :eprof.start_profiling([self()])
-
     leftovers =
       cities
       # |> Flow.from_enumerable(max_demand: 100)
@@ -95,7 +93,7 @@ defmodule MayorGame.CityCalculator do
 
     leftovers
     |> Enum.sort_by(& &1.id)
-    |> Enum.chunk_every(20)
+    |> Enum.chunk_every(200)
     |> Enum.each(fn chunk ->
       Repo.checkout(
         fn ->
@@ -121,16 +119,16 @@ defmodule MayorGame.CityCalculator do
             )
             |> Repo.update_all([])
 
-            if city.citizen_count < 20 do
+            if city.citizen_count < 100 do
               updated_citizens =
                 Enum.map(1..:rand.uniform(3), fn _citizen ->
                   %{
-                    age: 0,
-                    town_id: city.id,
-                    education: 0,
-                    last_moved: db_world.day,
-                    has_job: false,
-                    preferences: :rand.uniform(10)
+                    "age" => 0,
+                    "town_id" => city.id,
+                    "education" => 0,
+                    "last_moved" => db_world.day,
+                    "has_job" => false,
+                    "preferences" => :rand.uniform(10)
                   }
                 end)
 
@@ -190,7 +188,7 @@ defmodule MayorGame.CityCalculator do
     )
 
     # recurse, do it again
-    Process.send_after(self(), :tax, if(in_dev, do: 2000, else: 500))
+    Process.send_after(self(), :tax, if(in_dev, do: 5000, else: 500))
 
     # returns this to whatever calls ?
     {:noreply, %{world: updated_world, buildables_map: buildables_map, in_dev: in_dev}}

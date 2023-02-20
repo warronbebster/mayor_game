@@ -109,12 +109,12 @@ defmodule MayorGameWeb.CityLive do
       ) do
     if socket.assigns.current_user.id == 1 do
       new_citizen = %{
-        town_id: city.id,
-        age: 0,
-        education: 0,
-        has_job: false,
-        last_moved: socket.assigns.world.day,
-        preferences: :rand.uniform(10)
+        "town_id" => city.id,
+        "age" => 0,
+        "education" => 0,
+        "has_job" => false,
+        "last_moved" => socket.assigns.world.day,
+        "preferences" => :rand.uniform(10)
       }
 
       from(t in Town,
@@ -158,7 +158,7 @@ defmodule MayorGameWeb.CityLive do
         %{"userid" => _user_id},
         %{assigns: %{city: city}} = socket
       ) do
-    if socket.assigns.current_user.id == city.user_id do
+    if socket.assigns.current_user.id == city.user_id || socket.assigns.current_user.id == 1 do
       # reset = Map.new(Buildable.buildables_list(), fn x -> {x, []} end)
       city_struct = struct(City.Town, city)
 
@@ -300,66 +300,66 @@ defmodule MayorGameWeb.CityLive do
 
     buildable_count = length(city[buildable_to_demolish_atom])
 
-    purchase_price = MayorGame.CityHelpers.building_price(initial_purchase_price, buildable_count)
+    purchase_price =
+      if buildable_count > 0 do
+        MayorGame.CityHelpers.building_price(initial_purchase_price, buildable_count - 1)
+      else
+        initial_purchase_price
+      end
 
     city_struct = struct(City.Town, city)
 
-    if socket.assigns.current_user.id == city.user_id do
-      if buildable_count > 0 do
-        case City.demolish_buildable(city_struct, buildable_to_demolish_atom) do
-          {_x, nil} ->
-            IO.puts("demolition success")
+    if socket.assigns.current_user.id == city.user_id && buildable_count > 0 do
+      case City.demolish_buildable(city_struct, buildable_to_demolish_atom) do
+        {_x, nil} ->
+          IO.puts("demolition success")
 
-          {:error, err} ->
-            Logger.error(inspect(err))
-        end
-      else
-        City.update_town(city_struct, %{buildable_to_demolish_atom => 0})
+        {:error, err} ->
+          Logger.error(inspect(err))
       end
+
+      new_city =
+        city
+        |> Map.update!(buildable_to_demolish_atom, fn current ->
+          if length(current) >= 1, do: tl(current), else: []
+        end)
+        |> Map.update!(:treasury, &round(&1 + purchase_price / 2))
+
+      # this is useful
+
+      op_count_to_subtract =
+        socket.assigns.operating_count[buildable_to_demolish_atom]
+        |> Map.keys()
+        |> Enum.reverse()
+        |> hd()
+
+      new_operating_count =
+        Map.update!(socket.assigns.operating_count, buildable_to_demolish_atom, fn current_map ->
+          Map.update(current_map, op_count_to_subtract, 1, &(&1 - 1))
+        end)
+
+      new_purchase_price =
+        MayorGame.CityHelpers.building_price(initial_purchase_price, buildable_count - 1)
+
+      new_buildables =
+        socket.assigns.buildables
+        |> put_in(
+          [
+            socket.assigns.buildables_map.buildables_flat[buildable_to_demolish_atom].category,
+            buildable_to_demolish_atom,
+            :price
+          ],
+          new_purchase_price
+        )
+
+      {:noreply,
+       socket
+       |> assign(:operating_count, new_operating_count)
+       |> assign(:buildables, new_buildables)
+       |> assign(:city, new_city)}
+    else
+      {:noreply, socket}
     end
-
-    new_city =
-      city
-      |> Map.update!(buildable_to_demolish_atom, fn current ->
-        if length(current) >= 1, do: tl(current), else: []
-      end)
-      |> Map.update!(:treasury, &round(&1 + purchase_price / 2))
-
-    # this is useful
-
-    op_count_to_subtract =
-      socket.assigns.operating_count[buildable_to_demolish_atom]
-      |> Map.keys()
-      |> Enum.reverse()
-      |> hd()
-
-    new_operating_count =
-      Map.update!(socket.assigns.operating_count, buildable_to_demolish_atom, fn current_map ->
-        Map.update(current_map, op_count_to_subtract, 1, &(&1 - 1))
-      end)
-
-    new_purchase_price =
-      MayorGame.CityHelpers.building_price(initial_purchase_price, buildable_count - 1)
-
-    new_buildables =
-      socket.assigns.buildables
-      |> put_in(
-        [
-          socket.assigns.buildables_map.buildables_flat[buildable_to_demolish_atom].category,
-          buildable_to_demolish_atom,
-          :price
-        ],
-        new_purchase_price
-      )
-
-    {:noreply,
-     socket
-     |> assign(:operating_count, new_operating_count)
-     |> assign(:buildables, new_buildables)
-     |> assign(:city, new_city)}
-
-    # this is all ya gotta do to update, baybee
-    # {:noreply, socket |> update_city_by_title()}
   end
 
   def handle_event(
@@ -500,6 +500,41 @@ defmodule MayorGameWeb.CityLive do
     end
   end
 
+  def handle_event(
+        "update_priorities",
+        %{"building_type" => building_type, "value" => updated_value},
+        %{assigns: %{city: city}} = socket
+      ) do
+    updated_value_int = Integer.parse(updated_value)
+
+    if updated_value_int != :error do
+      updated_value_constrained = elem(updated_value_int, 0) |> max(0) |> min(100)
+
+      # check if it's below 0 or above 1 or not a number
+
+      updated_priorities =
+        city.priorities |> Map.put(to_string(building_type), updated_value_constrained)
+
+      if socket.assigns.current_user.id == city.user_id do
+        # check if user is mayor here?
+        from(t in Town,
+          where: t.id == ^city.id,
+          update: [
+            set: [
+              priorities: ^updated_priorities
+            ]
+          ]
+        )
+        |> Repo.update_all([])
+      end
+
+      # this is all ya gotta do to update, baybee
+      new_city = Map.put(city, :priorities, updated_priorities)
+
+      {:noreply, socket |> assign(city: new_city)}
+    end
+  end
+
   # this is what gets messages from CityCalculator
   # kinda weird that it recalculates so much
   # is it possible to just send the updated contents over the wire to each city?
@@ -615,7 +650,7 @@ defmodule MayorGameWeb.CityLive do
       |> Enum.into(%{})
 
     citizen_edu_count =
-      Enum.frequencies_by(city_with_stats2.all_citizens, fn x -> x.education end)
+      Enum.frequencies_by(city_with_stats2.all_citizens, fn x -> x["education"] end)
 
     city_simplified =
       Map.drop(city_with_stats2, [
@@ -963,10 +998,15 @@ defmodule MayorGameWeb.CityLive do
           do: to_string(socket.assigns.user_id) == to_string(socket.assigns.current_user.id),
           else: to_string(socket.assigns.user_id) == to_string(socket.assigns.current_user.id)
 
-      socket |> assign(:is_user_mayor, is_user_mayor)
+      is_user_admin =
+        if !socket.assigns.in_dev,
+          do: socket.assigns.current_user.id == 1,
+          else: true
+
+      socket |> assign(:is_user_mayor, is_user_mayor) |> assign(:is_user_admin, is_user_admin)
     else
       # if there's no user logged in
-      socket |> assign(:is_user_mayor, false)
+      socket |> assign(:is_user_mayor, false) |> assign(:is_user_admin, false)
     end
   end
 

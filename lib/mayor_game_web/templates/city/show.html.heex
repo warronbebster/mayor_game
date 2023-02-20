@@ -175,6 +175,14 @@
           Sulfur
         </div>
       </td>
+      <td class="group relative h-4 top_td text-violet-600">
+        <div class="flex gap-1 items-center w-full pr-2">
+          <img src="/images/uranium.svg" alt="total uranium" height="12" width="12" class="inline" />
+        </div>
+        <div class="tooltip top-0 left-0 -translate-x-full">
+          Uranium
+        </div>
+      </td>
       <td class="group relative h-4 top_td text-red-600">
         <div class="flex gap-1 items-center w-full pr-2">
           <img src="/images/might.svg" alt="total missiles" height="12" width="12" class="inline" />
@@ -291,6 +299,15 @@
         <span class="text-orange-800">
           <%= Number.SI.number_to_si(
             @city.sulfur,
+            precision: 3,
+            trim: true
+          ) %>
+        </span>
+      </td>
+      <td class="top_td">
+        <span class="text-purple-800">
+          <%= Number.SI.number_to_si(
+            @city.uranium,
             precision: 3,
             trim: true
           ) %>
@@ -500,8 +517,8 @@
       </div>
       <div class="divide-y divide-neutral-800/10">
         <%= for {building_type, building_stats} <- buildings do %>
-          <div class="flex flex-wrap items-center gap-2 py-0.5">
-            <div class="basis-full md:basis-64 flex flex-row items-center justify-between">
+          <div class="flex flex-wrap items-center gap-1 py-0.5">
+            <div class="basis-full md:basis-80 flex flex-row items-center justify-between">
               <!-- building title -->
               <div class="group relative inline-block">
                 <h3 class="text-l first-letter:uppercase decoration-1	underline underline-offset-4 cursor-help decoration-neutral-800/40 decoration-dotted	">
@@ -642,6 +659,26 @@
                       -1
                     </button>
                   <% end %>
+                  <div class="relative group pl-2 flex items-center">
+                      
+                      <img
+                        src="/images/priority.svg"
+                        alt="priority sort"
+                        height="12"
+                        width="12"
+                      />
+                    <div class="tooltip w-32">Sort the order that you want your buildings to activate. Lower numbers fill first.</div>
+                  </div>
+                  <input  
+                class="btn ml-1 text-sm bg-amber-50 p-[2px] border leading-none w-10 border-neutral-800/25"
+                step="1"
+                phx-blur="update_priorities"
+                type="number"
+                min="0"
+                max="100"
+                value={@city.priorities[to_string(building_type)]}
+                phx-value-building_type={building_type}
+              />
                 <% end %>
                 <%= if @current_user && !is_nil(@current_user.town) && !@is_user_mayor do %>
                   <%= if !Enum.empty?(Map.get(@operating_count, building_type)) && @current_user.town.missiles > 0 do %>
@@ -1000,7 +1037,7 @@
         <% end %>
       </div>
     <% end %>
-    <%= if @is_user_mayor do %>
+    <%= if @is_user_mayor || @is_user_admin do %>
       <button
         class="btn self-start my-8"
         phx-click="reset_city"
