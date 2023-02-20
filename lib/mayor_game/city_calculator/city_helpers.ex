@@ -80,7 +80,7 @@ defmodule MayorGame.CityHelpers do
         citizen |> Map.merge(%{"has_job" => false, "town_id" => city.id})
       end)
 
-    # if city.id == 2 do
+    # if city.id == 2 && in_dev do
     #   :eprof.start_profiling([self()])
     # end
 
@@ -368,7 +368,7 @@ defmodule MayorGame.CityHelpers do
         end
       )
 
-    # if city.id == 2 do
+    # if city.id == 2 && in_dev do
     #   :eprof.stop_profiling()
     #   :eprof.analyze()
     # end
@@ -435,8 +435,8 @@ defmodule MayorGame.CityHelpers do
 
           # i can just calculate this globally. doesn't really matter on a per-citizen basis
           will_citizen_reproduce =
-            citizen["age"] > 15 and acc.housing_left > 1 &&
-              :rand.uniform(citizen_count) < max(results.health / 50, 5)
+            citizen["age"] > 15 and citizen["age"] < 3000 and acc.housing_left > 1 &&
+              :rand.uniform(citizen_count) < max(results.health / 100, 5)
 
           housing_taken = if will_citizen_reproduce, do: 2, else: 1
 
