@@ -652,7 +652,7 @@ defmodule MayorGame.City.Buildable do
         category: :energy,
         level: 5,
         title: :carbon_capture_plants,
-        price: 10,
+        price: 100_000,
         requires: %{
           money: 50,
           area: 10,
