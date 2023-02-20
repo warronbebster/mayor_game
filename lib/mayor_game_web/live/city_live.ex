@@ -998,10 +998,15 @@ defmodule MayorGameWeb.CityLive do
           do: to_string(socket.assigns.user_id) == to_string(socket.assigns.current_user.id),
           else: to_string(socket.assigns.user_id) == to_string(socket.assigns.current_user.id)
 
-      socket |> assign(:is_user_mayor, is_user_mayor)
+      is_user_admin =
+        if !socket.assigns.in_dev,
+          do: socket.assigns.current_user.id == 1,
+          else: true
+
+      socket |> assign(:is_user_mayor, is_user_mayor) |> assign(:is_user_admin, is_user_admin)
     else
       # if there's no user logged in
-      socket |> assign(:is_user_mayor, false)
+      socket |> assign(:is_user_mayor, false) |> assign(:is_user_admin, false)
     end
   end
 
