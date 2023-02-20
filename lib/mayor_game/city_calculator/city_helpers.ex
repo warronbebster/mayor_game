@@ -619,7 +619,7 @@ defmodule MayorGame.CityHelpers do
     results3 =
       if !prod_nil && Map.has_key?(results2, :uranium) &&
            is_function(results2.uranium) do
-        Map.replace(results, :uranium, results.uranium.(:rand.uniform() > 0.999))
+        Map.replace(results2, :uranium, results2.uranium.(:rand.uniform() > 0.999))
       else
         results2
       end
