@@ -803,7 +803,7 @@ defmodule MayorGame.CityHelpers do
   end
 
   def calculate_earnings(worker_count, level, tax_rate) do
-    round(worker_count * :math.pow(2, level + 1) * 100 * (tax_rate / 10))
+    round(worker_count * :math.pow(2, level) * 100 * (tax_rate / 10))
   end
 
   def atomize_keys(map) do
