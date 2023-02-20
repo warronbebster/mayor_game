@@ -760,11 +760,11 @@ defmodule MayorGame.CityMigrator do
       end)
 
     tax_cities_chosen = Enum.group_by(for_tax_logs, &elem(&1, 1))
-    tax_cities_left = Enum.group_by(for_tax_logs, &elem(&1, 0).town_id)
+    tax_cities_left = Enum.group_by(for_tax_logs, &elem(&1, 0)["town_id"])
 
     tax_cities_left_by_edu =
       Enum.map(tax_cities_left, fn {city_id, array} ->
-        {city_id, Enum.frequencies_by(array, &elem(&1, 0).education)}
+        {city_id, Enum.frequencies_by(array, &elem(&1, 0)["education"])}
       end)
       |> Map.new()
 
@@ -775,11 +775,11 @@ defmodule MayorGame.CityMigrator do
       end)
 
     job_cities_chosen = Enum.group_by(for_jobs_logs, &elem(&1, 1))
-    job_cities_left = Enum.group_by(for_jobs_logs, &elem(&1, 0).town_id)
+    job_cities_left = Enum.group_by(for_jobs_logs, &elem(&1, 0)["town_id"])
 
     job_cities_left_by_edu =
       Enum.map(job_cities_left, fn {city_id, array} ->
-        {city_id, Enum.frequencies_by(array, &elem(&1, 0).education)}
+        {city_id, Enum.frequencies_by(array, &elem(&1, 0)["education"])}
       end)
       |> Map.new()
 
@@ -795,15 +795,15 @@ defmodule MayorGame.CityMigrator do
       end)
 
     housing_cities_chosen = Enum.group_by(for_unhoused_logs, &elem(&1, 1))
-    housing_cities_left = Enum.group_by(for_unhoused_logs, &elem(&1, 0).town_id)
-    housing_cities_left_2 = Enum.group_by(for_unhoused_logs_2, &elem(&1, 0).town_id)
+    housing_cities_left = Enum.group_by(for_unhoused_logs, &elem(&1, 0)["town_id"])
+    housing_cities_left_2 = Enum.group_by(for_unhoused_logs_2, &elem(&1, 0)["town_id"])
 
     merged_housing_cities_left =
       Map.merge(housing_cities_left, housing_cities_left_2, fn _k, v1, v2 -> v1 ++ v2 end)
 
     housing_cities_left_by_edu =
       Enum.map(merged_housing_cities_left, fn {city_id, array} ->
-        {city_id, Enum.frequencies_by(array, &elem(&1, 0).education)}
+        {city_id, Enum.frequencies_by(array, &elem(&1, 0)["education"])}
       end)
       |> Map.new()
 
