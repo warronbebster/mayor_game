@@ -95,7 +95,8 @@ defmodule MayorGame.City.Buildable do
         office_buildings: buildables_flat().office_buildings,
         distribution_centers: buildables_flat().distribution_centers,
         industrial_farms: buildables_flat().industrial_farms,
-        organic_farms: buildables_flat().organic_farms
+        organic_farms: buildables_flat().organic_farms,
+        vertical_farms: buildables_flat().vertical_farms
       },
       entertainment: %{
         theatres: buildables_flat().theatres,
@@ -168,7 +169,8 @@ defmodule MayorGame.City.Buildable do
         office_buildings: buildables_flat().office_buildings,
         distribution_centers: buildables_flat().distribution_centers,
         industrial_farms: buildables_flat().industrial_farms,
-        organic_farms: buildables_flat().organic_farms
+        organic_farms: buildables_flat().organic_farms,
+        vertical_farms: buildables_flat().vertical_farms
       ],
       entertainment: [
         theatres: buildables_flat().theatres,
@@ -979,6 +981,30 @@ defmodule MayorGame.City.Buildable do
         },
         produces: %{
           health: 1,
+          pollution: 1
+        }
+      },
+      # VERTICAL FARMS ————————————————————————————————
+      vertical_farms: %BuildableMetadata{
+        category: :work,
+        level: 3,
+        title: :vertical_farms,
+        price: 10_000,
+        multipliers: %{
+          region: %{
+            energy: %{
+              desert: 1.5
+            }
+          }
+        },
+        requires: %{
+          money: 200,
+          energy: 1000,
+          area: 50,
+          workers: %{count: 12, level: 4}
+        },
+        produces: %{
+          health: 2,
           pollution: 1
         }
       },

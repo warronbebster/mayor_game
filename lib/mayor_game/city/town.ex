@@ -108,6 +108,7 @@ defmodule MayorGame.City.Town do
             distribution_centers: integer,
             industrial_farms: integer,
             organic_farms: integer,
+            vertical_farms: integer,
             theatres: integer,
             arenas: integer,
             zoos: integer,
