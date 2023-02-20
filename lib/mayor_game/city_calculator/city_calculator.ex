@@ -93,7 +93,7 @@ defmodule MayorGame.CityCalculator do
 
     leftovers
     |> Enum.sort_by(& &1.id)
-    |> Enum.chunk_every(20)
+    |> Enum.chunk_every(200)
     |> Enum.each(fn chunk ->
       Repo.checkout(
         fn ->
@@ -119,7 +119,7 @@ defmodule MayorGame.CityCalculator do
             )
             |> Repo.update_all([])
 
-            if city.citizen_count < 20 do
+            if city.citizen_count < 100 do
               updated_citizens =
                 Enum.map(1..:rand.uniform(3), fn _citizen ->
                   %{

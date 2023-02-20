@@ -175,6 +175,14 @@
           Sulfur
         </div>
       </td>
+      <td class="group relative h-4 top_td text-violet-600">
+        <div class="flex gap-1 items-center w-full pr-2">
+          <img src="/images/uranium.svg" alt="total uranium" height="12" width="12" class="inline" />
+        </div>
+        <div class="tooltip top-0 left-0 -translate-x-full">
+          Uranium
+        </div>
+      </td>
       <td class="group relative h-4 top_td text-red-600">
         <div class="flex gap-1 items-center w-full pr-2">
           <img src="/images/might.svg" alt="total missiles" height="12" width="12" class="inline" />
@@ -291,6 +299,15 @@
         <span class="text-orange-800">
           <%= Number.SI.number_to_si(
             @city.sulfur,
+            precision: 3,
+            trim: true
+          ) %>
+        </span>
+      </td>
+      <td class="top_td">
+        <span class="text-purple-800">
+          <%= Number.SI.number_to_si(
+            @city.uranium,
             precision: 3,
             trim: true
           ) %>

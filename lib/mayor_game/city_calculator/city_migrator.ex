@@ -864,7 +864,7 @@ defmodule MayorGame.CityMigrator do
               )
 
             births_count =
-              if slotted_cities_by_id[id].city.citizen_count > 20 do
+              if slotted_cities_by_id[id].city.citizen_count > 100 do
                 slotted_cities_by_id[id].city.reproducing_citizens
               else
                 if :rand.uniform() > 0.8 do
