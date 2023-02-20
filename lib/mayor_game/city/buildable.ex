@@ -660,7 +660,7 @@ defmodule MayorGame.City.Buildable do
         price: 50_000_000,
         requires: %{
           money: 10_000,
-          uranium: 50,
+          uranium: 1,
           area: 10,
           workers: %{count: 10, level: 4}
         },
