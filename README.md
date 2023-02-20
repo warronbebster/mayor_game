@@ -71,37 +71,13 @@ fly ssh console
 app/bin/mayor_game remote
 world = MayorGame.City.get_world(1)
 MayorGame.City.update_world(world, %{pollution: 1000000})
-city = MayorGame.City.get_town_by_title!("Québec")
-MayorGame.City.update_town(city, %{patron: 1})
+city = MayorGame.City.get_town_by_title!("wat")
+MayorGame.City.update_town(city, %{uranium: 4})
 MayorGame.City.update_town(city, %{citizens_blob: []})
-
-MayorGame.City.update_town(city, %{tax_rates:  %{
-                "0" => 0.1,
-                "1" => 0.2,
-                "2" => 0.3,
-                "3" => 0.4,
-                "4" => 0.5,
-                "5" => 0.5
-              }})
 
 To update all:
 
-  from(t in MayorGame.City.Town,
-    update: [
-      set: [
-        logs_deaths_housing: 0
-      ]
-    ]
-  )
-  |> MayorGame.Repo.update_all([])
-
-citizens = for _ -> 1000, do:
- %{
-                      age: 0,
-                      education: :rand.uniform(6) -1,
-                      last_moved: world.day,
-                      preferences: :rand.uniform(10)
-                    }
+from(t in MayorGame.City.Town, where: t.id > 0, update: [set: [logs_deaths_housing: 0]])|> MayorGame.Repo.update_all([])
 
 ```
 
