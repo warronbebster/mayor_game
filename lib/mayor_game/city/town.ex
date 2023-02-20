@@ -223,7 +223,8 @@ defmodule MayorGame.City.Town do
         :logs_deaths_attacks,
         :logs_births,
         :logs_sent,
-        :logs_received
+        :logs_received,
+        :priorities
       ] ++ Buildable.buildables_list()
     )
     |> validate_required([:title, :region, :climate, :user_id])

@@ -1038,14 +1038,24 @@
       </div>
     <% end %>
     <%= if @is_user_mayor || @is_user_admin do %>
-      <button
-        class="btn self-start my-8"
-        phx-click="reset_city"
-        phx-value-userid={@current_user.id}
-        phx-throttle="100"
-      >
-        Reset city
-      </button>
+      <div class="flex flex-row gap-2">
+        <button
+          class="btn self-start my-8"
+          phx-click="reset_city"
+          phx-value-userid={@current_user.id}
+          phx-throttle="100"
+        >
+          Reset city
+        </button>
+        <button
+          class="btn self-start my-8"
+          phx-click="reset_priorities"
+          phx-value-userid={@current_user.id}
+          phx-throttle="100"
+        >
+          Reset building operation order
+        </button>
+      </div>
     <% end %>
   </div>
   <!-- LOGS -->

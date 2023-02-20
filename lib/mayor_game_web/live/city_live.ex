@@ -63,9 +63,10 @@ defmodule MayorGameWeb.CityLive do
       buildables_kw_list: Buildable.buildables_kw_list(),
       buildables: Buildable.buildables(),
       buildables_list: Buildable.buildables_list(),
+      empty_buildable_map: Buildable.empty_buildable_map(),
       buildables_ordered: Buildable.buildables_ordered(),
       buildables_ordered_flat: Buildable.buildables_ordered_flat(),
-      empty_buildable_map: Buildable.empty_buildable_map()
+      buildables_default_priorities: Buildable.buildables_default_priorities()
     }
 
     # production_categories = [:energy, :area, :housing]
@@ -180,6 +181,30 @@ defmodule MayorGameWeb.CityLive do
       case City.update_town(city_struct, updated_attrs) do
         {:ok, _updated_town} ->
           IO.puts("city_reset")
+
+        {:error, err} ->
+          Logger.error(inspect(err))
+      end
+    end
+
+    # this is all ya gotta do to update, baybee
+    {:noreply, socket |> update_city_by_title()}
+  end
+
+  def handle_event(
+        "reset_priorities",
+        %{"userid" => _user_id},
+        %{assigns: %{city: city}} = socket
+      ) do
+    if socket.assigns.current_user.id == city.user_id || socket.assigns.current_user.id == 1 do
+      # reset = Map.new(Buildable.buildables_list(), fn x -> {x, []} end)
+      city_struct = struct(City.Town, city)
+
+      reset_priorities = socket.assigns.buildables_map.buildables_default_priorities
+
+      case City.update_town(city_struct, %{priorities: reset_priorities}) do
+        {:ok, updated_town} ->
+          IO.puts("priorities reset!")
 
         {:error, err} ->
           Logger.error(inspect(err))
