@@ -105,6 +105,7 @@ defmodule MayorGame.City.Town do
             retail_shops: integer,
             factories: integer,
             mines: integer,
+            uranium_mines: integer,
             office_buildings: integer,
             distribution_centers: integer,
             industrial_farms: integer,
