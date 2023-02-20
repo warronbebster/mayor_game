@@ -80,6 +80,8 @@ defmodule MayorGame.CityHelpers do
         citizen |> Map.merge(%{"has_job" => false, "town_id" => city.id})
       end)
 
+    # looks good
+
     # if city.id == 2 && in_dev do
     #   :eprof.start_profiling([self()])
     # end
@@ -357,7 +359,7 @@ defmodule MayorGame.CityHelpers do
                     Map.update(
                       current_map,
                       individual_buildable.title,
-                      [individual_buildable],
+                      [updated_buildable],
                       &[updated_buildable | &1]
                     )
                   end)
@@ -426,7 +428,7 @@ defmodule MayorGame.CityHelpers do
               !pollution_death
 
           employable =
-            acc.housing_left > 0 && citizen["age"] && citizen_not_too_old && !pollution_death
+            acc.housing_left > 0 && citizen["has_job"] && citizen_not_too_old && !pollution_death
 
           will_citizen_learn =
             time_to_learn && citizen["education"] < 5 &&

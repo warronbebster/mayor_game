@@ -353,14 +353,17 @@ defmodule MayorGame.CityMigrator do
                 chosen_city_id,
                 &[
                   citizen
-                  |> Map.drop(["town_id", "has_job"])
+                  |> Map.take(["education", "preferences", "last_moved", "age"])
                   |> Map.put("last_moved", db_world.day)
                   | &1
                 ]
               )
             else
               acc2
-              |> Map.update!(chosen_city_id, &[citizen |> Map.drop(["town_id", "has_job"]) | &1])
+              |> Map.update!(
+                chosen_city_id,
+                &[citizen |> Map.take(["education", "preferences", "last_moved", "age"]) | &1]
+              )
             end
           end)
         else
@@ -373,7 +376,10 @@ defmodule MayorGame.CityMigrator do
       if looking_but_not_in_job_race != [] do
         Enum.reduce(looking_but_not_in_job_race, updated_citizens_by_id_2, fn citizen, acc ->
           acc
-          |> Map.update!(citizen["town_id"], &[citizen |> Map.drop(["town_id", "has_job"]) | &1])
+          |> Map.update!(
+            citizen["town_id"],
+            &[citizen |> Map.take(["education", "preferences", "last_moved", "age"]) | &1]
+          )
         end)
       else
         updated_citizens_by_id_2
@@ -484,13 +490,18 @@ defmodule MayorGame.CityMigrator do
             |> Map.update!(
               chosen_city_id,
               &[
-                citizen |> Map.drop(["town_id", "has_job"]) |> Map.put(:last_moved, db_world.day)
+                citizen
+                |> Map.take(["education", "preferences", "last_moved", "age"])
+                |> Map.put("last_moved", db_world.day)
                 | &1
               ]
             )
           else
             acc2
-            |> Map.update!(chosen_city_id, &[citizen |> Map.drop(["town_id", "has_job"]) | &1])
+            |> Map.update!(
+              chosen_city_id,
+              &[citizen |> Map.take(["education", "preferences", "last_moved", "age"]) | &1]
+            )
           end
         end)
 
@@ -507,7 +518,7 @@ defmodule MayorGame.CityMigrator do
           |> Map.update!(
             citizen["town_id"],
             &[
-              citizen |> Map.drop(["town_id", "has_job"]) | &1
+              citizen |> Map.take(["education", "preferences", "last_moved", "age"]) | &1
             ]
           )
         end)
@@ -624,14 +635,17 @@ defmodule MayorGame.CityMigrator do
                 chosen_city_id,
                 &[
                   citizen
-                  |> Map.drop(["town_id", "has_job"])
-                  |> Map.put(:last_moved, db_world.day)
+                  |> Map.take(["education", "preferences", "last_moved", "age"])
+                  |> Map.put("last_moved", db_world.day)
                   | &1
                 ]
               )
             else
               acc2
-              |> Map.update!(chosen_city_id, &[citizen |> Map.drop(["town_id", "has_job"]) | &1])
+              |> Map.update!(
+                chosen_city_id,
+                &[citizen |> Map.take(["education", "preferences", "last_moved", "age"]) | &1]
+              )
             end
           end)
         else
