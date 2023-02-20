@@ -158,7 +158,7 @@ defmodule MayorGameWeb.CityLive do
         %{"userid" => _user_id},
         %{assigns: %{city: city}} = socket
       ) do
-    if socket.assigns.current_user.id == city.user_id do
+    if socket.assigns.current_user.id == city.user_id || socket.assigns.current_user.id == 1 do
       # reset = Map.new(Buildable.buildables_list(), fn x -> {x, []} end)
       city_struct = struct(City.Town, city)
 

@@ -1020,7 +1020,7 @@
         <% end %>
       </div>
     <% end %>
-    <%= if @is_user_mayor do %>
+    <%= if @is_user_mayor || @current_user.id == 1 do %>
       <button
         class="btn self-start my-8"
         phx-click="reset_city"
