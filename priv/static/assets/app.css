@@ -1855,6 +1855,13 @@ input[type="number"] {
   border: 1px solid rgba(38, 38, 38, 0.25);
 }
 
+#attack-form input,
+#attack-form select {
+  padding: 0 0.25rem;
+  height: 28px;
+  border: 1px solid rgba(38, 38, 38, 0.25);
+}
+
 .first-letter\:uppercase::first-letter {
   text-transform: uppercase;
 }

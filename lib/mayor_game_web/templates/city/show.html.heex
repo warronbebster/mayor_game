@@ -416,57 +416,54 @@
     <!-- TRADE FORM -->
 
       <%= if !@is_user_mayor && !is_nil(@current_user) do %>
-    <div class="flex-row items-center">
+        <div class="flex-row items-center">
           <h2 class="text-base pt-4 pb-1">
-      Send Resources
-    </h2>
-        <.form let={f} for={@trade_set} id="trade-form" phx_submit="trade" phx_change="validate">
-          <!-- <%= if @trade_set.action do %>
-            <div class="alert alert-danger">
-              uh oh, something's up! <%= @trade_set.action %>
-            </div>
-          <% end %> -->
+            Send Resources
+          </h2>
+            <.form let={f} for={@trade_set} id="trade-form" phx_submit="trade" phx_change="validate_trade">
+              <!-- <%= if @trade_set.action do %>
+                <div class="alert alert-danger">
+                  uh oh, something's up! <%= @trade_set.action %>
+                </div>
+              <% end %> -->
 
-          <%= number_input(f, :amount,
-            required: true,
-            placeholder: "amount",
-            min: 0
-          ) %>
-          <%= error_tag(f, :amount) %>
+              <%= number_input(f, :amount,
+                required: true,
+                placeholder: "amount",
+                min: 0
+              ) %>
+              <%= error_tag(f, :amount) %>
 
-          <%= select(f, :resource, @resources,
-            required: true,
-            prompt: "Select a resource"
-          ) %>
-          <%= error_tag(f, :resource) %>
+              <%= select(f, :resource, @resources,
+                required: true,
+                prompt: "Select a resource"
+              ) %>
+              <%= error_tag(f, :resource) %>
 
-          <%= submit("Send") %>
-        </.form>
-    </div>
+              <%= submit("Send") %>
+            </.form>
+        </div>
       <% end %>
 
     <!-- COMBAT -->
-
-
     <%= if !@is_user_mayor && !is_nil(@current_user) do %>
       <h2 class="text-base pt-4 pb-1">
         Combat
       </h2>
       <div class="pb-4 flex flex-row items-center gap-2">
         <%= if @city.shields > 0 && @current_user.town.missiles > 0 do %>
-          <button
-            class="btn m-0 rounded-none border border-neutral-800/25 leading-none h-6"
-            phx-click="attack_shields"
-            phx-throttle="300"
-          >
-            <img
-              src="/images/might-text.svg"
-              alt="has enough missiles to attack"
-              height="12"
-              width="12"
-              class="inline"
-            /> Attack city shields (1/<%= @current_user.town.missiles %> missiles left)
-          </button>
+          <.form let={f} for={@attack_set} id="attack-form" phx_submit="attack_multi" phx_change="validate_attack">
+
+            <%= number_input(f, :amount,
+              required: true,
+              placeholder: "# missiles",
+              min: 1,
+              max: 100
+            ) %>
+            <%= error_tag(f, :amount) %>
+
+            <%= submit("Attack shields with #{Ecto.Changeset.get_field(@attack_set, :amount)}/#{@current_user.town.missiles} missiles") %>
+          </.form>
           <div class="flex gap-1 flex-row items-center text-blue-600">
             <img
               src="/images/shields.svg"

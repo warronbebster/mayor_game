@@ -42,8 +42,7 @@ defmodule MayorGameWeb.CityLive do
     ]
 
     explanations = %{
-      transit:
-        "Build transit to add area to your city. Area is required to build most other buildings.",
+      transit: "Build transit to add area to your city. Area is required to build most other buildings.",
       energy:
         "Energy buildings produce energy when they're operational. Energy is required to operate most other buildings. You need citizens to operate most of the energy buildings.",
       housing:
@@ -53,8 +52,7 @@ defmodule MayorGameWeb.CityLive do
       civic: "Civic buildings add other benefits citizens like — jobs, fun, etc.",
       work: "Work buildings have lots of jobs to attract citizens to your city",
       entertainment: "Entertainment buildings have jobs, and add other intangibles to your city.",
-      health:
-        "Health buildings increase the health of your citizens, and make them less likely to die",
+      health: "Health buildings increase the health of your citizens, and make them less likely to die",
       combat: "Combat buildings let you attack other cities, or defend your city from attack."
     }
 
@@ -96,7 +94,7 @@ defmodule MayorGameWeb.CityLive do
       |> update_city_by_title()
       |> assign_auth(session)
       |> update_current_user()
-      |> assign_trade_set()
+      |> assign_changesets()
       # run helper function to get the stuff from the DB for those things
     }
   end
@@ -163,8 +161,7 @@ defmodule MayorGameWeb.CityLive do
       # reset = Map.new(Buildable.buildables_list(), fn x -> {x, []} end)
       city_struct = struct(City.Town, city)
 
-      reset_buildables =
-        Map.new(Enum.map(Buildable.buildables_list(), fn building -> {building, 0} end))
+      reset_buildables = Map.new(Enum.map(Buildable.buildables_list(), fn building -> {building, 0} end))
 
       updated_attrs =
         reset_buildables
@@ -286,8 +283,7 @@ defmodule MayorGameWeb.CityLive do
         Map.update(current_map, requires_keys, 1, &(&1 + 1))
       end)
 
-    new_purchase_price =
-      MayorGame.CityHelpers.building_price(initial_purchase_price, buildable_count + 1)
+    new_purchase_price = MayorGame.CityHelpers.building_price(initial_purchase_price, buildable_count + 1)
 
     new_buildables =
       socket.assigns.buildables
@@ -320,8 +316,7 @@ defmodule MayorGameWeb.CityLive do
 
     buildable_to_demolish_atom = String.to_existing_atom(building_to_demolish)
 
-    initial_purchase_price =
-      get_in(Buildable.buildables_flat(), [buildable_to_demolish_atom, :price])
+    initial_purchase_price = get_in(Buildable.buildables_flat(), [buildable_to_demolish_atom, :price])
 
     buildable_count = length(city[buildable_to_demolish_atom])
 
@@ -363,8 +358,7 @@ defmodule MayorGameWeb.CityLive do
           Map.update(current_map, op_count_to_subtract, 1, &(&1 - 1))
         end)
 
-      new_purchase_price =
-        MayorGame.CityHelpers.building_price(initial_purchase_price, buildable_count - 1)
+      new_purchase_price = MayorGame.CityHelpers.building_price(initial_purchase_price, buildable_count - 1)
 
       new_buildables =
         socket.assigns.buildables
@@ -398,8 +392,7 @@ defmodule MayorGameWeb.CityLive do
     attacking_town_struct = Repo.get!(Town, current_user.town.id)
     attacked_town_struct = struct(City.Town, city)
 
-    updated_attacked_logs =
-      Map.update(city.logs_attacks, attacking_town_struct.title, 1, &(&1 + 1))
+    updated_attacked_logs = Map.update(city.logs_attacks, attacking_town_struct.title, 1, &(&1 + 1))
 
     attacked_town_changeset =
       attacked_town_struct
@@ -449,8 +442,7 @@ defmodule MayorGameWeb.CityLive do
     attacking_town_struct = Repo.get!(Town, current_user.town.id)
     shielded_town_struct = struct(City.Town, city)
 
-    updated_attacked_logs =
-      Map.update(city.logs_attacks, attacking_town_struct.title, 1, &(&1 + 1))
+    updated_attacked_logs = Map.update(city.logs_attacks, attacking_town_struct.title, 1, &(&1 + 1))
 
     shields_update_changeset =
       shielded_town_struct
@@ -498,8 +490,7 @@ defmodule MayorGameWeb.CityLive do
     updated_value_float = Float.parse(updated_value)
 
     if updated_value_float != :error do
-      updated_value_constrained =
-        elem(updated_value_float, 0) |> max(0.0) |> min(1.0) |> Float.round(2)
+      updated_value_constrained = elem(updated_value_float, 0) |> max(0.0) |> min(1.0) |> Float.round(2)
 
       # check if it's below 0 or above 1 or not a number
 
@@ -537,8 +528,7 @@ defmodule MayorGameWeb.CityLive do
 
       # check if it's below 0 or above 1 or not a number
 
-      updated_priorities =
-        city.priorities |> Map.put(to_string(building_type), updated_value_constrained)
+      updated_priorities = city.priorities |> Map.put(to_string(building_type), updated_value_constrained)
 
       if socket.assigns.current_user.id == city.user_id do
         # check if user is mayor here?
@@ -674,8 +664,7 @@ defmodule MayorGameWeb.CityLive do
       )
       |> Enum.into(%{})
 
-    citizen_edu_count =
-      Enum.frequencies_by(city_with_stats2.all_citizens, fn x -> x["education"] end)
+    citizen_edu_count = Enum.frequencies_by(city_with_stats2.all_citizens, fn x -> x["education"] end)
 
     city_simplified =
       Map.drop(city_with_stats2, [
@@ -944,7 +933,7 @@ defmodule MayorGameWeb.CityLive do
   end
 
   def handle_event(
-        "validate",
+        "validate_trade",
         %{"town" => city_form},
         %{assigns: %{current_user: current_user}} = socket
       ) do
@@ -992,14 +981,138 @@ defmodule MayorGameWeb.CityLive do
     {:noreply, assign(socket, :trade_set, trade_set)}
   end
 
+  def handle_event(
+        "attack_multi",
+        # grab "town" map from response and cast it into city_form
+        %{"town" => city_form},
+        # pattern match to pull these variables out of the socket
+        %{assigns: %{city: city, current_user: current_user}} = socket
+      ) do
+    # if city.shields > 0 && attacking_town_struct.missiles > 0 do
+    #   from(t in Town, where: [id: ^city.id])
+    #   |> Repo.update_all(inc: [shields: -1])
+
+    #   from(t in Town, where: [id: ^current_user.town.id])
+    #   |> Repo.update_all(inc: [missiles: -1])
+
+    # end
+
+    # ————————————————————————————————————————————————————————————————————————————————
+    # ————————————————————————————————————————————————————————————————————————————————
+    # ————————————————————————————————————————————————————————————————————————————————
+
+    attacking_town_struct = Repo.get!(Town, current_user.town.id)
+    shielded_town_struct = struct(City.Town, city)
+
+    amount = if city_form["amount"] != "", do: String.to_integer(city_form["amount"]), else: 1
+    neg_amount = 0 - amount
+
+    # update cities
+
+    if amount < attacking_town_struct.missiles && city.shields > 0 do
+      from(t in Town, where: [id: ^current_user.town.id])
+      |> Repo.update_all(inc: [missiles: neg_amount])
+
+      from(t in Town, where: [id: ^city.id])
+      |> Repo.update_all(inc: [shields: neg_amount])
+
+      # SENDING LOGS
+
+      updated_attacked_logs = Map.update(city.logs_attacks, attacking_town_struct.title, 1, &(&1 + amount))
+
+      shields_update_changeset =
+        shielded_town_struct
+        |> City.Town.changeset(%{
+          logs_attacks: updated_attacked_logs
+        })
+
+      # attacking_changeset =
+      Ecto.Multi.new()
+      |> Ecto.Multi.update({:update_attacked_town_logs, city.id}, shields_update_changeset)
+      |> Repo.transaction(timeout: 10_000)
+
+      attack_set =
+        attacking_town_struct
+        |> Town.changeset(%{missiles: amount})
+        |> Ecto.Changeset.validate_number(:missiles,
+          less_than: attacking_town_struct.missiles
+        )
+
+      # validation for form
+      attack_set =
+        if attack_set.errors == [] do
+          Map.put(attack_set, :changes, %{amount: amount})
+        else
+          Map.put(attack_set, :changes, %{amount: amount})
+          |> Map.update!(:errors, fn current -> [amount: elem(hd(current), 1)] end)
+          |> Map.put(:action, :insert)
+        end
+
+      updated_city =
+        city
+        |> Map.update!(:shields, &(&1 - amount))
+        |> Map.update!(:logs_attacks, fn current ->
+          Map.update(current, attacking_town_struct.title, 1, &(&1 + amount))
+        end)
+
+      # this is all ya gotta do to update, baybee
+      # {:noreply, socket }
+
+      {:noreply, assign(socket, :attack_set, attack_set) |> assign(city: updated_city) |> update_current_user()}
+    else
+      # if not enough missiles
+      {:noreply, socket}
+    end
+  end
+
+  def handle_event(
+        "validate_attack",
+        %{"town" => city_form},
+        %{assigns: %{current_user: current_user}} = socket
+      ) do
+    attacking_town_struct = Repo.get!(Town, current_user.town.id)
+
+    # receiving_town_struct = struct(City.Town, city)
+
+    # new changeset from the form changes
+    # new_changeset =
+    #   Town.changeset(city, Map.put(city_form, "user_id", socket.assigns[:current_user].id))
+
+    amount = if city_form["amount"] != "", do: String.to_integer(city_form["amount"]), else: 0
+
+    attack_set =
+      attacking_town_struct
+      |> Town.changeset(%{missiles: amount})
+      |> Ecto.Changeset.validate_number(:missiles,
+        less_than: attacking_town_struct.missiles
+      )
+
+    attack_set =
+      if attack_set.errors == [] do
+        Map.put(attack_set, :changes, %{amount: amount})
+      else
+        Map.put(attack_set, :changes, %{amount: amount})
+        |> Map.update!(:errors, fn current -> [amount: elem(hd(current), 1)] end)
+        |> Map.put(:action, :insert)
+      end
+
+    {:noreply, assign(socket, :attack_set, attack_set)}
+  end
+
   # Build a changeset for the newly created city,
   # We'll use the changeset to drive a form to be displayed in the rendered template.
-  defp assign_trade_set(socket) do
+  defp assign_changesets(socket) do
     changeset =
       %Town{}
       |> Town.changeset(%{})
 
+    attack_changeset =
+      %Town{}
+      |> Town.changeset(%{})
+      |> Map.put(:changes, %{amount: 1})
+
     assign(socket, :trade_set, changeset)
+    |> assign(:attack_set, attack_changeset)
   end
 
   # POW
