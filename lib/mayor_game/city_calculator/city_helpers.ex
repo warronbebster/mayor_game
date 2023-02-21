@@ -344,7 +344,11 @@ defmodule MayorGame.CityHelpers do
         end
       )
 
-    shields_cap = max(results.shields_capacity, 50)
+    # shields_cap = max(results.shields_capacity, 50)
+    shields_cap =
+      max(city.defense_bases * buildables_map.buildables_flat.defense_bases.produces.shields_capacity, 50) +
+        city.missile_defense_arrays * buildables_map.buildables_flat.missile_defense_arrays.produces.shields_capacity
+
     missiles_cap = max(results.missiles_capacity, 50)
 
     are_shields_capped = results.shields > shields_cap
