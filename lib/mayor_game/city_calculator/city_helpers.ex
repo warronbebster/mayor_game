@@ -354,12 +354,6 @@ defmodule MayorGame.CityHelpers do
       |> cap_shields(shields_cap, are_shields_capped)
       |> cap_missiles(missiles_cap, are_missiles_capped)
 
-    # if shields_capped do
-    #   results |> Map.put(:shields, shields_cap) |> Map.put(:new_shields, 0)
-    # else
-    #   results
-    # end
-
     # this is where things get funky
 
     citizens_left = results.citizens_by_level |> Map.values() |> List.flatten()

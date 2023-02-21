@@ -938,7 +938,7 @@ defmodule MayorGameWeb.CityLive do
   end
 
   def handle_event(
-        "attack_multi",
+        "attack_shields",
         # grab "town" map from response and cast it into city_form
         %{"town" => city_form},
         # pattern match to pull these variables out of the socket
@@ -1019,7 +1019,7 @@ defmodule MayorGameWeb.CityLive do
 
       {:noreply, assign(socket, :attack_set, attack_set) |> assign(city: updated_city) |> update_current_user()}
     else
-      # if not enough missiles
+      # if not enough missiles/no air base
       {:noreply, socket}
     end
   end

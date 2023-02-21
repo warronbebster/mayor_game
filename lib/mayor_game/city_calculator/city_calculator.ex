@@ -104,7 +104,7 @@ defmodule MayorGame.CityCalculator do
               update: [
                 inc: [
                   treasury: ^city.income - ^city.daily_cost,
-                  missiles: ^city.new_missiles,
+                  # missiles: ^city.new_missiles,
                   shields: ^city.new_shields,
                   steel: ^city.steel - ^city.starting_steel,
                   sulfur: ^city.sulfur - ^city.starting_sulfur,
@@ -113,7 +113,8 @@ defmodule MayorGame.CityCalculator do
                   # logs—————————
                 ],
                 set: [
-                  pollution: ^city.pollution
+                  pollution: ^city.pollution,
+                  missiles: ^city.missiles
                 ]
               ]
             )

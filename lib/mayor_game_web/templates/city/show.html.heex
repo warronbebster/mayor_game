@@ -452,7 +452,7 @@
       </h2>
       <div class="pb-4 flex flex-row items-center gap-2">
         <%= if @city.shields > 0 && @current_user.town.missiles > 0 do %>
-          <.form let={f} for={@attack_set} id="attack-form" phx_submit="attack_multi" phx_change="validate_attack">
+          <.form let={f} for={@attack_set} id="attack-form" phx_submit="attack_shields" phx_change="validate_attack">
 
             <%= number_input(f, :amount,
               required: true,
