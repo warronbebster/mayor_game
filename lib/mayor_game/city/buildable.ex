@@ -1157,13 +1157,13 @@ defmodule MayorGame.City.Buildable do
         requires: %{
           money: 50000,
           steel: 100,
-          sulfur: 10,
+          sulfur: 20,
           energy: 10000,
           area: 2000,
           workers: %{count: 20, level: 5}
         },
         produces: %{
-          shields: 25
+          shields: 5
         }
       }
     }
