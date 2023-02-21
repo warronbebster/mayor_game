@@ -921,8 +921,8 @@ defmodule MayorGame.City.Buildable do
         produces: %{
           health: -5,
           pollution: 10,
-          sulfur: 1
-          uranium: fn result -> if result, do: 1, else: 0 end,
+          sulfur: 1,
+          uranium: fn result -> if result, do: 1, else: 0 end
           # gold: 1,
         }
       },
@@ -942,7 +942,7 @@ defmodule MayorGame.City.Buildable do
           health: -50,
           pollution: 50,
           # sulfur: 1
-          uranium: 1,
+          uranium: 1
           # gold: 1,
         }
       },
