@@ -95,10 +95,6 @@ defmodule MayorGame.CityHelpers do
 
     sorted_buildables = buildables_map.buildables_list |> Enum.sort_by(&priorities_atoms[&1])
 
-    shields_cap =
-      max(city.defense_bases * buildables_map.buildables_flat.defense_bases.produces.shields_capacity, 50) +
-        city.missile_defense_arrays * buildables_map.buildables_flat.missile_defense_arrays.produces.shields_capacity
-
     results =
       Enum.reduce(
         sorted_buildables,
@@ -121,7 +117,7 @@ defmodule MayorGame.CityHelpers do
           missiles: city_baked_direct.missiles,
           missiles_capacity: 0,
           shields: city_baked_direct.shields,
-          shields_capacity: shields_cap,
+          shields_capacity: 0,
           #
           income: 0,
           daily_cost: 0,
@@ -349,6 +345,7 @@ defmodule MayorGame.CityHelpers do
       )
 
     missiles_cap = max(results.missiles_capacity, 50)
+    shields_cap = max(results.shields_capacity, 50)
 
     are_shields_capped = results.shields > shields_cap
     are_missiles_capped = results.missiles > missiles_cap
