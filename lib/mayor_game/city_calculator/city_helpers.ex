@@ -795,18 +795,18 @@ defmodule MayorGame.CityHelpers do
   end
 
   def cap_shields(results_map, cap, true) do
-    results_map |> Map.put(:shields, cap) |> Map.put(:new_shields, 0)
+    results_map |> Map.put(:shields, cap) |> Map.put(:new_shields, cap - results_map.shields)
   end
 
-  def cap_shields(results_map, cap, false) do
+  def cap_shields(results_map, _cap, false) do
     results_map
   end
 
   def cap_missiles(results_map, cap, true) do
-    results_map |> Map.put(:missiles, cap) |> Map.put(:new_missiles, 0)
+    results_map |> Map.put(:missiles, cap) |> Map.put(:new_missiles, cap - results_map.missiles)
   end
 
-  def cap_missiles(results_map, cap, false) do
+  def cap_missiles(results_map, _cap, false) do
     results_map
   end
 end
