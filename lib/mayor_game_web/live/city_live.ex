@@ -402,7 +402,12 @@ defmodule MayorGameWeb.CityLive do
 
     if city.shields <= 0 && attacking_town_struct.missiles > 0 &&
          attacking_town_struct.air_bases > 0 do
-      case City.demolish_buildable(attacked_town_struct, building_to_attack_atom) do
+      attack =
+        Town
+        |> where(id: ^city.id)
+        |> Repo.update_all(inc: [{building_to_attack_atom, -1}])
+
+      case attack do
         {_x, nil} ->
           from(t in Town, where: [id: ^current_user.town.id])
           |> Repo.update_all(inc: [missiles: -1])
@@ -430,56 +435,6 @@ defmodule MayorGameWeb.CityLive do
 
     # this is all ya gotta do to update, baybee
     {:noreply, socket |> update_city_by_title() |> update_current_user()}
-  end
-
-  def handle_event(
-        "attack_shields",
-        _value,
-        %{assigns: %{city: city, current_user: current_user}} = socket
-      ) do
-    # check if user is mayor here?
-
-    attacking_town_struct = Repo.get!(Town, current_user.town.id)
-    shielded_town_struct = struct(City.Town, city)
-
-    updated_attacked_logs = Map.update(city.logs_attacks, attacking_town_struct.title, 1, &(&1 + 1))
-
-    shields_update_changeset =
-      shielded_town_struct
-      |> City.Town.changeset(%{
-        logs_attacks: updated_attacked_logs
-      })
-
-    if city.shields > 0 && attacking_town_struct.missiles > 0 do
-      from(t in Town, where: [id: ^city.id])
-      |> Repo.update_all(inc: [shields: -1])
-
-      from(t in Town, where: [id: ^current_user.town.id])
-      |> Repo.update_all(inc: [missiles: -1])
-
-      attack_shields =
-        Ecto.Multi.new()
-        |> Ecto.Multi.update({:update_attacked_town, city.id}, shields_update_changeset)
-        |> Repo.transaction(timeout: 10_000)
-
-      case attack_shields do
-        {:ok, _updated_details} ->
-          IO.puts("attack success")
-
-        {:error, err} ->
-          Logger.error(inspect(err))
-      end
-    end
-
-    updated_city =
-      city
-      |> Map.update!(:shields, &(&1 - 1))
-      |> Map.update!(:logs_attacks, fn current ->
-        Map.update(current, attacking_town_struct.title, 1, &(&1 + 1))
-      end)
-
-    # this is all ya gotta do to update, baybee
-    {:noreply, socket |> assign(city: updated_city) |> update_current_user()}
   end
 
   def handle_event(
