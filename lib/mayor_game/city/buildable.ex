@@ -1153,7 +1153,7 @@ defmodule MayorGame.City.Buildable do
         category: :combat,
         level: 2,
         title: :missile_defense_arrays,
-        price: 1_000_000,
+        price: 20_000_000,
         requires: %{
           money: 50000,
           steel: 100,
