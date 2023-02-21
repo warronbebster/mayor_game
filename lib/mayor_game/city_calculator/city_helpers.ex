@@ -343,8 +343,9 @@ defmodule MayorGame.CityHelpers do
       )
 
     shields_cap = max(city.defense_bases * 1000, 100)
+    missiles_cap = max(city.defense_bases * 1000, 100)
 
-    shields_capped = results.shields > shields_cap
+    missiles_capped = results.shields > shields_cap
 
     # optimize this
     results_capped =
@@ -358,8 +359,7 @@ defmodule MayorGame.CityHelpers do
 
     citizens_left = results.citizens_by_level |> Map.values() |> List.flatten()
 
-    all_citizens =
-      Enum.sort_by(results.employed_citizens ++ citizens_left, & &1["education"], :desc)
+    all_citizens = Enum.sort_by(results.employed_citizens ++ citizens_left, & &1["education"], :desc)
 
     # ________________________________________________________________________
     # Iterate through citizens
@@ -394,8 +394,7 @@ defmodule MayorGame.CityHelpers do
               :math.pow(city.tax_rates[to_string(citizen["education"])], 7 - citizen["education"]) &&
               !pollution_death
 
-          employable =
-            acc.housing_left > 0 && citizen["has_job"] && citizen_not_too_old && !pollution_death
+          employable = acc.housing_left > 0 && citizen["has_job"] && citizen_not_too_old && !pollution_death
 
           will_citizen_learn =
             time_to_learn && citizen["education"] < 5 &&
@@ -521,8 +520,7 @@ defmodule MayorGame.CityHelpers do
     # TODO: add seasonality and region changes to this
     prod_nil = is_nil(production_map)
 
-    prod_map_mult =
-      get_production_map(production_map, multiplier_map, citizen_count, region, season)
+    prod_map_mult = get_production_map(production_map, multiplier_map, citizen_count, region, season)
 
     totals = %{
       total_area:
@@ -684,8 +682,7 @@ defmodule MayorGame.CityHelpers do
       if Map.has_key?(citizens_by_level_count, job_level) &&
            citizens_by_level_count[job_level] >= required_count do
         %{
-          citizens_by_level_count:
-            citizens_by_level_count |> Map.update!(job_level, &(&1 - required_count)),
+          citizens_by_level_count: citizens_by_level_count |> Map.update!(job_level, &(&1 - required_count)),
           working_levels: %{job_level => required_count},
           working_count: required_count
         }
@@ -709,8 +706,7 @@ defmodule MayorGame.CityHelpers do
 
             if best_workable_level < 6 do
               updated_acc = %{
-                citizens_by_level_count:
-                  acc.citizens_by_level_count |> Map.update!(best_workable_level, &(&1 - 1)),
+                citizens_by_level_count: acc.citizens_by_level_count |> Map.update!(best_workable_level, &(&1 - 1)),
                 working_levels:
                   acc.working_levels
                   |> Map.update(
