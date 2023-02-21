@@ -272,8 +272,6 @@ defmodule MayorGameWeb.CityLive do
         socket.assigns.buildables_map.buildables_flat[building_to_buy_atom]
       end
 
-    IO.inspect(new_buildable.reason)
-
     new_city =
       city
       |> Map.update!(building_to_buy_atom, fn current -> [new_buildable | current] end)
