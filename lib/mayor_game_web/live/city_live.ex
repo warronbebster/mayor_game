@@ -964,7 +964,7 @@ defmodule MayorGameWeb.CityLive do
 
     # update cities
 
-    if amount < attacking_town_struct.missiles && city.shields > 0 do
+    if amount < attacking_town_struct.missiles && city.shields > 0 && attacking_town_struct.air_bases > 0 do
       from(t in Town, where: [id: ^current_user.town.id])
       |> Repo.update_all(inc: [missiles: neg_amount])
 
