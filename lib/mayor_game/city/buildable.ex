@@ -92,6 +92,7 @@ defmodule MayorGame.City.Buildable do
         retail_shops: buildables_flat().retail_shops,
         factories: buildables_flat().factories,
         mines: buildables_flat().mines,
+        uranium_mines: buildables_flat().uranium_mines,
         office_buildings: buildables_flat().office_buildings,
         distribution_centers: buildables_flat().distribution_centers
       },
@@ -149,6 +150,7 @@ defmodule MayorGame.City.Buildable do
       retail_shops: 9,
       factories: 9,
       mines: 9,
+      uranium_mines: 9,
       office_buildings: 9,
       distribution_centers: 9,
       theatres: 9,
@@ -210,6 +212,7 @@ defmodule MayorGame.City.Buildable do
         retail_shops: buildables_flat().retail_shops,
         factories: buildables_flat().factories,
         mines: buildables_flat().mines,
+        uranium_mines: buildables_flat().uranium_mines,
         office_buildings: buildables_flat().office_buildings,
         distribution_centers: buildables_flat().distribution_centers
       ],
@@ -919,7 +922,27 @@ defmodule MayorGame.City.Buildable do
           health: -5,
           pollution: 10,
           sulfur: 1
-          # uranium: 1,
+          uranium: fn result -> if result, do: 1, else: 0 end,
+          # gold: 1,
+        }
+      },
+      # URANIUM MINES ————————————————————————————————————
+      uranium_mines: %BuildableMetadata{
+        category: :work,
+        level: 4,
+        title: :uranium_mines,
+        price: 20_000_000,
+        requires: %{
+          money: 1000,
+          energy: 5000,
+          area: 100,
+          workers: %{count: 20, level: 4}
+        },
+        produces: %{
+          health: -50,
+          pollution: 50,
+          # sulfur: 1
+          uranium: 1,
           # gold: 1,
         }
       },
