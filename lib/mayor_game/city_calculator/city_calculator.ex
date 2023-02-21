@@ -114,7 +114,6 @@ defmodule MayorGame.CityCalculator do
                 ],
                 set: [
                   pollution: ^city.pollution
-                  # missiles: ^city.missiles
                 ]
               ]
             )

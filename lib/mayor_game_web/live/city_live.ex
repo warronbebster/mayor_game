@@ -400,7 +400,7 @@ defmodule MayorGameWeb.CityLive do
       })
 
     if city.shields <= 0 && attacking_town_struct.missiles > 0 &&
-         attacking_town_struct.air_bases > 0 do
+         attacking_town_struct.air_bases > 0 && attacked_town_struct[building_to_attack_atom] > 0 do
       attack =
         Town
         |> where(id: ^city.id)
