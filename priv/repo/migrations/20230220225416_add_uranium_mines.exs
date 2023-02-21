@@ -1,4 +1,4 @@
-defmodule MayorGame.Repo.Migrations.AddUraniumMineso
+defmodule MayorGame.Repo.Migrations.AddUraniumMines do
   use Ecto.Migration
 
   def change do
