@@ -1013,17 +1013,20 @@ defmodule MayorGameWeb.CityLive do
       from(t in Town, where: [id: ^current_user.town.id])
       |> Repo.update_all(inc: [missiles: neg_amount])
 
-      from(t in Town, where: [id: ^city.id])
-      |> Repo.update_all(inc: [shields: neg_amount])
+      # from(t in Town, where: [id: ^city.id])
+      # |> Repo.update_all(set: [shields: neg_amount])
 
       # SENDING LOGS
 
       updated_attacked_logs = Map.update(city.logs_attacks, attacking_town_struct.title, 1, &(&1 + amount))
 
+      new_shields = if shielded_town_struct.shields - amount < 0, do: 0, else: shielded_town_struct.shields - amount
+
       shields_update_changeset =
         shielded_town_struct
         |> City.Town.changeset(%{
-          logs_attacks: updated_attacked_logs
+          logs_attacks: updated_attacked_logs,
+          shields: new_shields
         })
 
       # attacking_changeset =
