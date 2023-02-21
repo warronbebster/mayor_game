@@ -116,7 +116,7 @@ defmodule MayorGame.City.Town do
             doctor_offices: integer,
             air_bases: integer,
             defense_bases: integer,
-            missile_defense_array: integer
+            missile_defense_arrays: integer
           }
 
   schema "cities" do
