@@ -351,15 +351,15 @@ defmodule MayorGame.City do
   def purchase_buildable(%Town{} = city, field_to_purchase, purchase_price) do
     city_attrs = %{treasury: city.treasury - purchase_price}
 
-    IO.inspect(city[field_to_purchase])
+    # IO.inspect(city[field_to_purchase])
 
-    negative_gap = if city[field_to_purchase] < 0, do: -city[field_to_purchase], else: 0
+    # negative_gap = if city[field_to_purchase] < 0, do: -city[field_to_purchase], else: 0
 
-    IO.inspect(negative_gap)
+    # IO.inspect(negative_gap)
 
-    inc_count = 1 + negative_gap
+    # inc_count = 1 + negative_gap
 
-    IO.inspect(inc_count)
+    # IO.inspect(inc_count)
 
     purchase_city =
       city
@@ -372,7 +372,7 @@ defmodule MayorGame.City do
         from(t in Town,
           where: [id: ^city.id]
         )
-        |> Repo.update_all(inc: [{field_to_purchase, inc_count}])
+        |> Repo.update_all(inc: [{field_to_purchase, 1}])
 
       {:error, err} ->
         Logger.error(inspect(err))
