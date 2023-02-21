@@ -750,8 +750,6 @@ defmodule MayorGame.CityMigrator do
       end)
 
     unhoused_deaths = elem(unhoused_split_3, 1) |> Enum.frequencies_by(& &1["town_id"])
-    # some of these are nil
-    IO.inspect(unhoused_deaths)
     # ok cool
     # logs_deaths_housing: integer,
 
