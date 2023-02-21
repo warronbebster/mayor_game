@@ -1129,10 +1129,11 @@ defmodule MayorGame.City.Buildable do
           workers: %{count: 10, level: 5}
         },
         produces: %{
-          missiles: 1
+          missiles: 1,
+          missiles_capacity: 100
         }
       },
-      # AIR BASES ————————————————————————————————————
+      # DEFENSE BASES ————————————————————————————————————
       defense_bases: %BuildableMetadata{
         category: :combat,
         level: 2,
@@ -1145,7 +1146,8 @@ defmodule MayorGame.City.Buildable do
           workers: %{count: 10, level: 2}
         },
         produces: %{
-          shields: 1
+          shields: 1,
+          shields_capacity: 100
         }
       },
       # MISSILE DEFENSE ARRAY ————————————————————————————————————
@@ -1163,7 +1165,8 @@ defmodule MayorGame.City.Buildable do
           workers: %{count: 20, level: 5}
         },
         produces: %{
-          shields: 5
+          shields: 5,
+          shields_capacity: 200
         }
       }
     }

@@ -319,7 +319,7 @@
             @city.missiles,
             precision: 3,
             trim: true
-          ) %>
+          ) %>/<%= max(@city.missiles_capacity, 50) %>
         </span>
       </td>
       <td class="top_td">
@@ -328,7 +328,7 @@
             @city.shields,
             precision: 3,
             trim: true
-          ) %>
+          ) %>/<%= max(@city.shields_capacity, 50) %>
         </span>
       </td>
     </tr>
@@ -472,7 +472,7 @@
               width="12"
               class="inline"
             />
-            <span><%= @city.shields %></span>
+            <span><%= @city.shields %>/<%= @city.shields_capacity %></span>
           </div>
         <% else %>
           <%= if @city.shields <= 0 do %>

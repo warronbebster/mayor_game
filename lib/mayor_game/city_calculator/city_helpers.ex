@@ -115,7 +115,9 @@ defmodule MayorGame.CityHelpers do
           gold: city_baked_direct.gold,
           sulfur: city_baked_direct.sulfur,
           missiles: city_baked_direct.missiles,
+          missiles_capacity: 0,
           shields: city_baked_direct.shields,
+          shields_capacity: 0,
           #
           income: 0,
           daily_cost: 0,
@@ -342,8 +344,8 @@ defmodule MayorGame.CityHelpers do
         end
       )
 
-    shields_cap = max(city.defense_bases * 100, 50) + city.missile_defense_arrays * 200
-    missiles_cap = max(city.air_bases * 100, 50)
+    shields_cap = max(results.shields_capacity, 50)
+    missiles_cap = max(results.missiles_capacity, 50)
 
     are_shields_capped = results.shields > shields_cap
     are_missiles_capped = results.missiles > missiles_cap
