@@ -343,23 +343,28 @@ defmodule MayorGame.CityHelpers do
       )
 
     shields_cap = max(city.defense_bases * 1000, 100) + max(city.missile_defense_arrays * 20000, 0)
+    missiles_cap = max(city.air_bases * 1000, 100)
 
-    shields_capped = results.shields > shields_cap
+    are_shields_capped = results.shields > shields_cap
+    are_missiles_capped = results.missiles > missiles_cap
 
     # optimize this
     results_capped =
-      if shields_capped do
-        results |> Map.put(:shields, shields_cap) |> Map.put(:new_shields, 0)
-      else
-        results
-      end
+      results
+      |> cap_shields(shields_cap, are_shields_capped)
+      |> cap_missiles(missiles_cap, are_missiles_capped)
+
+    # if shields_capped do
+    #   results |> Map.put(:shields, shields_cap) |> Map.put(:new_shields, 0)
+    # else
+    #   results
+    # end
 
     # this is where things get funky
 
     citizens_left = results.citizens_by_level |> Map.values() |> List.flatten()
 
-    all_citizens =
-      Enum.sort_by(results.employed_citizens ++ citizens_left, & &1["education"], :desc)
+    all_citizens = Enum.sort_by(results.employed_citizens ++ citizens_left, & &1["education"], :desc)
 
     # ________________________________________________________________________
     # Iterate through citizens
@@ -394,8 +399,7 @@ defmodule MayorGame.CityHelpers do
               :math.pow(city.tax_rates[to_string(citizen["education"])], 7 - citizen["education"]) &&
               !pollution_death
 
-          employable =
-            acc.housing_left > 0 && citizen["has_job"] && citizen_not_too_old && !pollution_death
+          employable = acc.housing_left > 0 && citizen["has_job"] && citizen_not_too_old && !pollution_death
 
           will_citizen_learn =
             time_to_learn && citizen["education"] < 5 &&
@@ -404,7 +408,7 @@ defmodule MayorGame.CityHelpers do
 
           # i can just calculate this globally. doesn't really matter on a per-citizen basis
           will_citizen_reproduce =
-            citizen["age"] > 15 and citizen["age"] < 3000 and acc.housing_left > 1 &&
+            citizen["age"] > 15 and citizen["age"] < 6000 and acc.housing_left > 1 &&
               :rand.uniform(citizen_count) < max(results.health / 100, 5)
 
           housing_taken = if will_citizen_reproduce, do: 2, else: 1
@@ -521,8 +525,7 @@ defmodule MayorGame.CityHelpers do
     # TODO: add seasonality and region changes to this
     prod_nil = is_nil(production_map)
 
-    prod_map_mult =
-      get_production_map(production_map, multiplier_map, citizen_count, region, season)
+    prod_map_mult = get_production_map(production_map, multiplier_map, citizen_count, region, season)
 
     totals = %{
       total_area:
@@ -684,8 +687,7 @@ defmodule MayorGame.CityHelpers do
       if Map.has_key?(citizens_by_level_count, job_level) &&
            citizens_by_level_count[job_level] >= required_count do
         %{
-          citizens_by_level_count:
-            citizens_by_level_count |> Map.update!(job_level, &(&1 - required_count)),
+          citizens_by_level_count: citizens_by_level_count |> Map.update!(job_level, &(&1 - required_count)),
           working_levels: %{job_level => required_count},
           working_count: required_count
         }
@@ -709,8 +711,7 @@ defmodule MayorGame.CityHelpers do
 
             if best_workable_level < 6 do
               updated_acc = %{
-                citizens_by_level_count:
-                  acc.citizens_by_level_count |> Map.update!(best_workable_level, &(&1 - 1)),
+                citizens_by_level_count: acc.citizens_by_level_count |> Map.update!(best_workable_level, &(&1 - 1)),
                 working_levels:
                   acc.working_levels
                   |> Map.update(
@@ -797,5 +798,21 @@ defmodule MayorGame.CityHelpers do
     Map.new(map, fn {k, v} ->
       {if(!is_integer(k), do: String.to_integer(k), else: k), v}
     end)
+  end
+
+  def cap_shields(results_map, cap, true) do
+    results_map |> Map.put(:shields, cap) |> Map.put(:new_shields, 0)
+  end
+
+  def cap_shields(results_map, cap, false) do
+    results_map
+  end
+
+  def cap_missiles(results_map, cap, true) do
+    results_map |> Map.put(:missiles, cap) |> Map.put(:new_missiles, 0)
+  end
+
+  def cap_missiles(results_map, cap, false) do
+    results_map
   end
 end
