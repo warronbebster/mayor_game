@@ -342,7 +342,7 @@ defmodule MayorGame.CityHelpers do
         end
       )
 
-    shields_cap = max(city.defense_bases * 1000, 100)
+    shields_cap = max(city.defense_bases * 1000, 100) + max(city.missile_defense_arrays * 20000, 0)
     missiles_cap = max(city.air_bases * 1000, 100)
 
     are_shields_capped = results.shields > shields_cap

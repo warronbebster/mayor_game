@@ -108,7 +108,8 @@ defmodule MayorGame.City.Buildable do
       },
       combat: %{
         air_bases: buildables_flat().air_bases,
-        defense_bases: buildables_flat().defense_bases
+        defense_bases: buildables_flat().defense_bases,
+        missile_defense_arrays: buildables_flat().missile_defense_arrays
       }
     }
   end
@@ -160,7 +161,8 @@ defmodule MayorGame.City.Buildable do
       hospitals: 9,
       doctor_offices: 9,
       air_bases: 7,
-      defense_bases: 7
+      defense_bases: 7,
+      missile_defense_arrays: 7
     }
   end
 
@@ -228,7 +230,8 @@ defmodule MayorGame.City.Buildable do
       ],
       combat: [
         air_bases: buildables_flat().air_bases,
-        defense_bases: buildables_flat().defense_bases
+        defense_bases: buildables_flat().defense_bases,
+        missile_defense_arrays: buildables_flat().missile_defense_arrays
       ]
     ]
   end
@@ -1143,6 +1146,24 @@ defmodule MayorGame.City.Buildable do
         },
         produces: %{
           shields: 1
+        }
+      },
+      # MISSILE DEFENSE ARRAY ————————————————————————————————————
+      missile_defense_arrays: %BuildableMetadata{
+        category: :combat,
+        level: 2,
+        title: :missile_defense_arrays,
+        price: 20_000_000,
+        requires: %{
+          money: 50000,
+          steel: 100,
+          sulfur: 10,
+          energy: 10000,
+          area: 2000,
+          workers: %{count: 20, level: 5}
+        },
+        produces: %{
+          shields: 25
         }
       }
     }
