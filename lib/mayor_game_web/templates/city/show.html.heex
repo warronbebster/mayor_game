@@ -570,7 +570,7 @@
                           <% end %>
                         </div>
                       <% else %>
-                        <%= if is_function(value, 1) do %>
+                        <%= if is_function(value, 1) && produces_type == :pollution do %>
 
                             <div class="flex items-center gap-1">
                               <div class=""><%= to_string(produces_type) %> per pop</div>
@@ -587,6 +587,12 @@
                                 ) %>)
                               <% end %>
                             </div>
+                        <% else %>
+                          <div class="flex items-center gap-1">
+                            <div class=""><%= to_string(produces_type) %></div>
+                            <hr class="border-neutral-800 flex-1" />
+                            random drop
+                          </div>
                         <% end %>
                         <%= if is_function(value, 2) do %>
                           <div class="flex items-center gap-1">
@@ -745,31 +751,34 @@
                   <% else %>
                     <%= for {operation_type, operation_count} <- @operating_count[building_type] do %>
                       <td class={
-                        "group cell #{if operation_type == [], do: 'bg-green-100', else: 'bg-red-50'}"
+                        "group cell #{if operation_type == [] || operation_type == [:loading], do: 'bg-green-100', else: 'bg-red-50'}"
                       }>
                         <div class="flex flex-row items-center gap-x-1 cursor-help">
                           <p class={
-                            "#{if operation_type == [], do: 'text-green-700', else: 'text-red-700'}"
+                            "#{if operation_type == [] || operation_type == [:loading], do: 'text-green-700', else: 'text-red-700'}"
                           }>
                             <%= Number.Delimit.number_to_delimited(operation_count) %>
                           </p>
-
-                          <%= for requirement <- @building_requirements do %>
-                            <%= if building_stats.requires[String.to_existing_atom(requirement)] != nil && building_stats.requires[String.to_existing_atom(requirement)] > 0 && !Enum.member?(operation_type, String.to_existing_atom(requirement)) do %>
-                              <img
-                                src={"/images/#{to_string(requirement)}-fulfilled.svg"}
-                                alt={"has enough #{to_string(requirement)} to operate"}
-                                height="12"
-                                width="12"
-                              />
-                            <% else %>
-                              <%= if Enum.member?(operation_type, String.to_existing_atom(requirement)) do %>
+                          <%= if operation_type == [:loading] do %>
+                          <span class="text-green-600">building…</span>
+                          <% else %>
+                            <%= for requirement <- @building_requirements do %>
+                              <%= if building_stats.requires[String.to_existing_atom(requirement)] != nil && building_stats.requires[String.to_existing_atom(requirement)] > 0 && !Enum.member?(operation_type, String.to_existing_atom(requirement)) do %>
                                 <img
-                                  src={"/images/#{to_string(requirement)}-off.svg"}
-                                  alt={"requires #{to_string(requirement)} to operate"}
+                                  src={"/images/#{to_string(requirement)}-fulfilled.svg"}
+                                  alt={"has enough #{to_string(requirement)} to operate"}
                                   height="12"
                                   width="12"
                                 />
+                              <% else %>
+                                <%= if Enum.member?(operation_type, String.to_existing_atom(requirement)) do %>
+                                  <img
+                                    src={"/images/#{to_string(requirement)}-off.svg"}
+                                    alt={"requires #{to_string(requirement)} to operate"}
+                                    height="12"
+                                    width="12"
+                                  />
+                                <% end %>
                               <% end %>
                             <% end %>
                           <% end %>
@@ -777,17 +786,21 @@
                           <%= if operation_type == [] do %>
                             <div class="tooltip text-green-600">operational</div>
                           <% else %>
-                            <div class="tooltip w-32 text-red-600">
-                              needs
-                              <%= if length(operation_type) > 1 do %>
-                                <%= for operation_reason <- operation_type do %>
-                                  <%= operation_reason %>,
+                            <%= if operation_type == [:loading] do %>
+                                  <div class="tooltip text-neutral-800">building…</div>
+                            <% else %>
+                              <div class="tooltip w-32 text-red-600">
+                                needs
+                                <%= if length(operation_type) > 1 do %>
+                                  <%= for operation_reason <- operation_type do %>
+                                    <%= operation_reason %>,
+                                  <% end %>
+                                <% else %>
+                                  <%= hd(operation_type) %>
                                 <% end %>
-                              <% else %>
-                                <%= hd(operation_type) %>
-                              <% end %>
-                              to operate
-                            </div>
+                                to operate
+                              </div>
+                            <% end %>
                           <% end %>
                         </div>
                       </td>

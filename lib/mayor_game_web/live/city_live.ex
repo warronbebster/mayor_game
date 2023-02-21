@@ -253,18 +253,6 @@ defmodule MayorGameWeb.CityLive do
       ) &&
         !is_nil(socket.assigns.buildables_map.buildables_flat[building_to_buy_atom].requires)
 
-    new_buildable =
-      if has_requirements do
-        Map.put(
-          socket.assigns.buildables_map.buildables_flat[building_to_buy_atom],
-          :reason,
-          socket.assigns.buildables_map.buildables_flat[building_to_buy_atom].requires
-          |> Map.keys()
-        )
-      else
-        socket.assigns.buildables_map.buildables_flat[building_to_buy_atom]
-      end
-
     requires_keys =
       if has_requirements do
         socket.assigns.buildables_map.buildables_flat[building_to_buy_atom].requires
@@ -273,6 +261,19 @@ defmodule MayorGameWeb.CityLive do
         []
       end
 
+    new_buildable =
+      if has_requirements do
+        Map.put(
+          socket.assigns.buildables_map.buildables_flat[building_to_buy_atom],
+          :reason,
+          [:loading]
+        )
+      else
+        socket.assigns.buildables_map.buildables_flat[building_to_buy_atom]
+      end
+
+    IO.inspect(new_buildable.reason)
+
     new_city =
       city
       |> Map.update!(building_to_buy_atom, fn current -> [new_buildable | current] end)
@@ -280,7 +281,7 @@ defmodule MayorGameWeb.CityLive do
 
     new_operating_count =
       Map.update!(socket.assigns.operating_count, building_to_buy_atom, fn current_map ->
-        Map.update(current_map, requires_keys, 1, &(&1 + 1))
+        Map.update(current_map, [:loading], 1, &(&1 + 1))
       end)
 
     new_purchase_price = MayorGame.CityHelpers.building_price(initial_purchase_price, buildable_count + 1)

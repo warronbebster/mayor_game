@@ -73,7 +73,6 @@ world = MayorGame.City.get_world(1)
 MayorGame.City.update_world(world, %{pollution: 1000000})
 city = MayorGame.City.get_town_by_title!("wat")
 MayorGame.City.update_town(city, %{uranium: 4})
-MayorGame.City.update_town(city, %{citizens_blob: []})
 
 To update all:
 
