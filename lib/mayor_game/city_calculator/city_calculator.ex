@@ -104,12 +104,12 @@ defmodule MayorGame.CityCalculator do
               update: [
                 inc: [
                   treasury: ^city.income - ^city.daily_cost,
-                  steel: ^city.new_steel,
                   missiles: ^city.new_missiles,
-                  sulfur: ^city.new_sulfur,
-                  gold: ^city.new_gold,
-                  uranium: ^city.new_uranium,
-                  shields: ^city.new_shields
+                  shields: ^city.new_shields,
+                  steel: ^city.steel - ^city.starting_steel,
+                  sulfur: ^city.sulfur - ^city.starting_sulfur,
+                  gold: ^city.gold - ^city.starting_gold,
+                  uranium: ^city.uranium - ^city.starting_uranium
                   # logs—————————
                 ],
                 set: [
