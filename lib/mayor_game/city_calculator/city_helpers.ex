@@ -343,17 +343,22 @@ defmodule MayorGame.CityHelpers do
       )
 
     shields_cap = max(city.defense_bases * 1000, 100)
-    missiles_cap = max(city.defense_bases * 1000, 100)
+    missiles_cap = max(city.air_bases * 1000, 100)
 
-    missiles_capped = results.shields > shields_cap
+    are_shields_capped = results.shields > shields_cap
+    are_missiles_capped = results.missiles > missiles_cap
 
     # optimize this
     results_capped =
-      if shields_capped do
-        results |> Map.put(:shields, shields_cap) |> Map.put(:new_shields, 0)
-      else
-        results
-      end
+      results
+      |> cap_shields(shields_cap, are_shields_capped)
+      |> cap_missiles(missiles_cap, are_missiles_capped)
+
+    # if shields_capped do
+    #   results |> Map.put(:shields, shields_cap) |> Map.put(:new_shields, 0)
+    # else
+    #   results
+    # end
 
     # this is where things get funky
 
@@ -793,5 +798,21 @@ defmodule MayorGame.CityHelpers do
     Map.new(map, fn {k, v} ->
       {if(!is_integer(k), do: String.to_integer(k), else: k), v}
     end)
+  end
+
+  def cap_shields(results_map, cap, true) do
+    results_map |> Map.put(:shields, cap) |> Map.put(:new_shields, 0)
+  end
+
+  def cap_shields(results_map, cap, false) do
+    results_map
+  end
+
+  def cap_missiles(results_map, cap, true) do
+    results_map |> Map.put(:missiles, cap) |> Map.put(:new_missiles, 0)
+  end
+
+  def cap_missiles(results_map, cap, false) do
+    results_map
   end
 end
