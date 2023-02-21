@@ -94,10 +94,7 @@ defmodule MayorGame.City.Buildable do
         mines: buildables_flat().mines,
         uranium_mines: buildables_flat().uranium_mines,
         office_buildings: buildables_flat().office_buildings,
-        distribution_centers: buildables_flat().distribution_centers,
-        industrial_farms: buildables_flat().industrial_farms,
-        organic_farms: buildables_flat().organic_farms,
-        vertical_farms: buildables_flat().vertical_farms
+        distribution_centers: buildables_flat().distribution_centers
       },
       entertainment: %{
         theatres: buildables_flat().theatres,
@@ -106,9 +103,6 @@ defmodule MayorGame.City.Buildable do
         aquariums: buildables_flat().aquariums
       },
       health: %{
-        gyms: buildables_flat().gyms,
-        pharmacies: buildables_flat().pharmacies,
-        optometrists: buildables_flat().optometrists,
         hospitals: buildables_flat().hospitals,
         doctor_offices: buildables_flat().doctor_offices
       },
@@ -159,16 +153,10 @@ defmodule MayorGame.City.Buildable do
       uranium_mines: 9,
       office_buildings: 9,
       distribution_centers: 9,
-      industrial_farms: 9,
-      organic_farms: 9,
-      vertical_farms: 9,
       theatres: 9,
       arenas: 9,
       zoos: 9,
       aquariums: 9,
-      gyms: 9,
-      pharmacies: 9,
-      optometrists: 9,
       hospitals: 9,
       doctor_offices: 9,
       air_bases: 7,
@@ -226,10 +214,7 @@ defmodule MayorGame.City.Buildable do
         mines: buildables_flat().mines,
         uranium_mines: buildables_flat().uranium_mines,
         office_buildings: buildables_flat().office_buildings,
-        distribution_centers: buildables_flat().distribution_centers,
-        industrial_farms: buildables_flat().industrial_farms,
-        organic_farms: buildables_flat().organic_farms,
-        vertical_farms: buildables_flat().vertical_farms
+        distribution_centers: buildables_flat().distribution_centers
       ],
       entertainment: [
         theatres: buildables_flat().theatres,
@@ -238,9 +223,6 @@ defmodule MayorGame.City.Buildable do
         aquariums: buildables_flat().aquariums
       ],
       health: [
-        gyms: buildables_flat().gyms,
-        pharmacies: buildables_flat().pharmacies,
-        optometrists: buildables_flat().optometrists,
         hospitals: buildables_flat().hospitals,
         doctor_offices: buildables_flat().doctor_offices
       ],
@@ -995,98 +977,6 @@ defmodule MayorGame.City.Buildable do
           pollution: 1
         }
       },
-      # INDUSTRIAL FARMS ————————————————————————————————
-      industrial_farms: %BuildableMetadata{
-        category: :work,
-        level: 0,
-        title: :industrial_farms,
-        price: 2_000,
-        multipliers: %{
-          region: %{
-            energy: %{
-              desert: 1.2
-            },
-            money: %{
-              desert: 1.2,
-              mountain: 1.2
-            }
-          },
-          season: %{
-            energy: %{
-              winter: 1.5,
-              summer: 0.8
-            }
-          }
-        },
-        requires: %{
-          money: 70,
-          energy: 600,
-          area: 75,
-          workers: %{count: 30, level: 0}
-        },
-        produces: %{
-          health: -1,
-          pollution: 3
-        }
-      },
-      # ORGANIC FARMS ————————————————————————————————
-      organic_farms: %BuildableMetadata{
-        category: :work,
-        level: 0,
-        title: :organic_farms,
-        price: 3_000,
-        multipliers: %{
-          region: %{
-            energy: %{
-              desert: 1.2
-            },
-            money: %{
-              desert: 1.2,
-              mountain: 1.3
-            }
-          },
-          season: %{
-            energy: %{
-              winter: 1.5,
-              summer: 0.8
-            }
-          }
-        },
-        requires: %{
-          money: 50,
-          energy: 300,
-          area: 150,
-          workers: %{count: 30, level: 0}
-        },
-        produces: %{
-          health: 1,
-          pollution: 1
-        }
-      },
-      # VERTICAL FARMS ————————————————————————————————
-      vertical_farms: %BuildableMetadata{
-        category: :work,
-        level: 3,
-        title: :vertical_farms,
-        price: 10_000,
-        multipliers: %{
-          region: %{
-            energy: %{
-              desert: 1.1
-            }
-          }
-        },
-        requires: %{
-          money: 200,
-          energy: 1000,
-          area: 50,
-          workers: %{count: 12, level: 4}
-        },
-        produces: %{
-          health: 2,
-          pollution: 1
-        }
-      },
       # THEATRES ————————————————————————————————————
       theatres: %BuildableMetadata{
         category: :entertainment,
@@ -1187,54 +1077,6 @@ defmodule MayorGame.City.Buildable do
         produces: %{
           fun: 20,
           pollution: -1
-        }
-      },
-      # GYMS ————————————————————————————————————
-      gyms: %BuildableMetadata{
-        category: :health,
-        level: 2,
-        title: :gyms,
-        price: 2_000,
-        requires: %{
-          money: 40,
-          energy: 250,
-          area: 12,
-          workers: %{count: 10, level: 0}
-        },
-        produces: %{
-          health: 8
-        }
-      },
-      # PHARMACIES ————————————————————————————————————
-      pharmacies: %BuildableMetadata{
-        category: :health,
-        level: 2,
-        title: :pharmacies,
-        price: 5_000,
-        requires: %{
-          money: 70,
-          energy: 200,
-          area: 6,
-          workers: %{count: 8, level: 2}
-        },
-        produces: %{
-          health: 8
-        }
-      },
-      # OPTOMETRISTS ————————————————————————————————————
-      optometrists: %BuildableMetadata{
-        category: :health,
-        level: 2,
-        title: :optometrists,
-        price: 6_000,
-        requires: %{
-          money: 60,
-          energy: 250,
-          area: 4,
-          workers: %{count: 5, level: 3}
-        },
-        produces: %{
-          health: 6
         }
       },
       # HOSPITALS ————————————————————————————————————
