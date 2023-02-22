@@ -102,6 +102,7 @@ defmodule MayorGame.City do
         }
       }
       |> Map.merge(buildables_zeroed)
+      |> Map.merge(%{huts: 5, coal_plants: 1, roads: 1})
 
     # make sure keys are atoms, helps with input from phoenix forms
     attrsWithAtomKeys =
