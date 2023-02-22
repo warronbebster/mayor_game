@@ -1131,7 +1131,7 @@
             How many citizens have died from overpollution
           </div>
         </div>
-        <%= if !is_nil(@city.logs_deaths_age) do %>
+        <%= if !is_nil(@city.logs_deaths_pollution) do %>
           <div>
             <%= Number.SI.number_to_si(
               @city.logs_deaths_pollution,
