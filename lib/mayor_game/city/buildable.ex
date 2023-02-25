@@ -363,7 +363,7 @@ defmodule MayorGame.City.Buildable do
         produces: %{
           health: -1,
           sprawl: 10,
-          area: 10,
+          area: 25,
           # todo: some of these could be functions?
           pollution: &(&1 * 0.01)
         }
@@ -373,16 +373,16 @@ defmodule MayorGame.City.Buildable do
         category: :transit,
         level: 0,
         title: :highways,
-        price: 400,
+        price: 300,
         multipliers: %{
           region: %{
             health: %{forest: 0.8, mountain: 0.8, desert: 0.9, lake: 0.7}
           }
         },
         produces: %{
-          health: -4,
+          health: -3,
           sprawl: 20,
-          area: 20,
+          area: 50,
           # todo: some of these could be functions?
           pollution: &(&1 * 0.02)
         }
@@ -392,14 +392,14 @@ defmodule MayorGame.City.Buildable do
         category: :transit,
         level: 0,
         title: :airports,
-        price: 2000,
+        price: 1500,
         requires: %{
           workers: %{count: 10, level: 0},
-          energy: 150
+          energy: 100
         },
         produces: %{
-          health: -2,
-          area: 10,
+          health: -5,
+          area: 200,
           # todo: some of these could be functions?
           pollution: &(&1 * 0.03)
         }
@@ -416,7 +416,8 @@ defmodule MayorGame.City.Buildable do
         },
         produces: %{
           sprawl: 1,
-          area: 1000
+          area: 500
+          pollution: 2
         }
       },
       # Bus Lines ————————————————————————————————————
@@ -430,9 +431,9 @@ defmodule MayorGame.City.Buildable do
           money: 30
         },
         produces: %{
-          health: -2,
           sprawl: 3,
-          area: 50
+          area: 75
+          pollution: 1
         }
       },
       # Bike lanes ————————————————————————————————————
