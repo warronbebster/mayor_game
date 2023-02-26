@@ -41,7 +41,6 @@ defmodule MayorGame.City.Citizens do
       :name,
       :age,
       :education,
-      :has_job,
       :last_moved,
       :preferences
     ]

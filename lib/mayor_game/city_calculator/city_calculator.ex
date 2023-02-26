@@ -1,7 +1,7 @@
 defmodule MayorGame.CityCalculator do
   use GenServer, restart: :permanent
-  alias MayorGame.City.{Town, Buildable}
-  alias MayorGame.{City, CityHelpers, Repo}
+  alias MayorGame.City.{Town, Buildable, TownStatistics, ResourceStatistics}
+  alias MayorGame.{City, CityHelpers, Repo, Rules}
   import Ecto.Query
 
   def start_link(initial_val) do
@@ -50,39 +50,43 @@ defmodule MayorGame.CityCalculator do
         :tax,
         %{world: world, buildables_map: buildables_map, in_dev: in_dev} = _sent_map
       ) do
+    # profiling
+    {:ok, datetime_pre} = DateTime.now("Etc/UTC")
+
+    # filter obviously ghost cities
+    # add pollution check. It is possible to trick this check with a city reset, and by building road and park without building housing
     cities =
       City.list_cities_preload()
       |> Enum.filter(fn city ->
         city.huts > 0 || city.single_family_homes > 0 || city.apartments > 0 ||
           city.homeless_shelters > 0 || city.micro_apartments > 0 || city.high_rises > 0 ||
-          city.megablocks > 0
+          city.megablocks > 0 || city.pollution != 0
       end)
 
+    # should we tie pollution effect to RNG?
     pollution_ceiling = 2_000_000_000 * Random.gammavariate(7.5, 1)
 
     db_world = City.get_world!(1)
 
-    season =
-      cond do
-        rem(world.day, 365) < 91 -> :winter
-        rem(world.day, 365) < 182 -> :spring
-        rem(world.day, 365) < 273 -> :summer
-        true -> :fall
-      end
+    season = Rules.season_from_day(world.day)
 
     leftovers =
       cities
       # |> Flow.from_enumerable(max_demand: 100)
       |> Enum.map(fn city ->
-        # result here is a %Town{} with stats calculated
-        CityHelpers.calculate_city_stats(
-          city,
-          db_world,
-          pollution_ceiling,
-          season,
-          buildables_map,
-          in_dev,
-          false
+        # keeping city for citizens_blob
+        city
+        |> Map.merge(
+          # result here is a %Town{} with stats calculated
+          CityHelpers.calculate_city_stats_with_drops(
+            city,
+            db_world,
+            pollution_ceiling,
+            season,
+            buildables_map,
+            in_dev,
+            false
+          )
         )
       end)
 
@@ -103,23 +107,49 @@ defmodule MayorGame.CityCalculator do
               where: t.id == ^city.id,
               update: [
                 inc: [
-                  treasury: ^city.income - ^city.daily_cost,
-                  missiles: ^city.new_missiles,
-                  shields: ^city.new_shields,
-                  steel: ^city.steel - ^city.starting_steel,
-                  sulfur: ^city.sulfur - ^city.starting_sulfur,
-                  gold: ^city.gold - ^city.starting_gold,
-                  uranium: ^city.uranium - ^city.starting_uranium
+                  treasury:
+                    ^(city
+                      |> TownStatistics.getResource(:money)
+                      |> ResourceStatistics.getNetProduction()),
+                  missiles:
+                    ^(city
+                      |> TownStatistics.getResource(:missiles)
+                      |> ResourceStatistics.getNetProduction()),
+                  shields:
+                    ^(city
+                      |> TownStatistics.getResource(:shields)
+                      |> ResourceStatistics.getNetProduction()),
+                  steel:
+                    ^(city
+                      |> TownStatistics.getResource(:steel)
+                      |> ResourceStatistics.getNetProduction()),
+                  sulfur:
+                    ^(city
+                      |> TownStatistics.getResource(:sulfur)
+                      |> ResourceStatistics.getNetProduction()),
+                  gold:
+                    ^(city
+                      |> TownStatistics.getResource(:gold)
+                      |> ResourceStatistics.getNetProduction()),
+                  uranium:
+                    ^(city
+                      |> TownStatistics.getResource(:uranium)
+                      |> ResourceStatistics.getNetProduction())
                   # logs—————————
                 ],
                 set: [
-                  pollution: ^city.pollution
+                  pollution:
+                    ^(city
+                      |> TownStatistics.getResource(:pollution)
+                      |> ResourceStatistics.getNetProduction())
                 ]
               ]
             )
             |> Repo.update_all([])
 
-            if city.citizen_count < 100 do
+            ### Potential data conflict with migrator updates?
+            ### maybe move this to migrator instead
+            if city.total_citizens < 100 do
               updated_citizens =
                 Enum.map(1..:rand.uniform(3), fn _citizen ->
                   %{
@@ -127,7 +157,6 @@ defmodule MayorGame.CityCalculator do
                     "town_id" => city.id,
                     "education" => 0,
                     "last_moved" => db_world.day,
-                    "has_job" => false,
                     "preferences" => :rand.uniform(10)
                   }
                 end)
@@ -135,14 +164,18 @@ defmodule MayorGame.CityCalculator do
               citizens =
                 [updated_citizens | city.citizens_blob]
                 |> List.flatten()
-                |> Enum.take(city.housing)
+                |> Enum.take(
+                  city
+                  |> TownStatistics.getResource(:housing)
+                  |> ResourceStatistics.getProduction()
+                )
 
               from(t in Town,
                 where: t.id == ^city.id,
                 update: [
                   set: [
                     citizens_blob: ^citizens,
-                    citizen_count: ^city.citizen_count
+                    citizen_count: ^city.total_citizens
                   ]
                 ]
               )
@@ -157,12 +190,7 @@ defmodule MayorGame.CityCalculator do
       )
     end)
 
-    updated_pollution =
-      if db_world.pollution + new_world_pollution < 0 do
-        0
-      else
-        db_world.pollution + new_world_pollution
-      end
+    updated_pollution = max(db_world.pollution + new_world_pollution, 0)
 
     # update World in DB, pull updated_world var out of response
     {:ok, updated_world} =
@@ -173,18 +201,23 @@ defmodule MayorGame.CityCalculator do
 
     # SEND RESULTS TO CLIENTS
     # send val to liveView process that manages front-end; this basically sends to every client.
-
-    IO.puts(
-      "day: " <>
-        to_string(db_world.day) <>
-        " | pollution: " <>
-        to_string(db_world.pollution) <> " | —————————————————————————————————————————————"
-    )
-
     MayorGameWeb.Endpoint.broadcast!(
       "cityPubSub",
       "ping",
       updated_world
+    )
+
+    # profiling
+    {:ok, datetime_post} = DateTime.now("Etc/UTC")
+
+    IO.puts(
+      (datetime_post |> DateTime.to_string()) <>
+        " | Calculator Tick | Time: " <>
+        to_string(DateTime.diff(datetime_post, datetime_pre, :millisecond)) <>
+        " ms | Day " <>
+        to_string(db_world.day) <>
+        " | Pollution: " <>
+        to_string(db_world.pollution)
     )
 
     # recurse, do it again
@@ -192,17 +225,5 @@ defmodule MayorGame.CityCalculator do
 
     # returns this to whatever calls ?
     {:noreply, %{world: updated_world, buildables_map: buildables_map, in_dev: in_dev}}
-  end
-
-  def update_logs(log, existing_logs) do
-    updated_log = if !is_nil(existing_logs), do: [log | existing_logs], else: [log]
-
-    # updated_log = [log | existing_logs]
-
-    if length(updated_log) > 50 do
-      updated_log |> Enum.take(50)
-    else
-      updated_log
-    end
   end
 end

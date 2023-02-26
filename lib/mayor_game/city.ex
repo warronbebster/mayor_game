@@ -8,7 +8,7 @@ defmodule MayorGame.City do
   import Ecto.Query, warn: false
   alias MayorGame.Repo
   alias MayorGame.City.{Town, Citizens, World, Buildable}
-  alias MayorGame.CityHelpers
+  alias MayorGame.Rules
 
   @doc """
   Returns the list of cities.
@@ -349,23 +349,14 @@ defmodule MayorGame.City do
       {:ok, %Details{}}
 
   """
-  def purchase_buildable(%Town{} = city, field_to_purchase, purchase_price) do
-    city_attrs = %{treasury: city.treasury - purchase_price}
-
-    # IO.inspect(city[field_to_purchase])
-
-    # negative_gap = if city[field_to_purchase] < 0, do: -city[field_to_purchase], else: 0
-
-    # IO.inspect(negative_gap)
-
-    # inc_count = 1 + negative_gap
-
-    # IO.inspect(inc_count)
+  def purchase_buildable(%Town{} = city, {_ledger_buildable, ledger_cost}, field_to_purchase, purchase_price) do
+    # city is unchanged, use the ledger to hold the accumlated construction and cost prior to UI refresh
+    city_attrs = %{treasury: city.treasury - ledger_cost - purchase_price}
 
     purchase_city =
       city
       |> Town.changeset(city_attrs)
-      |> Ecto.Changeset.validate_number(:treasury, greater_than: 0)
+      |> Ecto.Changeset.validate_number(:treasury, greater_than_or_equal_to: 0)
       |> Repo.update()
 
     case purchase_city do
@@ -377,6 +368,7 @@ defmodule MayorGame.City do
 
       {:error, err} ->
         Logger.error(inspect(err))
+        {:error, err}
 
       _ ->
         nil
@@ -393,21 +385,47 @@ defmodule MayorGame.City do
       {:ok, %Details{}}
 
   """
-  def demolish_buildable(%Town{} = city, buildable_to_demolish) do
-    buildable_count = length(city[buildable_to_demolish])
+  def demolish_buildable(%Town{} = city, {ledger_buildable, _ledger_cost}, buildable_to_demolish) do
+    # city is unchanged, use the ledger to hold the accumlated construction and cost prior to UI refresh
+    buildable_count = city[buildable_to_demolish]
+
+    buildable_pending =
+      if !is_nil(ledger_buildable[buildable_to_demolish]) do
+        ledger_buildable[buildable_to_demolish]
+      else
+        0
+      end
+
+    city_attrs = %{buildable_to_demolish => city[buildable_to_demolish] + buildable_pending - 1}
+
+    refund_city =
+      city
+      |> Town.changeset(city_attrs)
+      |> Ecto.Changeset.validate_number(buildable_to_demolish, greater_than_or_equal_to: 0)
+      |> Repo.update()
 
     refund_price =
       round(
-        CityHelpers.building_price(
+        Rules.building_price(
           Buildable.buildables_flat()[buildable_to_demolish].price,
           buildable_count
         ) / 2
       )
 
-    Town
-    |> where(id: ^city.id)
-    |> update(inc: [treasury: ^refund_price])
-    |> Repo.update_all(inc: [{buildable_to_demolish, -1}])
+    case refund_city do
+      {:ok, _result} ->
+        from(t in Town,
+          where: [id: ^city.id]
+        )
+        |> Repo.update_all(inc: [{:treasury, refund_price}])
+
+      {:error, err} ->
+        Logger.error(inspect(err))
+        {:error, err}
+
+      _ ->
+        nil
+    end
   end
 
   # WORLD

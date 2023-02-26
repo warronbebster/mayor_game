@@ -51,7 +51,7 @@
         <span class="first-letter:uppercase"><%= @season %></span>
       </td>
       <td class="top_td">
-        <%= @total_citizens %>
+        <%= @city_stats.total_citizens %>
       </td>
     </tr>
   </table>
@@ -203,132 +203,92 @@
     <tr>
       <td class="top_td">
         <span class="text-purple-800">
-          <%= Number.SI.number_to_si(
-            @city.pollution,
-            precision: 3,
-            trim: true
-          ) %>/day
+          <%= @city_stats |> MayorGame.City.TownStatistics.getResource(:pollution) |> MayorGame.City.ResourceStatistics.expressNetProduction_SI()
+           %>/day
         </span>
       </td>
 
       <td class="top_td">
         <span class="text-amber-800">
-          <%= @city.housing - @total_citizens %>/<%= Number.SI.number_to_si(
-            @city.housing,
-            precision: 3,
-            trim: true
-          ) %>
+          <%= @city_stats |> MayorGame.City.TownStatistics.getResource(:housing) |> MayorGame.City.ResourceStatistics.expressAvailableOverSupply_SI()
+           %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-green-800">
-          <%= Enum.sum(Map.values(@city.jobs)) %>/<%= Enum.sum(Map.values(@city.total_jobs)) %>
+          <%= Enum.sum(Map.values(@city_stats.jobs_by_level)) - Enum.sum(Map.values(@city_stats.employed_citizen_count_by_level)) %>/<%= Enum.sum(Map.values(@city_stats.jobs_by_level)) %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-green-800">
-          $<%= Number.SI.number_to_si(
-            @city.income,
-            precision: 3,
-            trim: true
-          ) %>/day
+          $<%= @city_stats |> MayorGame.City.TownStatistics.getResource(:money) |> MayorGame.City.ResourceStatistics.expressProduction_SI()
+           %>/day
         </span>
       </td>
       <td class="top_td">
         <span class="text-red-800">
-          $<%= Number.SI.number_to_si(
-            @city.daily_cost,
-            precision: 3,
-            trim: true
-          ) %>/day
+          $<%= @city_stats |> MayorGame.City.TownStatistics.getResource(:money) |> MayorGame.City.ResourceStatistics.expressConsumption_SI()
+           %>/day
         </span>
       </td>
       <td class="top_td">
         <span class="text-green-800">
-          $<%= Number.SI.number_to_si(
-            @city.treasury,
-            precision: 3,
-            trim: true
-          ) %>
+          $<%= @city_stats |> MayorGame.City.TownStatistics.getResource(:money) |> MayorGame.City.ResourceStatistics.expressStock_SI(-@construction_cost)
+           %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-yellow-800">
-          <%= Number.SI.number_to_si(
-            @city.energy,
-            precision: 3,
-            trim: true
-          ) %>/<%= Number.SI.number_to_si(
-            @city.total_energy,
-            precision: 3,
-            trim: true
-          ) %>
+          <%= @city_stats |> MayorGame.City.TownStatistics.getResource(:energy) |> MayorGame.City.ResourceStatistics.expressAvailableOverSupply_SI()
+           %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-cyan-800">
-          <%= Number.SI.number_to_si(
-            @city.area,
-            precision: 3,
-            trim: true
-          ) %>/<%= Number.SI.number_to_si(
-            @city.total_area,
-            precision: 3,
-            trim: true
-          ) %>
+          <%= @city_stats |> MayorGame.City.TownStatistics.getResource(:area) |> MayorGame.City.ResourceStatistics.expressAvailableOverSupply_SI()
+           %>
         </span>
       </td>
-      <td class="group relative h-4 top_td text-fuchsia-800">
-        <%= Number.Delimit.number_to_delimited(@city.fun) %>
+      <td class="top_td">
+        <span class="text-fuchsia-800">
+          <%= @city_stats |> MayorGame.City.TownStatistics.getResource(:fun) |> MayorGame.City.ResourceStatistics.expressNetProduction_SI()
+           %>
+        </span>
       </td>
       <td class="top_td">
         <span class="text-rose-800">
-          <%= Number.Delimit.number_to_delimited(@city.health) %>
+          <%= @city_stats |> MayorGame.City.TownStatistics.getResource(:health) |> MayorGame.City.ResourceStatistics.expressNetProduction_SI()
+           %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-slate-800">
-          <%= Number.SI.number_to_si(
-            @city.steel,
-            precision: 3,
-            trim: true
-          ) %>
+          <%= @city_stats |> MayorGame.City.TownStatistics.getResource(:steel) |> MayorGame.City.ResourceStatistics.expressStock_SI()
+           %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-orange-800">
-          <%= Number.SI.number_to_si(
-            @city.sulfur,
-            precision: 3,
-            trim: true
-          ) %>
+          <%= @city_stats |> MayorGame.City.TownStatistics.getResource(:sulfur) |> MayorGame.City.ResourceStatistics.expressStock_SI()
+           %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-purple-800">
-          <%= Number.SI.number_to_si(
-            @city.uranium,
-            precision: 3,
-            trim: true
-          ) %>
+          <%= @city_stats |> MayorGame.City.TownStatistics.getResource(:uranium) |> MayorGame.City.ResourceStatistics.expressStock_SI()
+           %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-red-800">
-          <%= Number.SI.number_to_si(
-            @city.missiles,
-            precision: 3,
-            trim: true
-          ) %>/<%= max(@city.missiles_capacity, 50) %>
+          <%= @city_stats |> MayorGame.City.TownStatistics.getResource(:missiles) |> MayorGame.City.ResourceStatistics.expressStockOverStorage_SI()
+           %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-blue-800">
-          <%= Number.SI.number_to_si(
-            @city.shields,
-            precision: 3,
-            trim: true
-          ) %>/<%= max(@city.shields_capacity, 50) %>
+          <%= @city_stats |> MayorGame.City.TownStatistics.getResource(:shields) |> MayorGame.City.ResourceStatistics.expressStockOverStorage_SI()
+           %>
         </span>
       </td>
     </tr>
@@ -386,8 +346,8 @@
           <% end %>
           <!--print citizen count at level-->
           <div>
-            <%= if @citizens_by_edu[String.to_integer(job_level)] !== nil do %>
-              <%= @citizens_by_edu[String.to_integer(job_level)] %>
+            <%= if @city_stats.citizen_count_by_level[String.to_integer(job_level)] !== nil do %>
+              <%= @city_stats.citizen_count_by_level[String.to_integer(job_level)] %>
             <% else %>
               0
             <% end %>
@@ -395,16 +355,16 @@
           </div>
           <!--print job count at level-->
           <div>
-            <%= if @city.total_jobs[String.to_integer(job_level)] !== nil do %>
-              <%= to_string(@city.total_jobs[String.to_integer(job_level)]) %>
+            <%= if @city_stats.jobs_by_level[String.to_integer(job_level)] !== nil do %>
+              <%= to_string(@city_stats.jobs_by_level[String.to_integer(job_level)]) %>
             <% else %>
               0
             <% end %>
             total jobs
           </div>
           <div>
-            <%= if @city.jobs[String.to_integer(job_level)] !== nil do %>
-              <%= to_string(@city.jobs[String.to_integer(job_level)]) %>
+            <%= if @city_stats.vacancies_by_level[String.to_integer(job_level)] !== nil do %>
+              <%= to_string(@city_stats.vacancies_by_level[String.to_integer(job_level)]) %>
             <% else %>
               0
             <% end %>
@@ -451,7 +411,7 @@
         Combat
       </h2>
       <div class="pb-4 flex flex-row items-center gap-2">
-        <%= if @city.shields > 0 && @current_user.town.missiles > 0 do %>
+        <%= if @city_stats |> MayorGame.City.TownStatistics.getResource(:shields) |> MayorGame.City.ResourceStatistics.getStock() > 0 && @current_user.town.missiles > 0 do %>
           <.form let={f} for={@attack_set} id="attack-form" phx_submit="attack_shields" phx_change="validate_attack">
 
             <%= number_input(f, :amount,
@@ -472,10 +432,10 @@
               width="12"
               class="inline"
             />
-            <span><%= @city.shields %>/<%= @city.shields_capacity %></span>
+            <span><%= @city_stats |> MayorGame.City.TownStatistics.getResource(:shields) |> MayorGame.City.ResourceStatistics.expressStockOverStorage_SI() %></span>
           </div>
         <% else %>
-          <%= if @city.shields <= 0 do %>
+          <%= if @city_stats |> MayorGame.City.TownStatistics.getResource(:shields) |> MayorGame.City.ResourceStatistics.getStock() <= 0 do %>
             <button
               disabled
               class="opacity-50 btn m-0 rounded-none border border-neutral-800/25 leading-none h-6"
@@ -497,7 +457,7 @@
                 class="inline"
               /> Attack city shields |
             </button>
-            <%= @city.shields %>
+            <%= @city_stats |> MayorGame.City.TownStatistics.getResource(:shields) |> MayorGame.City.ResourceStatistics.expressStock_SI() %>
           <% end %>
         <% end %>
       </div>
@@ -523,7 +483,7 @@
                 </h3>
                 <div class="tooltip w-48">
                   <%= for {building_stat, value} <- building_stats do %>
-                    <%= if !String.contains?(Atom.to_string(building_stat), ["multipliers", "price", "purchasable", "produces", "requires", "enabled", "priority", "reason", "title", "category", "level"]) && value != nil do %>
+                    <%= if !String.contains?(Atom.to_string(building_stat), ["multipliers", "price", "purchasable", "produces", "requires", "stores", "enabled", "priority", "reason", "title", "category", "level"]) && value != nil do %>
                       <div class="flex items-center gap-1">
                         <div class=""><%= building_stat %></div>
                         <hr class="border-neutral-800 flex-1" />
@@ -536,7 +496,7 @@
                     <%= for {requires_type, value} <- building_stats.requires do %>
                       <%= if is_number(value) do %>
                         <div class="flex items-center gap-1">
-                          <div class=""><%= to_string(requires_type) %></div>
+                          <div class=""><%= String.replace(to_string(requires_type), "_", " ") %></div>
                           <hr class="border-neutral-800 flex-1" />
                           <%= to_string(value) %>
                         </div>
@@ -544,7 +504,7 @@
                         <%= if requires_type == :workers do %>
                           <div class="flex items-center gap-1">
                             <div class="">
-                              lvl <%= to_string(value.level) <> " " <> to_string(requires_type) %>
+                              lvl <%= to_string(value.level) <> " " <> String.replace(to_string(requires_type), "_", " ") %>
                             </div>
                             <hr class="border-neutral-800 flex-1" />
                             <%= to_string(value.count) %>
@@ -558,7 +518,7 @@
                     <%= for {produces_type, value} <- building_stats.produces do %>
                       <%= if is_number(value) do %>
                         <div class="flex items-center gap-1">
-                          <div class=""><%= to_string(produces_type) %></div>
+                          <div class=""><%= String.replace(to_string(produces_type), "_", " ") %></div>
                           <hr class="border-neutral-800 flex-1" />
                           <%= to_string(round(value)) %>
                           <%= if value != building_stats.actual_produces[produces_type] do %>
@@ -571,9 +531,8 @@
                         </div>
                       <% else %>
                         <%= if is_function(value, 1) && produces_type == :pollution do %>
-
                             <div class="flex items-center gap-1">
-                              <div class=""><%= to_string(produces_type) %> per pop</div>
+                              <div class=""><%= String.replace(to_string(produces_type), "_", " ") %> per pop</div>
                               <hr class="border-neutral-800 flex-1" />
                               <%= value.(1) %>
                               <%= if value.(1) != building_stats.actual_produces[produces_type].(1) do %>
@@ -588,27 +547,34 @@
                               <% end %>
                             </div>
                         <% else %>
-                          <div class="flex items-center gap-1">
-                            <div class=""><%= to_string(produces_type) %></div>
-                            <hr class="border-neutral-800 flex-1" />
-                            random drop
-                          </div>
-                        <% end %>
-                        <%= if is_function(value, 2) do %>
-                          <div class="flex items-center gap-1">
-                            <div class=""><%= to_string(produces_type) %></div>
-                            <hr class="border-neutral-800 flex-1" />
-                            random drop
-                          </div>
+                          <%= if is_function(value, 2) do %>
+                            <div class="flex items-center gap-1">
+                              <div class=""><%= String.replace(to_string(produces_type), "_", " ") %></div>
+                              <hr class="border-neutral-800 flex-1" />
+                              random drop
+                            </div>
+                          <% end %>
                         <% end %>
                         <%= if is_map(value) do %>
                             <div class="flex items-center gap-1">
-                            <div class=""><%= to_string(produces_type) %></div>
+                            <div class=""><%= String.replace(to_string(produces_type), "_", " ") %></div>
                             <hr class="border-neutral-800 flex-1" />
-                            <%= to_string(hd(Map.keys(value))) %> / 
+                            <%= to_string(hd(Map.keys(value))) %> /
                             <%= to_string(hd(Map.values(value))) %>
                           </div>
                         <% end %>
+                      <% end %>
+                    <% end %>
+                  <% end %>
+                  <%= if building_stats.stores != nil do %>
+                    <span class="font-semibold">Stores:</span>
+                    <%= for {stores_type, value} <- building_stats.stores do %>
+                      <%= if is_number(value) do %>
+                        <div class="flex items-center gap-1">
+                          <div class=""><%= String.replace(to_string(stores_type), "_", " ") %></div>
+                          <hr class="border-neutral-800 flex-1" />
+                          <%= to_string(round(value)) %>
+                        </div>
                       <% end %>
                     <% end %>
                   <% end %>
@@ -617,7 +583,7 @@
               <!-- build & delete buttons -->
               <div class="flex flex-row ">
                 <%= if @is_user_mayor do %>
-                  <%= if @city.treasury > building_stats.price do %>
+                  <%= if @city_stats |> MayorGame.City.TownStatistics.getResource(:money) |> MayorGame.City.ResourceStatistics.getStock(-@construction_cost) > building_stats.price do %>
                     <button
                       class="btn m-0 rounded-none border border-neutral-800/25 leading-none h-6"
                       phx-click="purchase_building"
@@ -645,7 +611,7 @@
                       <div class="tooltip w-28">not enough money</div>
                     </div>
                   <% end %>
-                  <%= if length(Map.get(@city, building_type)) > 0 do %>
+                  <%= if (@city_stats |> MayorGame.City.TownStatistics.getBuildable(building_type)).number + (if !is_nil(@construction_count[building_type]) do @construction_count[building_type] else 0 end) > 0 do %>
                     <button
                       phx-click="demolish_building"
                       class="btn m-0 rounded-none border border-l-0 border-neutral-800/25 leading-none h-6"
@@ -663,7 +629,7 @@
                     </button>
                   <% end %>
                   <div class="relative group pl-2 flex items-center">
-                      
+
                       <img
                         src="/images/priority.svg"
                         alt="priority sort"
@@ -672,7 +638,7 @@
                       />
                     <div class="tooltip w-32">Sort the order that you want your buildings to activate. Lower numbers fill first.</div>
                   </div>
-                  <input  
+                  <input
                 class="btn ml-1 text-sm bg-amber-50 p-[2px] border leading-none w-10 border-neutral-800/25"
                 step="1"
                 phx-blur="update_priorities"
@@ -684,8 +650,8 @@
               />
                 <% end %>
                 <%= if @current_user && !is_nil(@current_user.town) && !@is_user_mayor do %>
-                  <%= if !Enum.empty?(Map.get(@operating_count, building_type)) && @current_user.town.missiles > 0 do %>
-                    <%= if @city.shields == 0 do %>
+                  <%= if Map.get(@operating_count, building_type, 0) != 0 && @current_user.town.missiles > 0 do %>
+                    <%= if @city_stats |> MayorGame.City.TownStatistics.getResource(:shields) |> MayorGame.City.ResourceStatistics.getStock() == 0 do %>
                       <div class="relative group">
                         <button
                           phx-click="attack_building"
@@ -746,71 +712,99 @@
               <table border="1" class=" table-fixed border-collapse">
                 <tr>
                   <!-- if no buildings -->
-                  <%= if Enum.empty?(@operating_count[building_type]) do %>
+                  <%= if (@city_stats |> MayorGame.City.TownStatistics.getBuildable(building_type)).number == 0 && (if !is_nil(@construction_count[building_type]) do @construction_count[building_type] else 0 end) == 0 do %>
                     <td class="cell text-neutral-800/50">0</td>
                   <% else %>
-                    <%= for {operation_type, operation_count} <- @operating_count[building_type] do %>
+                    <%= if (@city_stats |> MayorGame.City.TownStatistics.getBuildable(building_type)).operational > 0 do %>
+                      <td class="group cell bg-green-100">
+                        <div class="flex flex-row items-center gap-x-1 cursor-help">
+                          <p class="text-green-700">
+                            <%= Number.Delimit.number_to_delimited((@city_stats |> MayorGame.City.TownStatistics.getBuildable(building_type)).operational) %>
+                          </p>
+                          <%= for requirement <- @building_requirements do %>
+                            <%= if building_stats.requires[String.to_existing_atom(requirement)] != nil && building_stats.requires[String.to_existing_atom(requirement)] > 0 do %>
+                              <img
+                                src={"/images/#{to_string(requirement)}-fulfilled.svg"}
+                                alt={"has enough #{to_string(requirement)} to operate"}
+                                height="12"
+                                width="12"
+                              />
+                            <% end %>
+                          <% end %>
+                          <div class="tooltip text-green-600">operational</div>
+                        </div>
+                      </td>
+                    <% end %>
+                    <%= if !is_nil((@city_stats |> MayorGame.City.TownStatistics.getBuildable(building_type)).deficient_prereq_next) && length((@city_stats |> MayorGame.City.TownStatistics.getBuildable(building_type)).deficient_prereq_next) > 0 do %>
                       <td class={
-                        "group cell #{if operation_type == [] || operation_type == [:loading], do: 'bg-green-100', else: 'bg-red-50'}"
+                        "group cell bg-red-50"
                       }>
                         <div class="flex flex-row items-center gap-x-1 cursor-help">
-                          <p class={
-                            "#{if operation_type == [] || operation_type == [:loading], do: 'text-green-700', else: 'text-red-700'}"
-                          }>
-                            <%= Number.Delimit.number_to_delimited(operation_count) %>
+                          <p class="text-red-700">
+                            <%= Number.Delimit.number_to_delimited((@city_stats |> MayorGame.City.TownStatistics.getBuildable(building_type)).number - (@city_stats |> MayorGame.City.TownStatistics.getBuildable(building_type)).operational) %>
                           </p>
-                          <%= if operation_type == [:loading] do %>
-                          <span class="text-green-600">building…</span>
-                          <% else %>
-                            <%= for requirement <- @building_requirements do %>
-                              <%= if building_stats.requires[String.to_existing_atom(requirement)] != nil && building_stats.requires[String.to_existing_atom(requirement)] > 0 && !Enum.member?(operation_type, String.to_existing_atom(requirement)) do %>
+                          <%= for requirement <- @building_requirements do %>
+                            <%= if building_stats.requires[String.to_existing_atom(requirement)] != nil && building_stats.requires[String.to_existing_atom(requirement)] > 0 && !Enum.member?((@city_stats |> MayorGame.City.TownStatistics.getBuildable(building_type)).deficient_prereq_next, String.to_existing_atom(requirement)) do %>
+                              <img
+                                src={"/images/#{to_string(requirement)}-fulfilled.svg"}
+                                alt={"has enough #{to_string(requirement)} to operate"}
+                                height="12"
+                                width="12"
+                              />
+                            <% else %>
+                              <%= if Enum.member?((@city_stats |> MayorGame.City.TownStatistics.getBuildable(building_type)).deficient_prereq_next, String.to_existing_atom(requirement)) do %>
                                 <img
-                                  src={"/images/#{to_string(requirement)}-fulfilled.svg"}
-                                  alt={"has enough #{to_string(requirement)} to operate"}
+                                  src={"/images/#{to_string(requirement)}-off.svg"}
+                                  alt={"requires #{to_string(requirement)} to operate"}
                                   height="12"
                                   width="12"
                                 />
-                              <% else %>
-                                <%= if Enum.member?(operation_type, String.to_existing_atom(requirement)) do %>
-                                  <img
-                                    src={"/images/#{to_string(requirement)}-off.svg"}
-                                    alt={"requires #{to_string(requirement)} to operate"}
-                                    height="12"
-                                    width="12"
-                                  />
-                                <% end %>
                               <% end %>
                             <% end %>
                           <% end %>
 
-                          <%= if operation_type == [] do %>
-                            <div class="tooltip text-green-600">operational</div>
-                          <% else %>
-                            <%= if operation_type == [:loading] do %>
-                                  <div class="tooltip text-neutral-800">building…</div>
+                          <div class="tooltip w-32 text-red-600">
+                            needs
+                            <%= if length((@city_stats |> MayorGame.City.TownStatistics.getBuildable(building_type)).deficient_prereq_next) > 1 do %>
+                              <%= for operation_reason <- (@city_stats |> MayorGame.City.TownStatistics.getBuildable(building_type)).deficient_prereq_next do %>
+                                <%= operation_reason %>,
+                              <% end %>
                             <% else %>
-                              <div class="tooltip w-32 text-red-600">
-                                needs
-                                <%= if length(operation_type) > 1 do %>
-                                  <%= for operation_reason <- operation_type do %>
-                                    <%= operation_reason %>,
-                                  <% end %>
-                                <% else %>
-                                  <%= hd(operation_type) %>
-                                <% end %>
-                                to operate
-                              </div>
+                              <%= hd((@city_stats |> MayorGame.City.TownStatistics.getBuildable(building_type)).deficient_prereq_next) %>
                             <% end %>
-                          <% end %>
+                            to operate
+                          </div>
                         </div>
                       </td>
+                    <% end %>
+                    <%= if !is_nil(@construction_count[building_type]) do %>
+                      <%= if @construction_count[building_type] > 0 do %>
+                        <td class="group cell bg-green-100">
+                          <div class="flex flex-row items-center gap-x-1 cursor-help">
+                            <p class="text-green-700">
+                              <%= Number.Delimit.number_to_delimited(@construction_count[building_type]) %>
+                            </p>
+                            <span class="text-green-600">building…</span>
+                          </div>
+                        </td>
+                      <% end %>
+                      <%= if @construction_count[building_type] < 0 do %>
+                        <td class="group cell bg-red-100">
+                          <div class="flex flex-row items-center gap-x-1 cursor-help">
+                            <p class="text-red-700">
+                              <%= Number.Delimit.number_to_delimited(-@construction_count[building_type]) %>
+                            </p>
+                            <span class="text-red-600">demolishing…</span>
+                          </div>
+                        </td>
+                      <% end %>
                     <% end %>
                   <% end %>
                 </tr>
               </table>
               <!-- for each operating building, multiply by energy, workers_required, area -->
               <div class="flex flex-row flex-wrap gap-[2px] items-center">
-                <%= if Map.has_key?(@operating_count[building_type], []) do %>
+                <%= if !is_nil(Map.get(@city_stats.buildable_stats, building_type)) && Map.get(@city_stats.buildable_stats, building_type).operational > 0 do %>
                   <%= for {subtotal_type, append_class} <- @subtotal_types do %>
                     <!-- produced -->
                     <%= if !is_nil(building_stats.actual_produces) && Map.has_key?(building_stats.actual_produces, subtotal_type) do %>
@@ -826,9 +820,9 @@
                           height="10"
                           width="10"
                         />
-                        <%= if abs(@operating_count[building_type][[]] * building_stats.actual_produces[subtotal_type]) >= 10_000 do %>
+                        <%= if abs(Map.get(@city_stats.buildable_stats, building_type).operational * building_stats.actual_produces[subtotal_type]) >= 10_000 do %>
                           <%= Number.SI.number_to_si(
-                            @operating_count[building_type][[]] *
+                            Map.get(@city_stats.buildable_stats, building_type).operational *
                               building_stats.actual_produces[subtotal_type],
                             precision: 3,
                             trim: true
@@ -836,15 +830,15 @@
                         <% else %>
                           <%= Number.Delimit.number_to_delimited(
                             round(
-                              @operating_count[building_type][[]] *
+                              Map.get(@city_stats.buildable_stats, building_type).operational *
                                 building_stats.actual_produces[subtotal_type]
                             )
                           ) %>
                         <% end %>
                         <div class="tooltip">
-                          <%= if abs(@operating_count[building_type][[]] * building_stats.actual_produces[subtotal_type]) >= 10_000 do %>
+                          <%= if abs(Map.get(@city_stats.buildable_stats, building_type).operational * building_stats.actual_produces[subtotal_type]) >= 10_000 do %>
                             <%= Number.SI.number_to_si(
-                              @operating_count[building_type][[]] *
+                              Map.get(@city_stats.buildable_stats, building_type).operational *
                                 building_stats.actual_produces[subtotal_type],
                               precision: 3,
                               trim: true
@@ -852,7 +846,7 @@
                           <% else %>
                             <%= Number.Delimit.number_to_delimited(
                               round(
-                                @operating_count[building_type][[]] *
+                                Map.get(@city_stats.buildable_stats, building_type).operational *
                                   building_stats.actual_produces[subtotal_type]
                               )
                             ) %> <%= subtotal_type %> generated
@@ -874,9 +868,9 @@
                           height="10"
                           width="10"
                         />
-                        <%= if abs(@operating_count[building_type][[]] * building_stats.requires[subtotal_type]) >= 10_000 do %>
+                        <%= if abs(Map.get(@city_stats.buildable_stats, building_type).operational * building_stats.requires[subtotal_type]) >= 10_000 do %>
                           <%= Number.SI.number_to_si(
-                            -@operating_count[building_type][[]] *
+                            -Map.get(@city_stats.buildable_stats, building_type).operational *
                               building_stats.requires[subtotal_type],
                             precision: 3,
                             trim: true
@@ -884,15 +878,15 @@
                         <% else %>
                           <%= Number.Delimit.number_to_delimited(
                             round(
-                              -@operating_count[building_type][[]] *
+                              -Map.get(@city_stats.buildable_stats, building_type).operational *
                                 building_stats.requires[subtotal_type]
                             )
                           ) %>
                         <% end %>
                         <div class="tooltip">
-                          <%= if abs(@operating_count[building_type][[]] * building_stats.requires[subtotal_type]) >= 10_000 do %>
+                          <%= if abs(Map.get(@city_stats.buildable_stats, building_type).operational * building_stats.requires[subtotal_type]) >= 10_000 do %>
                             <%= Number.SI.number_to_si(
-                              @operating_count[building_type][[]] *
+                              Map.get(@city_stats.buildable_stats, building_type).operational *
                                 building_stats.requires[subtotal_type],
                               precision: 3,
                               trim: true
@@ -900,7 +894,7 @@
                           <% else %>
                             <%= Number.Delimit.number_to_delimited(
                               round(
-                                @operating_count[building_type][[]] *
+                                Map.get(@city_stats.buildable_stats, building_type).operational *
                                   building_stats.requires[subtotal_type]
                               )
                             ) %>
@@ -922,9 +916,7 @@
                       <%= if is_number(building_stats.produces.pollution) do %>
                         <%= Number.SI.number_to_si(
                           round(
-                            @operating_count[
-                              building_type
-                            ][[]] * building_stats.produces.pollution
+                            Map.get(@city_stats.buildable_stats, building_type).operational * building_stats.produces.pollution
                           ),
                           precision: 3,
                           trim: true
@@ -933,9 +925,7 @@
                         <%= if is_function(building_stats.produces.pollution, 1) do %>
                           <%= Number.SI.number_to_si(
                             round(
-                              @operating_count[
-                                building_type
-                              ][[]] * building_stats.produces.pollution.(@total_citizens)
+                              Map.get(@city_stats.buildable_stats, building_type).operational * building_stats.produces.pollution.(@city_stats.total_citizens)
                             ),
                             precision: 3,
                             trim: true
@@ -945,9 +935,7 @@
                       <div class="tooltip">
                         <%= if is_number(building_stats.produces.pollution) do %>
                           <%= Number.Delimit.number_to_delimited(
-                            @operating_count[
-                              building_type
-                            ][[]] * building_stats.produces.pollution
+                            Map.get(@city_stats.buildable_stats, building_type).operational * building_stats.produces.pollution
                           ) %> pollution generated
                         <% else %>
                           <%= if is_function(building_stats.produces.pollution, 1) do %>
@@ -968,7 +956,7 @@
                       />
                       -<%= Number.SI.number_to_si(
                         round(
-                          @operating_count[building_type][[]] * building_stats.requires.money
+                          Map.get(@city_stats.buildable_stats, building_type).operational * building_stats.requires.money
                         ),
                         precision: 3,
                         trim: true
@@ -976,7 +964,7 @@
                       <div class="tooltip max-w-sm">
                         <%= Number.Delimit.number_to_delimited(
                           round(
-                            @operating_count[building_type][[]] * building_stats.requires.money
+                            Map.get(@city_stats.buildable_stats, building_type).operational * building_stats.requires.money
                           )
                         ) %> running expenses
                       </div>
@@ -992,7 +980,7 @@
                       />
                       -<%= Number.SI.number_to_si(
                         round(
-                          @operating_count[building_type][[]] * building_stats.produces.money
+                          Map.get(@city_stats.buildable_stats, building_type).operational * building_stats.produces.money
                         ),
                         precision: 3,
                         trim: true
@@ -1000,7 +988,7 @@
                       <div class="tooltip max-w-sm">
                         <%= Number.Delimit.number_to_delimited(
                           round(
-                            @operating_count[building_type][[]] * building_stats.produces.money
+                            Map.get(@city_stats.buildable_stats, building_type).operational * building_stats.produces.money
                           )
                         ) %> running income
                       </div>
@@ -1015,10 +1003,10 @@
                         height="10"
                         width="10"
                       />
-                      <%= @operating_count[building_type][[]] *
+                      <%= Map.get(@city_stats.buildable_stats, building_type).operational *
                         building_stats.requires.workers.count %>/<%= building_stats.requires.workers.level %>
                       <div class="tooltip max-w-sm">
-                        <%= @operating_count[building_type][[]] *
+                        <%= Map.get(@city_stats.buildable_stats, building_type).operational *
                           building_stats.requires.workers.count %> workers employed at level <%= building_stats.requires.workers.level %>
                       </div>
                     </div>
@@ -1086,7 +1074,7 @@
           </div>
         </div>
         <div>
-          <%= @city.region %>
+          <%= @city_stats.region %>
         </div>
       </div>
       <!-- CLIMATE -->
@@ -1100,7 +1088,7 @@
           </div>
         </div>
         <div>
-          <%= @city.climate %>
+          <%= @city_stats.climate %>
         </div>
       </div>
       <!-- BIRTH LOGS -->

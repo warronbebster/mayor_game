@@ -783,9 +783,21 @@ defmodule MayorGame.City.Buildable do
           energy: 200,
           workers: %{count: 4, level: 2}
         },
-        # todo: make random
+        # fn _rng, _number_of_instances -> drop_amount
         produces: %{
-          education: fn level, num -> %{level => num} end
+          education: fn rng, number_of_buildables ->
+            # low-luck calculation at 5% chance, so rng needs only be used once
+            aggregate = number_of_buildables * 0.05
+            whole = floor(aggregate)
+            chance = aggregate - whole
+
+            whole +
+              if rng < chance do
+                1
+              else
+                0
+              end
+          end
         }
       },
       # SCHOOLS ————————————————————————————————————
@@ -794,8 +806,6 @@ defmodule MayorGame.City.Buildable do
         level: 0,
         title: :schools,
         price: 2000,
-        education_level: 1,
-        capacity: 10,
         requires: %{
           money: 10,
           energy: 600,
@@ -803,7 +813,7 @@ defmodule MayorGame.City.Buildable do
           workers: %{count: 10, level: 0}
         },
         produces: %{
-          education: %{1 => 10}
+          education_lvl_1: 10
         }
       },
       # MIDDLE SCHOOLS ————————————————————————————————————
@@ -812,8 +822,6 @@ defmodule MayorGame.City.Buildable do
         level: 1,
         title: :middle_schools,
         price: 3000,
-        education_level: 2,
-        capacity: 10,
         requires: %{
           money: 40,
           energy: 800,
@@ -821,7 +829,7 @@ defmodule MayorGame.City.Buildable do
           workers: %{count: 10, level: 1}
         },
         produces: %{
-          education: %{2 => 10}
+          education_lvl_2: 10
         }
       },
       # HIGH SCHOOLS ————————————————————————————————————
@@ -830,8 +838,6 @@ defmodule MayorGame.City.Buildable do
         level: 2,
         title: :high_schools,
         price: 4000,
-        education_level: 3,
-        capacity: 10,
         requires: %{
           money: 70,
           energy: 800,
@@ -839,7 +845,7 @@ defmodule MayorGame.City.Buildable do
           workers: %{count: 10, level: 2}
         },
         produces: %{
-          education: %{3 => 10}
+          education_lvl_3: 10
         }
       },
       # UNIVERSITIES ————————————————————————————————————
@@ -848,8 +854,6 @@ defmodule MayorGame.City.Buildable do
         level: 3,
         title: :universities,
         price: 6500,
-        education_level: 4,
-        capacity: 10,
         requires: %{
           money: 150,
           energy: 1200,
@@ -857,7 +861,7 @@ defmodule MayorGame.City.Buildable do
           workers: %{count: 10, level: 3}
         },
         produces: %{
-          education: %{4 => 10}
+          education_lvl_4: 10
         }
       },
       # RESEARCH LABS ————————————————————————————————————
@@ -866,8 +870,6 @@ defmodule MayorGame.City.Buildable do
         level: 4,
         title: :research_labs,
         price: 9000,
-        education_level: 5,
-        capacity: 5,
         requires: %{
           money: 200,
           energy: 1200,
@@ -875,7 +877,7 @@ defmodule MayorGame.City.Buildable do
           workers: %{count: 10, level: 4}
         },
         produces: %{
-          education: %{5 => 10}
+          education_lvl_5: 10
         }
       },
       # RETAIL SHOPS ————————————————————————————————————
@@ -925,7 +927,20 @@ defmodule MayorGame.City.Buildable do
           health: -5,
           pollution: 10,
           sulfur: 1,
-          uranium: fn result -> if result, do: 1, else: 0 end
+          # fn _rng, _number_of_instances -> drop_amount
+          uranium: fn rng, number_of_buildables ->
+            # low-luck calculation at 0.001% chance, so rng needs only be used once
+            aggregate = number_of_buildables * 0.001
+            whole = floor(aggregate)
+            chance = aggregate - whole
+
+            whole +
+              if rng < chance do
+                1
+              else
+                0
+              end
+          end
           # gold: 1,
         }
       },
@@ -1129,8 +1144,10 @@ defmodule MayorGame.City.Buildable do
           workers: %{count: 10, level: 5}
         },
         produces: %{
-          missiles: 1,
-          missiles_capacity: 100
+          missiles: 1
+        },
+        stores: %{
+          missiles: 100
         }
       },
       # DEFENSE BASES ————————————————————————————————————
@@ -1146,8 +1163,10 @@ defmodule MayorGame.City.Buildable do
           workers: %{count: 10, level: 2}
         },
         produces: %{
-          shields: 1,
-          shields_capacity: 100
+          shields: 1
+        },
+        stores: %{
+          shields: 100
         }
       },
       # MISSILE DEFENSE ARRAY ————————————————————————————————————
@@ -1165,8 +1184,10 @@ defmodule MayorGame.City.Buildable do
           workers: %{count: 20, level: 5}
         },
         produces: %{
-          shields: 5,
-          shields_capacity: 200
+          shields: 5
+        },
+        stores: %{
+          shields: 200
         }
       }
     }

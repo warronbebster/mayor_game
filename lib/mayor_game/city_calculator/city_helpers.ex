@@ -1,47 +1,155 @@
 defmodule MayorGame.CityHelpers do
-  alias MayorGame.City.{Citizens, Town, World}
+  alias MayorGame.City.{
+    Town,
+    World,
+    ResourceStatistics,
+    BuildableStatistics,
+    TownStatistics,
+    TownMigrationStatistics
+  }
+
+  alias MayorGame.Rules
 
   @doc """
     takes a %Town{} struct and %World{} struct
 
-    returns a map:
-    ```
-    %{
-      money: city_baked_details.treasury,
-      income: 0,
-      daily_cost: 0,
-      citizens: sorted_citizens,
-      citizen_count: int,
-      employed_citizens: [],
-      fun: 0,
-      health: 0,
-      total_housing: 0,
-      housing: 0,
-      total_energy: 0,
-      energy: 0,
-      pollution: 0,
-      jobs: %{0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0},
-      total_jobs: %{0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0},
-      education: %{1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0},
-      total_area: 0,
-      area: 0,
-      buildables: ordered_buildables,
-      result_buildables: []
-      housing_left: results.housing,
-      education_left: results.education,
-      educated_citizens: %{0 => [], 1 => [], 2 => [], 3 => [], 4 => [], 5 => []},
-      unemployed_citizens: [],
-      housed_employed_staying_citizens: [],
-      employed_looking_citizens: [],
-      unhoused_citizens: all_citizens,
-      polluted_citizens: [],
-      old_citizens: [],
-      reproducing_citizens: []
-    },
+    returns a MayorGame.City.TownStatistics:
     ```
   """
   def calculate_city_stats(
-        %Town{} = city,
+        %Town{} = town,
+        %World{} = world,
+        _pollution_ceiling,
+        _season,
+        buildables_map,
+        _in_dev,
+        _time_to_learn
+      ) do
+    town_preloaded = preload_city_check(town)
+
+    town_stats = TownStatistics.fromTown(town_preloaded, world)
+
+    priorities_atoms =
+      for {key, val} <- town_stats.priorities,
+          into: %{},
+          do: {String.to_existing_atom(key), val}
+
+    sorted_buildables = buildables_map.buildables_list |> Enum.sort_by(&priorities_atoms[&1])
+
+    # %TownStatistics{}
+    results_before_overrides =
+      Enum.reduce_while(
+        # the worst case scenario would be a square of this number, but you'd have to craft the malicious city on purpose.
+        1..length(sorted_buildables),
+        town_stats,
+        fn _iter, acc ->
+          {cont_or_halt, _, updated_acc} =
+            Enum.reduce_while(
+              sorted_buildables,
+              {:halt, [], acc},
+              fn buildable, {loop_decision, pending_req, town_stat_inner} ->
+                # funky, you can do this with tuples
+                {sub_produces, sub_consumes, sub_town_stats} =
+                  fill_workers(town, town_stat_inner, buildables_map.buildables_flat[buildable])
+
+                if is_nil(sub_produces) || length(sub_produces) == 0 do
+                  {:cont, {loop_decision, pending_req, sub_town_stats}}
+                else
+                  # intersection of sub_produces and pending_req
+                  # if there is something there, it means this buildable has produced something that is unmet by buildings ahead in priority. We should go back to the head to fill those buildings
+                  temp = sub_produces -- pending_req
+                  met_prev_req = sub_produces -- temp
+
+                  if length(met_prev_req) > 0 do
+                    # reset to the first buildable
+                    {:halt, {:cont, [], sub_town_stats}}
+                  else
+                    # union of sub_consumes and pending_req
+                    # acculmuate any unmet req here for the next buildable
+                    temp2 = sub_consumes -- pending_req
+                    intercept2 = sub_consumes -- temp2
+                    combined_consumes = pending_req ++ (sub_consumes -- intercept2)
+                    {:cont, {loop_decision, combined_consumes, sub_town_stats}}
+                  end
+                end
+              end
+            )
+
+          {cont_or_halt, updated_acc}
+        end
+      )
+
+    # set overrides not handled by production calculations
+    # this is only needed since the produce code does not consider the starting cap, and it is not additive
+    missiles_cap =
+      results_before_overrides
+      |> TownStatistics.getResource(:missiles)
+      |> ResourceStatistics.getStorage()
+
+    shields_cap =
+      results_before_overrides
+      |> TownStatistics.getResource(:shields)
+      |> ResourceStatistics.getStorage()
+
+    adjusted_missiles_cap =
+      if is_nil(missiles_cap) do
+        50
+      else
+        max(50, missiles_cap)
+      end
+
+    adjusted_shields_cap =
+      if is_nil(shields_cap) do
+        50
+      else
+        max(50, shields_cap)
+      end
+
+    results =
+      results_before_overrides
+      |> Map.update!(:resource_stats, fn v ->
+        v
+        |> Map.merge(
+          %{
+            # citizens occupy housing
+            :housing => ResourceStatistics.fromRequires(:housing, town_stats.total_citizens)
+          },
+          fn _k, v1, v2 -> ResourceStatistics.merge(v1, v2) end
+        )
+        |> Map.merge(
+          %{
+            # apply modified capacities
+            :missiles => adjusted_missiles_cap,
+            :shields => adjusted_shields_cap
+          },
+          fn _k, v1, v2 -> v1 |> Map.update!(:storage, fn _ -> v2 end) end
+        )
+        |> Enum.map(
+          # apply capacities
+          fn {k, v} ->
+            {k,
+             if is_nil(v.storage) || v.storage > v.stock + v.production do
+               v
+             else
+               v
+               |> Map.update!(:production, fn _ -> v.storage - v.stock end)
+             end}
+          end
+        )
+        |> Enum.into(%{})
+      end)
+
+    results
+  end
+
+  @doc """
+    takes a %TownStatistics{} struct
+
+    returns a MayorGame.City.TownStatistics:
+    ```
+  """
+  def calculate_city_stats_with_drops(
+        %Town{} = town,
         %World{} = world,
         pollution_ceiling,
         season,
@@ -49,538 +157,445 @@ defmodule MayorGame.CityHelpers do
         in_dev,
         time_to_learn
       ) do
-    # if city.id == 2 && in_dev do
-    #   :eprof.start_profiling([self()])
-    # end
+    results_before_drops =
+      calculate_city_stats(
+        town,
+        world,
+        pollution_ceiling,
+        season,
+        buildables_map,
+        in_dev,
+        time_to_learn
+      )
 
-    city_preloaded = preload_city_check(city)
+    # calc drops
+    results_before_overrides =
+      results_before_drops
+      |> Map.update!(:resource_stats, fn v ->
+        v
+        |> Enum.map(fn {atom, r} ->
+          if is_nil(r.droplist) || length(r.droplist) == 0 do
+            {atom, r}
+          else
+            drops =
+              Enum.reduce(r.droplist, 0, fn {qty, func}, acc ->
+                acc +
+                  cond do
+                    # drops (fn _rng, _number_of_instances -> drop_amount)
+                    is_function(func, 2) -> func.(:rand.uniform(), qty)
+                    # drops (fn _rng, _number_of_instances, _city -> drop_amount)
+                    is_function(func, 3) -> func.(:rand.uniform(), qty, town)
+                    true -> 0
+                  end
+              end)
 
-    city_baked_direct = bake_details_int(city_preloaded, buildables_map)
-
-    all_buildables = city_baked_direct |> Map.take(buildables_map.buildables_list)
-
-    # I think this looks like a keyword list with {type of buildable, list of actual buildables}
-
-    ordered_buildables_not_flat =
-      Enum.map(buildables_map.buildables_ordered, fn set_of_buildables ->
-        Enum.map(set_of_buildables, fn buildable -> {buildable, all_buildables[buildable]} end)
+            {atom, ResourceStatistics.merge(r, %ResourceStatistics{:production => drops})}
+          end
+        end)
+        |> Enum.into(%{})
       end)
 
-    # this probably is pretty heavy for big cities
-    # TODO: see if I can get away with keeping this as strings
-    # Enum.map(city_baked_direct.citizens_blob, fn citizen ->
-    #   for {key, val} <- citizen,
-    #       into: %{},
-    #       do: {String.to_existing_atom(key), val}
-    # end)
-    citizens_blob_atoms =
-      city_baked_direct.citizens_blob
-      |> Enum.map(fn citizen ->
-        citizen |> Map.merge(%{"has_job" => false, "town_id" => city.id})
-      end)
+    # erm, this was already done prior in calculate_city_stats, but we have to do it again in case of drops exceeding the capacity
+    # this is not ideal; a better way should be sought after
+    missiles_cap =
+      results_before_overrides
+      |> TownStatistics.getResource(:missiles)
+      |> ResourceStatistics.getStorage()
 
-    # looks good
+    shields_cap =
+      results_before_overrides
+      |> TownStatistics.getResource(:shields)
+      |> ResourceStatistics.getStorage()
 
-    # sorted_blob_citizens = Enum.sort_by(citizens_blob_atoms, & &1.education, :desc)
+    adjusted_missiles_cap =
+      if is_nil(missiles_cap) do
+        50
+      else
+        max(50, missiles_cap)
+      end
 
-    priorities_atoms =
-      for {key, val} <- city_baked_direct.priorities,
-          into: %{},
-          do: {String.to_existing_atom(key), val}
-
-    citizens_by_level = Enum.group_by(citizens_blob_atoms, & &1["education"])
-    citizens_by_level_count = Enum.frequencies_by(citizens_blob_atoms, & &1["education"])
-
-    citizen_count = length(citizens_blob_atoms)
-
-    sorted_buildables = buildables_map.buildables_list |> Enum.sort_by(&priorities_atoms[&1])
+    adjusted_shields_cap =
+      if is_nil(shields_cap) do
+        50
+      else
+        max(50, shields_cap)
+      end
 
     results =
-      Enum.reduce(
-        sorted_buildables,
-        %{
-          new_missiles: 0,
-          new_shields: 0,
-          #
-          starting_money: city_baked_direct.treasury,
-          starting_steel: city_baked_direct.steel,
-          starting_uranium: city_baked_direct.uranium,
-          starting_gold: city_baked_direct.gold,
-          starting_sulfur: city_baked_direct.sulfur,
-          starting_missiles: city_baked_direct.missiles,
-          starting_shields: city_baked_direct.shields,
-          money: city_baked_direct.treasury,
-          steel: city_baked_direct.steel,
-          uranium: city_baked_direct.uranium,
-          gold: city_baked_direct.gold,
-          sulfur: city_baked_direct.sulfur,
-          missiles: city_baked_direct.missiles,
-          missiles_capacity: 0,
-          shields: city_baked_direct.shields,
-          shields_capacity: 0,
-          #
-          income: 0,
-          daily_cost: 0,
-          citizen_count: citizen_count,
-          citizens_by_level: citizens_by_level,
-          citizens_by_level_count: citizens_by_level_count,
-          employed_citizens: [],
-          fun: 0,
-          health: 0,
-          sprawl: 0,
-          total_housing: 0,
-          housing: 0,
-          total_energy: 0,
-          energy: 0,
-          pollution: 0,
-          jobs: %{0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0},
-          total_jobs: %{0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0},
-          education: %{1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0},
-          total_area: 0,
-          area: 0,
-          result_buildables: buildables_map.empty_buildable_map
-        },
-        fn buildable, acc ->
-          buildables = all_buildables[buildable]
-
-          # this works
-          if buildables == [] do
-            acc
-          else
-            Enum.reduce(buildables, acc, fn individual_buildable, acc2 ->
-              # if the building has no requirements
-              # if building has requirements
-              if individual_buildable.requires == nil do
-                # generate final production map
-                update_generated_acc(
-                  individual_buildable,
-                  citizen_count,
-                  city.region,
-                  season,
-                  acc2
-                )
-                |> Map.update!(:result_buildables, fn current_map ->
-                  Map.update(
-                    current_map,
-                    individual_buildable.title,
-                    [individual_buildable],
-                    &[individual_buildable | &1]
-                  )
-                end)
-              else
-                reqs_minus_workers = Map.drop(individual_buildable.requires, [:workers])
-
-                checked_reqs = check_reqs(reqs_minus_workers, acc2)
-
-                # if all reqs are met
-                if checked_reqs == [] do
-                  money_required =
-                    if Map.has_key?(individual_buildable.requires, :money),
-                      do: individual_buildable.requires.money,
-                      else: 0
-
-                  # if it requires workers
-
-                  if Map.has_key?(individual_buildable.requires, :workers) do
-                    required_worker_count = individual_buildable.requires.workers.count
-
-                    checked_workers =
-                      check_workers(
-                        individual_buildable.requires.workers.level,
-                        acc2.citizens_by_level_count,
-                        acc2.citizens_by_level,
-                        required_worker_count
-                      )
-
-                    # here I gotta subtract the working_levels from acc2.citizens_by_level
-                    # and update both in the acc
-
-                    enough_workers =
-                      checked_workers.working_count >=
-                        individual_buildable.requires.workers.count
-
-                    updated_buildable =
-                      if !enough_workers do
-                        Map.merge(individual_buildable, %{
-                          reason: [:workers],
-                          enabled: false,
-                          jobs:
-                            individual_buildable.requires.workers.count -
-                              checked_workers.working_count
-                        })
-                      else
-                        # if all conditions are met
-                        individual_buildable
-                        |> Map.put(:jobs, 0)
-                      end
-
-                    tax_earned =
-                      if enough_workers do
-                        calculate_earnings(
-                          checked_workers.working_count,
-                          individual_buildable.requires.workers.level,
-                          city.tax_rates[
-                            to_string(individual_buildable.requires.workers.level)
-                          ]
-                        )
-                      else
-                        0
-                      end
-
-                    acc_after_workers =
-                      if enough_workers,
-                        do:
-                          update_generated_acc(
-                            updated_buildable,
-                            citizen_count,
-                            city.region,
-                            season,
-                            acc2
-                          )
-                          |> Map.merge(reqs_minus_workers, fn _k, v1, v2 -> v1 - v2 end)
-                          |> Map.merge(%{
-                            income: acc2.income + tax_earned,
-                            daily_cost: acc2.daily_cost + money_required,
-                            money: acc2.money + tax_earned - money_required
-                          }),
-                        else: acc2
-
-                    # update acc with disabled buildable
-
-                    # this is wrong
-                    workers = checked_workers.working_levels |> Map.values() |> List.flatten()
-
-                    # TODO: do this with a merge so it's less maps in memory
-                    acc_after_workers
-                    |> Map.update!(:employed_citizens, fn currently_employed ->
-                      (workers
-                       |> Enum.map(fn cit -> Map.put(cit, "has_job", true) end)) ++
-                        currently_employed
-                    end)
-                    |> Map.put(
-                      :citizens_by_level,
-                      checked_workers.citizens_by_level
-                    )
-                    |> Map.put(
-                      :citizens_by_level_count,
-                      checked_workers.citizens_by_level_count
-                    )
-                    |> Map.update!(:jobs, fn current_jobs_map ->
-                      Map.update!(
-                        current_jobs_map,
-                        individual_buildable.requires.workers.level,
-                        &(&1 + individual_buildable.requires.workers.count -
-                            checked_workers.working_count)
-                      )
-                    end)
-                    |> Map.update!(:total_jobs, fn current_total_jobs_map ->
-                      Map.update!(
-                        current_total_jobs_map,
-                        individual_buildable.requires.workers.level,
-                        &(&1 + individual_buildable.requires.workers.count)
-                      )
-                    end)
-                    |> Map.update!(:result_buildables, fn current_map ->
-                      Map.update(
-                        current_map,
-                        individual_buildable.title,
-                        [updated_buildable],
-                        &[updated_buildable | &1]
-                      )
-                    end)
-
-                    # if number is less than reqs.workers.count, buildable is disabled, reason workers
-                    # add jobs equal to workers.count - length
-
-                    # remove citizens from acc2.citizens
-                    # add them to acc2.employed_citizens
-
-                    # if it doesn't require workers:
-                  else
-                    update_generated_acc(
-                      individual_buildable,
-                      citizen_count,
-                      city.region,
-                      season,
-                      acc2
-                    )
-                    |> Map.merge(reqs_minus_workers, fn _k, v1, v2 -> v1 - v2 end)
-                    |> Map.update!(:result_buildables, fn current_map ->
-                      Map.update(
-                        current_map,
-                        individual_buildable.title,
-                        [individual_buildable],
-                        &[individual_buildable | &1]
-                      )
-                    end)
-                    |> Map.put(
-                      :daily_cost,
-                      acc2.daily_cost + money_required
-                    )
-                  end
-                else
-                  # if requirements not met
-                  updated_buildable =
-                    individual_buildable
-                    |> Map.merge(%{
-                      reason: checked_reqs,
-                      enabled: false
-                    })
-
-                  # update acc with disabled buildable
-                  acc2
-                  |> Map.update!(:result_buildables, fn current_map ->
-                    Map.update(
-                      current_map,
-                      individual_buildable.title,
-                      [updated_buildable],
-                      &[updated_buildable | &1]
-                    )
-                  end)
-                end
-              end
-            end)
+      results_before_overrides
+      |> Map.update!(:resource_stats, fn v ->
+        v
+        |> Map.merge(
+          %{
+            # apply modified capacities
+            :missiles => adjusted_missiles_cap,
+            :shields => adjusted_shields_cap
+          },
+          fn _k, v1, v2 -> v1 |> Map.update!(:storage, fn _ -> v2 end) end
+        )
+        |> Enum.map(
+          # apply capacities
+          fn {k, v} ->
+            {k,
+             if is_nil(v.storage) || v.storage > v.stock + v.production do
+               v
+             else
+               v
+               |> Map.update!(:production, fn _ -> v.storage - v.stock end)
+             end}
           end
-        end
-      )
+        )
+        |> Enum.into(%{})
+      end)
 
-    missiles_cap = max(results.missiles_capacity, 50)
-    shields_cap = max(results.shields_capacity, 50)
-
-    are_shields_capped = results.shields > shields_cap
-    are_missiles_capped = results.missiles > missiles_cap
-
-    # optimize this
-    results_capped =
-      results
-      |> cap_shields(shields_cap, are_shields_capped)
-      |> cap_missiles(missiles_cap, are_missiles_capped)
-
-    # this is where things get funky
-
-    citizens_left = results.citizens_by_level |> Map.values() |> List.flatten()
-
-    all_citizens = Enum.sort_by(results.employed_citizens ++ citizens_left, & &1["education"], :desc)
-
-    # ________________________________________________________________________
-    # Iterate through citizens
-    # ________________________________________________________________________
-    pollution_reached = world.pollution > pollution_ceiling
-
-    # I don't think this needs to be a reduce. this could me a map then flatten
-
-    # this could be reduce_while there's still housing
-    after_citizen_checks =
-      all_citizens
-      |> Enum.reduce(
-        %{
-          housing_left: results.housing,
-          education_left: results.education,
-          educated_citizens: %{1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0},
-          unemployed_citizens: [],
-          housed_employed_staying_citizens: [],
-          employed_looking_citizens: [],
-          unhoused_citizens: [],
-          polluted_citizens: [],
-          old_citizens: Enum.filter(all_citizens, &(&1["age"] > 3000 * (&1["education"] + 1))),
-          reproducing_citizens: 0
-        },
-        fn citizen, acc ->
-          citizen_not_too_old = citizen["age"] < 3000 * (citizen["education"] + 1)
-
-          pollution_death = if(pollution_reached, do: :rand.uniform() > 0.95, else: false)
-
-          tax_too_high =
-            :rand.uniform() <
-              :math.pow(city.tax_rates[to_string(citizen["education"])], 7 - citizen["education"]) &&
-              !pollution_death
-
-          employable = acc.housing_left > 0 && citizen["has_job"] && citizen_not_too_old && !pollution_death
-
-          will_citizen_learn =
-            time_to_learn && citizen["education"] < 5 &&
-              acc.education_left[citizen["education"] + 1] > 0 && citizen_not_too_old &&
-              !pollution_death
-
-          # i can just calculate this globally. doesn't really matter on a per-citizen basis
-          will_citizen_reproduce =
-            citizen["age"] > 15 and citizen["age"] < 6000 and acc.housing_left > 1 &&
-              :rand.uniform(citizen_count) < max(results.health / 100, 5)
-
-          housing_taken = if will_citizen_reproduce, do: 2, else: 1
-
-          updated_citizen =
-            citizen
-            |> Map.update!(
-              "education",
-              if(will_citizen_learn,
-                do: &(&1 + 1),
-                else: & &1
-              )
-            )
-            |> Map.update!("age", &(&1 + 1))
-
-          # TODO
-          # do this with merge instead of updates
-          merged_acc_map = %{
-            housing_left:
-              if(acc.housing_left > 0 and !pollution_death and citizen_not_too_old,
-                do: acc.housing_left - housing_taken,
-                else: acc.housing_left
-              ),
-            education_left:
-              if(will_citizen_learn,
-                do:
-                  Map.update!(
-                    acc.education_left,
-                    updated_citizen["education"],
-                    &(&1 - 1)
-                  ),
-                else: acc.education_left
-              ),
-            educated_citizens:
-              if(will_citizen_learn,
-                do:
-                  Map.update!(
-                    acc.educated_citizens,
-                    updated_citizen["education"],
-                    &(&1 + 1)
-                  ),
-                else: acc.educated_citizens
-              ),
-            unemployed_citizens:
-              if(
-                acc.housing_left > 0 && !citizen["has_job"] && citizen_not_too_old &&
-                  !pollution_death,
-                do: [updated_citizen | acc.unemployed_citizens],
-                else: acc.unemployed_citizens
-              ),
-            unhoused_citizens:
-              if(
-                acc.housing_left <= 0 && citizen_not_too_old && !pollution_death,
-                do: [updated_citizen | acc.unhoused_citizens],
-                else: acc.unhoused_citizens
-              ),
-            housed_employed_staying_citizens:
-              if(employable && !tax_too_high,
-                do: [updated_citizen | acc.housed_employed_staying_citizens],
-                else: acc.housed_employed_staying_citizens
-              ),
-            employed_looking_citizens:
-              if(
-                employable && tax_too_high &&
-                  updated_citizen["last_moved"] < world.day - 10 * updated_citizen["education"],
-                do: [updated_citizen | acc.employed_looking_citizens],
-                else: acc.employed_looking_citizens
-              ),
-            polluted_citizens:
-              if(pollution_death && citizen_not_too_old,
-                do: [updated_citizen | acc.polluted_citizens],
-                else: acc.polluted_citizens
-              ),
-            reproducing_citizens:
-              if(will_citizen_reproduce,
-                do: acc.reproducing_citizens + 1,
-                else: acc.reproducing_citizens
-              )
-          }
-
-          Map.merge(acc, merged_acc_map)
-        end
-      )
-      |> Enum.into(%{})
-
-    # if city.id == 2 && in_dev do
-    #   :eprof.stop_profiling()
-    #   :eprof.analyze()
-    # end
-
-    city_baked_direct
-    |> Map.from_struct()
-    |> Map.merge(results_capped)
-    |> Map.put(:all_citizens, all_citizens)
-    |> Map.merge(after_citizen_checks)
+    results
   end
 
   @doc """
-  converts %Citizen{} into a human readable string
+    takes a %TownStatistics{} struct
+
+    returns a MayorGame.City.TownMigrationStatistics:
+    ```
   """
+  def calculate_citizen_stats(
+        %Town{} = town,
+        %TownStatistics{} = town_stats,
+        %World{} = world,
+        pollution_ceiling,
+        _season,
+        _buildables_map,
+        _in_dev,
+        time_to_learn
+      ) do
+    town_preloaded = preload_city_check(town)
 
-  # def describe_citizen(%Citizens{} = citizen) do
-  #   "#{to_string(citizen.name)} (edu lvl #{citizen.education})"
-  # end
+    # are we sure we want pollution_ceiling to be tied to a RNG?
+    pollution_reached = world.pollution > pollution_ceiling
 
-  def get_production_map(production_map, multiplier_map, citizen_count, region, season) do
+    reproductive_citizen_count =
+      Enum.count(town_preloaded.citizens_blob, &Rules.is_citizen_reproductive(&1))
+
+    # this expensive operation may be avoided if we store the birthday instead of the age
+    working_citizens =
+      Enum.filter(town_preloaded.citizens_blob, &Rules.is_citizen_within_lifespan(&1))
+      |> Enum.map(fn citizen ->
+        citizen |> Map.put("town_id", town.id)
+      end)
+      |> Enum.map(fn c -> c |> Map.update!("age", &(&1 + 1)) end)
+
+    # each citizen has a {health}% chance to reproducing, up to a minimum of 5% and maximum of 100%
+    # the total reproduction rate cannot exceed the number of remaining housing
+    # we can be guaranteed town_stats.resource_stats.housing exists due to the {# citizens occupy housing} block. This might change in the future
+    excess_housing = ResourceStatistics.getNetProduction(town_stats.resource_stats.housing)
+
+    aggregate_births =
+      round(
+        min(
+          excess_housing,
+          reproductive_citizen_count *
+            max(
+              0.0,
+              min(
+                1.0,
+                town_stats
+                |> TownStatistics.getResource(:health)
+                |> ResourceStatistics.getNetProduction()
+              )
+            )
+        )
+      )
+
+    aggregate_deaths_by_age = length(town_preloaded.citizens_blob) - length(working_citizens)
+
+    # if pollution is exceeded, each citizen has a 5% chance of dying from it
+    # technically this is factored against all citizens, but old_citizens will be reported to have died of old age, so exclude them
+    aggregate_deaths_by_pollution =
+      if !pollution_reached do
+        0
+      else
+        floor(length(working_citizens) * 0.05)
+      end
+
+    # start random here, exclude live view from calling this. UI does not need to play gacha, that's server's job
+    # might be worthwhile to split the above into calculate_city_stats, so the UI has access to
+    #  but to do that we probably should eliminate RNG factor from pollution_reached, or results change each refresh
+
+    # sorter
+    # 1. Set list to <working_citizens>, scramble (RNG!)
+    # 2. Take <aggregate_deaths_by_pollution> members from the list. These are <polluted_citizens>, they will be eliminated so no other processing is done with them
+    # 3. If citizen count is less than housing, Take the difference members from the list. These are <unhoused_citizens>, and they will be entered to the migration pool, so no other processing is done with them.
+    # 4. Group the rest by education, scramble each group (...or do we need to? It is already scrambled at Step 1)
+    # 5. Take <employed_citizen_count_by_level[education]> members from each group. It does not matter if there are less citizens than employed due to previous steps.
+    # 6. Flatten the remainder; these are <unemployed_citizens>, and they will be entered to the migration pool, so no other processing is done with them.
+    # 7. Get the members from Step 5, take members by proportion of <tax_too_high> (calc per edu level). These are <migrating_citizens_due_to_tax>
+    # 8. Scan through the remainder, take members based on their last_moved. Add them to <migrating_citizens>
+    # 9. Flatten the remainder; these are <staying_citizens>
+    # 10. Apply education to <staying_citizens>
+
+    # 1. Set list to <working_citizens>, scramble (RNG!)
+    scrambled_working_citizens = working_citizens |> Enum.shuffle()
+
+    # 2. Take <aggregate_deaths_by_pollution> members from the list. These are <polluted_citizens>, they will be eliminated so no other processing is done with them
+    {polluted_citizens, unpolluted_citizens} =
+      scrambled_working_citizens |> Enum.split(aggregate_deaths_by_pollution)
+
+    # 3. If citizen count is less than housing, Take the difference members from the list. These are <unhoused_citizens>, and they will be entered to the migration pool, so no other processing is done with them.
+    {unhoused_citizens, housed_citizens} =
+      unpolluted_citizens |> Enum.split(max(0, -excess_housing))
+
+    # 4. Group the rest by education
+    housed_citizens_by_level = housed_citizens |> Enum.group_by(& &1["education"])
+
+    # 5. Take <employed_citizen_count_by_level[education]> members from each group. It does not matter if there are less citizens than employed due to previous steps.
+    # 7. Get the members from Step 5, take members by proportion of <tax_too_high> (calc per edu level). These are <migrating_citizens_due_to_tax>
+    sorted_housed_citizens_by_level =
+      housed_citizens_by_level
+      |> Enum.map(fn {level, list} ->
+        employed_citizen_count_in_level =
+          if is_nil(town_stats.employed_citizen_count_by_level[level]) do
+            0
+          else
+            town_stats.employed_citizen_count_by_level[level]
+          end
+
+        {employed_citizens_in_level, unemployed_citizens_in_level} =
+          list |> Enum.split(employed_citizen_count_in_level)
+
+        {migrating_by_tax_citizens_in_level, needs_met_citizens_in_level} =
+          employed_citizens_in_level
+          |> Enum.split(
+            floor(
+              length(employed_citizens_in_level) *
+                Rules.excessive_tax_chance(level, town_stats.tax_rates[to_string(level)])
+            )
+          )
+
+        {level, needs_met_citizens_in_level, unemployed_citizens_in_level,
+         migrating_by_tax_citizens_in_level}
+      end)
+
+    # 6. Flatten the remainder; these are <unemployed_citizens>, and they will be entered to the migration pool, so no other processing is done with them.
+    unemployed_citizens =
+      sorted_housed_citizens_by_level
+      |> Enum.flat_map(fn {_, _, unemployed_citizens_in_level, _} ->
+        unemployed_citizens_in_level
+      end)
+
+    migrating_by_tax_citizens =
+      sorted_housed_citizens_by_level
+      |> Enum.flat_map(fn {_, _, _, migrating_by_tax_citizens_in_level} ->
+        migrating_by_tax_citizens_in_level
+      end)
+
+    # education (not education_lvl_1) are distributed randomly
+    edu_generic =
+      town_stats
+      |> TownStatistics.getResource(:education)
+      |> ResourceStatistics.getNetProduction()
+
+    edu_promotions =
+      if edu_generic == 0 do
+        %{
+          0 =>
+            town_stats
+            |> TownStatistics.getResource(:education_lvl_1)
+            |> ResourceStatistics.getNetProduction(),
+          1 =>
+            town_stats
+            |> TownStatistics.getResource(:education_lvl_2)
+            |> ResourceStatistics.getNetProduction(),
+          2 =>
+            town_stats
+            |> TownStatistics.getResource(:education_lvl_3)
+            |> ResourceStatistics.getNetProduction(),
+          3 =>
+            town_stats
+            |> TownStatistics.getResource(:education_lvl_4)
+            |> ResourceStatistics.getNetProduction(),
+          4 =>
+            town_stats
+            |> TownStatistics.getResource(:education_lvl_5)
+            |> ResourceStatistics.getNetProduction(),
+          5 => 0
+        }
+      else
+        rand_5 = %{
+          0 => :rand.uniform(),
+          1 => :rand.uniform(),
+          2 => :rand.uniform(),
+          3 => :rand.uniform(),
+          4 => :rand.uniform()
+        }
+
+        rand_sum = rand_5 |> Map.values() |> Enum.sum()
+
+        %{
+          0 =>
+            (town_stats
+             |> TownStatistics.getResource(:education_lvl_1)
+             |> ResourceStatistics.getNetProduction()) + round(rand_5[0] * edu_generic / rand_sum),
+          1 =>
+            (town_stats
+             |> TownStatistics.getResource(:education_lvl_2)
+             |> ResourceStatistics.getNetProduction()) + round(rand_5[1] * edu_generic / rand_sum),
+          2 =>
+            (town_stats
+             |> TownStatistics.getResource(:education_lvl_3)
+             |> ResourceStatistics.getNetProduction()) + round(rand_5[2] * edu_generic / rand_sum),
+          3 =>
+            (town_stats
+             |> TownStatistics.getResource(:education_lvl_4)
+             |> ResourceStatistics.getNetProduction()) + round(rand_5[3] * edu_generic / rand_sum),
+          4 =>
+            (town_stats
+             |> TownStatistics.getResource(:education_lvl_5)
+             |> ResourceStatistics.getNetProduction()) + round(rand_5[4] * edu_generic / rand_sum),
+          5 => 0
+        }
+      end
+
+    # !!!! migrating_citizens and migrating_by_tax_citizens may include people will simply 'migrate' back to the same city!
+    {needs_met_citizens, promoted_citizens_qty} =
+      sorted_housed_citizens_by_level
+      |> Enum.flat_map_reduce(%{0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0}, fn {level,
+                                                                             needs_met_citizens_in_level,
+                                                                             _, _},
+                                                                            acc ->
+        # 10. Apply education to <migrating_citizens> + <staying_citizens>
+        {citizens_to_promote, other_citizens} =
+          if time_to_learn do
+            needs_met_citizens_in_level |> Enum.split(edu_promotions[level])
+          else
+            {[], needs_met_citizens_in_level}
+          end
+
+        promoted_citizens =
+          citizens_to_promote |> Enum.map(fn c -> c |> Map.update!("education", &(&1 + 1)) end)
+
+        {promoted_citizens ++ other_citizens,
+         acc |> Map.put(level + 1, length(promoted_citizens))}
+      end)
+
+    # 8. Scan through the remainder, take members based on their last_moved. Add them to <migrating_citizens>
+    {migrating_citizens, staying_citizens} =
+      needs_met_citizens |> Enum.split_with(fn c -> Rules.is_citizen_restless(c, world) end)
+
+    TownMigrationStatistics.fromTown(town_preloaded)
+    |> Map.merge(%{
+      aggregate_births: aggregate_births,
+      aggregate_deaths_by_age: aggregate_deaths_by_age,
+      aggregate_deaths_by_pollution: aggregate_deaths_by_pollution,
+      housing_left: excess_housing - aggregate_births,
+      staying_citizens: staying_citizens,
+      migrating_citizens_due_to_tax: migrating_by_tax_citizens,
+      migrating_citizens: migrating_citizens,
+      unemployed_citizens: unemployed_citizens,
+      unhoused_citizens: unhoused_citizens,
+      polluted_citizens: polluted_citizens,
+      educated_citizens: promoted_citizens_qty
+    })
+  end
+
+  @spec get_production_map(map() | nil, map() | nil, integer, String.t(), atom) :: map
+  def get_production_map(production_map, multiplier_map, _citizen_count, region, season) do
     # this is fetched by web live and server-side calculations
     if is_nil(multiplier_map),
       do: production_map,
       else: production_map |> multiply(multiplier_map, region, season)
   end
 
-  def render_production(production_map, multiplier_map, citizen_count, region, season) do
-    # TODO: add seasonality and region changes to this
-    prod_nil = is_nil(production_map)
-
-    prod_map_mult = get_production_map(production_map, multiplier_map, citizen_count, region, season)
-
-    totals = %{
-      total_area:
-        if(!prod_nil && Map.has_key?(prod_map_mult, :area),
-          do: prod_map_mult.area,
-          else: 0
-        ),
-      total_energy:
-        if(!prod_nil and Map.has_key?(prod_map_mult, :energy),
-          do: prod_map_mult.energy,
-          else: 0
-        ),
-      total_housing:
-        if(!prod_nil and Map.has_key?(prod_map_mult, :housing),
-          do: prod_map_mult.housing,
-          else: 0
-        ),
-      new_shields:
-        if(!prod_nil and Map.has_key?(prod_map_mult, :shields),
-          do: prod_map_mult.shields,
-          else: 0
-        ),
-      new_missiles:
-        if(!prod_nil and Map.has_key?(prod_map_mult, :missiles),
-          do: prod_map_mult.missiles,
-          else: 0
-        )
-    }
-
-    results =
-      if !prod_nil && Map.has_key?(prod_map_mult, :pollution) &&
-           !is_integer(prod_map_mult.pollution) do
-        Map.replace(prod_map_mult, :pollution, prod_map_mult.pollution.(citizen_count))
-      else
-        prod_map_mult
-      end
-
-    edu_luck = if :rand.uniform() > 0.95, do: 1, else: 0
-
-    results2 =
-      if !prod_nil && Map.has_key?(results, :education) &&
-           is_function(results.education) do
-        Map.replace(results, :education, results.education.(:rand.uniform(5), edu_luck))
-      else
-        results
-      end
-
-    results3 =
-      if !prod_nil && Map.has_key?(results2, :uranium) &&
-           is_function(results2.uranium) do
-        Map.replace(results2, :uranium, results2.uranium.(:rand.uniform() > 0.999))
-      else
-        results2
-      end
-
-    if prod_nil do
-      totals
+  @spec render_production_supply(map() | nil, map() | nil, TownStatistics.t(), integer) :: %{
+          String.t() => ResourceStatistics.t()
+        }
+  def render_production_supply(production_map, multiplier_map, town, multiple \\ 1) do
+    if is_nil(production_map) do
+      %{}
     else
-      Map.merge(results3, totals)
+      citizen_count = Enum.sum(Map.values(town.citizen_count_by_level))
+
+      get_production_map(production_map, multiplier_map, citizen_count, town.region, town.season)
+      |> Enum.map(fn {k, v} ->
+        value =
+          cond do
+            is_integer(v) -> round(v)
+            # pollution per pop (consider making generic)
+            is_function(v, 1) -> round(v.(citizen_count))
+            true -> 0
+          end
+
+        droplist =
+          cond do
+            # education and uranium drops
+            # drops (fn _rng, _number_of_instances -> drop_amount)
+            is_function(v, 2) -> [{multiple, v}]
+            # currently unused
+            # drops (fn _rng, _number_of_instances, _city -> drop_amount)
+            is_function(v, 3) -> [{multiple, v}]
+            true -> []
+          end
+
+        {k, ResourceStatistics.fromProduces(k, value * multiple, nil, droplist)}
+      end)
+      |> Enum.into(%{})
+    end
+  end
+
+  @spec render_production_store(map() | nil, map() | nil, TownStatistics.t(), integer) :: %{
+          String.t() => ResourceStatistics.t()
+        }
+  def render_production_store(production_map, multiplier_map, town, multiple \\ 1) do
+    if is_nil(production_map) do
+      %{}
+    else
+      citizen_count = Enum.sum(Map.values(town.citizen_count_by_level))
+
+      get_production_map(production_map, multiplier_map, citizen_count, town.region, town.season)
+      |> Enum.map(fn {k, v} ->
+        value =
+          cond do
+            is_integer(v) -> round(v)
+            true -> nil
+          end
+
+        {k,
+         ResourceStatistics.fromProduces(
+           k,
+           0,
+           if is_nil(value) do
+             nil
+           else
+             value * multiple
+           end,
+           []
+         )}
+      end)
+      |> Enum.into(%{})
+    end
+  end
+
+  @spec render_production_consumption(map() | nil, map() | nil, TownStatistics.t(), integer) :: %{
+          String.t() => ResourceStatistics.t()
+        }
+  def render_production_consumption(production_map, multiplier_map, town, multiple \\ 1) do
+    if is_nil(production_map) do
+      %{}
+    else
+      citizen_count = Enum.sum(Map.values(town.citizen_count_by_level))
+
+      get_production_map(production_map, multiplier_map, citizen_count, town.region, town.season)
+      |> Enum.map(fn {k, v} ->
+        value =
+          cond do
+            is_integer(v) -> round(v)
+            # pollution per pop
+            is_function(v, 1) -> round(v.(citizen_count))
+            # drops not supported for consumption
+            true -> 0
+          end
+
+        {k, ResourceStatistics.fromRequires(k, value * multiple, nil)}
+      end)
+      |> Enum.into(%{})
     end
   end
 
@@ -617,171 +632,368 @@ defmodule MayorGame.CityHelpers do
     end
   end
 
-  # @spec bake_details_int(Town.t(), %{}) :: Town.t()
-  @doc """
-      Takes a %Town{} struct
+  # the first list in the tuple indicates what is produced. This will be used to determine if the loop should reset to its start of the sorted_buildables list
+  # the second list in the tuple indicates what is prevents all buildables from being activated. This will be used to determine if the loop should reset to its start of the sorted_buildables list
+  @spec fill_workers(Town.t(), TownStatistics.t(), BuildableMetadata.t()) ::
+          {list(), list(), TownStatistics.t()}
+  def fill_workers(town, town_stats, buildable) do
+    buildable_count =
+      if Map.has_key?(town_stats.buildable_stats, buildable.title) do
+        Map.get(town, buildable.title) - town_stats.buildable_stats[buildable.title].operational
+      else
+        Map.get(town, buildable.title)
+      end
 
-      returns the %Details{} with each buildable listing %CombinedBuildable{}s instead of raw %Buildable{}s
-  """
-  def bake_details_int(%Town{} = town, buildables_map) do
-    updated_map =
-      Enum.map(buildables_map.buildables_list, fn buildable_list_item ->
-        buildable_count = Map.get(town, buildable_list_item)
-        buildable_metadata = Map.get(buildables_map.buildables_flat, buildable_list_item)
+    if buildable_count < 1 do
+      {
+        [],
+        [],
+        town_stats
+      }
+    else
+      if !Map.has_key?(buildable, :requires) || is_nil(buildable.requires) do
+        new_buildable = %BuildableStatistics{
+          title: buildable.title,
+          number: buildable_count,
+          operational: buildable_count,
+          workers_by_level: %{},
+          deficient_prereq_next: [],
+          deficient_prereq_all: [],
+          resource: %{}
+        }
 
-        combined_array =
-          if buildable_count <= 0 do
-            []
+        new_buildable_stats =
+          town_stats.buildable_stats
+          |> Map.update(buildable.title, new_buildable, fn _v -> new_buildable end)
+
+        production =
+          render_production_supply(
+            buildable.produces,
+            buildable.multipliers,
+            town_stats,
+            buildable_count
+          )
+
+        new_supply =
+          Map.merge(production, town_stats.resource_stats, fn _k, v1, v2 ->
+            ResourceStatistics.merge(v1, v2)
+          end)
+
+        {
+          Map.keys(production),
+          [],
+          town_stats
+          |> Map.put(:buildable_stats, new_buildable_stats)
+          |> Map.put(:resource_stats, new_supply)
+        }
+      else
+        reqs_minus_workers = Map.drop(buildable.requires, [:workers])
+
+        # application of requires multiples possibly here
+
+        # %{
+        #  fulfilled_count: the number that can fulfill reqs, up to count provided to the function,
+        #  deficient_prereq_next: Reqs not met for the next instance of building
+        #  deficient_prereq_all: Reqs not met to fulfill all instances of the building
+        # }
+        pre_employment_operation_stats =
+          check_maximum_and_reqs(town_stats.resource_stats, reqs_minus_workers, buildable_count)
+
+        # %{
+        #  fulfilled_count: the number that can fulfill reqs, up to count provided to the function,
+        #  deficient_prereq_next: Reqs not met for the next instance of building
+        #  deficient_prereq_all: Reqs not met to fulfill all instances of the building
+        #  jobs_by_level: a %{integer => integer} map of levels for job positions,
+        #  vacancies_by_level: a %{integer => integer} map of levels for job positions,
+        #  workers_by_level: a %{integer => integer} map of levels to the count of workers that took the job,
+        #  employed_citizen_count_by_level: the updated employed_citizen_count_by_level
+        #  employment_vacancies: remaining vacancies
+        # }
+        post_employment_operation_stats =
+          if Map.has_key?(buildable.requires, :workers) do
+            required_worker_count =
+              buildable.requires.workers.count * pre_employment_operation_stats.fulfilled_count
+
+            # %{
+            #  jobs_by_level: a %{integer => integer} map of levels for job positions,
+            #  workers_by_level: a %{integer => integer} map of levels to the count of workers that took the job,
+            #  employed_citizen_count_by_level: the updated employed_citizen_count_by_level
+            #  employment_vacancies: remaining vacancies
+            # }
+            checked_workers_stats =
+              check_worker_count(
+                buildable.requires.workers.level,
+                town_stats.citizen_count_by_level,
+                town_stats.employed_citizen_count_by_level,
+                required_worker_count
+              )
+
+            if checked_workers_stats.employment_vacancies < 1 do
+              Map.merge(pre_employment_operation_stats, checked_workers_stats)
+              |> Map.put(:vacancies_by_level, %{
+                buildable.requires.workers.level => checked_workers_stats.employment_vacancies
+              })
+            else
+              Map.merge(checked_workers_stats, %{
+                vacancies_by_level: %{
+                  buildable.requires.workers.level => checked_workers_stats.employment_vacancies
+                },
+                fulfilled_count:
+                  floor(
+                    (required_worker_count - checked_workers_stats.employment_vacancies) /
+                      buildable.requires.workers.count
+                  ),
+                deficient_prereq_next: [:workers],
+                deficient_prereq_all:
+                  pre_employment_operation_stats.deficient_prereq_all ++ [:workers]
+              })
+            end
           else
-            Enum.map(1..buildable_count, fn _x ->
-              buildable_metadata
-            end)
+            Map.merge(pre_employment_operation_stats, %{
+              jobs_by_level: %{},
+              vacancies_by_level: %{},
+              workers_by_level: %{},
+              employed_citizen_count_by_level: town_stats.employed_citizen_count_by_level,
+              employment_vacancies: 0
+            })
           end
 
-        {buildable_list_item, combined_array}
-      end)
-      |> Map.new()
+        # calculate tax // # this can be precalculated
+        tax_earned =
+          if post_employment_operation_stats.fulfilled_count > 0 do
+            ResourceStatistics.fromProduces(
+              :money,
+              if !Map.has_key?(buildable.requires, :workers) do
+                0
+              else
+                Rules.calculate_earnings(
+                  buildable.requires.workers.count *
+                    post_employment_operation_stats.fulfilled_count,
+                  buildable.requires.workers.level,
+                  town_stats.tax_rates[to_string(buildable.requires.workers.level)]
+                )
+              end,
+              nil
+            )
+          else
+            ResourceStatistics.fromProduces(:money, 0, nil)
+          end
 
-    Map.merge(town, updated_map)
-  end
+        # update production and consumption
+        # %{String.t() => ResourceStatistics.t()}
+        production =
+          render_production_supply(
+            buildable.produces,
+            buildable.multipliers,
+            town_stats,
+            post_employment_operation_stats.fulfilled_count
+          )
+          |> Map.merge(%{:money => tax_earned}, fn _k, v1, v2 ->
+            ResourceStatistics.merge(v1, v2)
+          end)
 
-  def building_price(initial_price, buildable_count) do
-    initial_price * round(:math.pow(buildable_count, 2) + 1)
-  end
+        consumption =
+          render_production_consumption(
+            buildable.requires,
+            nil,
+            town_stats,
+            post_employment_operation_stats.fulfilled_count
+          )
 
-  @doc """
-   Returns a list of requirements — empty if all reqs are met, otherwise atoms of reqs not met
-  """
-  def check_reqs(%{} = reqs, %{} = checkee) do
-    # reqs_minus_workers = Map.drop(reqs, [:workers])
+        storage =
+          render_production_store(
+            buildable.stores,
+            nil,
+            town_stats,
+            post_employment_operation_stats.fulfilled_count
+          )
 
-    required_values = Enum.map(reqs, fn {k, v} -> {k, checkee[k] - v} end)
+        change =
+          Map.merge(production, consumption, fn _k, v1, v2 -> ResourceStatistics.merge(v1, v2) end)
+          |> Map.merge(storage, fn _k, v1, v2 -> ResourceStatistics.merge(v1, v2) end)
 
-    # get keys of values less than 0
-    disabled =
-      Enum.flat_map(required_values, fn {k, v} ->
-        case v < 0 do
-          # transform to integer
-          true -> [k]
-          # skip the value
-          false -> []
-        end
-      end)
+        new_supply =
+          Map.merge(town_stats.resource_stats, change, fn _k, v1, v2 ->
+            ResourceStatistics.merge(v1, v2)
+          end)
 
-    disabled
+        new_buildable =
+          if Map.has_key?(town_stats.buildable_stats, buildable.title) do
+            %BuildableStatistics{
+              title: buildable.title,
+              number: town_stats.buildable_stats[buildable.title].number,
+              operational:
+                town_stats.buildable_stats[buildable.title].operational +
+                  post_employment_operation_stats.fulfilled_count,
+              workers_by_level:
+                town_stats.buildable_stats[buildable.title].workers_by_level
+                |> Map.merge(post_employment_operation_stats.workers_by_level, fn _k, v1, v2 ->
+                  v1 + v2
+                end),
+              deficient_prereq_next: post_employment_operation_stats.deficient_prereq_next,
+              deficient_prereq_all: post_employment_operation_stats.deficient_prereq_all,
+              resource:
+                town_stats.buildable_stats[buildable.title].resource
+                |> Map.merge(change, fn _k, v1, v2 -> ResourceStatistics.merge(v1, v2) end)
+            }
+          else
+            %BuildableStatistics{
+              title: buildable.title,
+              number: buildable_count,
+              operational: post_employment_operation_stats.fulfilled_count,
+              workers_by_level: post_employment_operation_stats.workers_by_level,
+              deficient_prereq_next: post_employment_operation_stats.deficient_prereq_next,
+              deficient_prereq_all: post_employment_operation_stats.deficient_prereq_all,
+              resource: change
+            }
+          end
+
+        new_buildable_stats =
+          town_stats.buildable_stats
+          |> Map.update(buildable.title, new_buildable, fn _v -> new_buildable end)
+
+        new_job_stats =
+          town_stats.jobs_by_level
+          |> Map.merge(post_employment_operation_stats.jobs_by_level, fn _k, v1, v2 -> v1 + v2 end)
+
+        new_job_taken_stats =
+          town_stats.vacancies_by_level
+          |> Map.merge(post_employment_operation_stats.vacancies_by_level, fn _k, v1, v2 ->
+            v1 + v2
+          end)
+
+        {
+          Map.keys(production),
+          post_employment_operation_stats.deficient_prereq_all,
+          town_stats
+          |> Map.put(:jobs_by_level, new_job_stats)
+          |> Map.put(:vacancies_by_level, new_job_taken_stats)
+          |> Map.put(
+            :employed_citizen_count_by_level,
+            post_employment_operation_stats.employed_citizen_count_by_level
+          )
+          |> Map.put(:buildable_stats, new_buildable_stats)
+          |> Map.put(:resource_stats, new_supply)
+        }
+      end
+    end
   end
 
   @doc """
    Returns %{
-    citizens_by_level: updated citizens_by_level map,
-    working_levels: map of levels to count of workers
+    fulfilled_count: the number that can fulfill reqs, up to count provided to the function,
+    deficient_prereq_next: Reqs not met for the next instance of building
+    deficient_prereq_all: Reqs not met to fulfill all instances of the building
   }
   """
-  defp check_workers(job_level, citizens_by_level_count, citizens_by_level, required_count) do
-    # if there's enough citizens at the correct job level
-    results =
-      if Map.has_key?(citizens_by_level_count, job_level) &&
-           citizens_by_level_count[job_level] >= required_count do
-        %{
-          citizens_by_level_count: citizens_by_level_count |> Map.update!(job_level, &(&1 - required_count)),
-          working_levels: %{job_level => required_count},
-          working_count: required_count
+  @spec check_maximum_and_reqs(%{String.t() => ResourceStatistics.t()}, %{}, integer) :: %{
+          fulfilled_count: integer,
+          deficient_prereq_next: list(String.t()),
+          deficient_prereq_all: list(String.t())
         }
-      else
-        Enum.reduce_while(
-          1..required_count,
-          %{
-            citizens_by_level_count: citizens_by_level_count,
-            working_levels: %{},
-            working_count: 0
-          },
-          fn _x, acc ->
-            # find top
-            best_workable_level =
-              Enum.reduce_while(job_level..6, job_level, fn x, _acc2 ->
-                if !Map.has_key?(acc.citizens_by_level_count, x) ||
-                     acc.citizens_by_level_count[x] < 1,
-                   do: {:cont, x + 1},
-                   else: {:halt, x}
-              end)
+  def check_maximum_and_reqs(reqs, checkee, count) do
+    filtered_reqs = Map.filter(reqs, fn {k, _v} -> !is_nil(checkee[k]) && checkee[k] > 0 end)
 
-            if best_workable_level < 6 do
-              updated_acc = %{
-                citizens_by_level_count: acc.citizens_by_level_count |> Map.update!(best_workable_level, &(&1 - 1)),
-                working_levels:
-                  acc.working_levels
-                  |> Map.update(
-                    best_workable_level,
-                    1,
-                    &(&1 + 1)
-                  ),
-                working_count: acc.working_count + 1
-              }
-
-              {:cont, updated_acc}
-            else
-              {:halt, acc}
-            end
-          end
-        )
-      end
-
-    working_levels_citizens =
-      results.working_levels
-      |> Enum.map(fn {level, count} ->
-        {level, Enum.take(citizens_by_level[level], count)}
+    met_values =
+      Enum.map(filtered_reqs, fn {k, v} ->
+        {k, floor((v.production - v.consumption + Enum.max([0, v.stock])) / checkee[k])}
       end)
-      |> Enum.into(%{})
 
-    dropped_citizens =
-      results.working_levels
-      |> Enum.map(fn {level, count} ->
-        {level, Enum.drop(citizens_by_level[level], count)}
-      end)
-      |> Enum.into(%{})
-
-    citizens_by_level_updated = Map.merge(citizens_by_level, dropped_citizens)
+    fulfilled_count =
+      Enum.max([
+        0,
+        Enum.min(Enum.map(met_values, fn {_k, v} -> v end) ++ [count], &<=/2, fn -> 0 end)
+      ])
 
     %{
-      working_levels: working_levels_citizens,
-      citizens_by_level: citizens_by_level_updated,
-      citizens_by_level_count: results.citizens_by_level_count,
-      working_count: results.working_count
+      # Enum.min([fulfilled_count, count]),
+      fulfilled_count: fulfilled_count,
+      deficient_prereq_next:
+        if fulfilled_count == count do
+          []
+        else
+          Enum.flat_map(met_values, fn {k, v} ->
+            case v == fulfilled_count do
+              true -> [k]
+              false -> []
+            end
+          end)
+        end,
+      deficient_prereq_all:
+        Enum.flat_map(met_values, fn {k, v} ->
+          case v < count do
+            true -> [k]
+            false -> []
+          end
+        end)
     }
   end
 
-  @doc """
-   Takes (buildable, citizen_count, region, season, acc), returns acc with production rendered
-  """
-  def update_generated_acc(buildable, citizen_count, region, season, acc) do
-    # eventually could optimize this just to run the calc once and then multiply by total enabled buildables
-
-    generated =
-      render_production(
-        buildable.produces,
-        buildable.multipliers,
-        citizen_count,
-        region,
-        season
-      )
-
-    Map.merge(acc, generated, fn k, v1, v2 ->
-      recurse_merge(k, v1, v2)
-    end)
-  end
-
-  def recurse_merge(_k, v1, v2) do
-    if is_number(v1) && is_number(v2) do
-      round(v1 + v2)
+  @spec check_worker_count(integer, %{integer => integer}, %{integer => integer}, integer) :: %{
+          jobs_by_level: %{integer => integer},
+          workers_by_level: %{integer => integer},
+          employed_citizen_count_by_level: %{integer => integer},
+          employment_vacancies: integer
+        }
+  defp check_worker_count(
+         job_level,
+         citizen_count_by_level,
+         employed_citizen_count_by_level,
+         required_count
+       ) do
+    # check if there's already enough citizens at the correct job level
+    if Map.get(citizen_count_by_level, job_level, 0) -
+         Map.get(employed_citizen_count_by_level, job_level, 0) >= required_count do
+      %{
+        jobs_by_level: %{job_level => required_count},
+        workers_by_level: %{job_level => required_count},
+        employed_citizen_count_by_level:
+          employed_citizen_count_by_level
+          |> Map.update(job_level, required_count, &(&1 + required_count)),
+        employment_vacancies: 0
+      }
     else
-      Map.merge(v1, v2, fn l, vv1, vv2 ->
-        recurse_merge(l, vv1, vv2)
-      end)
-    end
-  end
+      Enum.reduce_while(
+        job_level..6,
+        %{
+          jobs_by_level: %{job_level => required_count},
+          employed_citizen_count_by_level: employed_citizen_count_by_level,
+          workers_by_level: %{},
+          employment_vacancies: required_count
+        },
+        fn level, acc ->
+          take_count =
+            min(
+              Map.get(citizen_count_by_level, level, 0) -
+                Map.get(acc.employed_citizen_count_by_level, level, 0),
+              acc.employment_vacancies
+            )
 
-  def calculate_earnings(worker_count, level, tax_rate) do
-    round(worker_count * :math.pow(2, level) * 100 * (tax_rate / 10))
+          if take_count < 1 do
+            # no remaining employees at this level
+            {:cont, acc}
+          else
+            updated_acc = %{
+              # acc.jobs_by_level |> Map.put(level, take_count),
+              jobs_by_level: acc.jobs_by_level,
+              employed_citizen_count_by_level:
+                acc.employed_citizen_count_by_level
+                |> Map.update(level, take_count, &(&1 + take_count)),
+              workers_by_level:
+                acc.workers_by_level |> Map.update(level, take_count, &(&1 + take_count)),
+              employment_vacancies: acc.employment_vacancies - take_count
+            }
+
+            if updated_acc.employment_vacancies < 1 do
+              # positions filled
+              {:halt, updated_acc}
+            else
+              {:cont, updated_acc}
+            end
+          end
+        end
+      )
+    end
   end
 
   def atomize_keys(map) do
@@ -794,21 +1006,5 @@ defmodule MayorGame.CityHelpers do
     Map.new(map, fn {k, v} ->
       {if(!is_integer(k), do: String.to_integer(k), else: k), v}
     end)
-  end
-
-  def cap_shields(results_map, cap, true) do
-    results_map |> Map.put(:shields, cap) |> Map.put(:new_shields, cap - results_map.shields)
-  end
-
-  def cap_shields(results_map, _cap, false) do
-    results_map
-  end
-
-  def cap_missiles(results_map, cap, true) do
-    results_map |> Map.put(:missiles, cap) |> Map.put(:new_missiles, cap - results_map.missiles)
-  end
-
-  def cap_missiles(results_map, _cap, false) do
-    results_map
   end
 end

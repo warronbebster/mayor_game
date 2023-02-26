@@ -13,6 +13,7 @@ defmodule MayorGame.City.BuildableMetadata do
     :capacity,
     :requires,
     :produces,
+    :stores,
     :multipliers,
     reason: [],
     enabled: false
@@ -30,6 +31,7 @@ defmodule MayorGame.City.BuildableMetadata do
           education_level: 1..5,
           capacity: integer | nil,
           produces: map | nil,
+          stores: map | nil,
           requires: map | nil,
           multipliers: map | nil,
           enabled: boolean,
