@@ -59,7 +59,8 @@ defmodule MayorGame.MixProject do
       {:faker, "~> 0.17"},
       {:pow_postgres_store, "~> 1.0"},
       {:number, "~> 1.0.3"},
-      {:flow, "~> 1.0"}
+      {:flow, "~> 1.0"},
+      {:statistics, "~> 0.6.2"}
     ]
   end
 

@@ -785,18 +785,9 @@ defmodule MayorGame.City.Buildable do
         },
         # fn _rng, _number_of_instances -> drop_amount
         produces: %{
-          education: fn rng, number_of_buildables ->
-            # low-luck calculation at 5% chance, so rng needs only be used once
-            aggregate = number_of_buildables * 0.05
-            whole = floor(aggregate)
-            chance = aggregate - whole
-
-            whole +
-              if rng < chance do
-                1
-              else
-                0
-              end
+          education: fn _rng, number_of_buildables ->
+            # simulate X dice rolls with chance 5%
+            round(Statistics.Distributions.Binomial.rand(number_of_buildables, 0.05))
           end
         }
       },
@@ -928,18 +919,9 @@ defmodule MayorGame.City.Buildable do
           pollution: 10,
           sulfur: 1,
           # fn _rng, _number_of_instances -> drop_amount
-          uranium: fn rng, number_of_buildables ->
-            # low-luck calculation at 0.001% chance, so rng needs only be used once
-            aggregate = number_of_buildables * 0.001
-            whole = floor(aggregate)
-            chance = aggregate - whole
-
-            whole +
-              if rng < chance do
-                1
-              else
-                0
-              end
+          uranium: fn _rng, number_of_buildables ->
+            # simulate X dice rolls with chance 0.1%
+            round(Statistics.Distributions.Binomial.rand(number_of_buildables, 0.001))
           end
           # gold: 1,
         }
