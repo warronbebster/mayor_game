@@ -446,62 +446,120 @@
       <% end %>
 
     <!-- COMBAT -->
-    <%= if !@is_user_mayor && !is_nil(@current_user) do %>
+    <div class="space-y-1">
       <h2 class="text-base pt-4 pb-1">
         Combat
       </h2>
-      <div class="pb-4 flex flex-row items-center gap-2">
-        <%= if @city.shields > 0 && @current_user.town.missiles > 0 do %>
-          <.form let={f} for={@attack_set} id="attack-form" phx_submit="attack_shields" phx_change="validate_attack">
+      <%= if @is_user_mayor do %>
+        <div class="flex flex-row space-x-1 align-middle">
+          <input type="checkbox" checked={@city.retaliate} phx-click="toggle_retaliate">
 
-            <%= number_input(f, :amount,
-              required: true,
-              placeholder: "# missiles",
-              min: 1,
-              max: 10
-            ) %>
-            <%= error_tag(f, :amount) %>
-
-            <%= submit("Attack shields with #{Ecto.Changeset.get_field(@attack_set, :amount)}/#{@current_user.town.missiles} missiles") %>
-          </.form>
-          <div class="flex gap-1 flex-row items-center text-blue-600">
-            <img
-              src="/images/shields.svg"
-              alt="total might"
-              height="12"
-              width="12"
-              class="inline"
-            />
-            <span><%= @city.shields %>/<%= @city.shields_capacity %></span>
+          <div class="group relative flex-shrink self-start">
+            <span class="first-letter:uppercase underline underline-offset-4 decoration-neutral-800/40 decoration-dotted	cursor-help">
+              Retaliate
+            </span>
+            <div class="tooltip min-w-[240px]">
+              When checked, you will automatically respond to attacks on your shields by attacking the city that attacked you.
+            </div>
           </div>
+        </div>
+      <% end %>
+
+      <%= if !@is_user_mayor && !is_nil(@current_user) do %>
+
+        <%= if @current_user.town.attacks_sent |> Enum.map(& &1.attack_count) |> Enum.sum() < @current_user.town.air_bases do %>
+          <button
+            class="btn m-0 rounded-none border border-neutral-800/25 leading-none h-6 self-start"
+            phx-click="commence_attack"
+            phx-throttle="200"
+          >
+            Commence attack
+          </button>
         <% else %>
-          <%= if @city.shields <= 0 do %>
-            <button
-              disabled
-              class="opacity-50 btn m-0 rounded-none border border-neutral-800/25 leading-none h-6"
-              phx-throttle="200"
-            >
-              City has no shields
-            </button>
-          <% else %>
-            <button
-              disabled
-              class="opacity-50 btn m-0 rounded-none border border-neutral-800/25 leading-none h-6"
-              phx-throttle="300"
-            >
+          <button
+            disabled
+            class="opacity-50 btn m-0 rounded-none border border-neutral-800/25 leading-none h-6 self-start"
+            phx-click="commence_attack"
+            phx-throttle="200"
+          >
+            Not enough air bases to commence attack
+          </button>
+        <% end %>
+
+        
+        <%= for ongoing_attack <- @city.attacks_recieved do %>
+          <div class="pb-4 flex flex-row items-center gap-2">
+            <%= ongoing_attack.attacking.title %> is attacking with <%= ongoing_attack.attack_count %> missiles/day
+
+            <%= if ongoing_attack.attacking_id == @current_user.town.id do %>
+              <button
+                class="btn m-0 rounded-none border border-neutral-800/25 leading-none h-6"
+                phx-click="reduce_attack"
+                phx-throttle="200"
+              >
+                Reduce attack
+              </button>
+            <% end %>
+
+          </div>
+        <% end %>
+
+
+        <%!-- <div class="pb-4 flex flex-row items-center gap-2">
+          <%= if @city.shields > 0 && @current_user.town.missiles > 0 do %>
+            <.form let={f} for={@attack_set} id="attack-form" phx_submit="attack_shields" phx_change="validate_attack">
+
+              <%= number_input(f, :amount,
+                required: true,
+                placeholder: "# missiles",
+                min: 1,
+                max: 10
+              ) %>
+              <%= error_tag(f, :amount) %>
+
+              <%= submit("Attack shields with #{Ecto.Changeset.get_field(@attack_set, :amount)}/#{@current_user.town.missiles} missiles") %>
+            </.form>
+            <div class="flex gap-1 flex-row items-center text-blue-600">
               <img
-                src="/images/might-text.svg"
-                alt="has enough missiles to attack"
+                src="/images/shields.svg"
+                alt="total might"
                 height="12"
                 width="12"
                 class="inline"
-              /> Attack city shields |
-            </button>
-            <%= @city.shields %>
+              />
+              <span><%= @city.shields %>/<%= @city.shields_capacity %></span>
+            </div>
+          <% else %>
+            <%= if @city.shields <= 0 do %>
+              <button
+                disabled
+                class="opacity-50 btn m-0 rounded-none border border-neutral-800/25 leading-none h-6"
+                phx-throttle="200"
+              >
+                City has no shields
+              </button>
+            <% else %>
+              <button
+                disabled
+                class="opacity-50 btn m-0 rounded-none border border-neutral-800/25 leading-none h-6"
+                phx-throttle="300"
+              >
+                <img
+                  src="/images/might-text.svg"
+                  alt="has enough missiles to attack"
+                  height="12"
+                  width="12"
+                  class="inline"
+                /> Attack city shields |
+              </button>
+              <%= @city.shields %>
+            <% end %>
           <% end %>
-        <% end %>
-      </div>
-    <% end %>
+        </div> --%>
+
+      <% end %>
+    </div>
+    <!-- end of combat -->
 
     <%= for {category, buildings} <- @buildables do %>
       <div class="group relative flex-shrink self-start">
@@ -974,7 +1032,7 @@
                         trim: true
                       ) %>
                       <div class="tooltip max-w-sm">
-                        <%= Number.Delimit.number_to_delimited(
+                        -$<%= Number.Delimit.number_to_delimited(
                           round(
                             @operating_count[building_type][[]] * building_stats.requires.money
                           )

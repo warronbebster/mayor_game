@@ -114,6 +114,58 @@ defmodule MayorGame.City.Buildable do
     }
   end
 
+  def buildables_attack_order do
+    [
+      :defense_bases,
+      :air_bases,
+      :missile_defense_arrays
+      # :coal_plants,
+      # :natural_gas_plants,
+      # :wind_turbines,
+      # :solar_plants,
+      # :nuclear_plants,
+      # :fusion_reactors,
+      # :dams,
+      # :carbon_capture_plants,
+      # :roads,
+      # :highways,
+      # :airports,
+      # :bus_lines,
+      # :subway_lines,
+      # :bike_lanes,
+      # :bikeshare_stations,
+      # :huts,
+      # :single_family_homes,
+      # :multi_family_homes,
+      # :homeless_shelters,
+      # :apartments,
+      # :micro_apartments,
+      # :high_rises,
+      # :megablocks,
+      # :hospitals,
+      # :doctor_offices,
+      # :retail_shops,
+      # :factories,
+      # :mines,
+      # :uranium_mines,
+      # :office_buildings,
+      # :distribution_centers,
+      # :parks,
+      # :campgrounds,
+      # :nature_preserves,
+      # :libraries,
+      # :schools,
+      # :middle_schools,
+      # :high_schools,
+      # :universities,
+      # :research_labs,
+      # :theatres,
+      # :arenas,
+      # :zoos,
+      # :aquariums
+    ]
+  end
+
   def buildables_default_priorities do
     %{
       huts: 1,
@@ -650,7 +702,7 @@ defmodule MayorGame.City.Buildable do
           workers: %{count: 10, level: 4}
         },
         produces: %{
-          energy: 100_000
+          energy: 150_000
         }
       },
       # Carbon Capture Plants ————————————————————————————————————
@@ -1130,7 +1182,8 @@ defmodule MayorGame.City.Buildable do
         },
         produces: %{
           missiles: 1,
-          missiles_capacity: 100
+          missiles_capacity: 100,
+          daily_strikes: 1
         }
       },
       # DEFENSE BASES ————————————————————————————————————

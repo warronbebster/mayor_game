@@ -1,6 +1,7 @@
 defmodule MayorGame.CityCalculator do
   use GenServer, restart: :permanent
-  alias MayorGame.City.{Town, Buildable}
+  alias MayorGame.CityCombat
+  alias MayorGame.City.{Town, Buildable, OngoingAttacks}
   alias MayorGame.{City, CityHelpers, Repo}
   import Ecto.Query
 
@@ -92,7 +93,7 @@ defmodule MayorGame.CityCalculator do
       |> Enum.sum()
 
     leftovers
-    |> Enum.sort_by(& &1.id)
+    # |> Enum.sort_by(& &1.id)
     |> Enum.chunk_every(200)
     |> Enum.each(fn chunk ->
       Repo.checkout(
@@ -157,6 +158,54 @@ defmodule MayorGame.CityCalculator do
       )
     end)
 
+    # maybe do combat here?
+    # based on all the ongoing_attacks?
+
+    attacks =
+      Repo.all(OngoingAttacks)
+      |> Repo.preload([:attacking, :attacked])
+
+    valid_attackers =
+      leftovers
+      |> Enum.filter(fn city -> city.daily_strikes > 0 end)
+      |> Map.new(fn city ->
+        {city.id, city.daily_strikes}
+      end)
+
+    Enum.reduce(attacks, valid_attackers, fn attack, acc ->
+      # check if they have daily_strikes
+      if Map.has_key?(acc, attack.attacking.id) && acc[attack.attacking.id] > 0 do
+        CityCombat.attack_city(
+          attack.attacked,
+          attack.attacking.id,
+          min(attack.attack_count, acc[attack.attacking.id])
+        )
+
+        retaliating = attack.attacked.retaliate && Map.has_key?(acc, attack.attacked.id) && acc[attack.attacked.id] > 0
+
+        if retaliating do
+          CityCombat.attack_city(
+            attack.attacking,
+            attack.attacked.id,
+            min(attack.attack_count, acc[attack.attacked.id])
+          )
+
+          acc
+          |> Map.update!(attack.attacking.id, &(&1 - min(attack.attack_count, acc[attack.attacking.id])))
+          |> Map.update!(attack.attacked.id, &(&1 - min(attack.attack_count, acc[attack.attacked.id])))
+        else
+          acc
+          |> Map.update!(attack.attacking.id, &(&1 - min(attack.attack_count, acc[attack.attacking.id])))
+        end
+      else
+        acc
+      end
+    end)
+
+    # for each attack count in attack
+    # reduce those cities
+
+    # updated_world_pollution ———————————————————————————————————————————————————————————————
     updated_pollution =
       if db_world.pollution + new_world_pollution < 0 do
         0

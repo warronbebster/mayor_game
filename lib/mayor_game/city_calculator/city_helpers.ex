@@ -118,6 +118,7 @@ defmodule MayorGame.CityHelpers do
           missiles_capacity: 0,
           shields: city_baked_direct.shields,
           shields_capacity: 0,
+          daily_strikes: 0,
           #
           income: 0,
           daily_cost: 0,
@@ -611,7 +612,7 @@ defmodule MayorGame.CityHelpers do
   """
   def preload_city_check(%Town{} = town) do
     if !Ecto.assoc_loaded?(town.user) do
-      town |> MayorGame.Repo.preload([:user])
+      town |> MayorGame.Repo.preload([:user, :attacking, :attacked, :attacks_sent, :attacks_recieved])
     else
       town
     end

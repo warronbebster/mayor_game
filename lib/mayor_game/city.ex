@@ -39,7 +39,7 @@ defmodule MayorGame.City do
 
   """
   def list_cities_preload do
-    Repo.all(Town, timeout: 100_000) |> Repo.preload([:citizens, :user], timeout: 100_000)
+    Repo.all(Town, timeout: 200_000) |> Repo.preload([:user], timeout: 200_000)
   end
 
   @doc """
@@ -352,34 +352,20 @@ defmodule MayorGame.City do
   def purchase_buildable(%Town{} = city, field_to_purchase, purchase_price) do
     city_attrs = %{treasury: city.treasury - purchase_price}
 
-    # IO.inspect(city[field_to_purchase])
-
-    # negative_gap = if city[field_to_purchase] < 0, do: -city[field_to_purchase], else: 0
-
-    # IO.inspect(negative_gap)
-
-    # inc_count = 1 + negative_gap
-
-    # IO.inspect(inc_count)
-
     purchase_city =
       city
       |> Town.changeset(city_attrs)
       |> Ecto.Changeset.validate_number(:treasury, greater_than: 0)
-      |> Repo.update()
 
-    case purchase_city do
-      {:ok, _result} ->
-        from(t in Town,
-          where: [id: ^city.id]
-        )
-        |> Repo.update_all(inc: [{field_to_purchase, 1}])
+    # |> Repo.update()
 
-      {:error, err} ->
-        Logger.error(inspect(err))
-
-      _ ->
-        nil
+    if purchase_city.errors == [] do
+      from(t in Town,
+        where: [id: ^city.id]
+      )
+      |> Repo.update_all(inc: [{field_to_purchase, 1}, {:treasury, -purchase_price}])
+    else
+      Logger.error(inspect(purchase_city.errors))
     end
   end
 

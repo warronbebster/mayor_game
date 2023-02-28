@@ -5,7 +5,9 @@ defmodule MayorGameWeb.CityLive do
   use Phoenix.LiveView, container: {:div, class: "liveview-container"}
   use Phoenix.HTML
 
+  alias MayorGame.City.OngoingAttacks
   alias MayorGame.CityCalculator
+  alias MayorGame.CityCombat
   alias MayorGame.{Auth, City, Repo}
   alias MayorGame.City.Town
   # import MayorGame.CityHelpers
@@ -388,49 +390,51 @@ defmodule MayorGameWeb.CityLive do
     # check if user is mayor here?
     building_to_attack_atom = String.to_existing_atom(building_to_attack)
 
-    attacking_town_struct = Repo.get!(Town, current_user.town.id)
-    attacked_town_struct = struct(City.Town, city)
+    CityCombat.attack_building(city, current_user.town.id, building_to_attack_atom)
 
-    updated_attacked_logs = Map.update(city.logs_attacks, attacking_town_struct.title, 1, &(&1 + 1))
+    # attacking_town_struct = Repo.get!(Town, current_user.town.id)
+    # attacked_town_struct = struct(City.Town, city)
 
-    attacked_town_changeset =
-      attacked_town_struct
-      |> City.Town.changeset(%{
-        logs_attacks: updated_attacked_logs
-      })
+    # updated_attacked_logs = Map.update(city.logs_attacks, attacking_town_struct.title, 1, &(&1 + 1))
 
-    if city.shields <= 0 && attacking_town_struct.missiles > 0 &&
-         attacking_town_struct.air_bases > 0 && attacked_town_struct[building_to_attack_atom] > 0 do
-      attack =
-        Town
-        |> where(id: ^city.id)
-        |> Repo.update_all(inc: [{building_to_attack_atom, -1}])
+    # attacked_town_changeset =
+    #   attacked_town_struct
+    #   |> City.Town.changeset(%{
+    #     logs_attacks: updated_attacked_logs
+    #   })
 
-      case attack do
-        {_x, nil} ->
-          from(t in Town, where: [id: ^current_user.town.id])
-          |> Repo.update_all(inc: [missiles: -1])
+    # if city.shields <= 0 && attacking_town_struct.missiles > 0 &&
+    #      attacking_town_struct.air_bases > 0 && attacked_town_struct[building_to_attack_atom] > 0 do
+    #   attack =
+    #     Town
+    #     |> where(id: ^city.id)
+    #     |> Repo.update_all(inc: [{building_to_attack_atom, -1}])
 
-          attack_building =
-            Ecto.Multi.new()
-            |> Ecto.Multi.update(
-              {:update_attacked_town, attacked_town_struct.id},
-              attacked_town_changeset
-            )
-            |> Repo.transaction(timeout: 10_000)
+    #   case attack do
+    #     {_x, nil} ->
+    #       from(t in Town, where: [id: ^current_user.town.id])
+    #       |> Repo.update_all(inc: [missiles: -1])
 
-          case attack_building do
-            {:ok, _updated_details} ->
-              IO.puts("attack success")
+    #       attack_building =
+    #         Ecto.Multi.new()
+    #         |> Ecto.Multi.update(
+    #           {:update_attacked_town, attacked_town_struct.id},
+    #           attacked_town_changeset
+    #         )
+    #         |> Repo.transaction(timeout: 10_000)
 
-            {:error, err} ->
-              Logger.error(inspect(err))
-          end
+    #       case attack_building do
+    #         {:ok, _updated_details} ->
+    #           IO.puts("attack success")
 
-        {:error, err} ->
-          Logger.error(inspect(err))
-      end
-    end
+    #         {:error, err} ->
+    #           Logger.error(inspect(err))
+    #       end
+
+    #     {:error, err} ->
+    #       Logger.error(inspect(err))
+    #   end
+    # end
 
     # this is all ya gotta do to update, baybee
     {:noreply, socket |> update_city_by_title() |> update_current_user()}
@@ -541,6 +545,8 @@ defmodule MayorGameWeb.CityLive do
     city =
       City.get_town_by_title!(title)
       |> MayorGame.CityHelpers.preload_city_check()
+
+    #
 
     city_with_stats2 =
       MayorGame.CityHelpers.calculate_city_stats(
@@ -711,7 +717,7 @@ defmodule MayorGameWeb.CityLive do
         socket
         |> assign(:current_user, current_user_updated)
       else
-        updated_town = City.get_town!(current_user_updated.town.id)
+        updated_town = City.get_town!(current_user_updated.town.id) |> Repo.preload([:attacks_sent])
 
         socket
         |> assign(:current_user, Map.put(current_user_updated, :town, updated_town))
@@ -942,86 +948,58 @@ defmodule MayorGameWeb.CityLive do
         # pattern match to pull these variables out of the socket
         %{assigns: %{city: city, current_user: current_user}} = socket
       ) do
-    # if city.shields > 0 && attacking_town_struct.missiles > 0 do
-    #   from(t in Town, where: [id: ^city.id])
-    #   |> Repo.update_all(inc: [shields: -1])
-
-    #   from(t in Town, where: [id: ^current_user.town.id])
-    #   |> Repo.update_all(inc: [missiles: -1])
-
-    # end
-
-    # ————————————————————————————————————————————————————————————————————————————————
-    # ————————————————————————————————————————————————————————————————————————————————
-    # ————————————————————————————————————————————————————————————————————————————————
-
-    attacking_town_struct = Repo.get!(Town, current_user.town.id)
-    shielded_town_struct = struct(City.Town, city)
-
     amount = if city_form["amount"] != "", do: String.to_integer(city_form["amount"]), else: 1
-    neg_amount = 0 - amount
 
+    {status, city_after_attack, attack_changeset} = CityCombat.attack_shields(city, current_user.town.id, amount)
     # update cities
 
-    if amount < attacking_town_struct.missiles && city.shields > 0 && attacking_town_struct.air_bases > 0 do
-      from(t in Town, where: [id: ^current_user.town.id])
-      |> Repo.update_all(inc: [missiles: neg_amount])
-
-      # from(t in Town, where: [id: ^city.id])
-      # |> Repo.update_all(set: [shields: neg_amount])
-
-      # SENDING LOGS
-
-      updated_attacked_logs = Map.update(city.logs_attacks, attacking_town_struct.title, 1, &(&1 + amount))
-
-      new_shields = if shielded_town_struct.shields - amount < 0, do: 0, else: shielded_town_struct.shields - amount
-
-      shields_update_changeset =
-        shielded_town_struct
-        |> City.Town.changeset(%{
-          logs_attacks: updated_attacked_logs,
-          shields: new_shields
-        })
-
-      # attacking_changeset =
-      Ecto.Multi.new()
-      |> Ecto.Multi.update({:update_attacked_town_logs, city.id}, shields_update_changeset)
-      |> Repo.transaction(timeout: 10_000)
-
-      attack_set =
-        attacking_town_struct
-        |> Town.changeset(%{missiles: amount})
-        |> Ecto.Changeset.validate_number(:missiles,
-          less_than: attacking_town_struct.missiles
-        )
-
-      # validation for form
-      attack_set =
-        if attack_set.errors == [] do
-          Map.put(attack_set, :changes, %{amount: amount})
-        else
-          Map.put(attack_set, :changes, %{amount: amount})
-          |> Map.update!(:errors, fn current -> [amount: elem(hd(current), 1)] end)
-          |> Map.put(:action, :insert)
-        end
-
-      updated_city =
-        city
-        |> Map.update!(:shields, &(&1 - amount))
-        |> Map.update!(:logs_attacks, fn current ->
-          Map.update(current, attacking_town_struct.title, 1, &(&1 + amount))
-        end)
-
-      # this is all ya gotta do to update, baybee
-      # {:noreply, socket }
-
-      {:noreply, assign(socket, :attack_set, attack_set) |> assign(city: updated_city) |> update_current_user()}
+    # this is all ya gotta do to update, baybee
+    # {:noreply, socket }
+    if status == :ok do
+      {:noreply,
+       assign(socket, :attack_set, attack_changeset) |> assign(city: city_after_attack) |> update_current_user()}
     else
       # if not enough missiles/no air base
       {:noreply, socket}
     end
   end
 
+  def handle_event(
+        "commence_attack",
+        # grab "town" map from response and cast it into city_form
+        %{},
+        # pattern match to pull these variables out of the socket
+        %{assigns: %{city: city, current_user: current_user}} = socket
+      ) do
+    CityCombat.initiate_attack(city, current_user.town.id)
+
+    # if not enough missiles/no air base
+    {:noreply, socket |> update_city_by_title() |> update_current_user()}
+  end
+
+  def handle_event(
+        "reduce_attack",
+        # grab "town" map from response and cast it into city_form
+        %{},
+        # pattern match to pull these variables out of the socket
+        %{assigns: %{city: city, current_user: current_user}} = socket
+      ) do
+    CityCombat.reduce_attack(city, current_user.town.id)
+
+    # if not enough missiles/no air base
+    {:noreply, socket |> update_city_by_title() |> update_current_user()}
+  end
+
+  def handle_event("toggle_retaliate", %{}, %{assigns: %{city: city, current_user: current_user}} = socket) do
+    City.update_town_by_id(city.id, %{retaliate: !city.retaliate})
+
+    updated_city = city |> Map.update!(:retaliate, &(!&1))
+
+    # if not enough missiles/no air base
+    {:noreply, socket |> assign(:city, updated_city)}
+  end
+
+  # this is for the changeset for how many missiles to send
   def handle_event(
         "validate_attack",
         %{"town" => city_form},

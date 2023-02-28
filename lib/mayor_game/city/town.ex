@@ -18,13 +18,29 @@ defmodule MayorGame.City.Town do
 
   use Ecto.Schema
   import Ecto.Changeset
-  alias MayorGame.City.{Citizens, Buildable}
+  alias MayorGame.City.{Buildable, OngoingAttacks, Town}
   use Accessible
 
   @timestamps_opts [type: :utc_datetime]
 
+  logs_types = [
+    :logs_edu,
+    :logs_received,
+    :logs_sent,
+    :logs_births,
+    :logs_deaths_attacks,
+    :logs_deaths_housing,
+    :logs_deaths_age,
+    :logs_deaths_pollution,
+    :logs_attacks,
+    :logs_immigration,
+    :logs_emigration_jobs,
+    :logs_emigration_taxes,
+    :logs_emigration_housing
+  ]
+
   # don't print these on inspect
-  @derive {Inspect, except: [:citizens, :citizens_blob]}
+  @derive {Inspect, except: [:citizens_blob, :priorities] ++ Buildable.buildables_list() ++ logs_types}
 
   @typedoc """
       Type for %Town{} that's callable with MayorGame.City.Buildable.t()
@@ -40,7 +56,7 @@ defmodule MayorGame.City.Town do
             climate: String.t(),
             tax_rates: map,
             user: %MayorGame.Auth.User{},
-            citizens: list(Citizens.t()),
+            # citizens: list(Citizens.t()),
             pollution: integer,
             treasury: integer,
             citizen_count: integer,
@@ -48,6 +64,8 @@ defmodule MayorGame.City.Town do
             patron: integer,
             contributor: boolean,
             priorities: map,
+            # combat
+            retaliate: boolean,
             # logs ——————————————————————————————
             logs_emigration_housing: map,
             logs_emigration_taxes: map,
@@ -135,6 +153,7 @@ defmodule MayorGame.City.Town do
 
     field(:patron, :integer)
     field(:contributor, :boolean)
+    field(:retaliate, :boolean)
     field :citizens_blob, {:array, :map}, null: false, default: []
     field :priorities, :map, null: false, default: Buildable.buildables_default_priorities()
 
@@ -159,10 +178,22 @@ defmodule MayorGame.City.Town do
 
     # outline relationship between city and citizens
     # this has to be passed as a list []
-    has_many(:citizens, Citizens)
+    #  TODO remove this
+    # has_many(:citizens, Citizens)
+
+    # many_to_many :ongoing_attacks, Town, join_through: OngoingAttacks, join_keys: [attacking_id: :id, attacked_id: :id]
+
+    # many_to_many :reverse_ongoing_attacks, Town,
+    #   join_through: OngoingAttacks,
+    #   join_keys: [attacked_id: :id, attacking_id: :id]
+
+    has_many :attacks_sent, OngoingAttacks, foreign_key: :attacking_id
+    has_many :attacks_recieved, OngoingAttacks, foreign_key: :attacked_id
+    has_many :attacking, through: [:attacks_sent, :attacked]
+    has_many :attacked, through: [:attacks_recieved, :attacking]
 
     # buildable schema
-    for buildable <- MayorGame.City.Buildable.buildables_list() do
+    for buildable <- Buildable.buildables_list() do
       field(buildable, :integer)
     end
 
@@ -226,7 +257,8 @@ defmodule MayorGame.City.Town do
         :logs_births,
         :logs_sent,
         :logs_received,
-        :priorities
+        :priorities,
+        :retaliate
       ] ++ Buildable.buildables_list()
     )
     |> validate_required([:title, :region, :climate, :user_id])
