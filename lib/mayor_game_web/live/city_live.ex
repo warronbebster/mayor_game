@@ -319,7 +319,8 @@ defmodule MayorGameWeb.CityLive do
 
     initial_purchase_price = get_in(Buildable.buildables_flat(), [buildable_to_demolish_atom, :price])
 
-    buildable_count = length(city[buildable_to_demolish_atom])
+    fetched_value = Repo.one(from city in Town, where: city.id == ^city.id, select: ^[:id, buildable_to_demolish_atom])
+    buildable_count = fetched_value[buildable_to_demolish_atom]
 
     purchase_price =
       if buildable_count > 0 do

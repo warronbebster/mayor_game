@@ -1373,6 +1373,10 @@ select {
   align-self: flex-end;
 }
 
+.self-stretch {
+  align-self: stretch;
+}
+
 .overflow-visible {
   overflow: visible;
 }
