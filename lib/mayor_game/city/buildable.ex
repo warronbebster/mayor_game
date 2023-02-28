@@ -4,7 +4,7 @@
 defmodule MayorGame.City.Buildable do
   use Ecto.Schema
   import Ecto.Changeset
-  alias MayorGame.City.{BuildableMetadata, Details}
+  alias MayorGame.City.{BuildableMetadata}
   use Accessible
 
   @timestamps_opts [type: :utc_datetime]
@@ -15,7 +15,6 @@ defmodule MayorGame.City.Buildable do
   @type t :: %__MODULE__{
           __meta__: Ecto.Schema.Metadata.t(),
           id: integer | nil,
-          details: Details.t(),
           inserted_at: DateTime.t() | nil,
           updated_at: DateTime.t() | nil
         }
