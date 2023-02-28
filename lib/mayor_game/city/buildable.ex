@@ -5,6 +5,7 @@ defmodule MayorGame.City.Buildable do
   use Ecto.Schema
   import Ecto.Changeset
   alias MayorGame.City.{BuildableMetadata, Details}
+  alias MayorGame.Utility
   use Accessible
 
   @timestamps_opts [type: :utc_datetime]
@@ -785,9 +786,9 @@ defmodule MayorGame.City.Buildable do
         },
         # fn _rng, _number_of_instances -> drop_amount
         produces: %{
-          education: fn _rng, number_of_buildables ->
-            # simulate X dice rolls with chance 5%
-            round(Statistics.Distributions.Binomial.rand(number_of_buildables, 0.05))
+          education: fn rng, number_of_buildables ->
+            # low-luck calculation at 5% chance, so rng needs only be used once
+            Utility.dice_roll(number_of_buildables, 0.05)
           end
         }
       },
@@ -919,9 +920,9 @@ defmodule MayorGame.City.Buildable do
           pollution: 10,
           sulfur: 1,
           # fn _rng, _number_of_instances -> drop_amount
-          uranium: fn _rng, number_of_buildables ->
-            # simulate X dice rolls with chance 0.1%
-            round(Statistics.Distributions.Binomial.rand(number_of_buildables, 0.001))
+          uranium: fn rng, number_of_buildables ->
+            # low-luck calculation at 0.1% chance, so rng needs only be used once
+            Utility.dice_roll(number_of_buildables, 0.001)
           end
           # gold: 1,
         }
