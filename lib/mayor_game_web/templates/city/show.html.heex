@@ -695,7 +695,7 @@
               />
                 <% end %>
                 <%= if @current_user && !is_nil(@current_user.town) && !@is_user_mayor do %>
-                  <%= if !Enum.empty?(Map.get(@operating_count, building_type)) && @current_user.town.missiles > 0 do %>
+                  <%= if !Enum.empty?(Map.get(@operating_count, building_type)) && @current_user.town.missiles >= building_stats.hp do %>
                     <%= if @city.shields == 0 do %>
                       <div class="relative group">
                         <button
@@ -712,7 +712,7 @@
                           />
                         </button>
                         <div class="tooltip w-32 right-4 -translate-x-full -translate-y-8">
-                          Attack this building (1/<%= @current_user.town.missiles %> missiles left)
+                          Attack this building (<%= building_stats.hp %>/<%= @current_user.town.missiles %> missiles left)
                         </div>
                       </div>
                     <% else %>

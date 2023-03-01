@@ -35,6 +35,8 @@ defmodule MayorGame.CityCombat do
 
     attacking_town_struct = Repo.get!(Town, attacking_town_id)
 
+    building_cost = Buildable.buildables_flat()[building_to_attack_atom].size
+
     attacked_town_struct =
       if Map.has_key?(attacked_city, :__struct__), do: attacked_city, else: struct(City.Town, attacked_city)
 
@@ -47,7 +49,7 @@ defmodule MayorGame.CityCombat do
       })
 
     # if attacked_city.shields <= 0 &&
-    if attacking_town_struct.missiles > 0 &&
+    if attacking_town_struct.missiles >= building_cost &&
          attacking_town_struct.air_bases > 0 && attacked_town_struct[building_to_attack_atom] > 0 do
       attack =
         Town
@@ -57,7 +59,7 @@ defmodule MayorGame.CityCombat do
       case attack do
         {_x, nil} ->
           from(t in Town, where: [id: ^attacking_town_id])
-          |> Repo.update_all(inc: [missiles: -1])
+          |> Repo.update_all(inc: [missiles: -building_cost])
 
           attack_building =
             Ecto.Multi.new()

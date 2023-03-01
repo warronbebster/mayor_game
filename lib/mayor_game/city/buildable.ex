@@ -290,6 +290,7 @@ defmodule MayorGame.City.Buildable do
   def buildables_flat do
     %{
       huts: %BuildableMetadata{
+        size: 1,
         category: :housing,
         level: 0,
         title: :huts,
@@ -304,6 +305,7 @@ defmodule MayorGame.City.Buildable do
       },
       # single family homes ————————————————————————————————————
       single_family_homes: %BuildableMetadata{
+        size: 1,
         category: :housing,
         level: 0,
         title: :single_family_homes,
@@ -319,6 +321,7 @@ defmodule MayorGame.City.Buildable do
       },
       # multi family homes ————————————————————————————————————
       multi_family_homes: %BuildableMetadata{
+        size: 2,
         category: :housing,
         level: 0,
         title: :multi_family_homes,
@@ -334,6 +337,7 @@ defmodule MayorGame.City.Buildable do
       },
       # homeless shelters ————————————————————————————————————
       homeless_shelters: %BuildableMetadata{
+        size: 2,
         category: :housing,
         level: 0,
         title: :homeless_shelters,
@@ -349,6 +353,7 @@ defmodule MayorGame.City.Buildable do
       },
       # apartments ————————————————————————————————————
       apartments: %BuildableMetadata{
+        size: 3,
         category: :housing,
         level: 0,
         title: :apartments,
@@ -363,6 +368,7 @@ defmodule MayorGame.City.Buildable do
       },
       # micro apartments ————————————————————————————————————
       micro_apartments: %BuildableMetadata{
+        size: 2,
         category: :housing,
         level: 0,
         title: :micro_apartments,
@@ -377,6 +383,7 @@ defmodule MayorGame.City.Buildable do
       },
       # high rises ————————————————————————————————————
       high_rises: %BuildableMetadata{
+        size: 5,
         category: :housing,
         level: 0,
         title: :high_rises,
@@ -392,6 +399,7 @@ defmodule MayorGame.City.Buildable do
       },
       # Megablocks ————————————————————————————————————
       megablocks: %BuildableMetadata{
+        size: 10,
         category: :housing,
         level: 0,
         title: :megablocks,
@@ -407,6 +415,7 @@ defmodule MayorGame.City.Buildable do
       },
       # roads ————————————————————————————————————
       roads: %BuildableMetadata{
+        size: 1,
         category: :transit,
         level: 0,
         title: :roads,
@@ -421,6 +430,7 @@ defmodule MayorGame.City.Buildable do
       },
       # highways ————————————————————————————————————
       highways: %BuildableMetadata{
+        size: 2,
         category: :transit,
         level: 0,
         title: :highways,
@@ -440,6 +450,7 @@ defmodule MayorGame.City.Buildable do
       },
       # Airports —————————————————————————————————————
       airports: %BuildableMetadata{
+        size: 3,
         category: :transit,
         level: 0,
         title: :airports,
@@ -457,6 +468,7 @@ defmodule MayorGame.City.Buildable do
       },
       # Subway Lines ————————————————————————————————————
       subway_lines: %BuildableMetadata{
+        size: 10,
         category: :transit,
         level: 0,
         title: :subway_lines,
@@ -472,6 +484,7 @@ defmodule MayorGame.City.Buildable do
       },
       # Bus Lines ————————————————————————————————————
       bus_lines: %BuildableMetadata{
+        size: 1,
         category: :transit,
         level: 0,
         title: :bus_lines,
@@ -488,6 +501,7 @@ defmodule MayorGame.City.Buildable do
       },
       # Bike lanes ————————————————————————————————————
       bike_lanes: %BuildableMetadata{
+        size: 1,
         category: :transit,
         level: 0,
         title: :bike_lanes,
@@ -515,6 +529,7 @@ defmodule MayorGame.City.Buildable do
       },
       # Bikeshare Stations ————————————————————————————————————
       bikeshare_stations: %BuildableMetadata{
+        size: 1,
         category: :transit,
         level: 0,
         title: :bikeshare_stations,
@@ -539,6 +554,7 @@ defmodule MayorGame.City.Buildable do
       },
       # Coal Plants ————————————————————————————————————
       coal_plants: %BuildableMetadata{
+        size: 5,
         category: :energy,
         level: 0,
         title: :coal_plants,
@@ -563,6 +579,7 @@ defmodule MayorGame.City.Buildable do
       },
       # Natural Gas Plants ————————————————————————————————————
       natural_gas_plants: %BuildableMetadata{
+        size: 1,
         category: :energy,
         level: 1,
         title: :natural_gas_plants,
@@ -587,6 +604,7 @@ defmodule MayorGame.City.Buildable do
       },
       # wind turbines ————————————————————————————————————
       wind_turbines: %BuildableMetadata{
+        size: 1,
         category: :energy,
         level: 1,
         title: :wind_turbines,
@@ -616,6 +634,7 @@ defmodule MayorGame.City.Buildable do
       },
       # Solar Plants ————————————————————————————————————
       solar_plants: %BuildableMetadata{
+        size: 1,
         category: :energy,
         level: 2,
         title: :solar_plants,
@@ -647,6 +666,7 @@ defmodule MayorGame.City.Buildable do
       },
       # Nuclear Plants ————————————————————————————————————
       nuclear_plants: %BuildableMetadata{
+        size: 5,
         category: :energy,
         level: 3,
         title: :nuclear_plants,
@@ -662,6 +682,7 @@ defmodule MayorGame.City.Buildable do
       },
       # Dams ————————————————————————————————————
       dams: %BuildableMetadata{
+        size: 4,
         category: :energy,
         level: 2,
         title: :dams,
@@ -690,6 +711,7 @@ defmodule MayorGame.City.Buildable do
       },
       # # Fusion Reactors ————————————————————————————————————
       fusion_reactors: %BuildableMetadata{
+        size: 5,
         category: :energy,
         level: 4,
         title: :fusion_reactors,
@@ -706,6 +728,7 @@ defmodule MayorGame.City.Buildable do
       },
       # Carbon Capture Plants ————————————————————————————————————
       carbon_capture_plants: %BuildableMetadata{
+        size: 5,
         category: :energy,
         level: 5,
         title: :carbon_capture_plants,
@@ -721,6 +744,7 @@ defmodule MayorGame.City.Buildable do
       },
       # PARKS ————————————————————————————————————
       parks: %BuildableMetadata{
+        size: 1,
         category: :civic,
         level: 0,
         title: :parks,
@@ -755,6 +779,7 @@ defmodule MayorGame.City.Buildable do
       },
       # CAMPGROUNDS ————————————————————————————————————
       campgrounds: %BuildableMetadata{
+        size: 1,
         category: :civic,
         level: 0,
         title: :campgrounds,
@@ -789,6 +814,7 @@ defmodule MayorGame.City.Buildable do
       },
       # NATURE PRESERVES ————————————————————————————————————
       nature_preserves: %BuildableMetadata{
+        size: 3,
         category: :civic,
         level: 0,
         title: :nature_preserves,
@@ -824,6 +850,7 @@ defmodule MayorGame.City.Buildable do
       },
       # LIBRARIES ————————————————————————————————————
       libraries: %BuildableMetadata{
+        size: 1,
         category: :civic,
         level: 2,
         title: :libraries,
@@ -841,6 +868,7 @@ defmodule MayorGame.City.Buildable do
       },
       # SCHOOLS ————————————————————————————————————
       schools: %BuildableMetadata{
+        size: 2,
         category: :education,
         level: 0,
         title: :schools,
@@ -859,6 +887,7 @@ defmodule MayorGame.City.Buildable do
       },
       # MIDDLE SCHOOLS ————————————————————————————————————
       middle_schools: %BuildableMetadata{
+        size: 3,
         category: :education,
         level: 1,
         title: :middle_schools,
@@ -877,6 +906,7 @@ defmodule MayorGame.City.Buildable do
       },
       # HIGH SCHOOLS ————————————————————————————————————
       high_schools: %BuildableMetadata{
+        size: 3,
         category: :education,
         level: 2,
         title: :high_schools,
@@ -895,6 +925,7 @@ defmodule MayorGame.City.Buildable do
       },
       # UNIVERSITIES ————————————————————————————————————
       universities: %BuildableMetadata{
+        size: 4,
         category: :education,
         level: 3,
         title: :universities,
@@ -913,6 +944,7 @@ defmodule MayorGame.City.Buildable do
       },
       # RESEARCH LABS ————————————————————————————————————
       research_labs: %BuildableMetadata{
+        size: 2,
         category: :education,
         level: 4,
         title: :research_labs,
@@ -931,6 +963,7 @@ defmodule MayorGame.City.Buildable do
       },
       # RETAIL SHOPS ————————————————————————————————————
       retail_shops: %BuildableMetadata{
+        size: 1,
         category: :work,
         level: 5,
         title: :retail_shops,
@@ -944,6 +977,7 @@ defmodule MayorGame.City.Buildable do
       },
       # FACTORIES ————————————————————————————————————
       factories: %BuildableMetadata{
+        size: 7,
         category: :work,
         level: 0,
         title: :factories,
@@ -962,6 +996,7 @@ defmodule MayorGame.City.Buildable do
       },
       # MINES ————————————————————————————————————
       mines: %BuildableMetadata{
+        size: 5,
         category: :work,
         level: 0,
         title: :mines,
@@ -982,6 +1017,7 @@ defmodule MayorGame.City.Buildable do
       },
       # URANIUM MINES ————————————————————————————————————
       uranium_mines: %BuildableMetadata{
+        size: 3,
         category: :work,
         level: 4,
         title: :uranium_mines,
@@ -1002,6 +1038,7 @@ defmodule MayorGame.City.Buildable do
       },
       # OFFICE BUILDINGS ————————————————————————————————————
       office_buildings: %BuildableMetadata{
+        size: 3,
         category: :work,
         level: 1,
         title: :office_buildings,
@@ -1015,6 +1052,7 @@ defmodule MayorGame.City.Buildable do
       },
       # DISTRIBUTION CENTERS ————————————————————————————————
       distribution_centers: %BuildableMetadata{
+        size: 8,
         category: :work,
         level: 0,
         title: :distribution_centers,
@@ -1033,6 +1071,7 @@ defmodule MayorGame.City.Buildable do
       },
       # THEATRES ————————————————————————————————————
       theatres: %BuildableMetadata{
+        size: 2,
         category: :entertainment,
         level: 0,
         title: :theatres,
@@ -1049,6 +1088,7 @@ defmodule MayorGame.City.Buildable do
       },
       # ARENAS ————————————————————————————————————
       arenas: %BuildableMetadata{
+        size: 5,
         category: :entertainment,
         level: 0,
         title: :arenas,
@@ -1065,6 +1105,7 @@ defmodule MayorGame.City.Buildable do
       },
       # ZOOS ————————————————————————————————————
       zoos: %BuildableMetadata{
+        size: 3,
         category: :entertainment,
         level: 0,
         title: :zoos,
@@ -1099,6 +1140,7 @@ defmodule MayorGame.City.Buildable do
       },
       # AQUARIUMS ————————————————————————————————————
       aquariums: %BuildableMetadata{
+        size: 3,
         category: :entertainment,
         level: 0,
         title: :aquariums,
@@ -1135,6 +1177,7 @@ defmodule MayorGame.City.Buildable do
       },
       # HOSPITALS ————————————————————————————————————
       hospitals: %BuildableMetadata{
+        size: 6,
         category: :health,
         level: 2,
         title: :hospitals,
@@ -1151,6 +1194,7 @@ defmodule MayorGame.City.Buildable do
       },
       # DOCTOR OFFICES ————————————————————————————————————
       doctor_offices: %BuildableMetadata{
+        size: 3,
         category: :health,
         level: 4,
         title: :doctor_offices,
@@ -1167,6 +1211,7 @@ defmodule MayorGame.City.Buildable do
       },
       # AIR BASES ————————————————————————————————————
       air_bases: %BuildableMetadata{
+        size: 2,
         category: :combat,
         level: 5,
         title: :air_bases,
@@ -1187,6 +1232,7 @@ defmodule MayorGame.City.Buildable do
       },
       # DEFENSE BASES ————————————————————————————————————
       defense_bases: %BuildableMetadata{
+        size: 1,
         category: :combat,
         level: 2,
         title: :defense_bases,
@@ -1204,6 +1250,7 @@ defmodule MayorGame.City.Buildable do
       },
       # MISSILE DEFENSE ARRAY ————————————————————————————————————
       missile_defense_arrays: %BuildableMetadata{
+        size: 1,
         category: :combat,
         level: 2,
         title: :missile_defense_arrays,
