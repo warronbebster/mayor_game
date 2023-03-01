@@ -366,7 +366,7 @@ defmodule MayorGame.CityHelpers do
     # ________________________________________________________________________
     # Iterate through citizens
     # ________________________________________________________________________
-    pollution_reached = world.pollution > pollution_ceiling
+    pollution_reached = world.pollution > pollution_ceiling || results.pollution > results.citizen_count * 5
 
     # I don't think this needs to be a reduce. this could me a map then flatten
 

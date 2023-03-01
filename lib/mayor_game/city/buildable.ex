@@ -1217,7 +1217,6 @@ defmodule MayorGame.City.Buildable do
           workers: %{count: 20, level: 5}
         },
         produces: %{
-          shields: 5,
           shields_capacity: 200
         }
       }
