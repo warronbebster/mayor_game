@@ -1209,7 +1209,7 @@ defmodule MayorGame.City.Buildable do
         title: :missile_defense_arrays,
         price: 20_000_000,
         requires: %{
-          money: 50000,
+          money: 5000,
           steel: 100,
           sulfur: 20,
           energy: 10000,

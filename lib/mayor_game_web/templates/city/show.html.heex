@@ -488,8 +488,11 @@
 
         
         <%= for ongoing_attack <- @city.attacks_recieved do %>
-          <div class="pb-4 flex flex-row items-center gap-2">
-            <%= ongoing_attack.attacking.title %> is attacking with <%= ongoing_attack.attack_count %> missiles/day
+          <div class="flex flex-row items-center gap-2">
+          <span class="underline">
+            <%= link(ongoing_attack.attacking.title,
+            to: Routes.city_path(@socket, MayorGameWeb.CityLive, ongoing_attack.attacking.title)
+          ) %></span> is attacking with <%= ongoing_attack.attack_count %> missiles/day
 
             <%= if ongoing_attack.attacking_id == @current_user.town.id do %>
               <button
