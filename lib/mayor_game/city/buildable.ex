@@ -87,11 +87,17 @@ defmodule MayorGame.City.Buildable do
         universities: buildables_flat().universities,
         research_labs: buildables_flat().research_labs
       },
+      resources: %{
+        mines: buildables_flat().mines,
+        uranium_mines: buildables_flat().uranium_mines,
+        lumber_yards: buildables_flat().lumber_yards,
+        quarries: buildables_flat().quarries,
+        salt_farms: buildables_flat().salt_farms,
+        lithium_mines: buildables_flat().lithium_mines
+      },
       work: %{
         retail_shops: buildables_flat().retail_shops,
         factories: buildables_flat().factories,
-        mines: buildables_flat().mines,
-        uranium_mines: buildables_flat().uranium_mines,
         office_buildings: buildables_flat().office_buildings,
         distribution_centers: buildables_flat().distribution_centers
       },
@@ -100,6 +106,10 @@ defmodule MayorGame.City.Buildable do
         arenas: buildables_flat().arenas,
         zoos: buildables_flat().zoos,
         aquariums: buildables_flat().aquariums
+      },
+      travel: %{
+        resorts: buildables_flat().resorts,
+        ski_resorts: buildables_flat().ski_resorts
       },
       health: %{
         hospitals: buildables_flat().hospitals,
@@ -202,6 +212,7 @@ defmodule MayorGame.City.Buildable do
       retail_shops: 9,
       factories: 9,
       mines: 9,
+      lithium_mines: 9,
       uranium_mines: 9,
       office_buildings: 9,
       distribution_centers: 9,
@@ -261,11 +272,17 @@ defmodule MayorGame.City.Buildable do
         nature_preserves: buildables_flat().nature_preserves,
         libraries: buildables_flat().libraries
       ],
+      resources: [
+        lumber_yards: buildables_flat().lumber_yards,
+        mines: buildables_flat().mines,
+        uranium_mines: buildables_flat().uranium_mines,
+        salt_farms: buildables_flat().salt_farms,
+        lithium_mines: buildables_flat().lithium_mines,
+        quarries: buildables_flat().quarries
+      ],
       work: [
         retail_shops: buildables_flat().retail_shops,
         factories: buildables_flat().factories,
-        mines: buildables_flat().mines,
-        uranium_mines: buildables_flat().uranium_mines,
         office_buildings: buildables_flat().office_buildings,
         distribution_centers: buildables_flat().distribution_centers
       ],
@@ -274,6 +291,10 @@ defmodule MayorGame.City.Buildable do
         arenas: buildables_flat().arenas,
         zoos: buildables_flat().zoos,
         aquariums: buildables_flat().aquariums
+      ],
+      travel: [
+        resorts: buildables_flat().resorts,
+        ski_resorts: buildables_flat().ski_resorts
       ],
       health: [
         hospitals: buildables_flat().hospitals,
@@ -286,6 +307,15 @@ defmodule MayorGame.City.Buildable do
       ]
     ]
   end
+
+  # add :fisheries, :integer, default: 0
+  # add :resorts, :integer, default: 0
+  # add :ski_resorts, :integer, default: 0
+  # add :lithium_mines, :integer, default: 0
+  # add :farms, :integer, default: 0
+  # add :salt_farms, :integer, default: 0
+  # add :quarries, :integer, default: 0
+  # add :reservoirs, :integer, default: 0
 
   def buildables_flat do
     %{
@@ -831,7 +861,7 @@ defmodule MayorGame.City.Buildable do
             fun: %{
               ocean: 1.5,
               mountain: 0.8,
-              desert: 1.1,
+              desert: 0.5,
               forest: 1.5,
               lake: 1.3
             }
@@ -961,6 +991,143 @@ defmodule MayorGame.City.Buildable do
           education: %{5 => 10}
         }
       },
+      # Resources ——————————————————————————————————————
+      # MINES ————————————————————————————————————
+      mines: %BuildableMetadata{
+        size: 5,
+        category: :resources,
+        level: 0,
+        title: :mines,
+        price: 5000,
+        requires: %{
+          money: 250,
+          energy: 1900,
+          area: 25,
+          workers: %{count: 30, level: 0}
+        },
+        produces: %{
+          health: -5,
+          pollution: 10,
+          sulfur: 1,
+          uranium: fn result -> if result, do: 1, else: 0 end
+          # gold: 1,
+        }
+      },
+      # LUMBER YARDS ————————————————————————————————————
+      lumber_yards: %BuildableMetadata{
+        regions: [:mountain, :forest],
+        size: 5,
+        category: :resources,
+        level: 0,
+        title: :lumber_yards,
+        price: 100_000,
+        requires: %{
+          money: 250,
+          energy: 1900,
+          area: 25,
+          workers: %{count: 10, level: 1}
+        },
+        produces: %{
+          wood: 5
+        }
+      },
+      # FISHERIES ————————————————————————————————————
+      fisheries: %BuildableMetadata{
+        regions: [:lake, :ocean],
+        size: 5,
+        category: :resources,
+        level: 0,
+        title: :fisheries,
+        price: 50_000,
+        requires: %{
+          money: 250,
+          energy: 100,
+          area: 5,
+          workers: %{count: 10, level: 2}
+        },
+        produces: %{
+          fish: 5,
+          oil: 1
+        }
+      },
+      # URANIUM MINES ————————————————————————————————————
+      uranium_mines: %BuildableMetadata{
+        size: 3,
+        category: :resources,
+        level: 4,
+        title: :uranium_mines,
+        price: 20_000_000,
+        requires: %{
+          money: 1000,
+          energy: 5000,
+          area: 100,
+          workers: %{count: 20, level: 4}
+        },
+        produces: %{
+          health: -50,
+          pollution: 50,
+          uranium: 1
+          # gold: 1,
+        }
+      },
+      # LITHIUM MINES ————————————————————————————————————
+      lithium_mines: %BuildableMetadata{
+        regions: [:desert],
+        size: 3,
+        category: :resources,
+        level: 4,
+        title: :lithium_mines,
+        price: 30_000_000,
+        requires: %{
+          money: 1000,
+          energy: 5000,
+          area: 100,
+          workers: %{count: 20, level: 4}
+        },
+        produces: %{
+          health: -50,
+          pollution: 50,
+          uranium: 1
+          # gold: 1,
+        }
+      },
+      # SALT FARMS ————————————————————————————————————
+      salt_farms: %BuildableMetadata{
+        regions: [:ocean],
+        size: 3,
+        category: :resources,
+        level: 4,
+        title: :salt_farms,
+        price: 2_000_000,
+        requires: %{
+          money: 1000,
+          energy: 5000,
+          area: 100,
+          workers: %{count: 20, level: 4}
+        },
+        produces: %{
+          salt: 1
+        }
+      },
+      # SALT FARMS ————————————————————————————————————
+      quarries: %BuildableMetadata{
+        regions: [:ocean],
+        size: 3,
+        category: :resources,
+        level: 4,
+        title: :salt_farms,
+        price: 2_000_000,
+        requires: %{
+          money: 1000,
+          energy: 5000,
+          area: 100,
+          workers: %{count: 20, level: 4}
+        },
+        produces: %{
+          salt: 1
+        }
+      },
+      # BUSINESS —
       # RETAIL SHOPS ————————————————————————————————————
       retail_shops: %BuildableMetadata{
         size: 1,
@@ -992,48 +1159,6 @@ defmodule MayorGame.City.Buildable do
           health: -3,
           pollution: 1,
           steel: 10
-        }
-      },
-      # MINES ————————————————————————————————————
-      mines: %BuildableMetadata{
-        size: 5,
-        category: :work,
-        level: 0,
-        title: :mines,
-        price: 5000,
-        requires: %{
-          money: 250,
-          energy: 1900,
-          area: 25,
-          workers: %{count: 30, level: 0}
-        },
-        produces: %{
-          health: -5,
-          pollution: 10,
-          sulfur: 1,
-          uranium: fn result -> if result, do: 1, else: 0 end
-          # gold: 1,
-        }
-      },
-      # URANIUM MINES ————————————————————————————————————
-      uranium_mines: %BuildableMetadata{
-        size: 3,
-        category: :work,
-        level: 4,
-        title: :uranium_mines,
-        price: 20_000_000,
-        requires: %{
-          money: 1000,
-          energy: 5000,
-          area: 100,
-          workers: %{count: 20, level: 4}
-        },
-        produces: %{
-          health: -50,
-          pollution: 50,
-          # sulfur: 1
-          uranium: 1
-          # gold: 1,
         }
       },
       # OFFICE BUILDINGS ————————————————————————————————————
@@ -1069,6 +1194,8 @@ defmodule MayorGame.City.Buildable do
           pollution: 1
         }
       },
+      # Entertainment ——————————————————————————————————————————————
+      # ————————————————————————————————————————————————————————————
       # THEATRES ————————————————————————————————————
       theatres: %BuildableMetadata{
         size: 2,
@@ -1175,6 +1302,50 @@ defmodule MayorGame.City.Buildable do
           pollution: -1
         }
       },
+      # Travel ——————————————————————————————————————————————
+      # ————————————————————————————————————————————————————————————
+      # SKI_RESORTS ————————————————————————————————————
+      ski_resorts: %BuildableMetadata{
+        regions: [:mountain],
+        size: 3,
+        category: :travel,
+        level: 2,
+        title: :ski_resorts,
+        price: 200_000,
+        requires: %{
+          money: 5000,
+          energy: 400,
+          area: 50,
+          workers: %{count: 15, level: 2}
+        },
+        produces: %{
+          health: 10,
+          fun: 50
+        }
+      },
+      # ————————————————————————————————————————————————————————————
+      # RESORTS ————————————————————————————————————
+      resorts: %BuildableMetadata{
+        regions: [:beach],
+        size: 3,
+        category: :travel,
+        level: 2,
+        title: :resorts,
+        price: 100_000,
+        requires: %{
+          money: 500,
+          energy: 200,
+          area: 30,
+          workers: %{count: 5, level: 2}
+        },
+        produces: %{
+          health: 10,
+          fun: 50
+        }
+      },
+
+      # Health ——————————————————————————————————————————————
+      # ————————————————————————————————————————————————————————————
       # HOSPITALS ————————————————————————————————————
       hospitals: %BuildableMetadata{
         size: 6,

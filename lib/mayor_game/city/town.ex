@@ -177,15 +177,6 @@ defmodule MayorGame.City.Town do
     field :logs_births, :integer, default: 0
 
     # outline relationship between city and citizens
-    # this has to be passed as a list []
-    #  TODO remove this
-    # has_many(:citizens, Citizens)
-
-    # many_to_many :ongoing_attacks, Town, join_through: OngoingAttacks, join_keys: [attacking_id: :id, attacked_id: :id]
-
-    # many_to_many :reverse_ongoing_attacks, Town,
-    #   join_through: OngoingAttacks,
-    #   join_keys: [attacked_id: :id, attacking_id: :id]
 
     has_many :attacks_sent, OngoingAttacks, foreign_key: :attacking_id
     has_many :attacks_recieved, OngoingAttacks, foreign_key: :attacked_id
