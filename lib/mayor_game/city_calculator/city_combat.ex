@@ -22,8 +22,7 @@ defmodule MayorGame.CityCombat do
           building_to_attack =
             Enum.find(Buildable.buildables_attack_order(), fn building -> attacked_city[building] > 0 end)
 
-          IO.inspect(building_to_attack)
-          IO.inspect(attack_building(attacked_city, attacking_town_id, building_to_attack))
+          if !is_nil(building_to_attack), do: attack_building(attacked_city, attacking_town_id, building_to_attack)
 
           0
         end

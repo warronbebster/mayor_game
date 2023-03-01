@@ -1373,10 +1373,6 @@ select {
   align-self: flex-end;
 }
 
-.self-stretch {
-  align-self: stretch;
-}
-
 .overflow-visible {
   overflow: visible;
 }
@@ -1510,10 +1506,6 @@ select {
 
 .pt-4 {
   padding-top: 1rem;
-}
-
-.pb-4 {
-  padding-bottom: 1rem;
 }
 
 .pl-2 {
