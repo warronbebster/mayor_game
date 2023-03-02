@@ -174,19 +174,23 @@ defmodule MayorGame.CityHelpers do
       |> Map.update!(:resource_stats, fn v ->
         v
         |> Enum.map(fn {atom, r} ->
-          if is_nil(r.droplist) || length(r.droplist) == 0 || !r.droplist do
+          if is_nil(r.droplist) || length(r.droplist) == 0 do
             {atom, r}
           else
             drops =
               Enum.reduce(r.droplist, 0, fn {qty, func}, acc ->
-                acc +
-                  cond do
-                    # drops (fn _rng, _number_of_instances -> drop_amount)
-                    is_function(func, 2) -> IO.inspect(func.(:rand.uniform(), qty))
-                    # drops (fn _rng, _number_of_instances, _city -> drop_amount)
-                    is_function(func, 3) -> IO.inspect(func.(:rand.uniform(), qty, town))
-                    true -> 0
-                  end
+                if r.droplist do
+                  acc +
+                    cond do
+                      # drops (fn _rng, _number_of_instances -> drop_amount)
+                      is_function(func, 2) -> IO.inspect(func.(:rand.uniform(), qty))
+                      # drops (fn _rng, _number_of_instances, _city -> drop_amount)
+                      is_function(func, 3) -> IO.inspect(func.(:rand.uniform(), qty, town))
+                      true -> 0
+                    end
+                else
+                  acc
+                end
               end)
 
             IO.inspect(drops)
