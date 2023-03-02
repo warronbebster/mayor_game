@@ -520,6 +520,17 @@ defmodule MayorGameWeb.CityLive do
         false
       )
 
+    # town_stats =
+    #   MayorGame.CityHelpers.calculate_city_stats(
+    #     city,
+    #     world,
+    #     1000000000,
+    #     :fall,
+    #     buildables_map,
+    #     false,
+    #     false
+    #   )
+
     # ok, here the price is updated per each CombinedBuildable
 
     # have to have this separate from the actual city because the city might not have some buildables, but they're still purchasable

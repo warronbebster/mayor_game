@@ -29,6 +29,8 @@ defmodule MayorGame.CityHelpers do
 
     town_stats = TownStatistics.fromTown(town_preloaded, world)
 
+    if town.title == "hi22", do: IO.inspect(town_stats.resource_stats, label: "wat")
+
     priorities_atoms =
       for {key, val} <- town_stats.priorities,
           into: %{},
@@ -49,8 +51,18 @@ defmodule MayorGame.CityHelpers do
               {:halt, [], acc},
               fn buildable, {loop_decision, pending_req, town_stat_inner} ->
                 # funky, you can do this with tuples
+
                 {sub_produces, sub_consumes, sub_town_stats} =
                   fill_workers(town, town_stat_inner, buildables_map.buildables_flat[buildable])
+
+                # if town.title == "hi22" && buildable == :high_rises,
+                #   do: IO.inspect(town_stat_inner.resource_stats)
+
+                if town.title == "hi22" && buildable == :high_rises,
+                  do: IO.inspect(sub_consumes, label: "high rises")
+
+                if town.title == "hi22" && buildable == :apartments,
+                  do: IO.inspect(sub_consumes, label: "apartments")
 
                 if is_nil(sub_produces) || length(sub_produces) == 0 do
                   {:cont, {loop_decision, pending_req, sub_town_stats}}
@@ -641,10 +653,13 @@ defmodule MayorGame.CityHelpers do
   def fill_workers(town, town_stats, buildable) do
     buildable_count =
       if Map.has_key?(town_stats.buildable_stats, buildable.title) do
+        if town.title == "hi22", do: IO.inspect("found in buildable_stats")
         Map.get(town, buildable.title) - town_stats.buildable_stats[buildable.title].operational
       else
-        Map.get(town, buildable.title)
+        town[buildable.title]
       end
+
+    # if town.title == "hi22", do: IO.inspect(buildable_count, label: to_string(buildable.title))
 
     if buildable_count < 1 do
       {
@@ -654,6 +669,7 @@ defmodule MayorGame.CityHelpers do
       }
     else
       if !Map.has_key?(buildable, :requires) || is_nil(buildable.requires) do
+        # if it doesn't require anything
         new_buildable = %BuildableStatistics{
           title: buildable.title,
           number: buildable_count,
@@ -700,6 +716,12 @@ defmodule MayorGame.CityHelpers do
         # }
         pre_employment_operation_stats =
           check_maximum_and_reqs(town_stats.resource_stats, reqs_minus_workers, buildable_count)
+
+        if town.title == "hi22" && buildable.title == :apartments,
+          do: IO.inspect(town_stats.resource_stats)
+
+        if town.title == "hi22" && buildable.title == :apartments,
+          do: IO.inspect(pre_employment_operation_stats)
 
         # %{
         #  fulfilled_count: the number that can fulfill reqs, up to count provided to the function,
