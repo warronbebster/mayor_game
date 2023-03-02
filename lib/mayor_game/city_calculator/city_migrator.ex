@@ -59,7 +59,7 @@ defmodule MayorGame.CityMigrator do
     {:ok, datetime_pre} = DateTime.now("Etc/UTC")
 
     # filter for
-    cities = City.list_cities_preload() |> Enum.filter(fn city -> length(city.citizens_blob) >= 100 end)
+    cities = City.list_cities_preload() |> Enum.filter(fn city -> length(city.citizens_blob) >= 20 end)
 
     pollution_ceiling = 2_000_000_000 * Random.gammavariate(7.5, 1)
 
@@ -70,7 +70,7 @@ defmodule MayorGame.CityMigrator do
 
       cities_list = Enum.shuffle(cities)
 
-      time_to_learn = if in_dev, do: rem(migration_tick, 10) == 0, else: rem(migration_tick, 100) == 0
+      time_to_learn = if in_dev, do: rem(migration_tick, 5) == 0, else: rem(migration_tick, 100) == 0
       if time_to_learn, do: IO.inspect("learning time")
 
       leftovers =

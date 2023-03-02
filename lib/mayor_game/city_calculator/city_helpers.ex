@@ -356,7 +356,8 @@ defmodule MayorGame.CityHelpers do
     {polluted_citizens, unpolluted_citizens} = scrambled_working_citizens |> Enum.split(aggregate_deaths_by_pollution)
 
     # 3. If citizen count is less than housing, Take the difference members from the list. These are <unhoused_citizens>, and they will be entered to the migration pool, so no other processing is done with them.
-    {unhoused_citizens, housed_citizens} = unpolluted_citizens |> Enum.split(max(0, -excess_housing))
+    {unhoused_citizens, housed_citizens} =
+      unpolluted_citizens |> Enum.sort_by(& &1["education"], :asc) |> Enum.split(max(0, -excess_housing))
 
     # 4. Group the rest by education
     housed_citizens_by_level = housed_citizens |> Enum.group_by(& &1["education"])
@@ -467,6 +468,8 @@ defmodule MayorGame.CityHelpers do
         }
       end
 
+    # if town_preloaded.title == "hi22", do: IO.inspect(edu_promotions)
+
     # !!!! migrating_citizens and migrating_by_tax_citizens may include people will simply 'migrate' back to the same city!
     {needs_met_citizens, promoted_citizens_qty} =
       sorted_housed_citizens_by_level
@@ -475,10 +478,13 @@ defmodule MayorGame.CityHelpers do
         # 10. Apply education to <migrating_citizens> + <staying_citizens>
         {citizens_to_promote, other_citizens} =
           if time_to_learn do
+            # if town_preloaded.title == "hi22", do: IO.inspect(edu_promotions[level], label: level)
             needs_met_citizens_in_level |> Enum.split(edu_promotions[level])
           else
             {[], needs_met_citizens_in_level}
           end
+
+        # if town_preloaded.title == "hi22", do: IO.inspect(citizens_to_promote, label: "citizens_to_promote")
 
         promoted_citizens = citizens_to_promote |> Enum.map(fn c -> c |> Map.update!("education", &(&1 + 1)) end)
 
