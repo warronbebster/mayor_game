@@ -448,10 +448,8 @@ defmodule MayorGame.CityHelpers do
       )
 
     # educated citizens have priority in housing
-    unpolluted_citizens_after_education_sorted = unpolluted_citizens_after_education |> Enum.sort_by(& &1["education"], :asc)
-
     # 3. If citizen count is less than housing, Take the difference members from the list. These are <unhoused_citizens>, and they will be entered to the migration pool, so no other processing is done with them.
-    {unhoused_citizens, housed_citizens} = unpolluted_citizens_after_education_sorted |> Enum.split(max(0, -excess_housing))
+    {unhoused_citizens, housed_citizens} = unpolluted_citizens_after_education |> Enum.sort_by(& &1["education"], :asc) |> Enum.split(max(0, -excess_housing))
 
     # 4. Group the rest by education
     housed_citizens_by_level = housed_citizens |> Enum.group_by(& &1["education"])
