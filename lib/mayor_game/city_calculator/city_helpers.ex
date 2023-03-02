@@ -179,8 +179,6 @@ defmodule MayorGame.CityHelpers do
           else
             drops =
               Enum.reduce(r.droplist, 0, fn {qty, func}, acc ->
-                IO.inspect(r.title)
-
                 if func do
                   acc +
                     cond do
