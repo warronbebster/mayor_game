@@ -186,13 +186,12 @@ defmodule MayorGame.CityHelpers do
                     cond do
                       # drops (fn _rng, _number_of_instances -> drop_amount)
                       is_function(func, 2) ->
-                        IO.inspect(func, label: to_string(r.title))
                         result = func.(:rand.uniform(), qty)
                         if is_number(result), do: result, else: 0
 
                       # drops (fn _rng, _number_of_instances, _city -> drop_amount)
                       is_function(func, 3) ->
-                        IO.inspect(func.(:rand.uniform(), qty, town), label: "func_3")
+                        func.(:rand.uniform(), qty, town)
 
                       true ->
                         0
