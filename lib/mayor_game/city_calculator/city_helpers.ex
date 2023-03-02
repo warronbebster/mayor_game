@@ -183,9 +183,9 @@ defmodule MayorGame.CityHelpers do
                   acc +
                     cond do
                       # drops (fn _rng, _number_of_instances -> drop_amount)
-                      is_function(func, 2) -> IO.inspect(func.(:rand.uniform(), qty))
+                      is_function(func, 2) -> IO.inspect(func.(:rand.uniform(), qty), label: "func_2")
                       # drops (fn _rng, _number_of_instances, _city -> drop_amount)
-                      is_function(func, 3) -> IO.inspect(func.(:rand.uniform(), qty, town))
+                      is_function(func, 3) -> IO.inspect(func.(:rand.uniform(), qty, town), label: "func_3")
                       true -> 0
                     end
                 else
