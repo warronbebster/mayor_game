@@ -55,9 +55,6 @@ defmodule MayorGame.CityHelpers do
                 {fulfilled_count, sub_produces, sub_consumes, sub_town_stats} =
                   fill_workers(town, town_stat_inner, buildables_map.buildables_flat[buildable])
 
-                # if town.title == "hi22" && buildable == :high_rises,
-                #   do: IO.inspect(town_stat_inner.resource_stats)
-
                 if is_nil(sub_produces) || length(sub_produces) == 0 || fulfilled_count <= 0 do
                   {:cont, {loop_decision, pending_req, sub_town_stats}}
                 else
@@ -449,7 +446,10 @@ defmodule MayorGame.CityHelpers do
 
     # educated citizens have priority in housing
     # 3. If citizen count is less than housing, Take the difference members from the list. These are <unhoused_citizens>, and they will be entered to the migration pool, so no other processing is done with them.
-    {unhoused_citizens, housed_citizens} = unpolluted_citizens_after_education |> Enum.sort_by(& &1["education"], :asc) |> Enum.split(max(0, -excess_housing))
+    {unhoused_citizens, housed_citizens} =
+      unpolluted_citizens_after_education
+      |> Enum.sort_by(& &1["education"], :asc)
+      |> Enum.split(max(0, -excess_housing))
 
     # 4. Group the rest by education
     housed_citizens_by_level = housed_citizens |> Enum.group_by(& &1["education"])
@@ -498,7 +498,7 @@ defmodule MayorGame.CityHelpers do
       sorted_housed_citizens_by_level
       |> Enum.flat_map(fn {_, needs_met_citizens_in_level, _, _} ->
         needs_met_citizens_in_level
-     end)
+      end)
 
     # 8. Scan through the remainder, take members based on their last_moved. Add them to <migrating_citizens>
     {migrating_citizens, staying_citizens} =
@@ -667,8 +667,6 @@ defmodule MayorGame.CityHelpers do
       else
         town[buildable.title]
       end
-
-    # if town.title == "hi22", do: IO.inspect(buildable_count, label: to_string(buildable.title))
 
     if buildable_count < 1 do
       {

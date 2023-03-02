@@ -165,6 +165,7 @@ defmodule MayorGameWeb.CityLive do
         |> Map.merge(%{
           treasury: 5000,
           pollution: 0,
+          uranium: 0,
           steel: 0,
           missiles: 0,
           shields: 0,
@@ -251,8 +252,6 @@ defmodule MayorGameWeb.CityLive do
         Map.update(socket.assigns.construction_count, building_to_buy_atom, 1, fn current -> current + 1 end)
 
       new_construction_cost = socket.assigns.construction_cost + purchase_price
-
-      IO.inspect(new_construction_count[building_to_buy_atom])
 
       new_purchase_price =
         Rules.building_price(initial_purchase_price, buildable_count + new_construction_count[building_to_buy_atom])
@@ -522,17 +521,6 @@ defmodule MayorGameWeb.CityLive do
         socket.assigns.in_dev,
         false
       )
-
-    # town_stats =
-    #   MayorGame.CityHelpers.calculate_city_stats(
-    #     city,
-    #     world,
-    #     1000000000,
-    #     :fall,
-    #     buildables_map,
-    #     false,
-    #     false
-    #   )
 
     # ok, here the price is updated per each CombinedBuildable
 
