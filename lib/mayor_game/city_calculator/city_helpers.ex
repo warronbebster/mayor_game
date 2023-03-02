@@ -174,13 +174,11 @@ defmodule MayorGame.CityHelpers do
       |> Map.update!(:resource_stats, fn v ->
         v
         |> Enum.map(fn {atom, r} ->
-          if is_nil(r.droplist) || length(r.droplist) == 0 do
+          if is_nil(r.droplist) || length(r.droplist) == 0 || !r.droplist do
             {atom, r}
           else
             drops =
               Enum.reduce(r.droplist, 0, fn {qty, func}, acc ->
-                IO.inspect(r.droplist)
-
                 acc +
                   cond do
                     # drops (fn _rng, _number_of_instances -> drop_amount)
