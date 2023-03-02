@@ -144,8 +144,7 @@ defmodule MayorGame.CityCombat do
   Takes the attacked_town as a struct, and the id of the attacking town
   """
   def initiate_attack(%{} = attacked_town, attacking_town_id) do
-    attacked_town_struct =
-      struct(City.Town, attacked_town) |> Repo.preload([:attacks_sent, :attacks_recieved, :attacking, :attacked])
+    # attacked_town_struct = attacked_town |> Repo.preload([:attacks_sent, :attacks_recieved, :attacking, :attacked])
 
     attacking_town = Repo.get_by!(Town, id: attacking_town_id)
 
@@ -158,7 +157,7 @@ defmodule MayorGame.CityCombat do
       # return results
       if is_nil(existing_attack) do
         create_attack =
-          Ecto.build_assoc(attacked_town_struct, :attacks_recieved, %{
+          Ecto.build_assoc(attacked_town, :attacks_recieved, %{
             attack_count: 1,
             attacking_id: attacking_town_id
           })
