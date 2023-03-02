@@ -351,57 +351,7 @@ defmodule MayorGame.CityHelpers do
     # 9. Flatten the remainder; these are <staying_citizens>
     # 10. Apply education to <staying_citizens>
 
-    # 1. Set list to <working_citizens>, scramble (RNG!)
-    scrambled_working_citizens = working_citizens |> Enum.shuffle()
-
-    # 2. Take <aggregate_deaths_by_pollution> members from the list. These are <polluted_citizens>, they will be eliminated so no other processing is done with them
-    {polluted_citizens, unpolluted_citizens} = scrambled_working_citizens |> Enum.split(aggregate_deaths_by_pollution)
-
-    # 3. If citizen count is less than housing, Take the difference members from the list. These are <unhoused_citizens>, and they will be entered to the migration pool, so no other processing is done with them.
-    {unhoused_citizens, housed_citizens} = unpolluted_citizens |> Enum.split(max(0, -excess_housing))
-
-    # 4. Group the rest by education
-    housed_citizens_by_level = housed_citizens |> Enum.group_by(& &1["education"])
-
-    # 5. Take <employed_citizen_count_by_level[education]> members from each group. It does not matter if there are less citizens than employed due to previous steps.
-    # 7. Get the members from Step 5, take members by proportion of <tax_too_high> (calc per edu level). These are <migrating_citizens_due_to_tax>
-    sorted_housed_citizens_by_level =
-      housed_citizens_by_level
-      |> Enum.map(fn {level, list} ->
-        employed_citizen_count_in_level =
-          if is_nil(town_stats.employed_citizen_count_by_level[level]) do
-            0
-          else
-            town_stats.employed_citizen_count_by_level[level]
-          end
-
-        {employed_citizens_in_level, unemployed_citizens_in_level} = list |> Enum.split(employed_citizen_count_in_level)
-
-        {migrating_by_tax_citizens_in_level, needs_met_citizens_in_level} =
-          employed_citizens_in_level
-          |> Enum.split(
-            floor(
-              length(employed_citizens_in_level) *
-                Rules.excessive_tax_chance(level, town_stats.tax_rates[to_string(level)])
-            )
-          )
-
-        {level, needs_met_citizens_in_level, unemployed_citizens_in_level, migrating_by_tax_citizens_in_level}
-      end)
-
-    # 6. Flatten the remainder; these are <unemployed_citizens>, and they will be entered to the migration pool, so no other processing is done with them.
-    unemployed_citizens =
-      sorted_housed_citizens_by_level
-      |> Enum.flat_map(fn {_, _, unemployed_citizens_in_level, _} ->
-        unemployed_citizens_in_level
-      end)
-
-    migrating_by_tax_citizens =
-      sorted_housed_citizens_by_level
-      |> Enum.flat_map(fn {_, _, _, migrating_by_tax_citizens_in_level} ->
-        migrating_by_tax_citizens_in_level
-      end)
-
+    # calculate education tokens
     # education (not education_lvl_1) are distributed randomly
     edu_generic =
       town_stats
@@ -469,23 +419,88 @@ defmodule MayorGame.CityHelpers do
         }
       end
 
-    # !!!! migrating_citizens and migrating_by_tax_citizens may include people will simply 'migrate' back to the same city!
-    {needs_met_citizens, promoted_citizens_qty} =
-      sorted_housed_citizens_by_level
-      |> Enum.flat_map_reduce(%{0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0}, fn {level, needs_met_citizens_in_level, _, _},
-                                                                            acc ->
-        # 10. Apply education to <migrating_citizens> + <staying_citizens>
-        {citizens_to_promote, other_citizens} =
-          if time_to_learn do
-            needs_met_citizens_in_level |> Enum.split(edu_promotions[level])
+    # 1. Set list to <working_citizens>, scramble (RNG!)
+    scrambled_working_citizens = working_citizens |> Enum.shuffle()
+
+    # 2. Take <aggregate_deaths_by_pollution> members from the list. These are <polluted_citizens>, they will be eliminated so no other processing is done with them
+    {polluted_citizens, unpolluted_citizens} = scrambled_working_citizens |> Enum.split(aggregate_deaths_by_pollution)
+
+    unpolluted_citizens_by_level = unpolluted_citizens |> Enum.group_by(& &1["education"])
+
+    # apply education
+    {unpolluted_citizens_after_education, promoted_citizens_qty} =
+      unpolluted_citizens_by_level
+      |> Enum.flat_map_reduce(
+        %{0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0},
+        fn {level, unpolluted_citizens_in_level}, acc ->
+          # 10. Apply education to <migrating_citizens> + <staying_citizens>
+          {citizens_to_promote, other_citizens} =
+            if time_to_learn do
+              unpolluted_citizens_in_level |> Enum.split(edu_promotions[level])
+            else
+              {[], unpolluted_citizens_in_level}
+            end
+
+          promoted_citizens = citizens_to_promote |> Enum.map(fn c -> c |> Map.update!("education", &(&1 + 1)) end)
+
+          {promoted_citizens ++ other_citizens, acc |> Map.put(level + 1, length(promoted_citizens))}
+        end
+      )
+
+    # educated citizens have priority in housing
+    unpolluted_citizens_after_education_sorted = unpolluted_citizens_after_education |> Enum.sort_by(& &1["education"], :asc)
+
+    # 3. If citizen count is less than housing, Take the difference members from the list. These are <unhoused_citizens>, and they will be entered to the migration pool, so no other processing is done with them.
+    {unhoused_citizens, housed_citizens} = unpolluted_citizens_after_education_sorted |> Enum.split(max(0, -excess_housing))
+
+    # 4. Group the rest by education
+    housed_citizens_by_level = housed_citizens |> Enum.group_by(& &1["education"])
+
+    # 5. Take <employed_citizen_count_by_level[education]> members from each group. It does not matter if there are less citizens than employed due to previous steps.
+    # 7. Get the members from Step 5, take members by proportion of <tax_too_high> (calc per edu level). These are <migrating_citizens_due_to_tax>
+    sorted_housed_citizens_by_level =
+      housed_citizens_by_level
+      |> Enum.map(fn {level, list} ->
+        employed_citizen_count_in_level =
+          if is_nil(town_stats.employed_citizen_count_by_level[level]) do
+            0
           else
-            {[], needs_met_citizens_in_level}
+            town_stats.employed_citizen_count_by_level[level]
           end
 
-        promoted_citizens = citizens_to_promote |> Enum.map(fn c -> c |> Map.update!("education", &(&1 + 1)) end)
+        {employed_citizens_in_level, unemployed_citizens_in_level} = list |> Enum.split(employed_citizen_count_in_level)
 
-        {promoted_citizens ++ other_citizens, acc |> Map.put(level + 1, length(promoted_citizens))}
+        {migrating_by_tax_citizens_in_level, needs_met_citizens_in_level} =
+          employed_citizens_in_level
+          |> Enum.split(
+            floor(
+              length(employed_citizens_in_level) *
+                Rules.excessive_tax_chance(level, town_stats.tax_rates[to_string(level)])
+            )
+          )
+
+        {level, needs_met_citizens_in_level, unemployed_citizens_in_level, migrating_by_tax_citizens_in_level}
       end)
+
+    # 6. Flatten the remainder; these are <unemployed_citizens>, and they will be entered to the migration pool, so no other processing is done with them.
+    unemployed_citizens =
+      sorted_housed_citizens_by_level
+      |> Enum.flat_map(fn {_, _, unemployed_citizens_in_level, _} ->
+        unemployed_citizens_in_level
+      end)
+
+    migrating_by_tax_citizens =
+      sorted_housed_citizens_by_level
+      |> Enum.flat_map(fn {_, _, _, migrating_by_tax_citizens_in_level} ->
+        migrating_by_tax_citizens_in_level
+      end)
+
+    # !!!! migrating_citizens and migrating_by_tax_citizens may include people will simply 'migrate' back to the same city!
+    needs_met_citizens =
+      sorted_housed_citizens_by_level
+      |> Enum.flat_map(fn {_, needs_met_citizens_in_level, _, _} ->
+        needs_met_citizens_in_level
+     end)
 
     # 8. Scan through the remainder, take members based on their last_moved. Add them to <migrating_citizens>
     {migrating_citizens, staying_citizens} =
