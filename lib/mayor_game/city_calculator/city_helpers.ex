@@ -36,11 +36,13 @@ defmodule MayorGame.CityHelpers do
 
     sorted_buildables = buildables_map.buildables_list |> Enum.sort_by(&priorities_atoms[&1])
 
+    buildable_type_count_squared = length(sorted_buildables) * length(sorted_buildables)
+
     # %TownStatistics{}
     results_before_overrides =
       Enum.reduce_while(
         # the worst case scenario would be a square of this number, but you'd have to craft the malicious city on purpose.
-        1..length(sorted_buildables),
+        1..buildable_type_count_squared,
         town_stats,
         fn _iter, acc ->
           {cont_or_halt, _, updated_acc} =
@@ -50,13 +52,13 @@ defmodule MayorGame.CityHelpers do
               fn buildable, {loop_decision, pending_req, town_stat_inner} ->
                 # funky, you can do this with tuples
 
-                {sub_produces, sub_consumes, sub_town_stats} =
+                {fulfilled_count, sub_produces, sub_consumes, sub_town_stats} =
                   fill_workers(town, town_stat_inner, buildables_map.buildables_flat[buildable])
 
                 # if town.title == "hi22" && buildable == :high_rises,
                 #   do: IO.inspect(town_stat_inner.resource_stats)
 
-                if is_nil(sub_produces) || length(sub_produces) == 0 do
+                if is_nil(sub_produces) || length(sub_produces) == 0 || fulfilled_count <= 0 do
                   {:cont, {loop_decision, pending_req, sub_town_stats}}
                 else
                   # intersection of sub_produces and pending_req
@@ -349,58 +351,7 @@ defmodule MayorGame.CityHelpers do
     # 9. Flatten the remainder; these are <staying_citizens>
     # 10. Apply education to <staying_citizens>
 
-    # 1. Set list to <working_citizens>, scramble (RNG!)
-    scrambled_working_citizens = working_citizens |> Enum.shuffle()
-
-    # 2. Take <aggregate_deaths_by_pollution> members from the list. These are <polluted_citizens>, they will be eliminated so no other processing is done with them
-    {polluted_citizens, unpolluted_citizens} = scrambled_working_citizens |> Enum.split(aggregate_deaths_by_pollution)
-
-    # 3. If citizen count is less than housing, Take the difference members from the list. These are <unhoused_citizens>, and they will be entered to the migration pool, so no other processing is done with them.
-    {unhoused_citizens, housed_citizens} =
-      unpolluted_citizens |> Enum.sort_by(& &1["education"], :asc) |> Enum.split(max(0, -excess_housing))
-
-    # 4. Group the rest by education
-    housed_citizens_by_level = housed_citizens |> Enum.group_by(& &1["education"])
-
-    # 5. Take <employed_citizen_count_by_level[education]> members from each group. It does not matter if there are less citizens than employed due to previous steps.
-    # 7. Get the members from Step 5, take members by proportion of <tax_too_high> (calc per edu level). These are <migrating_citizens_due_to_tax>
-    sorted_housed_citizens_by_level =
-      housed_citizens_by_level
-      |> Enum.map(fn {level, list} ->
-        employed_citizen_count_in_level =
-          if is_nil(town_stats.employed_citizen_count_by_level[level]) do
-            0
-          else
-            town_stats.employed_citizen_count_by_level[level]
-          end
-
-        {employed_citizens_in_level, unemployed_citizens_in_level} = list |> Enum.split(employed_citizen_count_in_level)
-
-        {migrating_by_tax_citizens_in_level, needs_met_citizens_in_level} =
-          employed_citizens_in_level
-          |> Enum.split(
-            floor(
-              length(employed_citizens_in_level) *
-                Rules.excessive_tax_chance(level, town_stats.tax_rates[to_string(level)])
-            )
-          )
-
-        {level, needs_met_citizens_in_level, unemployed_citizens_in_level, migrating_by_tax_citizens_in_level}
-      end)
-
-    # 6. Flatten the remainder; these are <unemployed_citizens>, and they will be entered to the migration pool, so no other processing is done with them.
-    unemployed_citizens =
-      sorted_housed_citizens_by_level
-      |> Enum.flat_map(fn {_, _, unemployed_citizens_in_level, _} ->
-        unemployed_citizens_in_level
-      end)
-
-    migrating_by_tax_citizens =
-      sorted_housed_citizens_by_level
-      |> Enum.flat_map(fn {_, _, _, migrating_by_tax_citizens_in_level} ->
-        migrating_by_tax_citizens_in_level
-      end)
-
+    # calculate education tokens
     # education (not education_lvl_1) are distributed randomly
     edu_generic =
       town_stats
@@ -468,28 +419,86 @@ defmodule MayorGame.CityHelpers do
         }
       end
 
-    # if town_preloaded.title == "hi22", do: IO.inspect(edu_promotions)
+    # 1. Set list to <working_citizens>, scramble (RNG!)
+    scrambled_working_citizens = working_citizens |> Enum.shuffle()
 
-    # !!!! migrating_citizens and migrating_by_tax_citizens may include people will simply 'migrate' back to the same city!
-    {needs_met_citizens, promoted_citizens_qty} =
-      sorted_housed_citizens_by_level
-      |> Enum.flat_map_reduce(%{0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0}, fn {level, needs_met_citizens_in_level, _, _},
-                                                                            acc ->
-        # 10. Apply education to <migrating_citizens> + <staying_citizens>
-        {citizens_to_promote, other_citizens} =
-          if time_to_learn do
-            # if town_preloaded.title == "hi22", do: IO.inspect(edu_promotions[level], label: level)
-            needs_met_citizens_in_level |> Enum.split(edu_promotions[level])
+    # 2. Take <aggregate_deaths_by_pollution> members from the list. These are <polluted_citizens>, they will be eliminated so no other processing is done with them
+    {polluted_citizens, unpolluted_citizens} = scrambled_working_citizens |> Enum.split(aggregate_deaths_by_pollution)
+
+    unpolluted_citizens_by_level = unpolluted_citizens |> Enum.group_by(& &1["education"])
+
+    # apply education
+    {unpolluted_citizens_after_education, promoted_citizens_qty} =
+      unpolluted_citizens_by_level
+      |> Enum.flat_map_reduce(
+        %{0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0},
+        fn {level, unpolluted_citizens_in_level}, acc ->
+          # 10. Apply education to <migrating_citizens> + <staying_citizens>
+          {citizens_to_promote, other_citizens} =
+            if time_to_learn do
+              unpolluted_citizens_in_level |> Enum.split(edu_promotions[level])
+            else
+              {[], unpolluted_citizens_in_level}
+            end
+
+          promoted_citizens = citizens_to_promote |> Enum.map(fn c -> c |> Map.update!("education", &(&1 + 1)) end)
+
+          {promoted_citizens ++ other_citizens, acc |> Map.put(level + 1, length(promoted_citizens))}
+        end
+      )
+
+    # educated citizens have priority in housing
+    # 3. If citizen count is less than housing, Take the difference members from the list. These are <unhoused_citizens>, and they will be entered to the migration pool, so no other processing is done with them.
+    {unhoused_citizens, housed_citizens} = unpolluted_citizens_after_education |> Enum.sort_by(& &1["education"], :asc) |> Enum.split(max(0, -excess_housing))
+
+    # 4. Group the rest by education
+    housed_citizens_by_level = housed_citizens |> Enum.group_by(& &1["education"])
+
+    # 5. Take <employed_citizen_count_by_level[education]> members from each group. It does not matter if there are less citizens than employed due to previous steps.
+    # 7. Get the members from Step 5, take members by proportion of <tax_too_high> (calc per edu level). These are <migrating_citizens_due_to_tax>
+    sorted_housed_citizens_by_level =
+      housed_citizens_by_level
+      |> Enum.map(fn {level, list} ->
+        employed_citizen_count_in_level =
+          if is_nil(town_stats.employed_citizen_count_by_level[level]) do
+            0
           else
-            {[], needs_met_citizens_in_level}
+            town_stats.employed_citizen_count_by_level[level]
           end
 
-        # if town_preloaded.title == "hi22", do: IO.inspect(citizens_to_promote, label: "citizens_to_promote")
+        {employed_citizens_in_level, unemployed_citizens_in_level} = list |> Enum.split(employed_citizen_count_in_level)
 
-        promoted_citizens = citizens_to_promote |> Enum.map(fn c -> c |> Map.update!("education", &(&1 + 1)) end)
+        {migrating_by_tax_citizens_in_level, needs_met_citizens_in_level} =
+          employed_citizens_in_level
+          |> Enum.split(
+            floor(
+              length(employed_citizens_in_level) *
+                Rules.excessive_tax_chance(level, town_stats.tax_rates[to_string(level)])
+            )
+          )
 
-        {promoted_citizens ++ other_citizens, acc |> Map.put(level + 1, length(promoted_citizens))}
+        {level, needs_met_citizens_in_level, unemployed_citizens_in_level, migrating_by_tax_citizens_in_level}
       end)
+
+    # 6. Flatten the remainder; these are <unemployed_citizens>, and they will be entered to the migration pool, so no other processing is done with them.
+    unemployed_citizens =
+      sorted_housed_citizens_by_level
+      |> Enum.flat_map(fn {_, _, unemployed_citizens_in_level, _} ->
+        unemployed_citizens_in_level
+      end)
+
+    migrating_by_tax_citizens =
+      sorted_housed_citizens_by_level
+      |> Enum.flat_map(fn {_, _, _, migrating_by_tax_citizens_in_level} ->
+        migrating_by_tax_citizens_in_level
+      end)
+
+    # !!!! migrating_citizens and migrating_by_tax_citizens may include people will simply 'migrate' back to the same city!
+    needs_met_citizens =
+      sorted_housed_citizens_by_level
+      |> Enum.flat_map(fn {_, needs_met_citizens_in_level, _, _} ->
+        needs_met_citizens_in_level
+     end)
 
     # 8. Scan through the remainder, take members based on their last_moved. Add them to <migrating_citizens>
     {migrating_citizens, staying_citizens} =
@@ -650,7 +659,7 @@ defmodule MayorGame.CityHelpers do
   # the first list in the tuple indicates what is produced. This will be used to determine if the loop should reset to its start of the sorted_buildables list
   # the second list in the tuple indicates what is prevents all buildables from being activated. This will be used to determine if the loop should reset to its start of the sorted_buildables list
   @spec fill_workers(Town.t(), TownStatistics.t(), BuildableMetadata.t()) ::
-          {list(), list(), TownStatistics.t()}
+          {integer, list(), list(), TownStatistics.t()}
   def fill_workers(town, town_stats, buildable) do
     buildable_count =
       if Map.has_key?(town_stats.buildable_stats, buildable.title) do
@@ -663,6 +672,7 @@ defmodule MayorGame.CityHelpers do
 
     if buildable_count < 1 do
       {
+        0,
         [],
         [],
         town_stats
@@ -698,6 +708,7 @@ defmodule MayorGame.CityHelpers do
           end)
 
         {
+          buildable_count,
           Map.keys(production),
           [],
           town_stats
@@ -879,6 +890,7 @@ defmodule MayorGame.CityHelpers do
           end)
 
         {
+          post_employment_operation_stats.fulfilled_count,
           Map.keys(production),
           post_employment_operation_stats.deficient_prereq_all,
           town_stats
@@ -908,41 +920,52 @@ defmodule MayorGame.CityHelpers do
           deficient_prereq_all: list(String.t())
         }
   def check_maximum_and_reqs(reqs, checkee, count) do
-    filtered_reqs = Map.filter(reqs, fn {k, _v} -> !is_nil(checkee[k]) && checkee[k] > 0 end)
+    # !!!! reqs might not necessarily contain all elements of checkee! Filtering reqs is not enough.
+    # If any of the checkees are not present in reqs, and checkees is a true requirement, it is demanding a resource that is not produced.
+    # In such a case, evaluate to 0
 
-    met_values =
-      Enum.map(filtered_reqs, fn {k, v} ->
-        {k, floor((v.production - v.consumption + Enum.max([0, v.stock])) / checkee[k])}
-      end)
+    checkee_keys_without_reqs =
+      Map.filter(checkee, fn {k, _v} -> !is_nil(checkee[k]) && checkee[k] > 0 && is_nil(reqs[k]) end) |> Map.keys()
 
-    fulfilled_count =
-      Enum.max([
-        0,
-        Enum.min(Enum.map(met_values, fn {_k, v} -> v end) ++ [count], &<=/2, fn -> 0 end)
-      ])
+    if length(checkee_keys_without_reqs) > 0 do
+      %{
+        fulfilled_count: 0,
+        deficient_prereq_next: checkee_keys_without_reqs,
+        deficient_prereq_all: checkee_keys_without_reqs
+      }
+    else
+      filtered_reqs = Map.filter(reqs, fn {k, _v} -> !is_nil(checkee[k]) && checkee[k] > 0 end)
 
-    %{
-      # Enum.min([fulfilled_count, count]),
-      fulfilled_count: fulfilled_count,
-      deficient_prereq_next:
-        if fulfilled_count == count do
-          []
-        else
+      met_values =
+        Enum.map(filtered_reqs, fn {k, v} ->
+          {k, floor((v.production - v.consumption + Enum.max([0, v.stock])) / checkee[k])}
+        end)
+
+      # note: fulfilled_count may be negative
+      fulfilled_count = Enum.min(Enum.map(met_values, fn {_k, v} -> v end) ++ [count])
+
+      %{
+        fulfilled_count: Enum.max([0, fulfilled_count]),
+        deficient_prereq_next:
+          if fulfilled_count == count do
+            []
+          else
+            Enum.flat_map(met_values, fn {k, v} ->
+              case v <= fulfilled_count do
+                true -> [k]
+                false -> []
+              end
+            end)
+          end,
+        deficient_prereq_all:
           Enum.flat_map(met_values, fn {k, v} ->
-            case v <= fulfilled_count do
+            case v < count do
               true -> [k]
               false -> []
             end
           end)
-        end,
-      deficient_prereq_all:
-        Enum.flat_map(met_values, fn {k, v} ->
-          case v < count do
-            true -> [k]
-            false -> []
-          end
-        end)
-    }
+      }
+    end
   end
 
   @spec check_worker_count(integer, %{integer => integer}, %{integer => integer}, integer) :: %{
