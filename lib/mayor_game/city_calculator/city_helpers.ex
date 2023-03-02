@@ -920,7 +920,7 @@ defmodule MayorGame.CityHelpers do
           []
         else
           Enum.flat_map(met_values, fn {k, v} ->
-            case v == fulfilled_count do
+            case v <= fulfilled_count do
               true -> [k]
               false -> []
             end
