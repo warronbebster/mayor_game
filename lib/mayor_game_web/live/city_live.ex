@@ -252,7 +252,10 @@ defmodule MayorGameWeb.CityLive do
 
       new_construction_cost = socket.assigns.construction_cost + purchase_price
 
-      new_purchase_price = Rules.building_price(initial_purchase_price, buildable_count + 1)
+      IO.inspect(new_construction_count[building_to_buy_atom])
+
+      new_purchase_price =
+        Rules.building_price(initial_purchase_price, buildable_count + new_construction_count[building_to_buy_atom])
 
       new_buildables =
         socket.assigns.buildables

@@ -299,14 +299,14 @@
         class="btn text-xs p-0 border-none"
         phx-click="gib_money"
         phx-value-userid={@current_user.id}
-        phx-throttle="100"
+        phx-throttle="400"
       >
         +$
       </button>
       <button
         class="btn text-xs p-0 border-none"
         phx-click="add_citizen"
-        phx-throttle="100"
+        phx-throttle="400"
         phx-value-name="name"
         phx-value-userid={@current_user.id}
       >
@@ -599,7 +599,7 @@
                     <button
                       class="btn m-0 rounded-none border border-neutral-800/25 leading-none h-6"
                       phx-click="purchase_building"
-                      phx-throttle="200"
+                      phx-throttle="400"
                       phx-value-building={building_type}
                     >
                       $<%= Number.SI.number_to_si(
@@ -627,7 +627,7 @@
                     <button
                       phx-click="demolish_building"
                       class="btn m-0 rounded-none border border-l-0 border-neutral-800/25 leading-none h-6"
-                      phx-throttle="300"
+                      phx-throttle="400"
                       phx-value-building={building_type}
                     >
                       -1
@@ -668,7 +668,7 @@
                         <button
                           phx-click="attack_building"
                           class="btn m-0 rounded-none border border-neutral-800/25 leading-none h-6"
-                          phx-throttle="300"
+                          phx-throttle="400"
                           phx-value-building={building_type}
                         >
                           <img
@@ -1051,10 +1051,10 @@
     <%= if @is_user_mayor || @is_user_admin do %>
       <div class="flex flex-row gap-2">
         <button
-          class="btn self-start my-8"
+          class="btn self-start my-8 text-red-700"
           phx-click="reset_city"
           phx-value-userid={@current_user.id}
-          phx-throttle="100"
+          phx-throttle="400"
         >
           Reset city
         </button>
@@ -1062,7 +1062,7 @@
           class="btn self-start my-8"
           phx-click="reset_priorities"
           phx-value-userid={@current_user.id}
-          phx-throttle="100"
+          phx-throttle="400"
         >
           Reset building operation order
         </button>
