@@ -82,6 +82,13 @@ defmodule MayorGame.City.TownStatistics do
           production: 0,
           consumption: 0
         },
+        :pollution => %ResourceStatistics{
+          title: "pollution",
+          stock: 0,
+          storage: nil,
+          production: 0,
+          consumption: 0
+        },
         :energy => %ResourceStatistics{
           title: "energy",
           stock: 0,
