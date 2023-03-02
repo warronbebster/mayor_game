@@ -485,7 +485,7 @@
       </div>
       <div class="divide-y divide-neutral-800/10">
         <%= for {building_type, building_stats} <- buildings do %>
-        <%= if {Map.has_key?(building_stats, :region) && Enum.member?(building_stats.region, @city.region)} do %>
+        <%= if is_nil(building_stats.regions) ||  Enum.member?(building_stats.regions, @city.region) do %>
           <div class="flex flex-wrap items-center gap-1 py-0.5">
             <div class="basis-full md:basis-80 flex flex-row items-center justify-between">
               <!-- building title -->

@@ -179,15 +179,19 @@ defmodule MayorGame.CityHelpers do
           else
             drops =
               Enum.reduce(r.droplist, 0, fn {qty, func}, acc ->
+                IO.inspect(r.droplist)
+
                 acc +
                   cond do
                     # drops (fn _rng, _number_of_instances -> drop_amount)
-                    is_function(func, 2) -> func.(:rand.uniform(), qty)
+                    is_function(func, 2) -> IO.inspect(func.(:rand.uniform(), qty))
                     # drops (fn _rng, _number_of_instances, _city -> drop_amount)
-                    is_function(func, 3) -> func.(:rand.uniform(), qty, town)
+                    is_function(func, 3) -> IO.inspect(func.(:rand.uniform(), qty, town))
                     true -> 0
                   end
               end)
+
+            IO.inspect(drops)
 
             {atom, ResourceStatistics.merge(r, %ResourceStatistics{:production => drops})}
           end
