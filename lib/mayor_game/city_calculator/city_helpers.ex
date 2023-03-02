@@ -179,7 +179,7 @@ defmodule MayorGame.CityHelpers do
           else
             drops =
               Enum.reduce(r.droplist, 0, fn {qty, func}, acc ->
-                if r.droplist do
+                if func do
                   acc +
                     cond do
                       # drops (fn _rng, _number_of_instances -> drop_amount)
@@ -192,8 +192,6 @@ defmodule MayorGame.CityHelpers do
                   acc
                 end
               end)
-
-            IO.inspect(drops)
 
             {atom, ResourceStatistics.merge(r, %ResourceStatistics{:production => drops})}
           end
