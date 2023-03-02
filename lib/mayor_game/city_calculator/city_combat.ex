@@ -17,7 +17,6 @@ defmodule MayorGame.CityCombat do
           acc_shields - 1
         else
           # reduce over buildings
-          IO.inspect("reached buildings")
 
           building_to_attack =
             Enum.find(Buildable.buildables_attack_order(), fn building -> attacked_city[building] > 0 end)
