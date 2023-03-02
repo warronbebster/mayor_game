@@ -219,7 +219,13 @@ defmodule MayorGameWeb.CityLive do
     # check if user is mayor here?
     building_to_buy_atom = String.to_existing_atom(building_to_buy)
     initial_purchase_price = get_in(Buildable.buildables_flat(), [building_to_buy_atom, :price])
-    buildable_count = city[building_to_buy_atom]
+
+    fetched_value = Repo.one(from city in Town, where: city.id == ^city.id, select: ^[:id, building_to_buy_atom])
+    buildable_count = fetched_value[building_to_buy_atom]
+
+    # in_construction =
+
+    # buildable_count + socket.assigns.construction_count[building_to_buy_atom]
 
     purchase_price = Rules.building_price(initial_purchase_price, buildable_count)
 

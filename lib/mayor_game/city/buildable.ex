@@ -444,6 +444,7 @@ defmodule MayorGame.City.Buildable do
           pollution: 50
         }
       },
+      # TRANSIT ——————————————————————————————————————————————————————————————————————————————
       # roads ————————————————————————————————————
       roads: %BuildableMetadata{
         size: 1,
@@ -454,7 +455,7 @@ defmodule MayorGame.City.Buildable do
         produces: %{
           health: -1,
           sprawl: 10,
-          area: 10,
+          area: 25,
           # todo: some of these could be functions?
           pollution: &(&1 * 0.01)
         }
@@ -474,7 +475,7 @@ defmodule MayorGame.City.Buildable do
         produces: %{
           health: -4,
           sprawl: 20,
-          area: 20,
+          area: 50,
           # todo: some of these could be functions?
           pollution: &(&1 * 0.02)
         }
@@ -492,7 +493,7 @@ defmodule MayorGame.City.Buildable do
         },
         produces: %{
           health: -2,
-          area: 10,
+          area: 100,
           # todo: some of these could be functions?
           pollution: &(&1 * 0.03)
         }
