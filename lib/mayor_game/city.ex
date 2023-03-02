@@ -39,7 +39,7 @@ defmodule MayorGame.City do
 
   """
   def list_cities_preload do
-    Repo.all(Town, timeout: 100_000) |> Repo.preload([:citizens, :user], timeout: 100_000)
+    Repo.all(Town, timeout: 200_000) |> Repo.preload([:user], timeout: 200_000)
   end
 
   @doc """
@@ -356,22 +356,18 @@ defmodule MayorGame.City do
     purchase_city =
       city
       |> Town.changeset(city_attrs)
-      |> Ecto.Changeset.validate_number(:treasury, greater_than_or_equal_to: 0)
-      |> Repo.update()
+      |> Ecto.Changeset.validate_number(:treasury, greater_than: 0)
 
-    case purchase_city do
-      {:ok, _result} ->
-        from(t in Town,
-          where: [id: ^city.id]
-        )
-        |> Repo.update_all(inc: [{field_to_purchase, 1}])
+    # |> Repo.update()
 
-      {:error, err} ->
-        Logger.error(inspect(err))
-        {:error, err}
-
-      _ ->
-        nil
+    if purchase_city.errors == [] do
+      from(t in Town,
+        where: [id: ^city.id]
+      )
+      |> Repo.update_all(inc: [{field_to_purchase, 1}, {:treasury, -purchase_price}])
+    else
+      Logger.error(inspect(purchase_city.errors))
+      {:error, err}
     end
   end
 

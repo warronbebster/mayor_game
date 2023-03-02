@@ -21,13 +21,7 @@
       <div class="flex flex-row items-center space-x-1 max-w-sm">
         <span>Total citizens</span>
         <hr class="border-neutral-300 flex-1" />
-        <img
-          src="/images/citizen.svg"
-          alt="total citizens logo"
-          height="12"
-          width="12"
-          class="inline"
-        />
+        <img src="/images/citizen.svg" alt="total citizens logo" height="12" width="12" class="inline" />
         <span>
           <%= Number.Delimit.number_to_delimited(@citizens_sum) %>
         </span>
@@ -35,13 +29,7 @@
       <div class="flex flex-row items-center space-x-1 max-w-sm">
         <span>Total pollution</span>
         <hr class="border-neutral-300 flex-1" />
-        <img
-          src="/images/pollution.svg"
-          alt="pollution logo"
-          height="12"
-          width="12"
-          class="inline"
-        />
+        <img src="/images/pollution.svg" alt="pollution logo" height="12" width="12" class="inline" />
         <span class="text-violet-600">
           <%= Number.Delimit.number_to_delimited(@world.pollution) %>
         </span>
@@ -49,13 +37,7 @@
       <div class="flex flex-row items-center space-x-1 max-w-sm">
         <span>Daily pollution</span>
         <hr class="border-neutral-300 flex-1" />
-        <img
-          src="/images/pollution.svg"
-          alt="pollution logo"
-          height="12"
-          width="12"
-          class="inline"
-        />
+        <img src="/images/pollution.svg" alt="pollution logo" height="12" width="12" class="inline" />
         <span class="text-violet-600">
           <%= Number.Delimit.number_to_delimited(@pollution_sum) %>
         </span>
@@ -63,13 +45,7 @@
       <div class="flex flex-row items-center space-x-1 max-w-sm">
         <span>Pollution ceiling</span>
         <hr class="border-neutral-300 flex-1" />
-        <img
-          src="/images/pollution.svg"
-          alt="pollution logo"
-          height="12"
-          width="12"
-          class="inline"
-        />
+        <img src="/images/pollution.svg" alt="pollution logo" height="12" width="12" class="inline" />
         <span class="text-violet-600">
           <%= Number.Delimit.number_to_delimited(10_000_000_000) %>
         </span>
@@ -88,26 +64,14 @@
           <hr class="border-neutral-300 flex-1" />
           <div class="flex flex-row items-center gap-1">
             <div class="flex flex-row items-center gap-1 w-20">
-              <img
-                src="/images/pollution.svg"
-                alt="pollution logo"
-                height="12"
-                width="12"
-                class="inline"
-              />
+              <img src="/images/pollution.svg" alt="pollution logo" height="12" width="12" class="inline" />
               <span class="text-violet-600 ">
                 <%= Number.Delimit.number_to_delimited(@current_user.town.pollution) %>
               </span>
               <hr class="border-neutral-300 flex-1" />
             </div>
             <div class="flex flex-row items-center gap-1 w-20">
-              <img
-                src="/images/citizen.svg"
-                alt="pollution logo"
-                height="12"
-                width="12"
-                class="inline"
-              />
+              <img src="/images/citizen.svg" alt="pollution logo" height="12" width="12" class="inline" />
               <span>
                 <%= Number.Delimit.number_to_delimited(@current_user.town.citizen_count) %>
               </span>
@@ -196,26 +160,14 @@
           <hr class="border-neutral-300 flex-1" />
           <div class="flex flex-row items-center gap-1">
             <div class="flex flex-row items-center gap-1 w-20">
-              <img
-                src="/images/pollution.svg"
-                alt="pollution logo"
-                height="12"
-                width="12"
-                class="inline"
-              />
+              <img src="/images/pollution.svg" alt="pollution logo" height="12" width="12" class="inline" />
               <span class="text-violet-600 ">
                 <%= Number.Delimit.number_to_delimited(city.pollution) %>
               </span>
               <hr class="border-neutral-300 flex-1" />
             </div>
             <div class="flex flex-row items-center gap-1 w-20">
-              <img
-                src="/images/citizen.svg"
-                alt="pollution logo"
-                height="12"
-                width="12"
-                class="inline"
-              />
+              <img src="/images/citizen.svg" alt="pollution logo" height="12" width="12" class="inline" />
               <span>
                 <%= Number.Delimit.number_to_delimited(city.citizen_count) %>
               </span>
@@ -262,9 +214,32 @@
       to keep the servers running!
     </p>
     <p class="max-w-sm text-green-700">
-      Join the
-      <a href="https://discord.gg/mnVnRdV3k7" target="blank" class="underline">Discord</a>
+      Join the <a href="https://discord.gg/mnVnRdV3k7" target="blank" class="underline">Discord</a>
       to trade & learn about updates!
     </p>
+  </div>
+  <!-- combat -->
+  <div class="space-y-2 max-w-sm pb-6 grow">
+    <p>Ongoing wars</p>
+    <%= for attack <- @attacks do %>
+      <div class="flex flex-row items-center space-x-1 ">
+        <span class="hover:underline">
+          <%= link(attack.attacking.title,
+            to: Routes.city_path(@socket, MayorGameWeb.CityLive, attack.attacking.title)
+          ) %>
+        </span>
+        <img src="/images/might.svg" alt="missiles" height="12" width="12" class="inline" />
+
+        <span>
+          <%= attack.attack_count %>
+        </span>
+        <hr class="border-neutral-300 flex-1" />
+        <span class="hover:underline">
+          <%= link(attack.attacked.title,
+            to: Routes.city_path(@socket, MayorGameWeb.CityLive, attack.attacked.title)
+          ) %>
+        </span>
+      </div>
+    <% end %>
   </div>
 </div>

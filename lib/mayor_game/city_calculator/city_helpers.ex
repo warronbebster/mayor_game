@@ -270,10 +270,9 @@ defmodule MayorGame.CityHelpers do
     town_preloaded = preload_city_check(town)
 
     # are we sure we want pollution_ceiling to be tied to a RNG?
-    pollution_reached = world.pollution > pollution_ceiling
+    pollution_reached = world.pollution > pollution_ceiling || results.pollution > results.citizen_count * 5
 
-    reproductive_citizen_count =
-      Enum.count(town_preloaded.citizens_blob, &Rules.is_citizen_reproductive(&1))
+    reproductive_citizen_count = Enum.count(town_preloaded.citizens_blob, &Rules.is_citizen_reproductive(&1))
 
     # this expensive operation may be avoided if we store the birthday instead of the age
     working_citizens =
@@ -336,12 +335,10 @@ defmodule MayorGame.CityHelpers do
     scrambled_working_citizens = working_citizens |> Enum.shuffle()
 
     # 2. Take <aggregate_deaths_by_pollution> members from the list. These are <polluted_citizens>, they will be eliminated so no other processing is done with them
-    {polluted_citizens, unpolluted_citizens} =
-      scrambled_working_citizens |> Enum.split(aggregate_deaths_by_pollution)
+    {polluted_citizens, unpolluted_citizens} = scrambled_working_citizens |> Enum.split(aggregate_deaths_by_pollution)
 
     # 3. If citizen count is less than housing, Take the difference members from the list. These are <unhoused_citizens>, and they will be entered to the migration pool, so no other processing is done with them.
-    {unhoused_citizens, housed_citizens} =
-      unpolluted_citizens |> Enum.split(max(0, -excess_housing))
+    {unhoused_citizens, housed_citizens} = unpolluted_citizens |> Enum.split(max(0, -excess_housing))
 
     # 4. Group the rest by education
     housed_citizens_by_level = housed_citizens |> Enum.group_by(& &1["education"])
@@ -358,8 +355,7 @@ defmodule MayorGame.CityHelpers do
             town_stats.employed_citizen_count_by_level[level]
           end
 
-        {employed_citizens_in_level, unemployed_citizens_in_level} =
-          list |> Enum.split(employed_citizen_count_in_level)
+        {employed_citizens_in_level, unemployed_citizens_in_level} = list |> Enum.split(employed_citizen_count_in_level)
 
         {migrating_by_tax_citizens_in_level, needs_met_citizens_in_level} =
           employed_citizens_in_level
@@ -370,8 +366,7 @@ defmodule MayorGame.CityHelpers do
             )
           )
 
-        {level, needs_met_citizens_in_level, unemployed_citizens_in_level,
-         migrating_by_tax_citizens_in_level}
+        {level, needs_met_citizens_in_level, unemployed_citizens_in_level, migrating_by_tax_citizens_in_level}
       end)
 
     # 6. Flatten the remainder; these are <unemployed_citizens>, and they will be entered to the migration pool, so no other processing is done with them.
@@ -457,9 +452,7 @@ defmodule MayorGame.CityHelpers do
     # !!!! migrating_citizens and migrating_by_tax_citizens may include people will simply 'migrate' back to the same city!
     {needs_met_citizens, promoted_citizens_qty} =
       sorted_housed_citizens_by_level
-      |> Enum.flat_map_reduce(%{0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0}, fn {level,
-                                                                             needs_met_citizens_in_level,
-                                                                             _, _},
+      |> Enum.flat_map_reduce(%{0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0}, fn {level, needs_met_citizens_in_level, _, _},
                                                                             acc ->
         # 10. Apply education to <migrating_citizens> + <staying_citizens>
         {citizens_to_promote, other_citizens} =
@@ -469,11 +462,9 @@ defmodule MayorGame.CityHelpers do
             {[], needs_met_citizens_in_level}
           end
 
-        promoted_citizens =
-          citizens_to_promote |> Enum.map(fn c -> c |> Map.update!("education", &(&1 + 1)) end)
+        promoted_citizens = citizens_to_promote |> Enum.map(fn c -> c |> Map.update!("education", &(&1 + 1)) end)
 
-        {promoted_citizens ++ other_citizens,
-         acc |> Map.put(level + 1, length(promoted_citizens))}
+        {promoted_citizens ++ other_citizens, acc |> Map.put(level + 1, length(promoted_citizens))}
       end)
 
     # 8. Scan through the remainder, take members based on their last_moved. Add them to <migrating_citizens>
@@ -626,7 +617,7 @@ defmodule MayorGame.CityHelpers do
   """
   def preload_city_check(%Town{} = town) do
     if !Ecto.assoc_loaded?(town.user) do
-      town |> MayorGame.Repo.preload([:user])
+      town |> MayorGame.Repo.preload([:user, :attacking, :attacked, :attacks_sent, :attacks_recieved])
     else
       town
     end
@@ -711,8 +702,7 @@ defmodule MayorGame.CityHelpers do
         # }
         post_employment_operation_stats =
           if Map.has_key?(buildable.requires, :workers) do
-            required_worker_count =
-              buildable.requires.workers.count * pre_employment_operation_stats.fulfilled_count
+            required_worker_count = buildable.requires.workers.count * pre_employment_operation_stats.fulfilled_count
 
             # %{
             #  jobs_by_level: a %{integer => integer} map of levels for job positions,
@@ -744,8 +734,7 @@ defmodule MayorGame.CityHelpers do
                       buildable.requires.workers.count
                   ),
                 deficient_prereq_next: [:workers],
-                deficient_prereq_all:
-                  pre_employment_operation_stats.deficient_prereq_all ++ [:workers]
+                deficient_prereq_all: pre_employment_operation_stats.deficient_prereq_all ++ [:workers]
               })
             end
           else
@@ -979,8 +968,7 @@ defmodule MayorGame.CityHelpers do
               employed_citizen_count_by_level:
                 acc.employed_citizen_count_by_level
                 |> Map.update(level, take_count, &(&1 + take_count)),
-              workers_by_level:
-                acc.workers_by_level |> Map.update(level, take_count, &(&1 + take_count)),
+              workers_by_level: acc.workers_by_level |> Map.update(level, take_count, &(&1 + take_count)),
               employment_vacancies: acc.employment_vacancies - take_count
             }
 

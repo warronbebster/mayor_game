@@ -1,7 +1,8 @@
 defmodule MayorGameWeb.DashboardLive do
   require Logger
   import Ecto.Query
-  alias MayorGame.City.{Town}
+  alias MayorGame.City.OngoingAttacks
+  alias MayorGame.City.{Town, World}
   alias MayorGame.Repo
 
   use Phoenix.LiveView, container: {:div, class: "liveview-container"}
@@ -21,7 +22,8 @@ defmodule MayorGameWeb.DashboardLive do
     {:ok,
      socket
      |> assign(current_user: current_user |> Repo.preload(:town))
-     |> assign_cities()}
+     |> assign_cities()
+     |> assign_attacks()}
   end
 
   # if user is not logged in
@@ -30,7 +32,8 @@ defmodule MayorGameWeb.DashboardLive do
 
     {:ok,
      socket
-     |> assign_cities()}
+     |> assign_cities()
+     |> assign_attacks()}
   end
 
   def handle_info(%{event: "ping", payload: _world}, socket) do
@@ -42,11 +45,13 @@ defmodule MayorGameWeb.DashboardLive do
            MayorGame.Auth.get_user!(socket.assigns.current_user.id)
            |> Repo.preload(:town)
        )
-       |> assign_cities()}
+       |> assign_cities()
+       |> assign_attacks()}
     else
       {:noreply,
        socket
-       |> assign_cities()}
+       |> assign_cities()
+       |> assign_attacks()}
     end
   end
 
@@ -59,11 +64,13 @@ defmodule MayorGameWeb.DashboardLive do
            MayorGame.Auth.get_user!(socket.assigns.current_user.id)
            |> Repo.preload(:town)
        )
-       |> assign_cities()}
+       |> assign_cities()
+       |> assign_attacks()}
     else
       {:noreply,
        socket
-       |> assign_cities()}
+       |> assign_cities()
+       |> assign_attacks()}
     end
   end
 
@@ -178,8 +185,8 @@ defmodule MayorGameWeb.DashboardLive do
       from(t in Town,
         select: [:citizen_count, :pollution, :id, :title, :user_id, :patron, :contributor]
       )
-      |> MayorGame.Repo.all()
-      |> MayorGame.Repo.preload(:user)
+      |> Repo.all()
+      |> Repo.preload(:user)
 
     # use sort_cities to sort
     #  |> Enum.sort_by(& &1.citizen_count, :desc)
@@ -187,7 +194,7 @@ defmodule MayorGameWeb.DashboardLive do
     pollution_sum = Enum.sum(Enum.map(all_cities_recent, fn city -> city.pollution end))
     citizens_sum = Enum.sum(Enum.map(all_cities_recent, fn city -> city.citizen_count end))
 
-    world = MayorGame.Repo.get!(MayorGame.City.World, 1)
+    world = Repo.get!(World, 1)
 
     socket
     |> assign(:cities, all_cities_recent)
@@ -195,5 +202,15 @@ defmodule MayorGameWeb.DashboardLive do
     |> assign(:pollution_sum, pollution_sum)
     |> assign(:citizens_sum, citizens_sum)
     |> sort_cities()
+  end
+
+  defp assign_attacks(socket) do
+    # cities_count = MayorGame.Repo.aggregate(City.Town, :count, :id)
+    attacks =
+      Repo.all(OngoingAttacks)
+      |> Repo.preload([:attacking, :attacked])
+
+    socket
+    |> assign(:attacks, attacks)
   end
 end

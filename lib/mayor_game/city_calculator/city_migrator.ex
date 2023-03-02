@@ -59,8 +59,7 @@ defmodule MayorGame.CityMigrator do
     {:ok, datetime_pre} = DateTime.now("Etc/UTC")
 
     # filter for
-    cities =
-      City.list_cities_preload() |> Enum.filter(fn city -> length(city.citizens_blob) >= 20 end)
+    cities = City.list_cities_preload() |> Enum.filter(fn city -> length(city.citizens_blob) >= 20 end)
 
     pollution_ceiling = 2_000_000_000 * Random.gammavariate(7.5, 1)
 
@@ -71,8 +70,7 @@ defmodule MayorGame.CityMigrator do
 
       cities_list = Enum.shuffle(cities)
 
-      time_to_learn =
-        if in_dev, do: rem(migration_tick, 10) == 0, else: rem(migration_tick, 90) == 0
+      time_to_learn = if in_dev, do: rem(migration_tick, 10) == 0, else: rem(migration_tick, 180) == 0
 
       leftovers =
         cities_list
@@ -112,15 +110,13 @@ defmodule MayorGame.CityMigrator do
           end)
         )
 
-      unemployed_citizens =
-        List.flatten(Enum.map(leftovers, fn city -> city.unemployed_citizens end))
+      unemployed_citizens = List.flatten(Enum.map(leftovers, fn city -> city.unemployed_citizens end))
 
       unhoused_citizens = List.flatten(Enum.map(leftovers, fn city -> city.unhoused_citizens end))
       # new_world_pollution = Enum.sum(Enum.map(leftovers, fn city -> city.pollution end))
       # total_housing_slots = Enum.sum(Enum.map(leftovers, fn city -> city.housing_left end))
 
-      housing_slots =
-        Enum.map(leftovers, fn city -> {city.id, city.housing_left} end) |> Map.new()
+      housing_slots = Enum.map(leftovers, fn city -> {city.id, city.housing_left} end) |> Map.new()
 
       # ok this is still good
 
@@ -215,8 +211,7 @@ defmodule MayorGame.CityMigrator do
 
       level_slots =
         Map.new(0..5, fn x ->
-          {x,
-           %{normalized_cities: %{}, job_and_housing_slots: 0, job_and_housing_slots_expanded: []}}
+          {x, %{normalized_cities: %{}, job_and_housing_slots: 0, job_and_housing_slots_expanded: []}}
         end)
 
       # sets up empty map for below function
@@ -287,8 +282,7 @@ defmodule MayorGame.CityMigrator do
                      ),
 
                    #  acc[x].normalized_cities ++ [slots_per_level[x]],
-                   job_and_housing_slots:
-                     acc[x].job_and_housing_slots + elem(slots_per_level[x], 1),
+                   job_and_housing_slots: acc[x].job_and_housing_slots + elem(slots_per_level[x], 1),
                    job_and_housing_slots_expanded:
                      if elem(slots_per_level[x], 1) > 0 do
                        acc[x].job_and_housing_slots_expanded ++
@@ -384,8 +378,7 @@ defmodule MayorGame.CityMigrator do
       updated_citizens_by_id_2 =
         Enum.reduce(5..0, updated_citizens_by_id, fn x, acc ->
           if preferred_locations_by_level[x].choices != [] do
-            Enum.reduce(preferred_locations_by_level[x].choices, acc, fn {citizen, chosen_city_id},
-                                                                         acc2 ->
+            Enum.reduce(preferred_locations_by_level[x].choices, acc, fn {citizen, chosen_city_id}, acc2 ->
               if citizen["town_id"] != chosen_city_id do
                 acc2
                 |> Map.update!(
@@ -521,9 +514,7 @@ defmodule MayorGame.CityMigrator do
       updated_citizens_by_id_4 =
         Enum.reduce(5..0, updated_citizens_by_id_3, fn x, acc ->
           # if unemployed_preferred_locations_by_level[x].choices != [] do
-          Enum.reduce(unemployed_preferred_locations_by_level[x].choices, acc, fn {citizen,
-                                                                                   chosen_city_id},
-                                                                                  acc2 ->
+          Enum.reduce(unemployed_preferred_locations_by_level[x].choices, acc, fn {citizen, chosen_city_id}, acc2 ->
             if citizen["town_id"] != chosen_city_id do
               acc2
               |> Map.update!(
@@ -665,9 +656,7 @@ defmodule MayorGame.CityMigrator do
       updated_citizens_by_id_6 =
         Enum.reduce(5..0, updated_citizens_by_id_5, fn x, acc ->
           if unhoused_preferred_locations_by_level[x].choices != [] do
-            Enum.reduce(unhoused_preferred_locations_by_level[x].choices, acc, fn {citizen,
-                                                                                   chosen_city_id},
-                                                                                  acc2 ->
+            Enum.reduce(unhoused_preferred_locations_by_level[x].choices, acc, fn {citizen, chosen_city_id}, acc2 ->
               if citizen["town_id"] != chosen_city_id do
                 acc2
                 |> Map.update!(
@@ -733,8 +722,7 @@ defmodule MayorGame.CityMigrator do
       # ————————————————————————————————————————— ROUND 2: MOVE CITIZENS ANYWHERE THERE IS HOUSING
       # ——————————————————————————————————————————————————————————————————————————————————
 
-      slots_after_job_filtered =
-        Enum.filter(housing_slots_4, fn {_k, v} -> v > 0 end) |> Enum.into(%{})
+      slots_after_job_filtered = Enum.filter(housing_slots_4, fn {_k, v} -> v > 0 end) |> Enum.into(%{})
 
       housing_slots_left = Enum.sum(Map.values(housing_slots_4))
 
@@ -794,9 +782,7 @@ defmodule MayorGame.CityMigrator do
         )
 
       updated_citizens_by_id_7 =
-        Enum.reduce(unhoused_preferred_locations.choices, updated_citizens_by_id_6, fn {citizen,
-                                                                                        chosen_city_id},
-                                                                                       acc ->
+        Enum.reduce(unhoused_preferred_locations.choices, updated_citizens_by_id_6, fn {citizen, chosen_city_id}, acc ->
           if citizen["town_id"] != chosen_city_id do
             acc |> Map.update!(chosen_city_id, &[citizen | &1])
           else
@@ -853,8 +839,7 @@ defmodule MayorGame.CityMigrator do
       housing_cities_left = Enum.group_by(for_unhoused_logs, &elem(&1, 0)["town_id"])
       housing_cities_left_2 = Enum.group_by(for_unhoused_logs_2, &elem(&1, 0)["town_id"])
 
-      merged_housing_cities_left =
-        Map.merge(housing_cities_left, housing_cities_left_2, fn _k, v1, v2 -> v1 ++ v2 end)
+      merged_housing_cities_left = Map.merge(housing_cities_left, housing_cities_left_2, fn _k, v1, v2 -> v1 ++ v2 end)
 
       housing_cities_left_by_edu =
         Enum.map(merged_housing_cities_left, fn {city_id, array} ->
@@ -875,9 +860,7 @@ defmodule MayorGame.CityMigrator do
               logs_emigration_taxes =
                 if !is_nil(tax_cities_left_by_edu[id]) do
                   Map.merge(
-                    CityHelpers.integerize_keys(
-                      slotted_cities_by_id[id].city.logs_emigration_taxes
-                    ),
+                    CityHelpers.integerize_keys(slotted_cities_by_id[id].city.logs_emigration_taxes),
                     tax_cities_left_by_edu[id],
                     fn _k, v1, v2 -> v1 + v2 end
                   )
@@ -888,9 +871,7 @@ defmodule MayorGame.CityMigrator do
               logs_emigration_jobs =
                 if !is_nil(job_cities_left_by_edu[id]) do
                   Map.merge(
-                    CityHelpers.integerize_keys(
-                      slotted_cities_by_id[id].city.logs_emigration_jobs
-                    ),
+                    CityHelpers.integerize_keys(slotted_cities_by_id[id].city.logs_emigration_jobs),
                     job_cities_left_by_edu[id],
                     fn _k, v1, v2 -> v1 + v2 end
                   )
@@ -901,9 +882,7 @@ defmodule MayorGame.CityMigrator do
               logs_emigration_housing =
                 if !is_nil(housing_cities_left_by_edu[id]) do
                   Map.merge(
-                    CityHelpers.integerize_keys(
-                      slotted_cities_by_id[id].city.logs_emigration_housing
-                    ),
+                    CityHelpers.integerize_keys(slotted_cities_by_id[id].city.logs_emigration_housing),
                     housing_cities_left_by_edu[id],
                     fn _k, v1, v2 -> v1 + v2 end
                   )
@@ -948,8 +927,7 @@ defmodule MayorGame.CityMigrator do
 
               # ok wtf. even this looks right
 
-              unhoused_deaths =
-                if Map.has_key?(unhoused_deaths, id), do: unhoused_deaths[id], else: 0
+              unhoused_deaths = if Map.has_key?(unhoused_deaths, id), do: unhoused_deaths[id], else: 0
 
               from(t in Town,
                 where: t.id == ^id,
@@ -964,8 +942,7 @@ defmodule MayorGame.CityMigrator do
                   ],
                   inc: [
                     logs_deaths_housing: ^unhoused_deaths,
-                    logs_deaths_pollution:
-                      ^length(slotted_cities_by_id[id].city.polluted_citizens),
+                    logs_deaths_pollution: ^length(slotted_cities_by_id[id].city.polluted_citizens),
                     logs_deaths_age: ^slotted_cities_by_id[id].city.aggregate_deaths_by_age,
                     logs_births: ^births_count
                   ]
