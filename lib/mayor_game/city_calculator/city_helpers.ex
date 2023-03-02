@@ -36,11 +36,13 @@ defmodule MayorGame.CityHelpers do
 
     sorted_buildables = buildables_map.buildables_list |> Enum.sort_by(&priorities_atoms[&1])
 
+    buildable_type_count_squared = length(sorted_buildables) * length(sorted_buildables)
+
     # %TownStatistics{}
     results_before_overrides =
       Enum.reduce_while(
         # the worst case scenario would be a square of this number, but you'd have to craft the malicious city on purpose.
-        1..length(sorted_buildables),
+        1..buildable_type_count_squared,
         town_stats,
         fn _iter, acc ->
           {cont_or_halt, _, updated_acc} =
@@ -50,13 +52,13 @@ defmodule MayorGame.CityHelpers do
               fn buildable, {loop_decision, pending_req, town_stat_inner} ->
                 # funky, you can do this with tuples
 
-                {sub_produces, sub_consumes, sub_town_stats} =
+                {fulfilled_count, sub_produces, sub_consumes, sub_town_stats} =
                   fill_workers(town, town_stat_inner, buildables_map.buildables_flat[buildable])
 
                 # if town.title == "hi22" && buildable == :high_rises,
                 #   do: IO.inspect(town_stat_inner.resource_stats)
 
-                if is_nil(sub_produces) || length(sub_produces) == 0 do
+                if is_nil(sub_produces) || length(sub_produces) == 0 || fulfilled_count <= 0 do
                   {:cont, {loop_decision, pending_req, sub_town_stats}}
                 else
                   # intersection of sub_produces and pending_req
@@ -644,7 +646,7 @@ defmodule MayorGame.CityHelpers do
   # the first list in the tuple indicates what is produced. This will be used to determine if the loop should reset to its start of the sorted_buildables list
   # the second list in the tuple indicates what is prevents all buildables from being activated. This will be used to determine if the loop should reset to its start of the sorted_buildables list
   @spec fill_workers(Town.t(), TownStatistics.t(), BuildableMetadata.t()) ::
-          {list(), list(), TownStatistics.t()}
+          {integer, list(), list(), TownStatistics.t()}
   def fill_workers(town, town_stats, buildable) do
     buildable_count =
       if Map.has_key?(town_stats.buildable_stats, buildable.title) do
@@ -657,6 +659,7 @@ defmodule MayorGame.CityHelpers do
 
     if buildable_count < 1 do
       {
+        0,
         [],
         [],
         town_stats
@@ -692,6 +695,7 @@ defmodule MayorGame.CityHelpers do
           end)
 
         {
+          buildable_count,
           Map.keys(production),
           [],
           town_stats
@@ -873,6 +877,7 @@ defmodule MayorGame.CityHelpers do
           end)
 
         {
+          post_employment_operation_stats.fulfilled_count,
           Map.keys(production),
           post_employment_operation_stats.deficient_prereq_all,
           town_stats
@@ -902,41 +907,52 @@ defmodule MayorGame.CityHelpers do
           deficient_prereq_all: list(String.t())
         }
   def check_maximum_and_reqs(reqs, checkee, count) do
-    filtered_reqs = Map.filter(reqs, fn {k, _v} -> !is_nil(checkee[k]) && checkee[k] > 0 end)
+    # !!!! reqs might not necessarily contain all elements of checkee! Filtering reqs is not enough.
+    # If any of the checkees are not present in reqs, and checkees is a true requirement, it is demanding a resource that is not produced.
+    # In such a case, evaluate to 0
 
-    met_values =
-      Enum.map(filtered_reqs, fn {k, v} ->
-        {k, floor((v.production - v.consumption + Enum.max([0, v.stock])) / checkee[k])}
-      end)
+    checkee_keys_without_reqs =
+      Map.filter(checkee, fn {k, _v} -> !is_nil(checkee[k]) && checkee[k] > 0 && is_nil(reqs[k]) end) |> Map.keys()
 
-    fulfilled_count =
-      Enum.max([
-        0,
-        Enum.min(Enum.map(met_values, fn {_k, v} -> v end) ++ [count], &<=/2, fn -> 0 end)
-      ])
+    if length(checkee_keys_without_reqs) > 0 do
+      %{
+        fulfilled_count: 0,
+        deficient_prereq_next: checkee_keys_without_reqs,
+        deficient_prereq_all: checkee_keys_without_reqs
+      }
+    else
+      filtered_reqs = Map.filter(reqs, fn {k, _v} -> !is_nil(checkee[k]) && checkee[k] > 0 end)
 
-    %{
-      # Enum.min([fulfilled_count, count]),
-      fulfilled_count: fulfilled_count,
-      deficient_prereq_next:
-        if fulfilled_count == count do
-          []
-        else
+      met_values =
+        Enum.map(filtered_reqs, fn {k, v} ->
+          {k, floor((v.production - v.consumption + Enum.max([0, v.stock])) / checkee[k])}
+        end)
+
+      # note: fulfilled_count may be negative
+      fulfilled_count = Enum.min(Enum.map(met_values, fn {_k, v} -> v end) ++ [count])
+
+      %{
+        fulfilled_count: Enum.max([0, fulfilled_count]),
+        deficient_prereq_next:
+          if fulfilled_count == count do
+            []
+          else
+            Enum.flat_map(met_values, fn {k, v} ->
+              case v <= fulfilled_count do
+                true -> [k]
+                false -> []
+              end
+            end)
+          end,
+        deficient_prereq_all:
           Enum.flat_map(met_values, fn {k, v} ->
-            case v <= fulfilled_count do
+            case v < count do
               true -> [k]
               false -> []
             end
           end)
-        end,
-      deficient_prereq_all:
-        Enum.flat_map(met_values, fn {k, v} ->
-          case v < count do
-            true -> [k]
-            false -> []
-          end
-        end)
-    }
+      }
+    end
   end
 
   @spec check_worker_count(integer, %{integer => integer}, %{integer => integer}, integer) :: %{
