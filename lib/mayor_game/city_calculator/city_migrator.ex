@@ -70,7 +70,7 @@ defmodule MayorGame.CityMigrator do
 
       cities_list = Enum.shuffle(cities)
 
-      time_to_learn = if in_dev, do: rem(migration_tick, 10) == 0, else: rem(migration_tick, 180) == 0
+      time_to_learn = if in_dev, do: rem(migration_tick, 10) == 0, else: rem(migration_tick, 100) == 0
 
       leftovers =
         cities_list

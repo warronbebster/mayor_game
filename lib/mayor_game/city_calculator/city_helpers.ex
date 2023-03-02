@@ -270,7 +270,8 @@ defmodule MayorGame.CityHelpers do
     town_preloaded = preload_city_check(town)
 
     # are we sure we want pollution_ceiling to be tied to a RNG?
-    pollution_reached = world.pollution > pollution_ceiling || results.pollution > results.citizen_count * 5
+    pollution_reached = world.pollution > pollution_ceiling
+    # pollution_reached = world.pollution > pollution_ceiling || town_stats.pollution > town_stats.citizen_count * 5
 
     reproductive_citizen_count = Enum.count(town_preloaded.citizens_blob, &Rules.is_citizen_reproductive(&1))
 

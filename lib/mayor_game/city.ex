@@ -367,7 +367,7 @@ defmodule MayorGame.City do
       |> Repo.update_all(inc: [{field_to_purchase, 1}, {:treasury, -purchase_price}])
     else
       Logger.error(inspect(purchase_city.errors))
-      {:error, err}
+      {:error, purchase_city.errors}
     end
   end
 

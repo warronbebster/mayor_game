@@ -200,9 +200,11 @@ defmodule MayorGame.CityCalculator do
 
     valid_attackers =
       leftovers
-      |> Enum.filter(fn city -> city.daily_strikes > 0 end)
+      |> Enum.filter(fn city ->
+        city |> TownStatistics.getResource(:daily_strikes) |> ResourceStatistics.getNetProduction() > 0
+      end)
       |> Map.new(fn city ->
-        {city.id, city.daily_strikes}
+        {city.id, city |> TownStatistics.getResource(:daily_strikes) |> ResourceStatistics.getNetProduction()}
       end)
 
     Enum.reduce(attacks, valid_attackers, fn attack, acc ->
