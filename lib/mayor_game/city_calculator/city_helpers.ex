@@ -188,7 +188,7 @@ defmodule MayorGame.CityHelpers do
                       is_function(func, 2) ->
                         IO.inspect(func, label: to_string(r.title))
                         result = func.(:rand.uniform(), qty)
-                        if result, do: result, else: 0
+                        if is_number(result), do: result, else: 0
 
                       # drops (fn _rng, _number_of_instances, _city -> drop_amount)
                       is_function(func, 3) ->
