@@ -53,7 +53,8 @@ defmodule MayorGameWeb.CityLive do
       civic: "Civic buildings add other benefits citizens like — jobs, fun, etc.",
       work: "Work buildings have lots of jobs to attract citizens to your city",
       entertainment: "Entertainment buildings have jobs, and add other intangibles to your city.",
-      health: "Health buildings increase the health of your citizens, and make them less likely to die",
+      travel: "Travel buildings are your tourist magnets, providing jobs & generating fun.",
+      health: "Health buildings increase the health of your citizens, and make them less likely to die.",
       combat: "Combat buildings let you attack other cities, or defend your city from attack."
     }
 
