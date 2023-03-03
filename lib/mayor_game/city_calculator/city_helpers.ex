@@ -541,7 +541,8 @@ defmodule MayorGame.CityHelpers do
       |> Enum.map(fn {k, v} ->
         value =
           cond do
-            is_integer(v) -> round(v)
+            # bug-fix: multiplers will always generate a float, use is_number instead of is_integer
+            is_number(v) -> round(v)
             # pollution per pop (consider making generic)
             is_function(v, 1) -> round(v.(citizen_count))
             true -> 0
@@ -577,7 +578,7 @@ defmodule MayorGame.CityHelpers do
       |> Enum.map(fn {k, v} ->
         value =
           cond do
-            is_integer(v) -> round(v)
+            is_number(v) -> round(v)
             true -> nil
           end
 
@@ -610,7 +611,7 @@ defmodule MayorGame.CityHelpers do
       |> Enum.map(fn {k, v} ->
         value =
           cond do
-            is_integer(v) -> round(v)
+            is_number(v) -> round(v)
             # pollution per pop
             is_function(v, 1) -> round(v.(citizen_count))
             # drops not supported for consumption
