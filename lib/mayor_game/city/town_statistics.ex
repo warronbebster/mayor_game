@@ -75,80 +75,136 @@ defmodule MayorGame.City.TownStatistics do
       citizen_count_by_level: Enum.frequencies_by(town.citizens_blob, & &1["education"]),
       employed_citizen_count_by_level: %{},
       resource_stats: %{
-        :money => %ResourceStatistics{
+        money: %ResourceStatistics{
           title: "money",
           stock: town.treasury,
           storage: nil,
           production: 0,
           consumption: 0
         },
-        :pollution => %ResourceStatistics{
+        pollution: %ResourceStatistics{
           title: "pollution",
           stock: 0,
           storage: nil,
           production: 0,
           consumption: 0
         },
-        :energy => %ResourceStatistics{
+        energy: %ResourceStatistics{
           title: "energy",
           stock: 0,
           storage: nil,
           production: 0,
           consumption: 0
         },
-        :area => %ResourceStatistics{
+        area: %ResourceStatistics{
           title: "area",
           stock: 0,
           storage: nil,
           production: 0,
           consumption: 0
         },
-        :housing => %ResourceStatistics{
+        housing: %ResourceStatistics{
           title: "housing",
           stock: 0,
           storage: nil,
           production: 0,
           consumption: 0
         },
-        :steel => %ResourceStatistics{
+        health: %ResourceStatistics{
+          title: "health",
+          stock: 0,
+          storage: nil,
+          production: 0,
+          consumption: 0
+        },
+        steel: %ResourceStatistics{
           title: "steel",
           stock: town.steel,
           storage: nil,
           production: 0,
           consumption: 0
         },
-        :uranium => %ResourceStatistics{
+        uranium: %ResourceStatistics{
           title: "uranium",
           stock: town.uranium,
-          storage: nil,
+          storage: 50,
           production: 0,
           consumption: 0
         },
-        :gold => %ResourceStatistics{
+        gold: %ResourceStatistics{
           title: "gold",
           stock: town.gold,
-          storage: nil,
+          storage: 50,
           production: 0,
           consumption: 0
         },
-        :sulfur => %ResourceStatistics{
+        sulfur: %ResourceStatistics{
           title: "sulfur",
           stock: town.sulfur,
-          storage: nil,
+          storage: 50,
           production: 0,
           consumption: 0
         },
-        :shields => %ResourceStatistics{
+        stone: %ResourceStatistics{
+          title: "stone",
+          stock: town.stone,
+          storage: 50,
+          production: 0,
+          consumption: 0
+        },
+        wood: %ResourceStatistics{
+          title: "wood",
+          stock: town.wood,
+          storage: 50,
+          production: 0,
+          consumption: 0
+        },
+        fish: %ResourceStatistics{
+          title: "fish",
+          stock: town.fish,
+          storage: 50,
+          production: 0,
+          consumption: 0
+        },
+        oil: %ResourceStatistics{
+          title: "oil",
+          stock: town.oil,
+          storage: 50,
+          production: 0,
+          consumption: 0
+        },
+        salt: %ResourceStatistics{
+          title: "salt",
+          stock: town.salt,
+          storage: 50,
+          production: 0,
+          consumption: 0
+        },
+        water: %ResourceStatistics{
+          title: "water",
+          stock: town.water,
+          storage: 50,
+          production: 0,
+          consumption: 0
+        },
+        lithium: %ResourceStatistics{
+          title: "lithium",
+          stock: town.lithium,
+          storage: 50,
+          production: 0,
+          consumption: 0
+        },
+        shields: %ResourceStatistics{
           title: "shields",
           stock: town.shields,
-          storage: nil,
+          storage: 50,
           production: 0,
           consumption: 0
         },
-        :missiles => %ResourceStatistics{
+        missiles: %ResourceStatistics{
           title: "missiles",
           stock: town.missiles,
-          storage: nil,
+          storage: 50,
           production: 0,
           consumption: 0
         }

@@ -88,6 +88,14 @@ defmodule MayorGame.City.Town do
             sulfur: integer,
             gold: integer,
             uranium: integer,
+            stone: integer,
+            fish: integer,
+            oil: integer,
+            wood: integer,
+            salt: integer,
+            water: integer,
+            lithium: integer,
+            microchips: integer,
 
             # Buildings ————————————————————————————
             huts: integer,
@@ -124,6 +132,8 @@ defmodule MayorGame.City.Town do
             factories: integer,
             mines: integer,
             uranium_mines: integer,
+            reservoirs: integer,
+            oil_wells: integer,
             office_buildings: integer,
             distribution_centers: integer,
             theatres: integer,
@@ -144,12 +154,22 @@ defmodule MayorGame.City.Town do
     field(:pollution, :integer)
     field(:treasury, :integer)
     field(:citizen_count, :integer)
+
+    # RESOURCES
     field(:steel, :integer)
     field(:missiles, :integer)
     field(:shields, :integer)
     field(:sulfur, :integer)
     field(:gold, :integer)
     field(:uranium, :integer)
+    field(:stone, :integer)
+    field(:wood, :integer)
+    field(:fish, :integer)
+    field(:oil, :integer)
+    field(:salt, :integer)
+    field(:water, :integer)
+    field(:lithium, :integer)
+    field(:microchips, :integer)
 
     field(:patron, :integer)
     field(:contributor, :boolean)
@@ -227,6 +247,7 @@ defmodule MayorGame.City.Town do
         :user_id,
         :tax_rates,
         :steel,
+        :stone,
         :missiles,
         :shields,
         :sulfur,

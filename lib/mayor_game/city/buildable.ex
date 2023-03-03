@@ -44,85 +44,86 @@ defmodule MayorGame.City.Buildable do
     }
   }
   """
-  def buildables do
-    %{
-      housing: %{
-        huts: buildables_flat().huts,
-        single_family_homes: buildables_flat().single_family_homes,
-        multi_family_homes: buildables_flat().multi_family_homes,
-        homeless_shelters: buildables_flat().homeless_shelters,
-        apartments: buildables_flat().apartments,
-        micro_apartments: buildables_flat().micro_apartments,
-        high_rises: buildables_flat().high_rises,
-        megablocks: buildables_flat().megablocks
-      },
-      transit: %{
-        roads: buildables_flat().roads,
-        highways: buildables_flat().highways,
-        airports: buildables_flat().airports,
-        bus_lines: buildables_flat().bus_lines,
-        subway_lines: buildables_flat().subway_lines,
-        bike_lanes: buildables_flat().bike_lanes,
-        bikeshare_stations: buildables_flat().bikeshare_stations
-      },
-      energy: [
-        coal_plants: buildables_flat().coal_plants,
-        natural_gas_plants: buildables_flat().natural_gas_plants,
-        wind_turbines: buildables_flat().wind_turbines,
-        solar_plants: buildables_flat().solar_plants,
-        nuclear_plants: buildables_flat().nuclear_plants,
-        fusion_reactors: buildables_flat().fusion_reactors,
-        dams: buildables_flat().dams,
-        carbon_capture_plants: buildables_flat().carbon_capture_plants
-      ],
-      civic: %{
-        parks: buildables_flat().parks,
-        campgrounds: buildables_flat().campgrounds,
-        nature_preserves: buildables_flat().nature_preserves,
-        libraries: buildables_flat().libraries
-      },
-      education: %{
-        schools: buildables_flat().schools,
-        middle_schools: buildables_flat().middle_schools,
-        high_schools: buildables_flat().high_schools,
-        universities: buildables_flat().universities,
-        research_labs: buildables_flat().research_labs
-      },
-      resources: %{
-        mines: buildables_flat().mines,
-        uranium_mines: buildables_flat().uranium_mines,
-        lumber_yards: buildables_flat().lumber_yards,
-        quarries: buildables_flat().quarries,
-        salt_farms: buildables_flat().salt_farms,
-        lithium_mines: buildables_flat().lithium_mines
-      },
-      work: %{
-        retail_shops: buildables_flat().retail_shops,
-        factories: buildables_flat().factories,
-        office_buildings: buildables_flat().office_buildings,
-        distribution_centers: buildables_flat().distribution_centers
-      },
-      entertainment: %{
-        theatres: buildables_flat().theatres,
-        arenas: buildables_flat().arenas,
-        zoos: buildables_flat().zoos,
-        aquariums: buildables_flat().aquariums
-      },
-      travel: %{
-        resorts: buildables_flat().resorts,
-        ski_resorts: buildables_flat().ski_resorts
-      },
-      health: %{
-        hospitals: buildables_flat().hospitals,
-        doctor_offices: buildables_flat().doctor_offices
-      },
-      combat: %{
-        air_bases: buildables_flat().air_bases,
-        defense_bases: buildables_flat().defense_bases,
-        missile_defense_arrays: buildables_flat().missile_defense_arrays
-      }
-    }
-  end
+
+  # def buildables do
+  #   %{
+  #     housing: %{
+  #       huts: buildables_flat().huts,
+  #       single_family_homes: buildables_flat().single_family_homes,
+  #       multi_family_homes: buildables_flat().multi_family_homes,
+  #       homeless_shelters: buildables_flat().homeless_shelters,
+  #       apartments: buildables_flat().apartments,
+  #       micro_apartments: buildables_flat().micro_apartments,
+  #       high_rises: buildables_flat().high_rises,
+  #       megablocks: buildables_flat().megablocks
+  #     },
+  #     transit: %{
+  #       roads: buildables_flat().roads,
+  #       highways: buildables_flat().highways,
+  #       airports: buildables_flat().airports,
+  #       bus_lines: buildables_flat().bus_lines,
+  #       subway_lines: buildables_flat().subway_lines,
+  #       bike_lanes: buildables_flat().bike_lanes,
+  #       bikeshare_stations: buildables_flat().bikeshare_stations
+  #     },
+  #     energy: [
+  #       coal_plants: buildables_flat().coal_plants,
+  #       natural_gas_plants: buildables_flat().natural_gas_plants,
+  #       wind_turbines: buildables_flat().wind_turbines,
+  #       solar_plants: buildables_flat().solar_plants,
+  #       nuclear_plants: buildables_flat().nuclear_plants,
+  #       fusion_reactors: buildables_flat().fusion_reactors,
+  #       dams: buildables_flat().dams,
+  #       carbon_capture_plants: buildables_flat().carbon_capture_plants
+  #     ],
+  #     civic: %{
+  #       parks: buildables_flat().parks,
+  #       campgrounds: buildables_flat().campgrounds,
+  #       nature_preserves: buildables_flat().nature_preserves,
+  #       libraries: buildables_flat().libraries
+  #     },
+  #     education: %{
+  #       schools: buildables_flat().schools,
+  #       middle_schools: buildables_flat().middle_schools,
+  #       high_schools: buildables_flat().high_schools,
+  #       universities: buildables_flat().universities,
+  #       research_labs: buildables_flat().research_labs
+  #     },
+  #     resources: %{
+  #       mines: buildables_flat().mines,
+  #       uranium_mines: buildables_flat().uranium_mines,
+  #       lumber_yards: buildables_flat().lumber_yards,
+  #       quarries: buildables_flat().quarries,
+  #       salt_farms: buildables_flat().salt_farms,
+  #       lithium_mines: buildables_flat().lithium_mines
+  #     },
+  #     work: %{
+  #       retail_shops: buildables_flat().retail_shops,
+  #       factories: buildables_flat().factories,
+  #       office_buildings: buildables_flat().office_buildings,
+  #       distribution_centers: buildables_flat().distribution_centers
+  #     },
+  #     entertainment: %{
+  #       theatres: buildables_flat().theatres,
+  #       arenas: buildables_flat().arenas,
+  #       zoos: buildables_flat().zoos,
+  #       aquariums: buildables_flat().aquariums
+  #     },
+  #     travel: %{
+  #       resorts: buildables_flat().resorts,
+  #       ski_resorts: buildables_flat().ski_resorts
+  #     },
+  #     health: %{
+  #       hospitals: buildables_flat().hospitals,
+  #       doctor_offices: buildables_flat().doctor_offices
+  #     },
+  #     combat: %{
+  #       air_bases: buildables_flat().air_bases,
+  #       defense_bases: buildables_flat().defense_bases,
+  #       missile_defense_arrays: buildables_flat().missile_defense_arrays
+  #     }
+  #   }
+  # end
 
   def buildables_attack_order do
     [
@@ -214,6 +215,12 @@ defmodule MayorGame.City.Buildable do
       factories: 9,
       mines: 9,
       lithium_mines: 9,
+      quarries: 9,
+      resorts: 9,
+      ski_resorts: 9,
+      oil_wells: 9,
+      fisheries: 9,
+      lumber_yards: 9,
       uranium_mines: 9,
       office_buildings: 9,
       distribution_centers: 9,
@@ -267,19 +274,21 @@ defmodule MayorGame.City.Buildable do
         universities: buildables_flat().universities,
         research_labs: buildables_flat().research_labs
       ],
-      civic: [
-        parks: buildables_flat().parks,
-        campgrounds: buildables_flat().campgrounds,
-        nature_preserves: buildables_flat().nature_preserves,
-        libraries: buildables_flat().libraries
-      ],
       resources: [
         lumber_yards: buildables_flat().lumber_yards,
         mines: buildables_flat().mines,
         uranium_mines: buildables_flat().uranium_mines,
         salt_farms: buildables_flat().salt_farms,
         lithium_mines: buildables_flat().lithium_mines,
-        quarries: buildables_flat().quarries
+        quarries: buildables_flat().quarries,
+        reservoirs: buildables_flat().reservoirs,
+        oil_wells: buildables_flat().oil_wells
+      ],
+      civic: [
+        parks: buildables_flat().parks,
+        campgrounds: buildables_flat().campgrounds,
+        nature_preserves: buildables_flat().nature_preserves,
+        libraries: buildables_flat().libraries
       ],
       work: [
         retail_shops: buildables_flat().retail_shops,
@@ -1010,7 +1019,8 @@ defmodule MayorGame.City.Buildable do
             Utility.dice_roll(number_of_buildables, 0.001)
           end
           # gold: 1,
-        }
+        },
+        stores: %{sulfur: 1000}
       },
       # LUMBER YARDS ————————————————————————————————————
       lumber_yards: %BuildableMetadata{
@@ -1026,9 +1036,8 @@ defmodule MayorGame.City.Buildable do
           area: 25,
           workers: %{count: 10, level: 1}
         },
-        produces: %{
-          wood: 5
-        }
+        produces: %{wood: 5},
+        stores: %{wood: 500}
       },
       # FISHERIES ————————————————————————————————————
       fisheries: %BuildableMetadata{
@@ -1045,9 +1054,9 @@ defmodule MayorGame.City.Buildable do
           workers: %{count: 10, level: 2}
         },
         produces: %{
-          fish: 5,
-          oil: 1
-        }
+          fish: 5
+        },
+        stores: %{fish: 100}
       },
       # URANIUM MINES ————————————————————————————————————
       uranium_mines: %BuildableMetadata{
@@ -1066,8 +1075,29 @@ defmodule MayorGame.City.Buildable do
           health: -50,
           pollution: 50,
           uranium: 1
-          # gold: 1,
-        }
+        },
+        stores: %{uranium: 1000}
+      },
+      # OIL WELLS ————————————————————————————————————
+      oil_wells: %BuildableMetadata{
+        regions: [:desert],
+        size: 3,
+        category: :resources,
+        level: 4,
+        title: :oil_wells,
+        price: 10_000_000,
+        requires: %{
+          money: 1000,
+          energy: 3000,
+          area: 100,
+          workers: %{count: 20, level: 1}
+        },
+        produces: %{
+          health: -50,
+          pollution: 50,
+          oil: 1
+        },
+        stores: %{oil: 1000}
       },
       # LITHIUM MINES ————————————————————————————————————
       lithium_mines: %BuildableMetadata{
@@ -1086,9 +1116,28 @@ defmodule MayorGame.City.Buildable do
         produces: %{
           health: -50,
           pollution: 50,
-          uranium: 1
-          # gold: 1,
-        }
+          lithium: 1
+        },
+        stores: %{lithium: 100}
+      },
+      # RESERVOIRS ————————————————————————————————————
+      reservoirs: %BuildableMetadata{
+        regions: [:lake],
+        size: 10,
+        category: :resources,
+        level: 4,
+        title: :reservoirs,
+        price: 3_000_000,
+        requires: %{
+          money: 100,
+          energy: 100,
+          area: 500,
+          workers: %{count: 10, level: 1}
+        },
+        produces: %{
+          water: 1
+        },
+        stores: %{water: 1000}
       },
       # SALT FARMS ————————————————————————————————————
       salt_farms: %BuildableMetadata{
@@ -1100,21 +1149,20 @@ defmodule MayorGame.City.Buildable do
         price: 2_000_000,
         requires: %{
           money: 1000,
-          energy: 5000,
-          area: 100,
-          workers: %{count: 20, level: 4}
+          energy: 500,
+          area: 250,
+          workers: %{count: 10, level: 2}
         },
-        produces: %{
-          salt: 1
-        }
+        produces: %{salt: 1},
+        stores: %{salt: 100}
       },
-      # SALT FARMS ————————————————————————————————————
+      # QUARRIES ————————————————————————————————————
       quarries: %BuildableMetadata{
-        regions: [:ocean],
+        regions: [:mountain],
         size: 3,
         category: :resources,
         level: 4,
-        title: :salt_farms,
+        title: :quarries,
         price: 2_000_000,
         requires: %{
           money: 1000,
@@ -1122,9 +1170,8 @@ defmodule MayorGame.City.Buildable do
           area: 100,
           workers: %{count: 20, level: 4}
         },
-        produces: %{
-          salt: 1
-        }
+        produces: %{stone: 1},
+        stores: %{stone: 100}
       },
       # BUSINESS —
       # RETAIL SHOPS ————————————————————————————————————
@@ -1315,7 +1362,7 @@ defmodule MayorGame.City.Buildable do
           money: 5000,
           energy: 400,
           area: 50,
-          workers: %{count: 15, level: 2}
+          workers: %{count: 25, level: 2}
         },
         produces: %{
           health: 10,
@@ -1325,7 +1372,7 @@ defmodule MayorGame.City.Buildable do
       # ————————————————————————————————————————————————————————————
       # RESORTS ————————————————————————————————————
       resorts: %BuildableMetadata{
-        regions: [:beach],
+        regions: [:ocean],
         size: 3,
         category: :travel,
         level: 2,

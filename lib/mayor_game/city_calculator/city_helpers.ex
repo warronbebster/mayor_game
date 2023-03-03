@@ -84,29 +84,30 @@ defmodule MayorGame.CityHelpers do
 
     # set overrides not handled by production calculations
     # this is only needed since the produce code does not consider the starting cap, and it is not additive
-    missiles_cap =
-      results_before_overrides
-      |> TownStatistics.getResource(:missiles)
-      |> ResourceStatistics.getStorage()
 
-    shields_cap =
-      results_before_overrides
-      |> TownStatistics.getResource(:shields)
-      |> ResourceStatistics.getStorage()
+    # missiles_cap =
+    #   results_before_overrides
+    #   |> TownStatistics.getResource(:missiles)
+    #   |> ResourceStatistics.getStorage()
 
-    adjusted_missiles_cap =
-      if is_nil(missiles_cap) do
-        50
-      else
-        max(50, missiles_cap)
-      end
+    # shields_cap =
+    #   results_before_overrides
+    #   |> TownStatistics.getResource(:shields)
+    #   |> ResourceStatistics.getStorage()
 
-    adjusted_shields_cap =
-      if is_nil(shields_cap) do
-        50
-      else
-        max(50, shields_cap)
-      end
+    # adjusted_missiles_cap =
+    #   if is_nil(missiles_cap) do
+    #     50
+    #   else
+    #     max(50, missiles_cap)
+    #   end
+
+    # adjusted_shields_cap =
+    #   if is_nil(shields_cap) do
+    #     50
+    #   else
+    #     max(50, shields_cap)
+    #   end
 
     results =
       results_before_overrides
@@ -118,14 +119,6 @@ defmodule MayorGame.CityHelpers do
             :housing => ResourceStatistics.fromRequires(:housing, town_stats.total_citizens)
           },
           fn _k, v1, v2 -> ResourceStatistics.merge(v1, v2) end
-        )
-        |> Map.merge(
-          %{
-            # apply modified capacities
-            :missiles => adjusted_missiles_cap,
-            :shields => adjusted_shields_cap
-          },
-          fn _k, v1, v2 -> v1 |> Map.update!(:storage, fn _ -> v2 end) end
         )
         |> Enum.map(
           # apply capacities

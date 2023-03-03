@@ -349,9 +349,9 @@ defmodule MayorGame.City do
       {:ok, %Details{}}
 
   """
-  def purchase_buildable(%Town{} = city, {_ledger_buildable, ledger_cost}, field_to_purchase, purchase_price) do
+  def purchase_buildable(%Town{} = city, field_to_purchase, purchase_price) do
     # city is unchanged, use the ledger to hold the accumlated construction and cost prior to UI refresh
-    city_attrs = %{treasury: city.treasury - ledger_cost - purchase_price}
+    city_attrs = %{treasury: city.treasury - purchase_price}
 
     purchase_city =
       city

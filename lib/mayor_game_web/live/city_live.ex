@@ -9,7 +9,6 @@ defmodule MayorGameWeb.CityLive do
   alias MayorGame.CityCombat
   alias MayorGame.{City, Repo, Rules}
   alias MayorGame.City.Town
-  # import MayorGame.CityHelpers
   alias MayorGame.City.Buildable
 
   import Ecto.Query, warn: false
@@ -17,7 +16,6 @@ defmodule MayorGameWeb.CityLive do
   alias MayorGameWeb.CityView
 
   alias Pow.Store.CredentialsCache
-  # alias MayorGameWeb.Pow.Routes
 
   def render(assigns) do
     # use CityView view to render city/show.html.leex template with assigns
@@ -38,8 +36,16 @@ defmodule MayorGameWeb.CityLive do
       {:sulfur, "text-orange-700"},
       {:steel, "text-slate-700"},
       {:fun, "text-fuchsia-700"},
-      {:missile, "text-slate-700"},
-      {:shields, "text-slate-700"}
+      {:fish, "text-cyan-700"},
+      {:oil, "text-stone-700"},
+      {:stone, "text-slate-700"},
+      {:sprawl, "text-yellow-700"},
+      {:wood, "text-amber-700"},
+      {:lithium, "text-lime-700"},
+      {:water, "text-sky-700"},
+      {:salt, "text-zinc-700"},
+      {:missile, "text-red-700"},
+      {:shields, "text-blue-700"}
     ]
 
     explanations = %{
@@ -51,8 +57,11 @@ defmodule MayorGameWeb.CityLive do
       education:
         "Education buildings will, once a year, move citizens up an education level. This allows them to work at buildings with higher job levels, and make more money (and you, too, through taxes!",
       civic: "Civic buildings add other benefits citizens like — jobs, fun, etc.",
+      resources:
+        "Resource buildings are ways to generate in-game resources. Some regions have unique resource buildings.",
       work: "Work buildings have lots of jobs to attract citizens to your city",
       entertainment: "Entertainment buildings have jobs, and add other intangibles to your city.",
+      travel: "Travel buildings increase your city's desirability.",
       health: "Health buildings increase the health of your citizens, and make them less likely to die",
       combat: "Combat buildings let you attack other cities, or defend your city from attack."
     }
@@ -60,7 +69,7 @@ defmodule MayorGameWeb.CityLive do
     buildables_map = %{
       buildables_flat: Buildable.buildables_flat(),
       buildables_kw_list: Buildable.buildables_kw_list(),
-      buildables: Buildable.buildables(),
+      # buildables: Buildable.buildables(),
       buildables_list: Buildable.buildables_list(),
       empty_buildable_map: Buildable.empty_buildable_map(),
       buildables_ordered: Buildable.buildables_ordered(),
@@ -90,7 +99,7 @@ defmodule MayorGameWeb.CityLive do
       ])
       |> assign(:category_explanations, explanations)
       |> assign(:subtotal_types, subtotal_types)
-      |> assign(resources: ["money", "steel", "sulfur", "missiles", "shields", "uranium"])
+      |> assign(resources: ["money", "steel", "sulfur", "missiles", "shields", "uranium", "oil", "fish"])
       # |> mount_city_by_title()
       |> update_city_by_title()
       |> assign_auth(session)
@@ -231,12 +240,10 @@ defmodule MayorGameWeb.CityLive do
 
     success =
       if socket.assigns.current_user.id == city.user_id do
-        # get exponential price — don't want to set price on front-end for cheating reasons
-
         # check for upgrade requirements?
         case City.purchase_buildable(
                city,
-               {socket.assigns.construction_count, socket.assigns.construction_cost},
+               #  {socket.assigns.construction_count, socket.assigns.construction_cost},
                building_to_buy_atom,
                purchase_price
              ) do
@@ -259,8 +266,7 @@ defmodule MayorGameWeb.CityLive do
 
       new_construction_cost = socket.assigns.construction_cost + purchase_price
 
-      new_purchase_price =
-        Rules.building_price(initial_purchase_price, buildable_count + new_construction_count[building_to_buy_atom])
+      new_purchase_price = Rules.building_price(initial_purchase_price, buildable_count + 1)
 
       new_buildables =
         socket.assigns.buildables
@@ -997,7 +1003,7 @@ defmodule MayorGameWeb.CityLive do
       is_user_mayor =
         if !socket.assigns.in_dev,
           do: to_string(socket.assigns.user_id) == to_string(socket.assigns.current_user.id),
-          else: to_string(socket.assigns.user_id) == to_string(socket.assigns.current_user.id)
+          else: to_string(socket.assigns.current_user.id) == to_string(socket.assigns.current_user.id)
 
       is_user_admin =
         if !socket.assigns.in_dev,

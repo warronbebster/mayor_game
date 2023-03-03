@@ -24,7 +24,7 @@ defmodule MayorGame.CityCalculator do
     buildables_map = %{
       buildables_flat: Buildable.buildables_flat(),
       buildables_kw_list: Buildable.buildables_kw_list(),
-      buildables: Buildable.buildables(),
+      # buildables: Buildable.buildables(),
       buildables_list: Buildable.buildables_list(),
       buildables_ordered: Buildable.buildables_ordered(),
       buildables_ordered_flat: Buildable.buildables_ordered_flat(),
@@ -135,6 +135,34 @@ defmodule MayorGame.CityCalculator do
                   uranium:
                     ^(city
                       |> TownStatistics.getResource(:uranium)
+                      |> ResourceStatistics.getNetProduction()),
+                  stone:
+                    ^(city
+                      |> TownStatistics.getResource(:stone)
+                      |> ResourceStatistics.getNetProduction()),
+                  wood:
+                    ^(city
+                      |> TownStatistics.getResource(:wood)
+                      |> ResourceStatistics.getNetProduction()),
+                  fish:
+                    ^(city
+                      |> TownStatistics.getResource(:fish)
+                      |> ResourceStatistics.getNetProduction()),
+                  oil:
+                    ^(city
+                      |> TownStatistics.getResource(:oil)
+                      |> ResourceStatistics.getNetProduction()),
+                  salt:
+                    ^(city
+                      |> TownStatistics.getResource(:salt)
+                      |> ResourceStatistics.getNetProduction()),
+                  lithium:
+                    ^(city
+                      |> TownStatistics.getResource(:lithium)
+                      |> ResourceStatistics.getNetProduction()),
+                  water:
+                    ^(city
+                      |> TownStatistics.getResource(:water)
                       |> ResourceStatistics.getNetProduction())
                   # logs—————————
                 ],

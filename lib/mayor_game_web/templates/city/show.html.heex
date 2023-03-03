@@ -1,3 +1,5 @@
+
+
 <div class="top-0 p-1 px-2 z-20 bg-amber-50 border-b border-neutral-800 flex space-x-3 w-screen overflow-x-scroll shrink-0 leading-tight">
   <table class="self-end mr-auto align-bottom">
     <tr>
@@ -143,8 +145,16 @@
           Area
         </div>
       </td>
+      <td class="group relative h-4 top_td text-yellow-600">
+        <div class="flex gap-1 items-center w-full">
+          <img src="/images/sprawl.svg" alt="total sprawl" height="12" width="12" class="inline" />
+        </div>
+        <div class="tooltip top-0 left-0 -translate-x-full ">
+          Sprawl
+        </div>
+      </td>
       <td class="group relative h-4 top_td text-fuchsia-600">
-        <div class="flex gap-1 items-center w-full pr-2">
+        <div class="flex gap-1 items-center w-full">
           <img src="/images/fun.svg" alt="total fun" height="12" width="12" class="inline" />
         </div>
         <div class="tooltip top-0 left-0 -translate-x-full">
@@ -152,7 +162,7 @@
         </div>
       </td>
       <td class="group relative h-4 top_td text-rose-600">
-        <div class="flex gap-1 items-center w-full pr-2">
+        <div class="flex gap-1 items-center w-full">
           <img src="/images/health.svg" alt="total health" height="12" width="12" class="inline" />
         </div>
         <div class="tooltip top-0 left-0 -translate-x-full ">
@@ -160,11 +170,67 @@
         </div>
       </td>
       <td class="group relative h-4 top_td text-slate-600">
-        <div class="flex gap-1 items-center w-full pr-2">
+        <div class="flex gap-1 items-center w-full">
           <img src="/images/steel.svg" alt="total steel" height="12" width="12" class="inline" />
         </div>
         <div class="tooltip top-0 left-0 -translate-x-full ">
           Steel
+        </div>
+      </td>
+      <td class="group relative h-4 top_td text-slate-600">
+        <div class="flex gap-1 items-center w-full pr-2">
+          <img src="/images/stone.svg" alt="total stone" height="12" width="12" class="inline" />
+        </div>
+        <div class="tooltip top-0 left-0 -translate-x-full ">
+          Stone
+        </div>
+      </td>
+      <td class="group relative h-4 top_td text-amber-600">
+        <div class="flex gap-1 items-center w-full pr-2">
+          <img src="/images/wood.svg" alt="total wood" height="12" width="12" class="inline" />
+        </div>
+        <div class="tooltip top-0 left-0 -translate-x-full ">
+          Wood
+        </div>
+      </td>
+      <td class="group relative h-4 top_td text-cyan-600">
+        <div class="flex gap-1 items-center w-full pr-2">
+          <img src="/images/fish.svg" alt="total fish" height="12" width="12" class="inline" />
+        </div>
+        <div class="tooltip top-0 left-0 -translate-x-full ">
+          Fish
+        </div>
+      </td>
+      <td class="group relative h-4 top_td text-stone-600">
+        <div class="flex gap-1 items-center w-full pr-2">
+          <img src="/images/oil.svg" alt="total oil" height="12" width="12" class="inline" />
+        </div>
+        <div class="tooltip top-0 left-0 -translate-x-full ">
+          Oil
+        </div>
+      </td>
+      <td class="group relative h-4 top_td text-zinc-600">
+        <div class="flex gap-1 items-center w-full pr-2">
+          <img src="/images/salt.svg" alt="total salt" height="12" width="12" class="inline" />
+        </div>
+        <div class="tooltip top-0 left-0 -translate-x-full ">
+          Salt
+        </div>
+      </td>
+      <td class="group relative h-4 top_td text-sky-600">
+        <div class="flex gap-1 items-center w-full pr-2">
+          <img src="/images/water.svg" alt="total water" height="12" width="12" class="inline" />
+        </div>
+        <div class="tooltip top-0 left-0 -translate-x-full ">
+          Water
+        </div>
+      </td>
+      <td class="group relative h-4 top_td text-lime-600">
+        <div class="flex gap-1 items-center w-full pr-2">
+          <img src="/images/lithium.svg" alt="total lithium" height="12" width="12" class="inline" />
+        </div>
+        <div class="tooltip top-0 left-0 -translate-x-full ">
+          Lithium
         </div>
       </td>
       <td class="group relative h-4 top_td text-orange-600">
@@ -203,14 +269,14 @@
     <tr>
       <td class="top_td">
         <span class="text-purple-800">
-          <%= @city_stats |> MayorGame.City.TownStatistics.getResource(:pollution) |> MayorGame.City.ResourceStatistics.expressNetProduction_SI()
+          <%= @city_stats |> TownStatistics.getResource(:pollution) |> ResourceStatistics.expressNetProduction_SI()
            %>/day
         </span>
       </td>
 
       <td class="top_td">
         <span class="text-amber-800">
-          <%= @city_stats |> MayorGame.City.TownStatistics.getResource(:housing) |> MayorGame.City.ResourceStatistics.expressAvailableOverSupply_SI()
+          <%= @city_stats |> TownStatistics.getResource(:housing) |> ResourceStatistics.expressAvailableOverSupply_SI()
            %>
         </span>
       </td>
@@ -221,73 +287,121 @@
       </td>
       <td class="top_td">
         <span class="text-green-800">
-          $<%= @city_stats |> MayorGame.City.TownStatistics.getResource(:money) |> MayorGame.City.ResourceStatistics.expressProduction_SI()
-           %>/day
+          $<%= @city_stats |> TownStatistics.getResource(:money) |> ResourceStatistics.expressProduction_SI()
+           %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-red-800">
-          $<%= @city_stats |> MayorGame.City.TownStatistics.getResource(:money) |> MayorGame.City.ResourceStatistics.expressConsumption_SI()
-           %>/day
+          $<%= @city_stats |> TownStatistics.getResource(:money) |> ResourceStatistics.expressConsumption_SI()
+           %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-green-800">
-          $<%= @city_stats |> MayorGame.City.TownStatistics.getResource(:money) |> MayorGame.City.ResourceStatistics.expressStock_SI(-@construction_cost)
+          $<%= @city_stats |> TownStatistics.getResource(:money) |> ResourceStatistics.expressStock_SI(-@construction_cost)
            %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-yellow-800">
-          <%= @city_stats |> MayorGame.City.TownStatistics.getResource(:energy) |> MayorGame.City.ResourceStatistics.expressAvailableOverSupply_SI()
+          <%= @city_stats |> TownStatistics.getResource(:energy) |> ResourceStatistics.expressAvailableOverSupply_SI()
            %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-cyan-800">
-          <%= @city_stats |> MayorGame.City.TownStatistics.getResource(:area) |> MayorGame.City.ResourceStatistics.expressAvailableOverSupply_SI()
+          <%= @city_stats |> TownStatistics.getResource(:area) |> ResourceStatistics.expressAvailableOverSupply_SI()
+           %>
+        </span>
+      </td>
+      <td class="top_td">
+        <span class="text-yellow-800">
+          <%= @city_stats |> TownStatistics.getResource(:sprawl) |> ResourceStatistics.expressNetProduction_SI()
            %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-fuchsia-800">
-          <%= @city_stats |> MayorGame.City.TownStatistics.getResource(:fun) |> MayorGame.City.ResourceStatistics.expressNetProduction_SI()
+          <%= @city_stats |> TownStatistics.getResource(:fun) |> ResourceStatistics.expressNetProduction_SI()
            %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-rose-800">
-          <%= @city_stats |> MayorGame.City.TownStatistics.getResource(:health) |> MayorGame.City.ResourceStatistics.expressNetProduction_SI()
+          <%= @city_stats |> TownStatistics.getResource(:health) |> ResourceStatistics.expressNetProduction_SI()
            %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-slate-800">
-          <%= @city_stats |> MayorGame.City.TownStatistics.getResource(:steel) |> MayorGame.City.ResourceStatistics.expressStock_SI()
+          <%= @city_stats |> TownStatistics.getResource(:steel) |> ResourceStatistics.expressStock_SI()
+           %>
+        </span>
+      </td>
+      <td class="top_td">
+        <span class="text-slate-800">
+          <%= @city_stats |> TownStatistics.getResource(:stone) |> ResourceStatistics.expressStockOverStorage_SI()
+           %>
+        </span>
+      </td>
+      <td class="top_td">
+        <span class="text-amber-700">
+          <%= @city_stats |> TownStatistics.getResource(:wood) |> ResourceStatistics.expressStockOverStorage_SI()
+           %>
+        </span>
+      </td>
+      <td class="top_td">
+        <span class="text-cyan-800">
+          <%= @city_stats |> TownStatistics.getResource(:fish) |> ResourceStatistics.expressStockOverStorage_SI()
+           %>
+        </span>
+      </td>
+      <td class="top_td">
+        <span class="text-stone-800">
+          <%= @city_stats |> TownStatistics.getResource(:oil) |> ResourceStatistics.expressStockOverStorage_SI()
+           %>
+        </span>
+      </td>
+      <td class="top_td">
+        <span class="text-zinc-500">
+          <%= @city_stats |> TownStatistics.getResource(:salt) |> ResourceStatistics.expressStockOverStorage_SI()
+           %>
+        </span>
+      </td>
+      <td class="top_td">
+        <span class="text-sky-700">
+          <%= @city_stats |> TownStatistics.getResource(:water) |> ResourceStatistics.expressStockOverStorage_SI()
+           %>
+        </span>
+      </td>
+      <td class="top_td">
+        <span class="text-lime-700">
+          <%= @city_stats |> TownStatistics.getResource(:lithium) |> ResourceStatistics.expressStockOverStorage_SI()
            %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-orange-800">
-          <%= @city_stats |> MayorGame.City.TownStatistics.getResource(:sulfur) |> MayorGame.City.ResourceStatistics.expressStock_SI()
+          <%= @city_stats |> TownStatistics.getResource(:sulfur) |> ResourceStatistics.expressStockOverStorage_SI()
            %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-purple-800">
-          <%= @city_stats |> MayorGame.City.TownStatistics.getResource(:uranium) |> MayorGame.City.ResourceStatistics.expressStock_SI()
+          <%= @city_stats |> TownStatistics.getResource(:uranium) |> ResourceStatistics.expressStockOverStorage_SI()
            %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-red-800">
-          <%= @city_stats |> MayorGame.City.TownStatistics.getResource(:missiles) |> MayorGame.City.ResourceStatistics.expressStockOverStorage_SI()
+          <%= @city_stats |> TownStatistics.getResource(:missiles) |> ResourceStatistics.expressStockOverStorage_SI()
            %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-blue-800">
-          <%= @city_stats |> MayorGame.City.TownStatistics.getResource(:shields) |> MayorGame.City.ResourceStatistics.expressStockOverStorage_SI()
+          <%= @city_stats |> TownStatistics.getResource(:shields) |> ResourceStatistics.expressStockOverStorage_SI()
            %>
         </span>
       </td>
@@ -485,7 +599,7 @@
       </div>
       <div class="divide-y divide-neutral-800/10">
         <%= for {building_type, building_stats} <- buildings do %>
-        <%= if is_nil(building_stats.regions) ||  Enum.member?(building_stats.regions, @city.region) do %>
+        <%= if is_nil(building_stats.regions) || Enum.member?(building_stats.regions, String.to_existing_atom(@city.region)) do %>
           <div class="flex flex-wrap items-center gap-1 py-0.5">
             <div class="basis-full md:basis-80 flex flex-row items-center justify-between">
               <!-- building title -->
@@ -595,11 +709,11 @@
               <!-- build & delete buttons -->
               <div class="flex flex-row ">
                 <%= if @is_user_mayor do %>
-                  <%= if @city_stats |> MayorGame.City.TownStatistics.getResource(:money) |> MayorGame.City.ResourceStatistics.getStock(-@construction_cost) > building_stats.price do %>
+                  <%= if @city_stats |> TownStatistics.getResource(:money) |> ResourceStatistics.getStock(-@construction_cost) > building_stats.price do %>
                     <button
                       class="btn m-0 rounded-none border border-neutral-800/25 leading-none h-6"
                       phx-click="purchase_building"
-                      phx-throttle="400"
+                      phx-throttle="800"
                       phx-value-building={building_type}
                     >
                       $<%= Number.SI.number_to_si(
@@ -623,11 +737,11 @@
                       <div class="tooltip w-28">not enough money</div>
                     </div>
                   <% end %>
-                  <%= if (@city_stats |> MayorGame.City.TownStatistics.getBuildable(building_type)).number + (if !is_nil(@construction_count[building_type]) do @construction_count[building_type] else 0 end) > 0 do %>
+                  <%= if (@city_stats |> TownStatistics.getBuildable(building_type)).number + (if !is_nil(@construction_count[building_type]) do @construction_count[building_type] else 0 end) > 0 do %>
                     <button
                       phx-click="demolish_building"
                       class="btn m-0 rounded-none border border-l-0 border-neutral-800/25 leading-none h-6"
-                      phx-throttle="400"
+                      phx-throttle="800"
                       phx-value-building={building_type}
                     >
                       -1
@@ -663,7 +777,7 @@
                 <% end %>
                 <%= if @current_user && !is_nil(@current_user.town) && !@is_user_mayor do %>
                   <%= if Map.get(@operating_count, building_type, 0) != 0 && @current_user.town.missiles > 0 do %>
-                    <%= if @city_stats |> MayorGame.City.TownStatistics.getResource(:shields) |> MayorGame.City.ResourceStatistics.getStock() == 0 do %>
+                    <%= if @city_stats |> TownStatistics.getResource(:shields) |> ResourceStatistics.getStock() == 0 do %>
                       <div class="relative group">
                         <button
                           phx-click="attack_building"
@@ -724,14 +838,14 @@
               <table border="1" class=" table-fixed border-collapse">
                 <tr>
                   <!-- if no buildings -->
-                  <%= if (@city_stats |> MayorGame.City.TownStatistics.getBuildable(building_type)).number == 0 && (if !is_nil(@construction_count[building_type]) do @construction_count[building_type] else 0 end) == 0 do %>
+                  <%= if (@city_stats |> TownStatistics.getBuildable(building_type)).number == 0 && (if !is_nil(@construction_count[building_type]) do @construction_count[building_type] else 0 end) == 0 do %>
                     <td class="cell text-neutral-800/50">0</td>
                   <% else %>
-                    <%= if (@city_stats |> MayorGame.City.TownStatistics.getBuildable(building_type)).operational > 0 do %>
+                    <%= if (@city_stats |> TownStatistics.getBuildable(building_type)).operational > 0 do %>
                       <td class="group cell bg-green-100">
                         <div class="flex flex-row items-center gap-x-1 cursor-help">
                           <p class="text-green-700">
-                            <%= Number.Delimit.number_to_delimited((@city_stats |> MayorGame.City.TownStatistics.getBuildable(building_type)).operational) %>
+                            <%= Number.Delimit.number_to_delimited((@city_stats |> TownStatistics.getBuildable(building_type)).operational) %>
                           </p>
                           <%= for requirement <- @building_requirements do %>
                             <%= if building_stats.requires[String.to_existing_atom(requirement)] != nil && building_stats.requires[String.to_existing_atom(requirement)] > 0 do %>
@@ -747,16 +861,16 @@
                         </div>
                       </td>
                     <% end %>
-                    <%= if !is_nil((@city_stats |> MayorGame.City.TownStatistics.getBuildable(building_type)).deficient_prereq_next) && length((@city_stats |> MayorGame.City.TownStatistics.getBuildable(building_type)).deficient_prereq_next) > 0 do %>
+                    <%= if !is_nil((@city_stats |> TownStatistics.getBuildable(building_type)).deficient_prereq_next) && length((@city_stats |> TownStatistics.getBuildable(building_type)).deficient_prereq_next) > 0 do %>
                       <td class={
                         "group cell bg-red-50"
                       }>
                         <div class="flex flex-row items-center gap-x-1 cursor-help">
                           <p class="text-red-700">
-                            <%= Number.Delimit.number_to_delimited((@city_stats |> MayorGame.City.TownStatistics.getBuildable(building_type)).number - (@city_stats |> MayorGame.City.TownStatistics.getBuildable(building_type)).operational) %>
+                            <%= Number.Delimit.number_to_delimited((@city_stats |> TownStatistics.getBuildable(building_type)).number - (@city_stats |> TownStatistics.getBuildable(building_type)).operational) %>
                           </p>
                           <%= for requirement <- @building_requirements do %>
-                            <%= if building_stats.requires[String.to_existing_atom(requirement)] != nil && building_stats.requires[String.to_existing_atom(requirement)] > 0 && !Enum.member?((@city_stats |> MayorGame.City.TownStatistics.getBuildable(building_type)).deficient_prereq_next, String.to_existing_atom(requirement)) do %>
+                            <%= if building_stats.requires[String.to_existing_atom(requirement)] != nil && building_stats.requires[String.to_existing_atom(requirement)] > 0 && !Enum.member?((@city_stats |> TownStatistics.getBuildable(building_type)).deficient_prereq_next, String.to_existing_atom(requirement)) do %>
                               <img
                                 src={"/images/#{to_string(requirement)}-fulfilled.svg"}
                                 alt={"has enough #{to_string(requirement)} to operate"}
@@ -764,7 +878,7 @@
                                 width="12"
                               />
                             <% else %>
-                              <%= if Enum.member?((@city_stats |> MayorGame.City.TownStatistics.getBuildable(building_type)).deficient_prereq_next, String.to_existing_atom(requirement)) do %>
+                              <%= if Enum.member?((@city_stats |> TownStatistics.getBuildable(building_type)).deficient_prereq_next, String.to_existing_atom(requirement)) do %>
                                 <img
                                   src={"/images/#{to_string(requirement)}-off.svg"}
                                   alt={"requires #{to_string(requirement)} to operate"}
@@ -777,12 +891,12 @@
 
                           <div class="tooltip w-32 text-red-600">
                             needs
-                            <%= if length((@city_stats |> MayorGame.City.TownStatistics.getBuildable(building_type)).deficient_prereq_next) > 1 do %>
-                              <%= for operation_reason <- (@city_stats |> MayorGame.City.TownStatistics.getBuildable(building_type)).deficient_prereq_next do %>
+                            <%= if length((@city_stats |> TownStatistics.getBuildable(building_type)).deficient_prereq_next) > 1 do %>
+                              <%= for operation_reason <- (@city_stats |> TownStatistics.getBuildable(building_type)).deficient_prereq_next do %>
                                 <%= operation_reason %>,
                               <% end %>
                             <% else %>
-                              <%= hd((@city_stats |> MayorGame.City.TownStatistics.getBuildable(building_type)).deficient_prereq_next) %>
+                              <%= hd((@city_stats |> TownStatistics.getBuildable(building_type)).deficient_prereq_next) %>
                             <% end %>
                             to operate
                           </div>

@@ -23,7 +23,7 @@ defmodule MayorGame.CityMigrator do
     buildables_map = %{
       buildables_flat: Buildable.buildables_flat(),
       buildables_kw_list: Buildable.buildables_kw_list(),
-      buildables: Buildable.buildables(),
+      # buildables: Buildable.buildables(),
       buildables_list: Buildable.buildables_list(),
       buildables_ordered: Buildable.buildables_ordered(),
       buildables_ordered_flat: Buildable.buildables_ordered_flat(),
@@ -902,7 +902,7 @@ defmodule MayorGame.CityMigrator do
 
               births_count =
                 if slotted_cities_by_id[id].city.citizen_count > 100 do
-                  slotted_cities_by_id[id].city.aggregate_births
+                  max(slotted_cities_by_id[id].city.aggregate_births, 0)
                 else
                   if :rand.uniform() > 0.8 do
                     1
