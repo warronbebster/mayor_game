@@ -633,10 +633,11 @@ defmodule MayorGame.CityHelpers do
              do: v * multipliers.season[k][season],
              else: v
 
+        region_atom = String.to_existing_atom(region)
         v_x_region =
           if Map.has_key?(multipliers, :region) && Map.has_key?(multipliers.region, k) &&
-               Map.has_key?(multipliers.region[k], region),
-             do: round(v_x_season * multipliers.region[k]),
+               Map.has_key?(multipliers.region[k], region_atom),
+             do: round(v_x_season * multipliers.region[k][region_atom]),
              else: v_x_season
 
         {k, v_x_region}
