@@ -1325,7 +1325,7 @@ defmodule MayorGame.City.Buildable do
       # ————————————————————————————————————————————————————————————
       # RESORTS ————————————————————————————————————
       resorts: %BuildableMetadata{
-        regions: [:beach],
+        regions: [:ocean],
         size: 3,
         category: :travel,
         level: 2,
