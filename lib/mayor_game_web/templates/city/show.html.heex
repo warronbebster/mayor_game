@@ -446,7 +446,7 @@
           </button>
         <% end %>
 
-        
+
         <%= for ongoing_attack <- @city.attacks_recieved do %>
           <div class="flex flex-row items-center gap-2">
           <span class="underline">
@@ -468,7 +468,7 @@
         <% end %>
 
 
-       
+
 
       <% end %>
     </div>
@@ -662,26 +662,45 @@
               />
                 <% end %>
                 <%= if @current_user && !is_nil(@current_user.town) && !@is_user_mayor do %>
-                  <%= if Map.get(@operating_count, building_type, 0) != 0 && @current_user.town.missiles > 0 do %>
-                    <%= if @city_stats |> MayorGame.City.TownStatistics.getResource(:shields) |> MayorGame.City.ResourceStatistics.getStock() == 0 do %>
-                      <div class="relative group">
-                        <button
-                          phx-click="attack_building"
-                          class="btn m-0 rounded-none border border-neutral-800/25 leading-none h-6"
-                          phx-throttle="400"
-                          phx-value-building={building_type}
-                        >
-                          <img
-                            src="/images/might-text.svg"
-                            alt="has enough missiles to attack"
-                            height="12"
-                            width="12"
-                          />
-                        </button>
-                        <div class="tooltip w-32 right-4 -translate-x-full -translate-y-8">
-                          Attack this building (1/<%= @current_user.town.missiles %> missiles left)
+                  <%= if (@city_stats |> MayorGame.City.TownStatistics.getBuildable(building_type)).number > 0 do %>
+                    <%= if @current_user.town.missiles > 0 do %>
+                      <%= if @city_stats |> MayorGame.City.TownStatistics.getResource(:shields) |> MayorGame.City.ResourceStatistics.getStock() == 0 do %>
+                        <div class="relative group">
+                          <button
+                            phx-click="attack_building"
+                            class="btn m-0 rounded-none border border-neutral-800/25 leading-none h-6"
+                            phx-throttle="400"
+                            phx-value-building={building_type}
+                          >
+                            <img
+                              src="/images/might-text.svg"
+                              alt="has enough missiles to attack"
+                              height="12"
+                              width="12"
+                            />
+                          </button>
+                          <div class="tooltip w-32 right-4 -translate-x-full -translate-y-8">
+                            Attack this building (1/<%= @current_user.town.missiles %> missiles left)
+                          </div>
                         </div>
-                      </div>
+                      <% else %>
+                        <div class="relative group">
+                          <button
+                            disabled
+                            class="opacity-50 m-0 rounded-none border border-neutral-800/25 leading-none h-6"
+                          >
+                            <img
+                              src="/images/might-text.svg"
+                              alt="still has shields"
+                              height="12"
+                              width="12"
+                            />
+                          </button>
+                          <div class="tooltip w-32">
+                            You need to take down the city's shields first
+                          </div>
+                        </div>
+                      <% end %>
                     <% else %>
                       <div class="relative group">
                         <button
@@ -690,31 +709,14 @@
                         >
                           <img
                             src="/images/might-text.svg"
-                            alt="still has shields"
+                            alt="not enough missiles to attack"
                             height="12"
                             width="12"
                           />
                         </button>
-                        <div class="tooltip w-32">
-                          You need to take down the city's shields first
-                        </div>
+                        <div class="tooltip w-32">not enough missiles</div>
                       </div>
                     <% end %>
-                  <% else %>
-                    <div class="relative group">
-                      <button
-                        disabled
-                        class="opacity-50 m-0 rounded-none border border-neutral-800/25 leading-none h-6"
-                      >
-                        <img
-                          src="/images/might-text.svg"
-                          alt="not enough missiles to attack"
-                          height="12"
-                          width="12"
-                        />
-                      </button>
-                      <div class="tooltip w-32">not enough missiles</div>
-                    </div>
                   <% end %>
                 <% end %>
               </div>
