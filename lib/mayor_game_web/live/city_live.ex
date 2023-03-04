@@ -99,7 +99,22 @@ defmodule MayorGameWeb.CityLive do
       ])
       |> assign(:category_explanations, explanations)
       |> assign(:subtotal_types, subtotal_types)
-      |> assign(resources: ["money", "steel", "sulfur", "missiles", "shields", "uranium", "oil", "fish"])
+      |> assign(
+        resources: [
+          "money",
+          "steel",
+          "sulfur",
+          "missiles",
+          "shields",
+          "uranium",
+          "oil",
+          "fish",
+          "water",
+          "salt",
+          "lithium",
+          "wood"
+        ]
+      )
       # |> mount_city_by_title()
       |> update_city_by_title()
       |> assign_auth(session)
