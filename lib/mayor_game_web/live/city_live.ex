@@ -99,7 +99,23 @@ defmodule MayorGameWeb.CityLive do
       ])
       |> assign(:category_explanations, explanations)
       |> assign(:subtotal_types, subtotal_types)
-      |> assign(resources: ["money", "steel", "sulfur", "missiles", "shields", "uranium", "oil", "fish"])
+      |> assign(
+        resources: [
+          "money",
+          "steel",
+          "sulfur",
+          "missiles",
+          "shields",
+          "uranium",
+          "oil",
+          "fish",
+          "wood",
+          "lithium",
+          "salt",
+          "stone",
+          "water"
+        ]
+      )
       # |> mount_city_by_title()
       |> update_city_by_title()
       |> assign_auth(session)
@@ -1003,7 +1019,7 @@ defmodule MayorGameWeb.CityLive do
       is_user_mayor =
         if !socket.assigns.in_dev,
           do: to_string(socket.assigns.user_id) == to_string(socket.assigns.current_user.id),
-          else: to_string(socket.assigns.current_user.id) == to_string(socket.assigns.current_user.id)
+          else: to_string(socket.assigns.user_id) == to_string(socket.assigns.current_user.id)
 
       is_user_admin =
         if !socket.assigns.in_dev,
