@@ -924,7 +924,7 @@ defmodule MayorGame.City.Buildable do
           workers: %{count: 10, level: 0}
         },
         produces: %{
-          education_lvl_1: 10
+          education_lvl_1: 50
         }
       },
       # MIDDLE SCHOOLS ————————————————————————————————————
@@ -941,7 +941,7 @@ defmodule MayorGame.City.Buildable do
           workers: %{count: 10, level: 1}
         },
         produces: %{
-          education_lvl_2: 10
+          education_lvl_2: 30
         }
       },
       # HIGH SCHOOLS ————————————————————————————————————
@@ -958,7 +958,7 @@ defmodule MayorGame.City.Buildable do
           workers: %{count: 10, level: 2}
         },
         produces: %{
-          education_lvl_3: 10
+          education_lvl_3: 20
         }
       },
       # UNIVERSITIES ————————————————————————————————————
@@ -992,7 +992,7 @@ defmodule MayorGame.City.Buildable do
           workers: %{count: 10, level: 4}
         },
         produces: %{
-          education_lvl_5: 10
+          education_lvl_5: 5
         }
       },
       # Resources ——————————————————————————————————————
