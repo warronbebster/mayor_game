@@ -32,6 +32,7 @@
             <li class="hover:underline mr-auto"><a href="<%= Routes.static_path(@conn, "/") %>">fragile.city</a></li>
             <li class="hover:underline"><a href="https://patreon.com/user?u=88349213" target="_blank">Patreon</a></li>
             <li class="hover:underline"><a href="https://fragile-city.notion.site/Intro-25d07a8aade7459a9b2a93429170b29b" target="_blank">FAQ</a></li>
+            <li class="hover:underline"><a href="<%= Routes.static_path(@conn, "/wiki") %>">Info.pedia</a></li>
             <%= if Pow.Plug.current_user(@conn) do %>
 
               <li class="hover:underline"><a href="https://discord.gg/mnVnRdV3k7" target="_blank">Discord</a></li>

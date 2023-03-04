@@ -1,0 +1,73 @@
+<span class="text-xl gap-x-1 py-2">
+  Resources
+</span>
+
+<div>
+  <div class="text-sm pb-4 ml-8">
+    <div class="flex flex-row gap-4 py-2">
+      <%= for {_category, resources} <- @resources do %>
+        <%= for {_resource_type, resource_stats} <- resources do %>
+          <div class="gap-0 flex">
+            <%= for image_source <- resource_stats.image_sources do %>
+              <%= if !is_nil(image_source) do %>
+                <img src={image_source} onerror="this.style.src=''" height="24" width="24" />
+              <% end %>
+            <% end %>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+
+    <p class="text-justify">
+      These resource tokens represent the inventory and attributes that affect your city's growth
+    </p>
+     <br />
+    <p class="text-justify">
+      Some resources are beneficial, and some are harmful. Be careful about accumulating them!
+    </p>
+  </div>
+
+  <%= for {category, resources} <- @resources do %>
+    <details class="border-b border-neutral-300 ml-8">
+      <summary id={"section_resource_" <> to_string(category)} class="text-lg pt-2 first-letter:uppercase">
+        <%= MayorGame.Utility.presentable_string(category, true) %>
+      </summary>
+
+      <div class="min-w-[240px] pb-4">
+        <%= @resource_category_descriptions[category] %>
+      </div>
+
+      <div class="pb-4 ml-8">
+        <%= for {resource_type, resource_stats} <- resources do %>
+          <div class="flex flex-wrap items-center gap-2 py-0.5">
+            <div class="border-4 border-neutral-800/40 basis-full md:basis-64 flex flex-row items-center justify-between p-2">
+              <!-- building title -->
+              <div class="flex flex-row gap-1">
+                <div class="w-48 flex flex-row items-center gap-1">
+                  <div class="gap-0 flex">
+                    <%= for image_source <- resource_stats.image_sources do %>
+                      <img src={image_source} onerror="this.style.src=''" height="16" width="16" />
+                    <% end %>
+                  </div>
+
+                  <div class={[resource_stats.text_color_class]}>
+                    <%= MayorGame.Utility.presentable_string(resource_type) %>
+                  </div>
+                   <hr class="flex-1" />
+                </div>
+
+                <%= if resource_stats.description != nil do %>
+                  <div class="w-72">
+                    <%= to_string(resource_stats.description) %>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </details>
+  <% end %>
+  <!-- gap for anchor navigation -->
+  <div class="h-screen" />
+</div>
