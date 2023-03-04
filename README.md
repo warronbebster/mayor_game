@@ -73,15 +73,12 @@ world = MayorGame.City.get_world(1)
 MayorGame.City.update_world(world, %{pollution: 1000000})
 city = MayorGame.City.get_town_by_title!("hi22")
 MayorGame.City.update_town(city, %{treasury: -10})
-```
 
 To update all:
 
-import Ecto.Query
-
 from(t in MayorGame.City.Town, where: t.id > 0, update: [set: [logs_deaths_housing: 0]])|> MayorGame.Repo.update_all([])
 
-from(t in MayorGame.City.Town, where: t.region != :mountain || t.region != :forest, update: [set: [lumber_yards: 0]])|> MayorGame.Repo.update_all([])
+```
 
 to connect to DB:
 `fly postgres connect -a mayorgame-db`
