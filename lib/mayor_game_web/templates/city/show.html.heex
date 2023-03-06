@@ -609,7 +609,7 @@
                 </h3>
                 <div class="tooltip w-48">
                   <%= for {building_stat, value} <- building_stats do %>
-                    <%= if !String.contains?(Atom.to_string(building_stat), ["multipliers", "price", "purchasable", "produces", "requires", "stores", "enabled", "priority", "reason", "title", "category", "level", "regions"]) && value != nil do %>
+                    <%= if !String.contains?(Atom.to_string(building_stat), ["multipliers", "price", "purchasable", "produces", "requires", "stores", "enabled", "priority", "reason", "title", "category", "level", "regions", "building_reqs"]) && value != nil do %>
                       <div class="flex items-center gap-1">
                         <div class=""><%= building_stat %></div>
                         <hr class="border-neutral-800 flex-1" />
@@ -710,6 +710,9 @@
               <div class="flex flex-row ">
                 <%= if @is_user_mayor do %>
                   <%= if @city_stats |> TownStatistics.getResource(:money) |> ResourceStatistics.getStock(-@construction_cost) > building_stats.price do %>
+                  <%= if is_nil(building_stats.building_reqs) do %>
+                  <!-- if no building reqs -->
+                    <div class="group relative inline-block">
                     <button
                       class="btn m-0 rounded-none border border-neutral-800/25 leading-none h-6"
                       phx-click="purchase_building"
@@ -722,6 +725,91 @@
                             trim: true
                           ) %>
                     </button>
+                    <div class="tooltip w-28">Create 1 building</div>
+                    </div>
+                    <% else %>
+                    <!-- if there are building reqs -->
+                    <div class="group relative inline-block">
+                      <%= if !Enum.any?(building_stats.building_reqs, fn {req_key, req_value} ->  @city_stats |> TownStatistics.getResource(req_key) < req_value end) do %>
+                        <!-- if all requirements are met -->
+                        <button
+                          class="btn m-0 rounded-none border border-neutral-800/25 leading-none h-6 flex flex-row items-center gap-1"
+                          phx-click="purchase_building"
+                          phx-throttle="800"
+                          phx-value-building={building_type}
+                        >
+                          $<%= Number.SI.number_to_si( building_stats.price, precision: 3, trim: true) %>
+                          <%= for {req_key, _req_value} <- building_stats.building_reqs do %>
+                            <img
+                                src={"/images/#{to_string(req_key)}.svg"}
+                                alt={"has enough #{to_string(req_key)} to build"}
+                                height="12"
+                                width="12"
+                              />
+                          <% end %>
+                        </button>
+                      <% else %>
+                      <!-- if one requirement isn't met -->
+                      <button
+                          class="btn m-0 rounded-none border border-neutral-800/25 leading-none h-6 flex flex-row items-center gap-1 opacity-50"
+                          disabled
+                        >
+                          $<%= Number.SI.number_to_si( building_stats.price, precision: 3, trim: true) %>
+                          <%= for {req_key, req_value} <- building_stats.building_reqs do %>
+                            <%= if @city_stats |> TownStatistics.getResource(req_key) > req_value do %>
+                              <img
+                                  src={"/images/#{to_string(req_key)}-fulfilled.svg"}
+                                  alt={"not enough #{to_string(req_key)} to build"}
+                                  height="12"
+                                  width="12"
+                                />
+                            <% else %>
+                              <img
+                                  src={"/images/#{to_string(req_key)}-off.svg"}
+                                  alt={"not enough #{to_string(req_key)} to build"}
+                                  height="12"
+                                  width="12"
+                                />
+                            <% end %>
+                          <% end %>
+                        </button>
+
+                      <% end %>
+                      <!-- ^ end of checking if all biuilding_reqs are met -->
+                      <div class="tooltip w-28">
+                          <span class="font-semibold">Requires:</span>
+                          <%= for {req_key, req_value} <- building_stats.building_reqs do %>
+                            <div class="flex items-center gap-1">
+                             <%= if @city_stats |> TownStatistics.getResource(req_key) > req_value do %>
+                                <img
+                                    src={"/images/#{to_string(req_key)}-fulfilled.svg"}
+                                    alt={"requires #{to_string(req_key)} to purchase"}
+                                    height="12"
+                                    width="12"
+                                  />
+                                <div class="text-green-700"><%= String.replace(to_string(req_key), "_", " ") %></div>
+                                <hr class="border-neutral-800 flex-1" />
+                                <div class="text-green-700"><%= to_string(req_value) %></div>
+                              <% else %>
+                                <img
+                                    src={"/images/#{to_string(req_key)}-off.svg"}
+                                    alt={"requires #{to_string(req_key)} to purchase"}
+                                    height="12"
+                                    width="12"
+                                  />
+                                <div class="text-red-700"><%= String.replace(to_string(req_key), "_", " ") %></div>
+                                <hr class="border-neutral-800 flex-1" />
+                                <div class="text-red-700"><%= to_string(req_value) %></div>
+                              <% end %>
+                              
+                              
+                            </div>
+                          <% end %>
+                        </div>
+                    </div>
+
+                    <% end %>
+
                   <% else %>
                     <div class="group relative inline-block">
                       <button

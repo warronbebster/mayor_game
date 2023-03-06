@@ -349,25 +349,47 @@ defmodule MayorGame.City do
       {:ok, %Details{}}
 
   """
-  def purchase_buildable(%Town{} = city, field_to_purchase, purchase_price) do
+  def purchase_buildable(%Town{} = city, field_to_purchase, purchase_price, building_reqs) do
     # city is unchanged, use the ledger to hold the accumlated construction and cost prior to UI refresh
-    city_attrs = %{treasury: city.treasury - purchase_price}
 
-    purchase_city =
+    purchase_changeset =
       city
-      |> Town.changeset(city_attrs)
-      |> Ecto.Changeset.validate_number(:treasury, greater_than: 0)
+      |> Town.changeset(%{})
+      |> Ecto.Changeset.validate_number(:treasury, greater_than: purchase_price)
+
+    purchase_changeset =
+      if !is_nil(building_reqs) do
+        Enum.reduce(building_reqs, purchase_changeset, fn {req_key, req_value}, acc ->
+          Ecto.Changeset.validate_number(acc, req_key, greater_than: req_value)
+        end)
+      else
+        purchase_changeset
+      end
+
+    IO.inspect(purchase_changeset)
+
+    decrement =
+      if is_nil(building_reqs) do
+        [{field_to_purchase, 1}, {:treasury, -purchase_price}]
+      else
+        [{field_to_purchase, 1}, {:treasury, -purchase_price}] ++
+          Enum.map(building_reqs, fn {req_key, req_value} -> {req_key, -req_value} end)
+      end
+
+    IO.inspect(decrement)
+
+    # map over
 
     # |> Repo.update()
 
-    if purchase_city.errors == [] do
+    if purchase_changeset.errors == [] do
       from(t in Town,
         where: [id: ^city.id]
       )
-      |> Repo.update_all(inc: [{field_to_purchase, 1}, {:treasury, -purchase_price}])
+      |> Repo.update_all(inc: decrement)
     else
-      Logger.error(inspect(purchase_city.errors))
-      {:error, purchase_city.errors}
+      Logger.error(inspect(purchase_changeset.errors))
+      {:error, purchase_changeset.errors}
     end
   end
 

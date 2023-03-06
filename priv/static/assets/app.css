@@ -1227,18 +1227,6 @@ select {
   width: 5rem;
 }
 
-.w-12 {
-  width: 3rem;
-}
-
-.w-2 {
-  width: 0.5rem;
-}
-
-.w-3 {
-  width: 0.75rem;
-}
-
 .min-w-\[240px\] {
   min-width: 240px;
 }
@@ -1784,13 +1772,13 @@ select {
   color: rgb(30 64 175 / var(--tw-text-opacity));
 }
 
-.text-neutral-800\/50 {
-  color: rgb(38 38 38 / 0.5);
-}
-
 .text-green-700 {
   --tw-text-opacity: 1;
   color: rgb(21 128 61 / var(--tw-text-opacity));
+}
+
+.text-neutral-800\/50 {
+  color: rgb(38 38 38 / 0.5);
 }
 
 .text-violet-700 {

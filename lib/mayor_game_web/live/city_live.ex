@@ -247,7 +247,7 @@ defmodule MayorGameWeb.CityLive do
     fetched_value = Repo.one(from city in Town, where: city.id == ^city.id, select: ^[:id, building_to_buy_atom])
     buildable_count = fetched_value[building_to_buy_atom]
 
-    # in_construction =
+    building_reqs = get_in(Buildable.buildables_flat(), [building_to_buy_atom, :building_reqs])
 
     # buildable_count + socket.assigns.construction_count[building_to_buy_atom]
 
@@ -260,7 +260,8 @@ defmodule MayorGameWeb.CityLive do
                city,
                #  {socket.assigns.construction_count, socket.assigns.construction_cost},
                building_to_buy_atom,
-               purchase_price
+               purchase_price,
+               building_reqs
              ) do
           {_, nil} ->
             IO.puts('purchase success')
@@ -294,11 +295,26 @@ defmodule MayorGameWeb.CityLive do
           new_purchase_price
         )
 
+      IO.inspect(socket.assigns.city_stats.resource_stats)
+
+      updated_city_resource_stats =
+        Enum.reduce(building_reqs, socket.assigns.city_stats.resource_stats, fn {req_key, req_value}, acc ->
+          Map.put(acc, req_key, Map.update!(acc[req_key], :stock, &(&1 - req_value)))
+        end)
+
+      updated_city_stats =
+        if is_nil(building_reqs) do
+          socket.assigns.city_stats
+        else
+          Map.put(socket.assigns.city_stats, :resource_stats, updated_city_resource_stats)
+        end
+
       {:noreply,
        socket
        |> assign(:construction_count, new_construction_count)
        |> assign(:construction_cost, new_construction_cost)
-       |> assign(:buildables, new_buildables)}
+       |> assign(:buildables, new_buildables)
+       |> assign(:city_stats, updated_city_stats)}
     else
       {:noreply, socket}
     end

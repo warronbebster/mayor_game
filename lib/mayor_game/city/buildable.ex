@@ -232,7 +232,13 @@ defmodule MayorGame.City.Buildable do
       doctor_offices: 9,
       air_bases: 7,
       defense_bases: 7,
-      missile_defense_arrays: 7
+      missile_defense_arrays: 7,
+      wood_warehouses: 9,
+      fish_tanks: 9,
+      lithium_vats: 9,
+      salt_sheds: 9,
+      rock_yards: 9,
+      water_tanks: 9
     }
   end
 
@@ -314,18 +320,21 @@ defmodule MayorGame.City.Buildable do
         air_bases: buildables_flat().air_bases,
         defense_bases: buildables_flat().defense_bases,
         missile_defense_arrays: buildables_flat().missile_defense_arrays
+      ],
+      storage: [
+        wood_warehouses: buildables_flat().wood_warehouses,
+        fish_tanks: buildables_flat().fish_tanks,
+        lithium_vats: buildables_flat().lithium_vats,
+        salt_sheds: buildables_flat().salt_sheds,
+        rock_yards: buildables_flat().rock_yards,
+        water_tanks: buildables_flat().water_tanks
       ]
     ]
   end
 
-  # add :fisheries, :integer, default: 0
-  # add :resorts, :integer, default: 0
-  # add :ski_resorts, :integer, default: 0
-  # add :lithium_mines, :integer, default: 0
-  # add :farms, :integer, default: 0
-  # add :salt_farms, :integer, default: 0
-  # add :quarries, :integer, default: 0
-  # add :reservoirs, :integer, default: 0
+  def buildables do
+    Enum.group_by(buildables_flat(), & &1.category)
+  end
 
   def buildables_flat do
     %{
@@ -1426,6 +1435,8 @@ defmodule MayorGame.City.Buildable do
           health: 15
         }
       },
+      # COMBAT —————————————————————————————————————————————————————————————————————
+      # COMBAT —————————————————————————————————————————————————————————————————————
       # AIR BASES ————————————————————————————————————
       air_bases: %BuildableMetadata{
         size: 2,
@@ -1487,6 +1498,68 @@ defmodule MayorGame.City.Buildable do
         stores: %{
           shields: 200
         }
+      },
+      # STORAGE ——————————————————————————————————————————————————
+      # Wood_warehouses
+      wood_warehouses: %BuildableMetadata{
+        size: 5,
+        category: :storage,
+        level: 2,
+        title: :wood_warehouses,
+        price: 80000,
+        building_reqs: %{steel: 1000},
+        requires: %{area: 100},
+        stores: %{wood: 1000}
+      },
+      fish_tanks: %BuildableMetadata{
+        size: 5,
+        category: :storage,
+        level: 2,
+        title: :fish_tanks,
+        price: 80000,
+        building_reqs: %{steel: 100},
+        requires: %{area: 100},
+        stores: %{fish: 1000}
+      },
+      lithium_vats: %BuildableMetadata{
+        size: 5,
+        category: :storage,
+        level: 2,
+        title: :lithium_vats,
+        price: 80000,
+        building_reqs: %{steel: 100},
+        requires: %{area: 100},
+        stores: %{lithium: 1000}
+      },
+      salt_sheds: %BuildableMetadata{
+        size: 5,
+        category: :storage,
+        level: 2,
+        title: :salt_sheds,
+        price: 80000,
+        building_reqs: %{steel: 100},
+        requires: %{area: 100},
+        stores: %{salt: 1000}
+      },
+      rock_yards: %BuildableMetadata{
+        size: 5,
+        category: :storage,
+        level: 2,
+        title: :rock_yards,
+        price: 80000,
+        building_reqs: %{steel: 100},
+        requires: %{area: 100},
+        stores: %{stone: 1000}
+      },
+      water_tanks: %BuildableMetadata{
+        size: 5,
+        category: :storage,
+        level: 2,
+        title: :water_tanks,
+        price: 80000,
+        building_reqs: %{steel: 100},
+        requires: %{area: 100},
+        stores: %{water: 1000}
       }
     }
   end
