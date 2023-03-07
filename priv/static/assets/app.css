@@ -1587,6 +1587,11 @@ select {
   color: rgb(194 65 12 / var(--tw-text-opacity));
 }
 
+.text-violet-700 {
+  --tw-text-opacity: 1;
+  color: rgb(109 40 217 / var(--tw-text-opacity));
+}
+
 .text-slate-700 {
   --tw-text-opacity: 1;
   color: rgb(51 65 85 / var(--tw-text-opacity));
@@ -1779,11 +1784,6 @@ select {
 
 .text-neutral-800\/50 {
   color: rgb(38 38 38 / 0.5);
-}
-
-.text-violet-700 {
-  --tw-text-opacity: 1;
-  color: rgb(109 40 217 / var(--tw-text-opacity));
 }
 
 .underline {

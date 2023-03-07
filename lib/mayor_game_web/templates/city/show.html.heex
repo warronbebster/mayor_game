@@ -1162,87 +1162,118 @@
                     </div>
                   <% end %>
                   <!-- income and expenses -->
-                  <%= if !is_nil(building_stats.requires) && Map.has_key?(building_stats.requires, :money) do %>
-                    <div class=" group relative flex flex-row items-center text-red-700 gap-[2px] w-16 cursor-help">
-                      <img
-                        src="/images/money-off.svg"
-                        alt="total expenses"
-                        height="10"
-                        width="10"
-                      />
-                      -<%= Number.SI.number_to_si(
-                        round(
-                          Map.get(@city_stats.buildable_stats, building_type).operational * building_stats.requires.money
-                        ),
-                        precision: 3,
-                        trim: true
-                      ) %>
-                      <div class="tooltip max-w-sm">
-                        <%= Number.Delimit.number_to_delimited(
-                          round(
-                            Map.get(@city_stats.buildable_stats, building_type).operational * building_stats.requires.money
-                          )
-                        ) %> running expenses
-                      </div>
-                    </div>
-                  <% end %>
-                  <%= if !is_nil(building_stats.produces) && Map.has_key?(building_stats.produces, :money) do %>
-                    <div class=" group relative flex flex-row items-center text-green-700 gap-[2px] w-16 cursor-help">
-                      <img
-                        src="/images/money-fulfilled.svg"
-                        alt="total income"
-                        height="10"
-                        width="10"
-                      />
-                      -<%= Number.SI.number_to_si(
-                        round(
-                          Map.get(@city_stats.buildable_stats, building_type).operational * building_stats.produces.money
-                        ),
-                        precision: 3,
-                        trim: true
-                      ) %>
-                      <div class="tooltip max-w-sm">
-                        <%= Number.Delimit.number_to_delimited(
-                          round(
-                            Map.get(@city_stats.buildable_stats, building_type).operational * building_stats.produces.money
-                          )
-                        ) %> running income
-                      </div>
-                    </div>
-                  <% end %>
-                  <!-- workers -->
-                  <%= if !is_nil(building_stats.requires) && Map.has_key?(building_stats.requires, :workers) do %>
-                    <div class=" group relative flex flex-row items-center text-green-700 gap-[2px] w-16 cursor-help">
-                      <img
-                        src="/images/workers-fulfilled.svg"
-                        alt="total workers"
-                        height="10"
-                        width="10"
-                      />
-                      <%= Map.get(@city_stats.buildable_stats, building_type).operational *
-                        building_stats.requires.workers.count %>/<%= building_stats.requires.workers.level %>
-                      <div class="tooltip max-w-sm">
-                        <%= Map.get(@city_stats.buildable_stats, building_type).operational *
-                          building_stats.requires.workers.count %> workers employed at level <%= building_stats.requires.workers.level %>
-                      </div>
-                    </div>
-                    <div class=" group relative flex flex-row items-center text-green-700 gap-[2px] w-16 cursor-help">
-                      <div>
+                  <%= if !is_nil(building_stats.requires) do %>
+                    <%= if Map.has_key?(building_stats.requires, :money) && Map.has_key?(building_stats.requires, :workers) do %>
+                    <!-- requires and generates money -->
+                      <%= if Map.get(@city_stats.buildable_stats, building_type).operational * building_stats.requires.money > @operating_tax[building_type] do %>
+                      <!-- negative money -->
+                        <div class="group relative flex flex-row items-center text-red-700 gap-[2px] w-16 cursor-help">
+                          <img
+                            src="/images/money-off.svg"
+                            alt="total expenses"
+                            height="10"
+                            width="10"
+                          />
+                          <%= Number.SI.number_to_si(
+                            round(@operating_tax[building_type] - Map.get(@city_stats.buildable_stats, building_type).operational * building_stats.requires.money),
+                            precision: 2,
+                            trim: true
+                          ) %>
+                          <div class="tooltip max-w-sm">
+                            <%= Number.Delimit.number_to_delimited(
+                              round(
+                                @operating_tax[building_type] - Map.get(@city_stats.buildable_stats, building_type).operational * building_stats.requires.money
+                              )
+                            ) %> running expenses
+                          </div>
+                        </div>
+                      <% else %>
+                        <div class="group relative flex flex-row items-center text-green-700 gap-[2px] w-16 cursor-help">
+                          <img
+                            src="/images/money-fulfilled.svg"
+                            alt="total profit"
+                            height="10"
+                            width="10"
+                          />
+                          <%= Number.SI.number_to_si(
+                            round(@operating_tax[building_type] - Map.get(@city_stats.buildable_stats, building_type).operational * building_stats.requires.money),
+                            precision: 2,
+                            trim: true
+                          ) %>
+                          <div class="tooltip max-w-sm">
+                            <%= Number.Delimit.number_to_delimited(
+                              round(
+                               @operating_tax[building_type] -  Map.get(@city_stats.buildable_stats, building_type).operational * building_stats.requires.money
+                              )
+                            ) %> profit
+                          </div>
+                        </div>
+                      <!-- profitable -->
+                      <% end %>
+                    <% end %>
+                    <%= if Map.has_key?(building_stats.requires, :money) && !Map.has_key?(building_stats.requires, :workers) do %>
+                      <!-- only requires money -->
+                      <div class="group relative flex flex-row items-center text-red-700 gap-[2px] w-16 cursor-help">
                         <img
-                          src="/images/money-fulfilled.svg"
+                          src="/images/money-off.svg"
+                          alt="total expenses"
+                          height="10"
+                          width="10"
+                        />
+                        -<%= Number.SI.number_to_si(
+                          round(Map.get(@city_stats.buildable_stats, building_type).operational * building_stats.requires.money),
+                          precision: 2,
+                          trim: true
+                        ) %>
+                        <div class="tooltip max-w-sm">
+                          <%= Number.Delimit.number_to_delimited(
+                            round(
+                              Map.get(@city_stats.buildable_stats, building_type).operational * building_stats.requires.money
+                            )
+                          ) %> running expenses
+                        </div>
+                      </div>
+                    <% end %>
+                    <%= if !Map.has_key?(building_stats.requires, :money) && Map.has_key?(building_stats.requires, :workers) do %>
+                      <!-- only workers -->
+                      <div class=" group relative flex flex-row items-center text-green-700 gap-[2px] w-16 cursor-help">
+                        <div>
+                          <img
+                            src="/images/money-fulfilled.svg"
+                            alt="total workers"
+                            height="10"
+                            width="10"
+                          />
+                        </div>
+                        <%= Number.SI.number_to_si(@operating_tax[building_type],
+                          precision: 3,
+                          trim: true
+                        ) %>
+                        <div class="tooltip max-w-sm">
+                          $<%= Number.Delimit.number_to_delimited(@operating_tax[building_type]) %> tax income
+                        </div>
+                      </div>
+                    
+                    <% end %>
+                    
+                  
+                    <!-- workers -->
+                    <%= if Map.has_key?(building_stats.requires, :workers) do %>
+                      <div class=" group relative flex flex-row items-center text-green-700 gap-[2px] w-16 cursor-help">
+                        <img
+                          src="/images/workers-fulfilled.svg"
                           alt="total workers"
                           height="10"
                           width="10"
                         />
+                        <%= Map.get(@city_stats.buildable_stats, building_type).operational *
+                          building_stats.requires.workers.count %>/<%= building_stats.requires.workers.level %>
+                        <div class="tooltip max-w-sm">
+                          <%= Map.get(@city_stats.buildable_stats, building_type).operational *
+                            building_stats.requires.workers.count %> workers employed at level <%= building_stats.requires.workers.level %>
+                        </div>
                       </div>
-                      <%= Number.SI.number_to_si(@operating_tax[building_type],
-                        precision: 3,
-                        trim: true
-                      ) %>
-                      <div class="tooltip max-w-sm">
-                        $<%= Number.Delimit.number_to_delimited(@operating_tax[building_type]) %> tax income
-                      </div>
-                    </div>
+                    <% end %>
                   <% end %>
                 <% end %>
               </div>

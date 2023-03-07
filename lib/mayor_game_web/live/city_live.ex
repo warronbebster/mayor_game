@@ -34,6 +34,7 @@ defmodule MayorGameWeb.CityLive do
       {:housing, "text-amber-700"},
       {:energy, "text-yellow-700"},
       {:sulfur, "text-orange-700"},
+      # {:uranium, "text-violet-700"},
       {:steel, "text-slate-700"},
       {:fun, "text-fuchsia-700"},
       {:fish, "text-cyan-700"},
@@ -59,21 +60,19 @@ defmodule MayorGameWeb.CityLive do
       civic: "Civic buildings add other benefits citizens like — jobs, fun, etc.",
       resources:
         "Resource buildings are ways to generate in-game resources. Some regions have unique resource buildings.",
-      work: "Work buildings have lots of jobs to attract citizens to your city",
+      commerce: "Commerce buildings have lots of jobs to attract citizens to your city",
       entertainment: "Entertainment buildings have jobs, and add other intangibles to your city.",
       travel: "Travel buildings increase your city's desirability.",
       health: "Health buildings increase the health of your citizens, and make them less likely to die",
-      combat: "Combat buildings let you attack other cities, or defend your city from attack."
+      combat: "Combat buildings let you attack other cities, or defend your city from attack.",
+      storage: "Storage buildings let you store more of certain resources."
     }
 
     buildables_map = %{
       buildables_flat: Buildable.buildables_flat(),
+      buildables: Buildable.buildables(),
       buildables_kw_list: Buildable.buildables_kw_list(),
-      # buildables: Buildable.buildables(),
       buildables_list: Buildable.buildables_list(),
-      empty_buildable_map: Buildable.empty_buildable_map(),
-      buildables_ordered: Buildable.buildables_ordered(),
-      buildables_ordered_flat: Buildable.buildables_ordered_flat(),
       buildables_default_priorities: Buildable.buildables_default_priorities()
     }
 
@@ -112,7 +111,8 @@ defmodule MayorGameWeb.CityLive do
           "water",
           "salt",
           "lithium",
-          "wood"
+          "wood",
+          "stone"
         ]
       )
       # |> mount_city_by_title()
@@ -182,7 +182,8 @@ defmodule MayorGameWeb.CityLive do
     if socket.assigns.current_user.id == city.user_id || socket.assigns.current_user.id == 1 do
       # reset = Map.new(Buildable.buildables_list(), fn x -> {x, []} end)
 
-      reset_buildables = Map.new(Enum.map(Buildable.buildables_list(), fn building -> {building, 0} end))
+      reset_buildables =
+        Map.new(Enum.map(socket.assigns.buildables_map.buildables_list, fn building -> {building, 0} end))
 
       updated_attrs =
         reset_buildables
@@ -242,12 +243,12 @@ defmodule MayorGameWeb.CityLive do
       ) do
     # check if user is mayor here?
     building_to_buy_atom = String.to_existing_atom(building_to_buy)
-    initial_purchase_price = get_in(Buildable.buildables_flat(), [building_to_buy_atom, :price])
+    initial_purchase_price = get_in(socket.assigns.buildables_map.buildables_flat, [building_to_buy_atom, :price])
 
     fetched_value = Repo.one(from city in Town, where: city.id == ^city.id, select: ^[:id, building_to_buy_atom])
     buildable_count = fetched_value[building_to_buy_atom]
 
-    building_reqs = get_in(Buildable.buildables_flat(), [building_to_buy_atom, :building_reqs])
+    building_reqs = get_in(socket.assigns.buildables_map.buildables_flat(), [building_to_buy_atom, :building_reqs])
 
     # buildable_count + socket.assigns.construction_count[building_to_buy_atom]
 
@@ -688,18 +689,18 @@ defmodule MayorGameWeb.CityLive do
   end
 
   # this takes the generic buildables map and builds the status (enabled, etc) for each buildable
-  defp calculate_buildables_statuses(city, world, buildables_kw_list) do
-    Enum.map(buildables_kw_list, fn {category, buildables} ->
+  defp calculate_buildables_statuses(city, world, buildables) do
+    Enum.map(buildables, fn {category, buildables} ->
       {category,
        buildables
-       |> Enum.map(fn {buildable_key, buildable_stats} ->
-         {buildable_key,
+       |> Enum.map(fn {_key, buildable_stats} ->
+         {buildable_stats.title,
           Map.from_struct(
             calculate_buildable_status(
               buildable_stats,
               city,
               world,
-              Map.get(city, buildable_key)
+              Map.get(city, buildable_stats.title)
             )
           )}
        end)}

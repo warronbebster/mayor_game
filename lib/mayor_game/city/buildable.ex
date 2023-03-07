@@ -296,7 +296,7 @@ defmodule MayorGame.City.Buildable do
         nature_preserves: buildables_flat().nature_preserves,
         libraries: buildables_flat().libraries
       ],
-      work: [
+      commerce: [
         retail_shops: buildables_flat().retail_shops,
         factories: buildables_flat().factories,
         office_buildings: buildables_flat().office_buildings,
@@ -332,8 +332,45 @@ defmodule MayorGame.City.Buildable do
     ]
   end
 
+  def category_order do
+    [
+      :transit,
+      :housing,
+      :energy,
+      :education,
+      :resources,
+      :civic,
+      :commerce,
+      :entertainment,
+      :travel,
+      :health,
+      :combat,
+      :storage
+    ]
+  end
+
   def buildables do
-    Enum.group_by(buildables_flat(), & &1.category)
+    category_order = [
+      :transit,
+      :housing,
+      :energy,
+      :education,
+      :resources,
+      :civic,
+      :commerce,
+      :entertainment,
+      :travel,
+      :health,
+      :combat,
+      :storage
+    ]
+
+    initial_pass =
+      Enum.group_by(Map.values(buildables_flat()), & &1.category)
+      |> Enum.map(fn {key, value} -> {key, value} end)
+
+    Enum.reduce(category_order, [], &[{&1, Keyword.fetch!(initial_pass, &1)} | &2])
+    |> Enum.reverse()
   end
 
   def buildables_flat do
@@ -1186,7 +1223,7 @@ defmodule MayorGame.City.Buildable do
       # RETAIL SHOPS ————————————————————————————————————
       retail_shops: %BuildableMetadata{
         size: 1,
-        category: :work,
+        category: :commerce,
         level: 5,
         title: :retail_shops,
         price: 1000,
@@ -1200,7 +1237,7 @@ defmodule MayorGame.City.Buildable do
       # FACTORIES ————————————————————————————————————
       factories: %BuildableMetadata{
         size: 7,
-        category: :work,
+        category: :commerce,
         level: 0,
         title: :factories,
         price: 5000,
@@ -1214,12 +1251,15 @@ defmodule MayorGame.City.Buildable do
           health: -3,
           pollution: 1,
           steel: 10
+        },
+        stores: %{
+          steel: 1000
         }
       },
       # OFFICE BUILDINGS ————————————————————————————————————
       office_buildings: %BuildableMetadata{
         size: 3,
-        category: :work,
+        category: :commerce,
         level: 1,
         title: :office_buildings,
         price: 8000,
@@ -1233,7 +1273,7 @@ defmodule MayorGame.City.Buildable do
       # DISTRIBUTION CENTERS ————————————————————————————————
       distribution_centers: %BuildableMetadata{
         size: 8,
-        category: :work,
+        category: :commerce,
         level: 0,
         title: :distribution_centers,
         price: 100_000,
@@ -1368,7 +1408,7 @@ defmodule MayorGame.City.Buildable do
         title: :ski_resorts,
         price: 200_000,
         requires: %{
-          money: 5000,
+          money: 1000,
           energy: 400,
           area: 50,
           workers: %{count: 25, level: 2}
@@ -1444,6 +1484,7 @@ defmodule MayorGame.City.Buildable do
         level: 5,
         title: :air_bases,
         price: 100_000_000,
+        building_reqs: %{steel: 500},
         requires: %{
           money: 5000,
           steel: 50,
@@ -1467,6 +1508,7 @@ defmodule MayorGame.City.Buildable do
         level: 2,
         title: :defense_bases,
         price: 50_000_000,
+        building_reqs: %{steel: 500},
         requires: %{
           money: 2000,
           energy: 2500,
@@ -1487,6 +1529,7 @@ defmodule MayorGame.City.Buildable do
         level: 2,
         title: :missile_defense_arrays,
         price: 20_000_000,
+        building_reqs: %{steel: 300},
         requires: %{
           money: 5000,
           steel: 100,
@@ -1500,6 +1543,7 @@ defmodule MayorGame.City.Buildable do
         }
       },
       # STORAGE ——————————————————————————————————————————————————
+      # STORAGE ——————————————————————————————————————————————————
       # Wood_warehouses
       wood_warehouses: %BuildableMetadata{
         size: 5,
@@ -1507,9 +1551,9 @@ defmodule MayorGame.City.Buildable do
         level: 2,
         title: :wood_warehouses,
         price: 80000,
-        building_reqs: %{steel: 1000},
-        requires: %{area: 100},
-        stores: %{wood: 1000}
+        building_reqs: %{steel: 100},
+        requires: %{area: 10},
+        stores: %{wood: 100}
       },
       fish_tanks: %BuildableMetadata{
         size: 5,
@@ -1517,8 +1561,8 @@ defmodule MayorGame.City.Buildable do
         level: 2,
         title: :fish_tanks,
         price: 80000,
-        building_reqs: %{steel: 100},
-        requires: %{area: 100},
+        building_reqs: %{steel: 100, water: 100},
+        requires: %{area: 10},
         stores: %{fish: 1000}
       },
       lithium_vats: %BuildableMetadata{
@@ -1528,7 +1572,7 @@ defmodule MayorGame.City.Buildable do
         title: :lithium_vats,
         price: 80000,
         building_reqs: %{steel: 100},
-        requires: %{area: 100},
+        requires: %{area: 10},
         stores: %{lithium: 1000}
       },
       salt_sheds: %BuildableMetadata{
@@ -1538,8 +1582,8 @@ defmodule MayorGame.City.Buildable do
         title: :salt_sheds,
         price: 80000,
         building_reqs: %{steel: 100},
-        requires: %{area: 100},
-        stores: %{salt: 1000}
+        requires: %{area: 10},
+        stores: %{salt: 100}
       },
       rock_yards: %BuildableMetadata{
         size: 5,
@@ -1548,8 +1592,8 @@ defmodule MayorGame.City.Buildable do
         title: :rock_yards,
         price: 80000,
         building_reqs: %{steel: 100},
-        requires: %{area: 100},
-        stores: %{stone: 1000}
+        requires: %{area: 10},
+        stores: %{stone: 100}
       },
       water_tanks: %BuildableMetadata{
         size: 5,
@@ -1558,8 +1602,8 @@ defmodule MayorGame.City.Buildable do
         title: :water_tanks,
         price: 80000,
         building_reqs: %{steel: 100},
-        requires: %{area: 100},
-        stores: %{water: 1000}
+        requires: %{area: 10},
+        stores: %{water: 100}
       }
     }
   end
@@ -1583,38 +1627,38 @@ defmodule MayorGame.City.Buildable do
 
     # ^ airports
     rest_of_them =
-      get_requirements_keys([:energy, :money, :workers]) ++
+      get_requirements_keys([:energy, :money, :commerceers]) ++
         get_requirements_keys([:energy, :area]) ++
-        get_requirements_keys([:energy, :workers]) ++
+        get_requirements_keys([:energy, :commerceers]) ++
         get_requirements_keys([:money, :area]) ++
         get_requirements_keys([:energy, :area, :money]) ++
-        get_requirements_keys([:energy, :area, :workers]) ++
-        get_requirements_keys([:energy, :area, :money, :workers]) ++
-        get_requirements_keys([:energy, :area, :money, :workers, :steel, :sulfur])
+        get_requirements_keys([:energy, :area, :commerceers]) ++
+        get_requirements_keys([:energy, :area, :money, :commerceers]) ++
+        get_requirements_keys([:energy, :area, :money, :commerceers, :steel, :sulfur])
 
     [
       needs_nothing,
       get_requirements_keys([:area]),
       get_requirements_keys([:money]),
-      get_requirements_keys([:area, :workers]),
+      get_requirements_keys([:area, :commerceers]),
       # this is basically all energy gen
       # ^ bus lines and subways
-      get_requirements_keys([:area, :money, :workers]) ++
-        get_requirements_keys([:money, :workers]),
+      get_requirements_keys([:area, :money, :commerceers]) ++
+        get_requirements_keys([:money, :commerceers]),
       # this is basically all energy gen
 
       get_requirements_keys([:money, :energy]),
       Enum.sort_by(rest_of_them, &buildables_flat()[&1].level, :desc)
 
-      # get_requirements_keys([:energy, :money, :workers]),
+      # get_requirements_keys([:energy, :money, :commerceers]),
       # get_requirements_keys([:energy, :area]),
-      # get_requirements_keys([:energy, :workers]),
+      # get_requirements_keys([:energy, :commerceers]),
       # # parks
       # get_requirements_keys([:money, :area]),
       # get_requirements_keys([:energy, :area, :money]),
-      # get_requirements_keys([:energy, :area, :workers]),
-      # get_requirements_keys([:energy, :area, :money, :workers]),
-      # get_requirements_keys([:energy, :area, :money, :workers, :steel, :sulfur])
+      # get_requirements_keys([:energy, :area, :commerceers]),
+      # get_requirements_keys([:energy, :area, :money, :commerceers]),
+      # get_requirements_keys([:energy, :area, :money, :commerceers, :steel, :sulfur])
     ]
   end
 

@@ -23,12 +23,10 @@ defmodule MayorGame.CityCalculator do
   def init(initial_world) do
     buildables_map = %{
       buildables_flat: Buildable.buildables_flat(),
+      buildables: Buildable.buildables(),
       buildables_kw_list: Buildable.buildables_kw_list(),
-      # buildables: Buildable.buildables(),
       buildables_list: Buildable.buildables_list(),
-      buildables_ordered: Buildable.buildables_ordered(),
-      buildables_ordered_flat: Buildable.buildables_ordered_flat(),
-      empty_buildable_map: Buildable.empty_buildable_map()
+      buildables_ordered: Buildable.buildables_ordered()
     }
 
     in_dev = Application.get_env(:mayor_game, :env) == :dev
