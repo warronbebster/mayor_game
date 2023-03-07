@@ -352,26 +352,33 @@ defmodule MayorGame.City do
   def purchase_buildable(%Town{} = city, field_to_purchase, purchase_price, building_reqs) do
     # city is unchanged, use the ledger to hold the accumlated construction and cost prior to UI refresh
 
+    params =
+      if is_nil(building_reqs) do
+        %{treasury: city.treasury - purchase_price}
+      else
+        Enum.map(building_reqs, fn {req_key, req_value} ->
+          {req_key, city[req_key] - req_value}
+        end)
+        |> Enum.into(%{treasury: city.treasury - purchase_price})
+      end
+
+    # ok this is working
+
     purchase_changeset =
       city
-      |> Town.changeset(%{})
-      |> Ecto.Changeset.validate_number(:treasury, greater_than: purchase_price)
+      |> Town.changeset(params)
+      |> Ecto.Changeset.validate_number(:treasury, greater_than_or_equal_to: 0)
 
     purchase_changeset =
       if !is_nil(building_reqs) do
-        Enum.reduce(building_reqs, purchase_changeset, fn {req_key, req_value}, acc ->
-          IO.inspect(req_key)
-          IO.inspect(req_value, label: to_string(req_key))
-          Ecto.Changeset.validate_number(acc, req_key, greater_than: req_value)
+        IO.inspect(building_reqs)
+
+        Enum.reduce(building_reqs, purchase_changeset, fn {req_key, _req_value}, acc ->
+          Ecto.Changeset.validate_number(acc, req_key, greater_than_or_equal_to: 0)
         end)
       else
         purchase_changeset
       end
-
-    # this might be an issue because
-    # IO.inspect(city.water, label: "water")
-
-    # IO.inspect(purchase_changeset)
 
     decrement =
       if is_nil(building_reqs) do
@@ -381,11 +388,7 @@ defmodule MayorGame.City do
           Enum.map(building_reqs, fn {req_key, req_value} -> {req_key, -req_value} end)
       end
 
-    # IO.inspect(decrement)
-
     # map over
-
-    # |> Repo.update()
 
     if purchase_changeset.errors == [] do
       from(t in Town,

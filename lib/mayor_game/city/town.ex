@@ -252,6 +252,7 @@ defmodule MayorGame.City.Town do
         :climate,
         :user_id,
         :tax_rates,
+        # resources
         :steel,
         :stone,
         :missiles,
@@ -259,6 +260,15 @@ defmodule MayorGame.City.Town do
         :sulfur,
         :gold,
         :uranium,
+        :water,
+        :salt,
+        :fish,
+        :oil,
+        :wood,
+        :stone,
+        :lithium,
+
+        # —————————————
         :patron,
         :contributor,
         :citizens_blob,
