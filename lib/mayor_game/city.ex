@@ -360,13 +360,18 @@ defmodule MayorGame.City do
     purchase_changeset =
       if !is_nil(building_reqs) do
         Enum.reduce(building_reqs, purchase_changeset, fn {req_key, req_value}, acc ->
+          IO.inspect(req_key)
+          IO.inspect(req_value, label: to_string(req_key))
           Ecto.Changeset.validate_number(acc, req_key, greater_than: req_value)
         end)
       else
         purchase_changeset
       end
 
-    IO.inspect(purchase_changeset)
+    # this might be an issue because
+    # IO.inspect(city.water, label: "water")
+
+    # IO.inspect(purchase_changeset)
 
     decrement =
       if is_nil(building_reqs) do
@@ -376,7 +381,7 @@ defmodule MayorGame.City do
           Enum.map(building_reqs, fn {req_key, req_value} -> {req_key, -req_value} end)
       end
 
-    IO.inspect(decrement)
+    # IO.inspect(decrement)
 
     # map over
 

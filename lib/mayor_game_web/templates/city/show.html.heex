@@ -727,10 +727,10 @@
                     </button>
                     <div class="tooltip w-28">Create 1 building</div>
                     </div>
-                    <% else %>
+                  <% else %>
                     <!-- if there are building reqs -->
                     <div class="group relative inline-block">
-                      <%= if !Enum.any?(building_stats.building_reqs, fn {req_key, req_value} ->  @city_stats |> TownStatistics.getResource(req_key) < req_value end) do %>
+                      <%= if !Enum.any?(building_stats.building_reqs, fn {req_key, req_value} -> TownStatistics.getResource(@city_stats, req_key).stock < req_value end) do %>
                         <!-- if all requirements are met -->
                         <button
                           class="btn m-0 rounded-none border border-neutral-800/25 leading-none h-6 flex flex-row items-center gap-1"
@@ -756,7 +756,7 @@
                         >
                           $<%= Number.SI.number_to_si( building_stats.price, precision: 3, trim: true) %>
                           <%= for {req_key, req_value} <- building_stats.building_reqs do %>
-                            <%= if @city_stats |> TownStatistics.getResource(req_key) > req_value do %>
+                            <%= if TownStatistics.getResource(@city_stats, req_key).stock > req_value do %>
                               <img
                                   src={"/images/#{to_string(req_key)}-fulfilled.svg"}
                                   alt={"not enough #{to_string(req_key)} to build"}
@@ -780,7 +780,7 @@
                           <span class="font-semibold">Requires:</span>
                           <%= for {req_key, req_value} <- building_stats.building_reqs do %>
                             <div class="flex items-center gap-1">
-                             <%= if @city_stats |> TownStatistics.getResource(req_key) > req_value do %>
+                             <%= if TownStatistics.getResource(@city_stats, req_key).stock > req_value do %>
                                 <img
                                     src={"/images/#{to_string(req_key)}-fulfilled.svg"}
                                     alt={"requires #{to_string(req_key)} to purchase"}

@@ -296,12 +296,16 @@ defmodule MayorGameWeb.CityLive do
           new_purchase_price
         )
 
-      IO.inspect(socket.assigns.city_stats.resource_stats)
+      # IO.inspect(socket.assigns.city_stats.resource_stats)
 
       updated_city_resource_stats =
-        Enum.reduce(building_reqs, socket.assigns.city_stats.resource_stats, fn {req_key, req_value}, acc ->
-          Map.put(acc, req_key, Map.update!(acc[req_key], :stock, &(&1 - req_value)))
-        end)
+        if is_nil(building_reqs) do
+          socket.assigns.city_stats.resource_stats
+        else
+          Enum.reduce(building_reqs, socket.assigns.city_stats.resource_stats, fn {req_key, req_value}, acc ->
+            Map.put(acc, req_key, Map.update!(acc[req_key], :stock, &(&1 - req_value)))
+          end)
+        end
 
       updated_city_stats =
         if is_nil(building_reqs) do
