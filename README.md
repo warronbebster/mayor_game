@@ -77,6 +77,13 @@ MayorGame.City.update_town(city, %{treasury: -10})
 To update all:
 
 from(t in MayorGame.City.Town, where: t.id > 0, update: [set: [logs_deaths_housing: 0]])|> MayorGame.Repo.update_all([])
+from(t in MayorGame.City.Town, where: t.treasury < 0, update: [set: [treasury: 0]])|> MayorGame.Repo.update_all([])
+
+alias MayorGame.City.Buildable
+import Ecto.Query
+for buildable <- MayorGame.City.Buildable.buildables_list() do
+from(t in MayorGame.City.Town, where: field(t, ^buildable) < 0) |> MayorGame.Repo.update_all(set: [{buildable, 0}])
+end
 
 ```
 
