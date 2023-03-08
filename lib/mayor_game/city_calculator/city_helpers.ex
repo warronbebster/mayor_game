@@ -282,6 +282,8 @@ defmodule MayorGame.CityHelpers do
       world.pollution > pollution_ceiling ||
         town_stats.resource_stats.pollution.production > town_stats.total_citizens * 5
 
+    # if this is all that matters, that's a lot of calls to that function
+    # probably can optimize this a bit
     reproductive_citizen_count = Enum.count(town_preloaded.citizens_blob, &Rules.is_citizen_reproductive(&1))
 
     # this expensive operation may be avoided if we store the birthday instead of the age
@@ -627,6 +629,7 @@ defmodule MayorGame.CityHelpers do
              else: v
 
         region_atom = String.to_existing_atom(region)
+
         v_x_region =
           if Map.has_key?(multipliers, :region) && Map.has_key?(multipliers.region, k) &&
                Map.has_key?(multipliers.region[k], region_atom),
