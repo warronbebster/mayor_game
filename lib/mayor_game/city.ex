@@ -371,8 +371,6 @@ defmodule MayorGame.City do
 
     purchase_changeset =
       if !is_nil(building_reqs) do
-        IO.inspect(building_reqs)
-
         Enum.reduce(building_reqs, purchase_changeset, fn {req_key, _req_value}, acc ->
           Ecto.Changeset.validate_number(acc, req_key, greater_than_or_equal_to: 0)
         end)
