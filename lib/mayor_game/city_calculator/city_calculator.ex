@@ -161,6 +161,38 @@ defmodule MayorGame.CityCalculator do
                   water:
                     ^(city
                       |> TownStatistics.getResource(:water)
+                      |> ResourceStatistics.getNetProduction()),
+                  cows:
+                    ^(city
+                      |> TownStatistics.getResource(:cows)
+                      |> ResourceStatistics.getNetProduction()),
+                  produce:
+                    ^(city
+                      |> TownStatistics.getResource(:produce)
+                      |> ResourceStatistics.getNetProduction()),
+                  rice:
+                    ^(city
+                      |> TownStatistics.getResource(:rice)
+                      |> ResourceStatistics.getNetProduction()),
+                  food:
+                    ^(city
+                      |> TownStatistics.getResource(:food)
+                      |> ResourceStatistics.getNetProduction()),
+                  grapes:
+                    ^(city
+                      |> TownStatistics.getResource(:grapes)
+                      |> ResourceStatistics.getNetProduction()),
+                  bread:
+                    ^(city
+                      |> TownStatistics.getResource(:bread)
+                      |> ResourceStatistics.getNetProduction()),
+                  wheat:
+                    ^(city
+                      |> TownStatistics.getResource(:wheat)
+                      |> ResourceStatistics.getNetProduction()),
+                  meat:
+                    ^(city
+                      |> TownStatistics.getResource(:meat)
                       |> ResourceStatistics.getNetProduction())
                   # logs—————————
                 ],

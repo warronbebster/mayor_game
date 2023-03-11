@@ -1128,7 +1128,7 @@ defmodule MayorGame.City.Buildable do
           money: 100,
           energy: 100,
           area: 500,
-          workers: %{count: 10, level: 1}
+          workers: %{count: 5, level: 1}
         },
         produces: %{
           water: 1
