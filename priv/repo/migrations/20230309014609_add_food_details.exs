@@ -1,4 +1,4 @@
-ridefmodule MayorGame.Repo.Migrations.AddFoodDetails do
+defmodule MayorGame.Repo.Migrations.AddFoodDetails do
   use Ecto.Migration
 
   def change do
