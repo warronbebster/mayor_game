@@ -916,7 +916,7 @@ defmodule MayorGame.CityMigrator do
                       "town_id" => id,
                       "education" => 0,
                       "last_moved" => db_world.day,
-                      "preferences" => :rand.uniform(10)
+                      "preferences" => :rand.uniform(11)
                     }
                   end) ++ list
                 else

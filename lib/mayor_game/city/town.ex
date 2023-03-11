@@ -87,6 +87,7 @@ defmodule MayorGame.City.Town do
             shields: integer,
             sulfur: integer,
             gold: integer,
+            # ^ unused
             uranium: integer,
             stone: integer,
             fish: integer,
@@ -96,6 +97,15 @@ defmodule MayorGame.City.Town do
             water: integer,
             lithium: integer,
             microchips: integer,
+            # ^ unused
+            cows: integer,
+            rice: integer,
+            wheat: integer,
+            produce: integer,
+            meat: integer,
+            grapes: integer,
+            bread: integer,
+            food: integer,
 
             # Buildings ————————————————————————————
             huts: integer,
@@ -150,7 +160,10 @@ defmodule MayorGame.City.Town do
             lithium_vats: integer,
             salt_sheds: integer,
             rock_yards: integer,
-            water_tanks: integer
+            water_tanks: integer,
+            silos: integer,
+            cow_pens: integer,
+            refrigerated_warehouses: integer
           }
 
   schema "cities" do
@@ -176,6 +189,14 @@ defmodule MayorGame.City.Town do
     field(:water, :integer)
     field(:lithium, :integer)
     field(:microchips, :integer)
+    field(:cows, :integer)
+    field(:rice, :integer)
+    field(:wheat, :integer)
+    field(:meat, :integer)
+    field(:produce, :integer)
+    field(:bread, :integer)
+    field(:grapes, :integer)
+    field(:food, :integer)
 
     field(:patron, :integer)
     field(:contributor, :boolean)

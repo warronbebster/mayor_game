@@ -28,26 +28,39 @@ defmodule MayorGameWeb.CityLive do
     world = Repo.get!(MayorGame.City.World, 1)
     in_dev = Application.get_env(:mayor_game, :env) == :dev
 
-    subtotal_types = [
-      {:health, "text-rose-700"},
-      {:area, "text-cyan-700"},
-      {:housing, "text-amber-700"},
-      {:energy, "text-yellow-700"},
+    resource_types = [
       {:sulfur, "text-orange-700"},
-      # {:uranium, "text-violet-700"},
+      {:uranium, "text-violet-700"},
       {:steel, "text-slate-700"},
-      {:fun, "text-fuchsia-700"},
       {:fish, "text-cyan-700"},
       {:oil, "text-stone-700"},
       {:stone, "text-slate-700"},
-      {:sprawl, "text-yellow-700"},
+      {:bread, "text-amber-800"},
+      {:wheat, "text-amber-600"},
+      {:grapes, "text-indigo-700"},
       {:wood, "text-amber-700"},
+      {:food, "text-yellow-700"},
+      {:produce, "text-green-700"},
+      {:meat, "text-red-700"},
+      {:rice, "text-yellow-700"},
+      {:cows, "text-stone-700"},
       {:lithium, "text-lime-700"},
       {:water, "text-sky-700"},
       {:salt, "text-zinc-700"},
-      {:missile, "text-red-700"},
+      {:missiles, "text-red-700"},
       {:shields, "text-blue-700"}
     ]
+
+    subtotal_types =
+      [
+        {:health, "text-rose-700"},
+        {:area, "text-cyan-700"},
+        {:housing, "text-amber-700"},
+        {:energy, "text-yellow-700"},
+        {:culture, "text-blue-700"},
+        {:sprawl, "text-yellow-700"},
+        {:sulfur, "text-orange-700"}
+      ] ++ resource_types
 
     explanations = %{
       transit: "Build transit to add area to your city. Area is required to build most other buildings.",
@@ -60,6 +73,8 @@ defmodule MayorGameWeb.CityLive do
       civic: "Civic buildings add other benefits citizens like — jobs, fun, etc.",
       resources:
         "Resource buildings are ways to generate in-game resources. Some regions have unique resource buildings.",
+      farms: "Farms generate resources related to fooc & consumption.",
+      food: "Food buildings allow you to distribute food to your citizens.",
       commerce: "Commerce buildings have lots of jobs to attract citizens to your city",
       entertainment: "Entertainment buildings have jobs, and add other intangibles to your city.",
       travel: "Travel buildings increase your city's desirability.",
@@ -94,27 +109,18 @@ defmodule MayorGameWeb.CityLive do
         "money",
         "steel",
         "sulfur",
-        "uranium"
+        "uranium",
+        "rice",
+        "meat",
+        "water",
+        "cows",
+        "bread",
+        "wheat",
+        "produce"
       ])
       |> assign(:category_explanations, explanations)
       |> assign(:subtotal_types, subtotal_types)
-      |> assign(
-        resources: [
-          "money",
-          "steel",
-          "sulfur",
-          "missiles",
-          "shields",
-          "uranium",
-          "oil",
-          "fish",
-          "water",
-          "salt",
-          "lithium",
-          "wood",
-          "stone"
-        ]
-      )
+      |> assign(:resource_types, resource_types)
       # |> mount_city_by_title()
       |> update_city_by_title()
       |> assign_auth(session)
@@ -137,7 +143,7 @@ defmodule MayorGameWeb.CityLive do
         "age" => 0,
         "education" => 0,
         "last_moved" => socket.assigns.world.day,
-        "preferences" => :rand.uniform(10)
+        "preferences" => :rand.uniform(11)
       }
 
       from(t in Town,
@@ -1039,7 +1045,7 @@ defmodule MayorGameWeb.CityLive do
       is_user_mayor =
         if !socket.assigns.in_dev,
           do: to_string(socket.assigns.user_id) == to_string(socket.assigns.current_user.id),
-          else: to_string(socket.assigns.current_user.id) == to_string(socket.assigns.current_user.id)
+          else: to_string(socket.assigns.user_id) == to_string(socket.assigns.current_user.id)
 
       is_user_admin =
         if !socket.assigns.in_dev,

@@ -72,7 +72,8 @@ app/bin/mayor_game remote
 world = MayorGame.City.get_world(1)
 MayorGame.City.update_world(world, %{pollution: 1000000})
 city = MayorGame.City.get_town_by_title!("hi21")
-MayorGame.City.update_town(city, %{treasury: -10})
+city = MayorGame.City.get_town_by_title!("wat")
+MayorGame.City.update_town(city, %{water: 10})
 
 To update all:
 

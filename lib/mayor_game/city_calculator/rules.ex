@@ -13,7 +13,7 @@ defmodule MayorGame.Rules do
 
   @spec is_citizen_reproductive(map) :: boolean
   def is_citizen_reproductive(citizen) do
-    citizen["age"] > 15 && citizen["age"] < 4000 && :rand.uniform() > 0.999
+    citizen["age"] > 20 && :rand.uniform() > 0.9999
   end
 
   @spec is_citizen_within_lifespan(map) :: boolean

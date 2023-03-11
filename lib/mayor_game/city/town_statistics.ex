@@ -194,6 +194,63 @@ defmodule MayorGame.City.TownStatistics do
           production: 0,
           consumption: 0
         },
+        rice: %ResourceStatistics{
+          title: "rice",
+          stock: town.rice,
+          storage: 50,
+          production: 0,
+          consumption: 0
+        },
+        wheat: %ResourceStatistics{
+          title: "wheat",
+          stock: town.wheat,
+          storage: 50,
+          production: 0,
+          consumption: 0
+        },
+        produce: %ResourceStatistics{
+          title: "produce",
+          stock: town.produce,
+          storage: 50,
+          production: 0,
+          consumption: 0
+        },
+        cows: %ResourceStatistics{
+          title: "cows",
+          stock: town.cows,
+          storage: 50,
+          production: 0,
+          consumption: 0
+        },
+        meat: %ResourceStatistics{
+          title: "meat",
+          stock: town.meat,
+          storage: 50,
+          production: 0,
+          consumption: 0
+        },
+        food: %ResourceStatistics{
+          title: "food",
+          stock: town.food,
+          storage: 50,
+          production: 0,
+          consumption: 0
+        },
+        bread: %ResourceStatistics{
+          title: "bread",
+          stock: town.bread,
+          storage: 50,
+          production: 0,
+          consumption: 0
+        },
+        grapes: %ResourceStatistics{
+          title: "grapes",
+          stock: town.grapes,
+          storage: 50,
+          production: 0,
+          consumption: 0
+        },
+        # combat
         shields: %ResourceStatistics{
           title: "shields",
           stock: town.shields,

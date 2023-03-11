@@ -184,7 +184,7 @@ defmodule MayorGame.CityCalculator do
                     "town_id" => city.id,
                     "education" => 0,
                     "last_moved" => db_world.day,
-                    "preferences" => :rand.uniform(10)
+                    "preferences" => :rand.uniform(11)
                   }
                 end)
 

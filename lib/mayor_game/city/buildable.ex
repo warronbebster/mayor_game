@@ -45,86 +45,6 @@ defmodule MayorGame.City.Buildable do
   }
   """
 
-  # def buildables do
-  #   %{
-  #     housing: %{
-  #       huts: buildables_flat().huts,
-  #       single_family_homes: buildables_flat().single_family_homes,
-  #       multi_family_homes: buildables_flat().multi_family_homes,
-  #       homeless_shelters: buildables_flat().homeless_shelters,
-  #       apartments: buildables_flat().apartments,
-  #       micro_apartments: buildables_flat().micro_apartments,
-  #       high_rises: buildables_flat().high_rises,
-  #       megablocks: buildables_flat().megablocks
-  #     },
-  #     transit: %{
-  #       roads: buildables_flat().roads,
-  #       highways: buildables_flat().highways,
-  #       airports: buildables_flat().airports,
-  #       bus_lines: buildables_flat().bus_lines,
-  #       subway_lines: buildables_flat().subway_lines,
-  #       bike_lanes: buildables_flat().bike_lanes,
-  #       bikeshare_stations: buildables_flat().bikeshare_stations
-  #     },
-  #     energy: [
-  #       coal_plants: buildables_flat().coal_plants,
-  #       natural_gas_plants: buildables_flat().natural_gas_plants,
-  #       wind_turbines: buildables_flat().wind_turbines,
-  #       solar_plants: buildables_flat().solar_plants,
-  #       nuclear_plants: buildables_flat().nuclear_plants,
-  #       fusion_reactors: buildables_flat().fusion_reactors,
-  #       dams: buildables_flat().dams,
-  #       carbon_capture_plants: buildables_flat().carbon_capture_plants
-  #     ],
-  #     civic: %{
-  #       parks: buildables_flat().parks,
-  #       campgrounds: buildables_flat().campgrounds,
-  #       nature_preserves: buildables_flat().nature_preserves,
-  #       libraries: buildables_flat().libraries
-  #     },
-  #     education: %{
-  #       schools: buildables_flat().schools,
-  #       middle_schools: buildables_flat().middle_schools,
-  #       high_schools: buildables_flat().high_schools,
-  #       universities: buildables_flat().universities,
-  #       research_labs: buildables_flat().research_labs
-  #     },
-  #     resources: %{
-  #       mines: buildables_flat().mines,
-  #       uranium_mines: buildables_flat().uranium_mines,
-  #       lumber_yards: buildables_flat().lumber_yards,
-  #       quarries: buildables_flat().quarries,
-  #       salt_farms: buildables_flat().salt_farms,
-  #       lithium_mines: buildables_flat().lithium_mines
-  #     },
-  #     work: %{
-  #       retail_shops: buildables_flat().retail_shops,
-  #       factories: buildables_flat().factories,
-  #       office_buildings: buildables_flat().office_buildings,
-  #       distribution_centers: buildables_flat().distribution_centers
-  #     },
-  #     entertainment: %{
-  #       theatres: buildables_flat().theatres,
-  #       arenas: buildables_flat().arenas,
-  #       zoos: buildables_flat().zoos,
-  #       aquariums: buildables_flat().aquariums
-  #     },
-  #     travel: %{
-  #       resorts: buildables_flat().resorts,
-  #       ski_resorts: buildables_flat().ski_resorts
-  #     },
-  #     health: %{
-  #       hospitals: buildables_flat().hospitals,
-  #       doctor_offices: buildables_flat().doctor_offices
-  #     },
-  #     combat: %{
-  #       air_bases: buildables_flat().air_bases,
-  #       defense_bases: buildables_flat().defense_bases,
-  #       missile_defense_arrays: buildables_flat().missile_defense_arrays
-  #     }
-  #   }
-  # end
-
   def buildables_attack_order do
     [
       :defense_bases,
@@ -286,9 +206,26 @@ defmodule MayorGame.City.Buildable do
         uranium_mines: buildables_flat().uranium_mines,
         salt_farms: buildables_flat().salt_farms,
         lithium_mines: buildables_flat().lithium_mines,
+        fisheries: buildables_flat().fisheries,
         quarries: buildables_flat().quarries,
         reservoirs: buildables_flat().reservoirs,
-        oil_wells: buildables_flat().oil_wells
+        oil_wells: buildables_flat().oil_wells,
+        desalination_plants: buildables_flat().desalination_plants
+      ],
+      farms: [
+        rice_farms: buildables_flat().rice_farms,
+        wheat_farms: buildables_flat().wheat_farms,
+        produce_farms: buildables_flat().produce_farms,
+        livestock_farms: buildables_flat().livestock_farms,
+        vineyards: buildables_flat().vineyards
+      ],
+      food: [
+        sushi_restaurants: buildables_flat().sushi_restaurants,
+        delis: buildables_flat().delis,
+        grocery_stores: buildables_flat().grocery_stores,
+        farmers_markets: buildables_flat().farmers_markets,
+        butchers: buildables_flat().butchers,
+        bakeries: buildables_flat().bakeries
       ],
       civic: [
         parks: buildables_flat().parks,
@@ -327,7 +264,10 @@ defmodule MayorGame.City.Buildable do
         lithium_vats: buildables_flat().lithium_vats,
         salt_sheds: buildables_flat().salt_sheds,
         rock_yards: buildables_flat().rock_yards,
-        water_tanks: buildables_flat().water_tanks
+        water_tanks: buildables_flat().water_tanks,
+        cow_pens: buildables_flat().cow_pens,
+        silos: buildables_flat().silos,
+        refrigerated_warehouses: buildables_flat().refrigerated_warehouses
       ]
     ]
   end
@@ -339,6 +279,8 @@ defmodule MayorGame.City.Buildable do
       :energy,
       :education,
       :resources,
+      :farms,
+      :food,
       :civic,
       :commerce,
       :entertainment,
@@ -639,6 +581,8 @@ defmodule MayorGame.City.Buildable do
           area: 10
         }
       },
+      # ENERGY ————————————————————————————————————————————————————————————————————————
+      # ENERGY ————————————————————————————————————————————————————————————————————————
       # Coal Plants ————————————————————————————————————
       coal_plants: %BuildableMetadata{
         size: 5,
@@ -829,6 +773,8 @@ defmodule MayorGame.City.Buildable do
           pollution: -100
         }
       },
+      # CIVIC ————————————————————————————————————————————————————————————————————————
+      # CIVIC ————————————————————————————————————————————————————————————————————————
       # PARKS ————————————————————————————————————
       parks: %BuildableMetadata{
         size: 1,
@@ -953,9 +899,12 @@ defmodule MayorGame.City.Buildable do
           education: fn rng, number_of_buildables ->
             # low-luck calculation at 5% chance, so rng needs only be used once
             Utility.dice_roll(number_of_buildables, 0.05)
-          end
+          end,
+          culture: 1
         }
       },
+      # EDUCATION ————————————————————————————————————————————————————————————————————————————————————————————————————————————
+      # EDUCATION ————————————————————————————————————————————————————————————————————————————————————————————————————————————
       # SCHOOLS ————————————————————————————————————
       schools: %BuildableMetadata{
         size: 2,
@@ -1041,7 +990,8 @@ defmodule MayorGame.City.Buildable do
           education_lvl_5: 5
         }
       },
-      # Resources ——————————————————————————————————————
+      # Resources ————————————————————————————————————————————————————————————————————————————
+      # Resources ————————————————————————————————————————————————————————————————————————————
       # MINES ————————————————————————————————————
       mines: %BuildableMetadata{
         size: 5,
@@ -1168,7 +1118,7 @@ defmodule MayorGame.City.Buildable do
       },
       # RESERVOIRS ————————————————————————————————————
       reservoirs: %BuildableMetadata{
-        regions: [:lake],
+        regions: [:lake, :mountain],
         size: 10,
         category: :resources,
         level: 4,
@@ -1188,7 +1138,7 @@ defmodule MayorGame.City.Buildable do
       # SALT FARMS ————————————————————————————————————
       salt_farms: %BuildableMetadata{
         regions: [:ocean],
-        size: 3,
+        size: 5,
         category: :resources,
         level: 4,
         title: :salt_farms,
@@ -1205,21 +1155,240 @@ defmodule MayorGame.City.Buildable do
       # QUARRIES ————————————————————————————————————
       quarries: %BuildableMetadata{
         regions: [:mountain],
-        size: 3,
+        size: 5,
         category: :resources,
         level: 4,
         title: :quarries,
         price: 2_000_000,
         requires: %{
           money: 1000,
-          energy: 5000,
+          energy: 500,
           area: 100,
           workers: %{count: 20, level: 4}
         },
         produces: %{stone: 1},
         stores: %{stone: 100}
       },
-      # BUSINESS —
+      # DESALINATION PLANTS
+      desalination_plants: %BuildableMetadata{
+        regions: [:ocean],
+        size: 5,
+        category: :resources,
+        level: 4,
+        title: :desalination_plants,
+        price: 2_000_000,
+        requires: %{
+          money: 1000,
+          energy: 1000,
+          area: 100,
+          workers: %{count: 8, level: 4}
+        },
+        produces: %{water: 1, salt: 1},
+        stores: %{water: 50, salt: 50}
+      },
+      # FARMS ————————————————————————————————————————————————————————————————————————————————
+      # FARMS ————————————————————————————————————————————————————————————————————————————————
+      # RICE FARMS
+      rice_farms: %BuildableMetadata{
+        regions: [:mountain],
+        size: 5,
+        category: :farms,
+        level: 4,
+        title: :rice_farms,
+        price: 1_000_000,
+        requires: %{
+          money: 10,
+          water: 20,
+          energy: 10,
+          area: 100,
+          workers: %{count: 5, level: 0}
+        },
+        produces: %{rice: 1},
+        stores: %{rice: 50}
+      },
+      # WHEAT FARMS
+      wheat_farms: %BuildableMetadata{
+        regions: [:forest, :lake],
+        size: 5,
+        category: :farms,
+        level: 4,
+        title: :wheat_farms,
+        price: 1_000_000,
+        requires: %{
+          money: 10,
+          water: 5,
+          energy: 10,
+          area: 100,
+          workers: %{count: 5, level: 0}
+        },
+        produces: %{wheat: 1},
+        stores: %{wheat: 50}
+      },
+      # PRODUCE FARMS
+      produce_farms: %BuildableMetadata{
+        size: 5,
+        category: :farms,
+        level: 4,
+        title: :produce_farms,
+        price: 1_000_000,
+        requires: %{
+          money: 10,
+          water: 5,
+          energy: 10,
+          area: 100,
+          workers: %{count: 5, level: 0}
+        },
+        produces: %{produce: 1},
+        stores: %{produce: 50}
+      },
+      # LIVESTOCK FARMS
+      livestock_farms: %BuildableMetadata{
+        size: 5,
+        category: :farms,
+        level: 4,
+        title: :livestock_farms,
+        price: 1_000_000,
+        requires: %{
+          money: 10,
+          water: 10,
+          energy: 10,
+          area: 100,
+          workers: %{count: 5, level: 0}
+        },
+        produces: %{cows: 1},
+        stores: %{cows: 50}
+      },
+      # Vineyards
+      vineyards: %BuildableMetadata{
+        regions: [:mountain, :desert, :forest],
+        size: 5,
+        category: :farms,
+        level: 4,
+        title: :vineyards,
+        price: 1_000_000,
+        requires: %{
+          money: 10,
+          water: 10,
+          energy: 10,
+          area: 100,
+          workers: %{count: 5, level: 0}
+        },
+        produces: %{grapes: 1},
+        stores: %{grapes: 50}
+      },
+      # FOOD ————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+      # FOOD ————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+      # BAKERIES
+      bakeries: %BuildableMetadata{
+        size: 2,
+        category: :food,
+        level: 4,
+        title: :bakeries,
+        price: 400_000,
+        requires: %{
+          money: 10,
+          wheat: 5,
+          salt: 1,
+          water: 5,
+          energy: 10,
+          area: 5,
+          workers: %{count: 5, level: 1}
+        },
+        produces: %{bread: 1},
+        stores: %{bread: 50}
+      },
+      # SUSHI RESTAURANTS
+      sushi_restaurants: %BuildableMetadata{
+        size: 2,
+        category: :food,
+        level: 4,
+        title: :sushi_restaurants,
+        price: 700_000,
+        requires: %{
+          money: 10,
+          water: 5,
+          rice: 5,
+          fish: 5,
+          energy: 50,
+          area: 2,
+          workers: %{count: 5, level: 3}
+        },
+        produces: %{food: 1, culture: 1},
+        stores: %{food: 25}
+      },
+      # FARMERS MARKETS
+      farmers_markets: %BuildableMetadata{
+        size: 2,
+        category: :food,
+        level: 4,
+        title: :farmers_markets,
+        price: 200_000,
+        requires: %{
+          produce: 5,
+          health: 5,
+          area: 5,
+          workers: %{count: 5, level: 2}
+        },
+        produces: %{food: 1},
+        stores: %{food: 50}
+      },
+      # DELIS
+      delis: %BuildableMetadata{
+        size: 2,
+        category: :food,
+        level: 4,
+        title: :delis,
+        price: 200_000,
+        requires: %{
+          money: 10,
+          bread: 5,
+          meat: 5,
+          energy: 10,
+          area: 5,
+          workers: %{count: 5, level: 1}
+        },
+        produces: %{food: 1},
+        stores: %{food: 25}
+      },
+      # GROCERY STORES
+      grocery_stores: %BuildableMetadata{
+        size: 2,
+        category: :food,
+        level: 4,
+        title: :grocery_stores,
+        price: 400_000,
+        requires: %{
+          money: 10,
+          bread: 5,
+          water: 5,
+          rice: 5,
+          meat: 5,
+          produce: 5,
+          area: 5,
+          energy: 10,
+          workers: %{count: 5, level: 1}
+        },
+        produces: %{food: 20},
+        stores: %{food: 500}
+      },
+      # BUTCHERS
+      butchers: %BuildableMetadata{
+        size: 2,
+        category: :food,
+        level: 4,
+        title: :butchers,
+        price: 200_000,
+        requires: %{
+          cows: 10,
+          area: 2,
+          energy: 5,
+          workers: %{count: 3, level: 2}
+        },
+        produces: %{meat: 1},
+        stores: %{meat: 50}
+      },
+      # BUSINESS ——————————————————————————————————————————————————————————————————————————————————————————————————————————
+      # BUSINESS ——————————————————————————————————————————————————————————————————————————————————————————————————————————
       # RETAIL SHOPS ————————————————————————————————————
       retail_shops: %BuildableMetadata{
         size: 1,
@@ -1305,7 +1474,8 @@ defmodule MayorGame.City.Buildable do
           workers: %{count: 10, level: 0}
         },
         produces: %{
-          fun: 5
+          fun: 5,
+          culture: 1
         }
       },
       # ARENAS ————————————————————————————————————
@@ -1604,6 +1774,36 @@ defmodule MayorGame.City.Buildable do
         building_reqs: %{steel: 100},
         requires: %{area: 10},
         stores: %{water: 100}
+      },
+      cow_pens: %BuildableMetadata{
+        size: 5,
+        category: :storage,
+        level: 2,
+        title: :cow_pens,
+        price: 80000,
+        building_reqs: %{steel: 100},
+        requires: %{area: 10},
+        stores: %{cows: 100}
+      },
+      silos: %BuildableMetadata{
+        size: 5,
+        category: :storage,
+        level: 2,
+        title: :silos,
+        price: 80000,
+        building_reqs: %{steel: 100},
+        requires: %{area: 10},
+        stores: %{cows: 100}
+      },
+      refrigerated_warehouses: %BuildableMetadata{
+        size: 5,
+        category: :storage,
+        level: 2,
+        title: :refrigerated_warehouses,
+        price: 80000,
+        building_reqs: %{steel: 100},
+        requires: %{area: 10, energy: 10, workers: %{count: 5, level: 0}},
+        stores: %{bread: 100, grapes: 100, produce: 100, meat: 100}
       }
     }
   end
