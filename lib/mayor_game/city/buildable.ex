@@ -737,7 +737,8 @@ defmodule MayorGame.City.Buildable do
           workers: %{count: 5, level: 2}
         },
         produces: %{
-          energy: 1000
+          energy: 1000,
+          water: 10
         }
       },
       # # Fusion Reactors ————————————————————————————————————
@@ -1131,7 +1132,7 @@ defmodule MayorGame.City.Buildable do
           workers: %{count: 5, level: 1}
         },
         produces: %{
-          water: 1
+          water: 100
         },
         stores: %{water: 1000}
       },
@@ -1793,7 +1794,7 @@ defmodule MayorGame.City.Buildable do
         price: 80000,
         building_reqs: %{steel: 100},
         requires: %{area: 10},
-        stores: %{cows: 100}
+        stores: %{rice: 100, wheat: 100}
       },
       refrigerated_warehouses: %BuildableMetadata{
         size: 5,
