@@ -339,15 +339,14 @@ defmodule MayorGame.CityMigrator do
                    acc.slots,
                    %{chosen_id: citizen["town_id"], top_score: -1},
                    fn {city_id, count}, acc2 ->
-                     score = IO.inspect(count)
-
-                     if count > 0 do
-                       city_preference_scores[citizen["preferences"]][citizen["education"]][
-                         city_id
-                       ]
-                     else
-                       0
-                     end
+                     score =
+                       if count > 0 do
+                         city_preference_scores[citizen["preferences"]][citizen["education"]][
+                           city_id
+                         ]
+                       else
+                         0
+                       end
 
                      if score > acc2.top_score && score > current_city_score + home_city_advantage do
                        %{
