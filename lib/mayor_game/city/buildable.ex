@@ -983,7 +983,7 @@ defmodule MayorGame.City.Buildable do
         price: 9000,
         requires: %{
           money: 200,
-          energy: 1200,
+          energy: 800,
           area: 30,
           workers: %{count: 10, level: 4}
         },
@@ -1314,7 +1314,7 @@ defmodule MayorGame.City.Buildable do
           area: 2,
           workers: %{count: 5, level: 3}
         },
-        produces: %{food: 1, culture: 1},
+        produces: %{food: 5, culture: 1},
         stores: %{food: 25}
       },
       # FARMERS MARKETS
@@ -1330,7 +1330,7 @@ defmodule MayorGame.City.Buildable do
           area: 5,
           workers: %{count: 5, level: 2}
         },
-        produces: %{food: 1},
+        produces: %{food: 25},
         stores: %{food: 50}
       },
       # DELIS
@@ -1348,7 +1348,7 @@ defmodule MayorGame.City.Buildable do
           area: 5,
           workers: %{count: 5, level: 1}
         },
-        produces: %{food: 1},
+        produces: %{food: 25},
         stores: %{food: 25}
       },
       # GROCERY STORES
@@ -1367,10 +1367,10 @@ defmodule MayorGame.City.Buildable do
           produce: 5,
           area: 5,
           energy: 10,
-          workers: %{count: 5, level: 1}
+          workers: %{count: 15, level: 1}
         },
-        produces: %{food: 20},
-        stores: %{food: 500}
+        produces: %{food: 100},
+        stores: %{food: 1000}
       },
       # BUTCHERS
       butchers: %BuildableMetadata{
@@ -1380,12 +1380,12 @@ defmodule MayorGame.City.Buildable do
         title: :butchers,
         price: 200_000,
         requires: %{
-          cows: 10,
+          cows: 5,
           area: 2,
           energy: 5,
           workers: %{count: 3, level: 2}
         },
-        produces: %{meat: 1},
+        produces: %{meat: 10},
         stores: %{meat: 50}
       },
       # BUSINESS ——————————————————————————————————————————————————————————————————————————————————————————————————————————

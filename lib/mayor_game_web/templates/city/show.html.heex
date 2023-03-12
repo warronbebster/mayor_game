@@ -321,7 +321,7 @@
           ) %>
           <%= error_tag(f, :amount) %>
 
-          <%= select(f, :resource, @resource_types |> Enum.map(fn {k, _v} -> to_string(k) end),
+          <%= select(f, :resource, (@resource_types |> Enum.map(fn {k, _v} -> to_string(k) end)) ++ ["money"],
             required: true,
             prompt: "Select a resource"
           ) %>

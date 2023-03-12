@@ -141,6 +141,13 @@ defmodule MayorGame.CityMigrator do
           end)
         )
 
+      culture_max =
+        Enum.max(
+          Enum.map(leftovers, fn city ->
+            city |> TownStatistics.getResource(:culture) |> ResourceStatistics.getNetProduction()
+          end)
+        )
+
       health_enum =
         Enum.map(leftovers, fn city ->
           city |> TownStatistics.getResource(:health) |> ResourceStatistics.getNetProduction()
@@ -160,7 +167,8 @@ defmodule MayorGame.CityMigrator do
             fun_max,
             health_spread,
             pollution_spread,
-            sprawl_max
+            sprawl_max,
+            culture_max
           )
         end)
         |> Map.new(fn city ->
@@ -168,7 +176,7 @@ defmodule MayorGame.CityMigrator do
         end)
 
       city_preference_scores =
-        Enum.map(1..10, fn x ->
+        Enum.map(1..11, fn x ->
           {x,
            Enum.map(0..5, fn edu_level ->
              {edu_level,
@@ -331,14 +339,16 @@ defmodule MayorGame.CityMigrator do
                    acc.slots,
                    %{chosen_id: citizen["town_id"], top_score: -1},
                    fn {city_id, count}, acc2 ->
-                     score =
-                       if count > 0 do
-                         city_preference_scores[citizen["preferences"]][citizen["education"]][
-                           city_id
-                         ]
-                       else
-                         0
-                       end
+                     score = IO.inspect(count)
+                     IO.inspect(city_preference_scores)
+
+                     if count > 0 do
+                       city_preference_scores[citizen["preferences"]][citizen["education"]][
+                         city_id
+                       ]
+                     else
+                       0
+                     end
 
                      if score > acc2.top_score && score > current_city_score + home_city_advantage do
                        %{
@@ -990,7 +1000,7 @@ defmodule MayorGame.CityMigrator do
     if Map.has_key?(map, key), do: map[key], else: 0
   end
 
-  def normalize_city(city, max_fun, spread_health, spread_pollution, max_sprawl) do
+  def normalize_city(city, max_fun, spread_health, spread_pollution, max_sprawl, max_culture) do
     %{
       city: city,
       jobs: city.vacancies_by_level,
@@ -1014,6 +1024,11 @@ defmodule MayorGame.CityMigrator do
         zero_check(
           city |> TownStatistics.getResource(:health) |> ResourceStatistics.getNetProduction(),
           spread_health
+        ),
+      culture_normalized:
+        zero_check(
+          city |> TownStatistics.getResource(:culture) |> ResourceStatistics.getNetProduction(),
+          max_culture
         ),
       tax_rates: city.tax_rates
     }
@@ -1039,6 +1054,7 @@ defmodule MayorGame.CityMigrator do
       (1 - normalized_city.pollution_normalized) * citizen_preferences.pollution +
       (1 - normalized_city.sprawl_normalized) * citizen_preferences.sprawl +
       normalized_city.fun_normalized * citizen_preferences.fun +
-      normalized_city.health_normalized * citizen_preferences.health
+      normalized_city.health_normalized * citizen_preferences.health +
+      normalized_city.culture_normalized * citizen_preferences.culture
   end
 end
