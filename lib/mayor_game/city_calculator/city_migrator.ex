@@ -340,7 +340,6 @@ defmodule MayorGame.CityMigrator do
                    %{chosen_id: citizen["town_id"], top_score: -1},
                    fn {city_id, count}, acc2 ->
                      score = IO.inspect(count)
-                     IO.inspect(city_preference_scores)
 
                      if count > 0 do
                        city_preference_scores[citizen["preferences"]][citizen["education"]][
