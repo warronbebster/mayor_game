@@ -116,12 +116,12 @@ defmodule MayorGameWeb.CityLive do
         "cows",
         "bread",
         "wheat",
-        "produce"
+        "produce",
+        "salt"
       ])
       |> assign(:category_explanations, explanations)
       |> assign(:subtotal_types, subtotal_types)
       |> assign(:resource_types, resource_types)
-      # |> mount_city_by_title()
       |> update_city_by_title()
       |> assign_auth(session)
       |> update_current_user()
