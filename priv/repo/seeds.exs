@@ -53,10 +53,10 @@ Auth.create_user(%{
 # create citizens
 {:ok, %Citizens{}} =
   City.create_citizens(%{
-    "town_id" => madeTown_id,
-    "age" => 0,
-    "has_job" => false,
-    "education" => 0,
-    "has_car" => false,
-    "last_moved" => 0
+    :town_id => madeTown_id,
+    :age => 0,
+    :has_job => false,
+    :education => 0,
+    # has_car => false,
+    :last_moved => 0
   })
