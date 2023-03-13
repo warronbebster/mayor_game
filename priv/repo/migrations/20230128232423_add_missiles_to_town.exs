@@ -1,4 +1,4 @@
-defmodule MayorGame.Repo.Migrations.AddCitizenCountToTowns do
+defmodule MayorGame.Repo.Migrations.AddMissilesToTown do
   use Ecto.Migration
 
   def change do
