@@ -15,7 +15,7 @@ randomString = :crypto.strong_rand_bytes(4) |> Base.encode64() |> binary_part(0,
 cityName = String.replace(randomString, "/", "a") <> "ville"
 
 alias MayorGame.Auth.User
-alias MayorGame.City.{Town, Citizens}
+alias MayorGame.City.{Town}
 alias MayorGame.{Auth, City}
 
 # {:ok, %World{}} = City.create_world(%{day: 0, pollution: 0})
@@ -50,13 +50,13 @@ Auth.create_user(%{
     user_id: madeUser_id
   })
 
-# create citizens
-{:ok, %Citizens{}} =
-  City.create_citizens(%{
-    :town_id => madeTown_id,
-    :age => 0,
-    :has_job => false,
-    :education => 0,
-    # has_car => false,
-    :last_moved => 0
-  })
+# citizens don't get their own table anymore
+# {:ok, %Citizens{}} =
+#   City.create_citizens(%{
+#     :town_id => madeTown_id,
+#     :age => 0,
+#     :has_job => false,
+#     :education => 0,
+#     :has_car => false,
+#     :last_moved => 0
+#   })
