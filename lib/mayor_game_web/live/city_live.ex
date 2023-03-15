@@ -58,8 +58,7 @@ defmodule MayorGameWeb.CityLive do
         {:housing, "text-amber-700"},
         {:energy, "text-yellow-700"},
         {:culture, "text-blue-700"},
-        {:sprawl, "text-yellow-700"},
-        {:sulfur, "text-orange-700"}
+        {:sprawl, "text-yellow-700"}
       ] ++ resource_types
 
     explanations = %{

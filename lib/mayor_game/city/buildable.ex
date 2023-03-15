@@ -1326,11 +1326,10 @@ defmodule MayorGame.City.Buildable do
         price: 200_000,
         requires: %{
           produce: 5,
-          health: 5,
           area: 5,
           workers: %{count: 5, level: 2}
         },
-        produces: %{food: 25},
+        produces: %{food: 25, health: 5},
         stores: %{food: 50}
       },
       # DELIS
