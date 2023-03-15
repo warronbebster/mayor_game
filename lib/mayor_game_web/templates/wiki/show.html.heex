@@ -1,0 +1,80 @@
+<div class="flex overflow-hidden">
+  <div class="w-64 overflow-auto gap-2 px-2 py-0.5 pb-2 ">
+    <div class="text-lg gap-x-1">
+      info.pedia
+    </div>
+
+    <div class="text-base py-2 hover:underline">
+      <a href="#section_intro" phx-click="nav_to_section" phx-throttle="100" phx-value-section="intro">Intro</a>
+    </div>
+
+    <div class="text-base py-2 hover:underline">
+      <a href="#section_resources" phx-click="nav_to_section" phx-throttle="100" phx-value-section="resources">
+        Resources
+      </a>
+    </div>
+
+    <%= if !is_nil(@section) && @section == "resources" do %>
+      <%= for {category, _resources} <- @resources do %>
+        <li class="text-sm hover:underline first-letter:uppercase ml-4">
+          <a
+            href={"#section_resource_" <> to_string(category)}
+            phx-click="nav_to_section"
+            phx-throttle="100"
+            phx-value-section="resources"
+          >
+            <%= MayorGame.Utility.presentable_string(category, true) %>
+          </a>
+        </li>
+      <% end %>
+    <% end %>
+
+    <div class="text-base py-2 hover:underline">
+      <a href="#section_buildables" phx-click="nav_to_section" phx-throttle="100" phx-value-section="buildables">
+        Buildables
+      </a>
+    </div>
+
+    <%= if !is_nil(@section) && @section == "buildables" do %>
+      <%= for {category, _buildable} <- @buildables do %>
+        <li class="text-sm hover:underline first-letter:uppercase ml-4">
+          <a
+            href={"#section_buildable_" <> to_string(category)}
+            phx-click="nav_to_section"
+            phx-throttle="100"
+            phx-value-section="buildables"
+          >
+            <%= MayorGame.Utility.presentable_string(category, true) %>
+          </a>
+        </li>
+      <% end %>
+    <% end %>
+  </div>
+
+  <div class="px-3 my-0 flex flex-1 flex-col overflow-auto">
+    <!-- INTRO -->
+    <%= if is_nil(@section) || @section == "intro" do %>
+      <%= live_render(
+        @socket,
+        MayorGameWeb.WikiLive.IntroSection,
+        id: "section_intro"
+      ) %>
+    <% end %>
+    <!-- RESOURCES -->
+    <%= if !is_nil(@section) && @section == "resources" do %>
+      <%= live_render(
+        @socket,
+        MayorGameWeb.WikiLive.ResourceSection,
+        id: "section_resources"
+      ) %>
+    <% end %>
+    <!-- BUILDABLES -->
+    <%= if !is_nil(@section) && @section == "buildables" do %>
+      <%= live_render(
+        @socket,
+        MayorGameWeb.WikiLive.BuildableSection,
+        id: "section_buildables"
+      ) %>
+    <% end %>
+  </div>
+</div>

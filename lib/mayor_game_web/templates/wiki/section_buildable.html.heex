@@ -1,0 +1,32 @@
+<span class="text-xl gap-x-1 py-2">
+  Buildables
+</span>
+
+<div>
+  <%= for {category, buildings} <- @buildables do %>
+    <details class="border-b border-neutral-300 ml-8">
+      <summary id={"section_buildable_" <> to_string(category)} class="text-lg pt-2 first-letter:uppercase">
+        <%= MayorGame.Utility.presentable_string(category) %>
+      </summary>
+
+      <div class="min-w-[240px] pb-4">
+        <%= @buildable_category_descriptions[category] %>
+      </div>
+
+      <div class="pb-4 ml-8">
+        <%= for {building_type, _building_stats} <- buildings do %>
+          <div class="flex flex-wrap items-center gap-2 py-0.5">
+            <%= live_render(
+              @socket,
+              MayorGameWeb.BuildableTooltip,
+              id: building_type,
+              session: %{"building_type" => building_type}
+            ) %>
+          </div>
+        <% end %>
+      </div>
+    </details>
+  <% end %>
+  <!-- gap for anchor navigation -->
+  <div class="h-screen" />
+</div>

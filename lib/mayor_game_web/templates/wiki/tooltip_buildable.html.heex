@@ -1,0 +1,237 @@
+<div class="border-4 border-neutral-800/40 flex flex-row items-center justify-between p-2">
+  <!-- building title -->
+  <div class="group inline-block">
+    <h2 class="text-base first-letter:uppercase decoration-1 underline underline-offset-4 cursor-help decoration-neutral-800/40">
+      <%= MayorGame.Utility.presentable_string(@building_stats.title, true) %>
+    </h2>
+
+    <div class="ml-4">
+      <div class="w-48 py-0.5 pb-2">
+        <%= if @building_stats.price != nil do %>
+          <div class="flex items-center gap-1">
+            <div class="">base purchase price</div>
+             <hr class="flex-1" /> <%= Number.Delimit.number_to_delimited(@building_stats.price) %>
+          </div>
+        <% end %>
+      </div>
+
+      <div class="flex flex-row">
+        <div class="w-48">
+          <span class="font-semibold">Requires:</span>
+          <%= if @building_stats.requires != nil do %>
+            <div class="w-68 ml-4">
+              <%= for {requires_type, value} <- @building_stats.requires do %>
+                <%= if is_number(value) do %>
+                  <%= if is_nil(@resources_flat[requires_type]) do %>
+                    <div class="flex items-center gap-1">
+                      <div><%= MayorGame.Utility.presentable_string(requires_type) %></div>
+                       <hr class="flex-1" /> <%= to_string(Number.Delimit.number_to_delimited(value)) %>
+                    </div>
+                  <% else %>
+                    <div class="flex items-center gap-1">
+                      <div class="gap-0">
+                        <%= for image_source <- @resources_flat[requires_type].image_sources do %>
+                          <img src={image_source} onerror="this.style.src=''" height="10" width="10" />
+                        <% end %>
+                      </div>
+
+                      <div class={[@resources_flat[requires_type].text_color_class]}>
+                        <%= MayorGame.Utility.presentable_string(requires_type) %>
+                      </div>
+                       <hr class="flex-1" /> <%= to_string(Number.Delimit.number_to_delimited(value)) %>
+                    </div>
+                  <% end %>
+                <% else %>
+                  <%= if requires_type == :workers do %>
+                    <div class="flex items-center gap-1">
+                      <img src="/images/workers-fulfilled.svg" height="10" width="10" />
+                      <div class="text-green-700">
+                        lvl <%= to_string(value.level) <> " " <> MayorGame.Utility.presentable_string(requires_type) %>
+                      </div>
+                       <hr class="flex-1" /> <%= to_string(Number.Delimit.number_to_delimited(value.count)) %>
+                    </div>
+                  <% end %>
+                <% end %>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+
+        <div class="w-48 ml-4">
+          <span class="font-semibold">Produces:</span>
+          <%= if !is_nil(@building_stats.produces) do %>
+            <div class="w-68 ml-4">
+              <%= for {produces_type, value} <- @building_stats.produces do %>
+                <%= if is_number(value) do %>
+                  <%= if is_nil(@resources_flat[produces_type]) do %>
+                    <div class="flex items-center gap-1">
+                      <div><%= MayorGame.Utility.presentable_string(produces_type) %></div>
+                       <hr class="flex-1" /> <%= to_string(value) %>
+                    </div>
+                  <% else %>
+                    <div class="flex items-center gap-1">
+                      <div class="gap-0">
+                        <%= for image_source <- @resources_flat[produces_type].image_sources do %>
+                          <img src={image_source} onerror="this.style.src=''" height="10" width="10" />
+                        <% end %>
+                      </div>
+
+                      <div class={[@resources_flat[produces_type].text_color_class]}>
+                        <%= MayorGame.Utility.presentable_string(produces_type) %>
+                      </div>
+                       <hr class="flex-1" /> <%= to_string(Number.Delimit.number_to_delimited(value)) %>
+                    </div>
+                  <% end %>
+                <% else %>
+                  <%= if is_function(value, 1) do %>
+                    <%= if is_nil(@resources_flat[produces_type]) do %>
+                      <div class="flex items-center gap-1">
+                        <div><%= MayorGame.Utility.presentable_string(produces_type) %></div>
+                         <hr class="flex-1" /> <%= Number.Delimit.number_to_delimited(value.(1)) %>
+                      </div>
+                    <% else %>
+                      <div class="flex items-center gap-1">
+                        <div class="gap-0">
+                          <%= for image_source <- @resources_flat[produces_type].image_sources do %>
+                            <img src={image_source} onerror="this.style.src=''" height="10" width="10" />
+                          <% end %>
+                        </div>
+
+                        <div class={[@resources_flat[produces_type].text_color_class]}>
+                          <%= MayorGame.Utility.presentable_string(produces_type) %> per pop
+                        </div>
+                         <hr class="flex-1" /> <%= Number.Delimit.number_to_delimited(value.(1)) %>
+                      </div>
+                    <% end %>
+                  <% end %>
+
+                  <%= if is_function(value, 2) do %>
+                    <%= if is_nil(@resources_flat[produces_type]) do %>
+                      <div class="flex items-center gap-1">
+                        <div><%= MayorGame.Utility.presentable_string(produces_type) %></div>
+                         <hr class="flex-1" /> random drop
+                      </div>
+                    <% else %>
+                      <div class="flex items-center gap-1">
+                        <div class="gap-0">
+                          <%= for image_source <- @resources_flat[produces_type].image_sources do %>
+                            <img src={image_source} onerror="this.style.src=''" height="10" width="10" />
+                          <% end %>
+                        </div>
+
+                        <div class={[@resources_flat[produces_type].text_color_class]}>
+                          <%= MayorGame.Utility.presentable_string(produces_type) %>
+                        </div>
+                         <hr class="flex-1" /> random drop
+                      </div>
+                    <% end %>
+                  <% end %>
+
+                  <%= if is_map(value) do %>
+                    <%= if is_nil(@resources_flat[produces_type]) do %>
+                      <div class="flex items-center gap-1">
+                        <div>
+                          lvl <%= to_string(hd(Map.keys(value))) %> <%= MayorGame.Utility.presentable_string(
+                            produces_type
+                          ) %>
+                        </div>
+                         <hr class="flex-1" /> <%= to_string(hd(Map.values(value))) %>
+                      </div>
+                    <% else %>
+                      <div class="flex items-center gap-1">
+                        <div class="gap-0">
+                          <%= for image_source <- @resources_flat[produces_type].image_sources do %>
+                            <img src={image_source} onerror="this.style.src=''" height="10" width="10" />
+                          <% end %>
+                        </div>
+
+                        <div class={[@resources_flat[produces_type].text_color_class]}>
+                          lvl <%= to_string(hd(Map.keys(value))) %> <%= MayorGame.Utility.presentable_string(
+                            produces_type
+                          ) %>
+                        </div>
+                         <hr class="flex-1" /> <%= to_string(hd(Map.values(value))) %>
+                      </div>
+                    <% end %>
+                  <% end %>
+                <% end %>
+              <% end %>
+            </div>
+          <% end %>
+
+          <%= if !is_nil(@building_stats.stores) do %>
+            <span class="font-semibold">Stores:</span>
+            <div class="w-68 ml-4">
+              <%= for {stores_type, value} <- @building_stats.stores do %>
+                <%= if is_number(value) do %>
+                  <%= if is_nil(@resources_flat[stores_type]) do %>
+                    <div class="flex items-center gap-1">
+                      <div><%= MayorGame.Utility.presentable_string(stores_type) %></div>
+                       <hr class="flex-1" /> <%= to_string(value) %>
+                    </div>
+                  <% else %>
+                    <div class="flex items-center gap-1">
+                      <div class="gap-0">
+                        <%= for image_source <- @resources_flat[stores_type].image_sources do %>
+                          <img src={image_source} onerror="this.style.src=''" height="10" width="10" />
+                        <% end %>
+                      </div>
+
+                      <div class={[@resources_flat[stores_type].text_color_class]}>
+                        <%= MayorGame.Utility.presentable_string(stores_type) %>
+                      </div>
+                       <hr class="flex-1" /> <%= to_string(Number.Delimit.number_to_delimited(value)) %>
+                    </div>
+                  <% end %>
+                <% end %>
+              <% end %>
+            </div>
+          <% end %>
+
+          <%= if !is_nil(@building_stats.multipliers) do %>
+            <hr class="flex-1 my-2" /> <span class="font-semibold">Production Multiplers:</span>
+            <%= for {multiply_category, multiply_effects} <- @building_stats.multipliers do %>
+              <div class="w-68 ml-4 pb-2">
+                <div class="first-letter:uppercase font-semibold">
+                  <%= multiply_category %>
+                </div>
+
+                <%= if String.contains?(Atom.to_string(multiply_category), ["region", "season"]) && multiply_category != nil do %>
+                  <%= for {produces_type, modifier_list} <- multiply_effects do %>
+                    <div class="w-68 ml-4 pb-2">
+                      <%= if is_nil(@resources_flat[produces_type]) do %>
+                        <div class="flex items-center gap-1">
+                          <%= MayorGame.Utility.presentable_string(produces_type) %>
+                        </div>
+                      <% else %>
+                        <div class="flex items-center gap-1">
+                          <div class="gap-0">
+                            <%= for image_source <- @resources_flat[produces_type].image_sources do %>
+                              <img src={image_source} onerror="this.style.src=''" height="10" width="10" />
+                            <% end %>
+                          </div>
+
+                          <div class={[@resources_flat[produces_type].text_color_class]}>
+                            <%= MayorGame.Utility.presentable_string(produces_type) %>
+                          </div>
+                        </div>
+
+                        <%= for {multiply_type, modifier_effect} <- modifier_list do %>
+                          <div class="flex gap-1 items-center ml-8">
+                            <div><%= multiply_type %></div>
+                             <hr class="flex-1" />
+                            <div>x<%= modifier_effect %></div>
+                          </div>
+                        <% end %>
+                      <% end %>
+                    </div>
+                  <% end %>
+                <% end %>
+              </div>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
