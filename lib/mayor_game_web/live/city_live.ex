@@ -782,7 +782,7 @@ defmodule MayorGameWeb.CityLive do
 
     # update cities
 
-    if !is_nil(resource) && amount < giving_town_struct[resource_key] do
+    if !is_nil(resource) && amount < giving_town_struct[resource_key] && amount > 0 do
       from(t in Town, where: [id: ^current_user.town.id])
       |> Repo.update_all(inc: [{resource_key, neg_amount}])
 
