@@ -234,20 +234,20 @@ defmodule MayorGameWeb.MarketLive do
   # this is what gets messages from CityCalculator
   # kinda weird that it recalculates so much
   # is it possible to just send the updated contents over the wire to each city?
-  def handle_info(%{event: "ping", payload: _world}, socket) do
-    {:noreply, socket |> get_markets_and_bids()}
-  end
+  # def handle_info(%{event: "ping", payload: _world}, socket) do
+  #   {:noreply, socket |> get_markets_and_bids()}
+  # end
 
   # this is what gets messages from CityCalculator
-  def handle_info(%{event: "pong", payload: _world}, socket) do
-    {:noreply, socket |> get_markets_and_bids()}
-  end
+  # def handle_info(%{event: "pong", payload: _world}, socket) do
+  #   {:noreply, socket |> get_markets_and_bids()}
+  # end
 
   # this is just the generic handle_info if nothing else matches
-  def handle_info(_assigns, socket) do
-    # just update the whole city
-    {:noreply, socket |> get_markets_and_bids()}
-  end
+  # def handle_info(_assigns, socket) do
+  #   # just update the whole city
+  #   {:noreply, socket |> get_markets_and_bids()}
+  # end
 
   def get_markets_and_bids(socket) do
     # just update the whole city
