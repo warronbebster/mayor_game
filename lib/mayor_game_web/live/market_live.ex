@@ -80,12 +80,7 @@ defmodule MayorGameWeb.MarketLive do
         # pull these variables out of the socket
         %{assigns: %{current_user: current_user}} = socket
       ) do
-    IO.inspect(current_user.town)
-    IO.inspect(Repo.preload(current_user.town, [:markets]))
-
-    IO.inspect(
-      Market.create_market(%{resource: resource, town_id: current_user.town.id, min_price: 5, amount_to_sell: 1})
-    )
+    Market.create_market(%{resource: resource, town_id: current_user.town.id, min_price: 5, amount_to_sell: 1})
 
     {:noreply, socket |> get_markets_and_bids() |> update_current_user()}
   end
