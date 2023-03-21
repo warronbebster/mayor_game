@@ -52,7 +52,8 @@ defmodule MayorGame.City.Citizens do
       :sprawl,
       :fun,
       :health,
-      :pollution
+      :pollution,
+      :culture
     ]
   end
 
