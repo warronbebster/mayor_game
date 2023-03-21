@@ -412,6 +412,10 @@ input[type="number"] {
   border: 1px solid rgba(38, 38, 38, 0.25);
 }
 
+input[type="checkbox"] {
+  background-color: transparent;
+}
+
 input[type="checkbox"]:checked {
   background-color: black;
 }

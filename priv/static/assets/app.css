@@ -1262,6 +1262,10 @@ select {
   flex-basis: 100%;
 }
 
+.basis-1\/2 {
+  flex-basis: 50%;
+}
+
 .table-fixed {
   table-layout: fixed;
 }
@@ -1314,6 +1318,10 @@ select {
 
 .gap-\[2px\] {
   gap: 2px;
+}
+
+.gap-4 {
+  gap: 1rem;
 }
 
 .gap-x-1 {
@@ -1470,6 +1478,10 @@ select {
   padding: 1rem;
 }
 
+.p-2 {
+  padding: 0.5rem;
+}
+
 .px-2 {
   padding-left: 0.5rem;
   padding-right: 0.5rem;
@@ -1550,6 +1562,10 @@ select {
 
 .font-semibold {
   font-weight: 600;
+}
+
+.font-medium {
+  font-weight: 500;
 }
 
 .leading-tight {
@@ -1876,6 +1892,10 @@ input[type="number"] {
   border: 1px solid rgba(38, 38, 38, 0.25);
 }
 
+input[type="checkbox"] {
+  background-color: transparent;
+}
+
 input[type="checkbox"]:checked {
   background-color: black;
 }
@@ -1895,6 +1915,10 @@ input[type="checkbox"]:checked {
 
   .md\:basis-80 {
     flex-basis: 20rem;
+  }
+
+  .md\:flex-row {
+    flex-direction: row;
   }
 }
 

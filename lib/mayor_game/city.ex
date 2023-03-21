@@ -260,33 +260,34 @@ defmodule MayorGame.City do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_citizens(attrs \\ %{}) do
-    # this makes a map with random values that add up to 1
-    decision_factors = Enum.shuffle([:tax_rates, :sprawl, :fun, :health, :pollution])
 
-    random_preferences =
-      Enum.reduce(decision_factors, %{preference_map: %{}, room_taken: 0}, fn x, acc ->
-        value =
-          if x == List.last(decision_factors),
-            do: (1 - acc.room_taken) |> Float.round(2),
-            else: (:rand.uniform() * (1 - acc.room_taken)) |> Float.round(2)
+  # def create_citizens(attrs \\ %{}) do
+  #   # this makes a map with random values that add up to 1
+  #   decision_factors = Enum.shuffle([:tax_rates, :sprawl, :fun, :health, :pollution, :culture])
 
-        %{
-          preference_map: Map.put(acc.preference_map, to_string(x), value),
-          room_taken: acc.room_taken + value
-        }
-      end)
+  #   random_preferences =
+  #     Enum.reduce(decision_factors, %{preference_map: %{}, room_taken: 0}, fn x, acc ->
+  #       value =
+  #         if x == List.last(decision_factors),
+  #           do: (1 - acc.room_taken) |> Float.round(2),
+  #           else: (:rand.uniform() * (1 - acc.room_taken)) |> Float.round(2)
 
-    # add new attribute if not set
-    attrs_plus_preferences =
-      attrs
-      |> Map.put_new(:name, Faker.Person.name())
-      |> Map.put(:preferences, random_preferences.preference_map)
+  #       %{
+  #         preference_map: Map.put(acc.preference_map, to_string(x), value),
+  #         room_taken: acc.room_taken + value
+  #       }
+  #     end)
 
-    %Citizens{}
-    |> Citizens.changeset(attrs_plus_preferences)
-    |> Repo.insert()
-  end
+  #   # add new attribute if not set
+  #   attrs_plus_preferences =
+  #     attrs
+  #     |> Map.put_new(:name, Faker.Person.name())
+  #     |> Map.put(:preferences, random_preferences.preference_map)
+
+  #   %Citizens{}
+  #   |> Citizens.changeset(attrs_plus_preferences)
+  #   |> Repo.insert()
+  # end
 
   @doc """
   Updates a citizens.
@@ -300,11 +301,12 @@ defmodule MayorGame.City do
       {:error, %Ecto.Changeset{}}
 
   """
-  def update_citizens(%Citizens{} = citizens, attrs) do
-    citizens
-    |> Citizens.changeset(attrs)
-    |> Repo.update()
-  end
+
+  # def update_citizens(%Citizens{} = citizens, attrs) do
+  #   citizens
+  #   |> Citizens.changeset(attrs)
+  #   |> Repo.update()
+  # end
 
   @doc """
   Deletes a citizens.
@@ -318,9 +320,10 @@ defmodule MayorGame.City do
       {:error, %Ecto.Changeset{}}
 
   """
-  def delete_citizens(%Citizens{} = citizens) do
-    Repo.delete(citizens)
-  end
+
+  # def delete_citizens(%Citizens{} = citizens) do
+  #   Repo.delete(citizens)
+  # end
 
   @doc """
   Returns an `%Ecto.Changeset{}` for tracking citizens changes.
@@ -331,9 +334,10 @@ defmodule MayorGame.City do
       %Ecto.Changeset{data: %Citizens{}}
 
   """
-  def change_citizens(%Citizens{} = citizens, attrs \\ %{}) do
-    Citizens.changeset(citizens, attrs)
-  end
+
+  # def change_citizens(%Citizens{} = citizens, attrs \\ %{}) do
+  #   Citizens.changeset(citizens, attrs)
+  # end
 
   # ###############################################
   # BUILDABLES

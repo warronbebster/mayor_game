@@ -8,8 +8,7 @@ defmodule MayorGameWeb.CityLive do
   alias MayorGame.City.OngoingAttacks
   alias MayorGame.CityCombat
   alias MayorGame.{City, Repo, Rules}
-  alias MayorGame.City.Town
-  alias MayorGame.City.Buildable
+  alias MayorGame.City.{Town, Buildable}
 
   import Ecto.Query, warn: false
 
@@ -970,7 +969,7 @@ defmodule MayorGameWeb.CityLive do
     {:noreply, socket |> update_city_by_title() |> update_current_user()}
   end
 
-  def handle_event("toggle_retaliate", %{}, %{assigns: %{city: city, current_user: current_user}} = socket) do
+  def handle_event("toggle_retaliate", %{}, %{assigns: %{city: city, current_user: _current_user}} = socket) do
     City.update_town_by_id(city.id, %{retaliate: !city.retaliate})
 
     updated_city = city |> Map.update!(:retaliate, &(!&1))

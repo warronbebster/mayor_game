@@ -18,7 +18,7 @@ defmodule MayorGame.City.Town do
 
   use Ecto.Schema
   import Ecto.Changeset
-  alias MayorGame.City.{Buildable, OngoingAttacks, Town}
+  alias MayorGame.City.{Buildable, OngoingAttacks, Town, Market, Bid}
   use Accessible
 
   @timestamps_opts [type: :utc_datetime]
@@ -230,6 +230,10 @@ defmodule MayorGame.City.Town do
     has_many :attacking, through: [:attacks_sent, :attacked]
     has_many :attacked, through: [:attacks_recieved, :attacking]
 
+    # markets
+    has_many :markets, Market
+    has_many :bids, Bid
+
     # buildable schema
     for buildable <- Buildable.buildables_list() do
       field(buildable, :integer)
@@ -288,6 +292,13 @@ defmodule MayorGame.City.Town do
         :wood,
         :stone,
         :lithium,
+        :food,
+        :cows,
+        :rice,
+        :meat,
+        :grapes,
+        :wheat,
+        :bread,
 
         # —————————————
         :patron,
