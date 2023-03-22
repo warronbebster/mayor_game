@@ -699,11 +699,16 @@ defmodule MayorGame.CityHelpers do
             bid_list
             |> Enum.filter(fn bid -> bid.max_price >= lowest_sell_price end)
             |> Enum.filter(fn bid ->
-              IO.inspect(leftovers_by_id[bid.town_id], label: to_string(resource))
-              resources = leftovers_by_id[bid.town_id] |> TownStatistics.getResource(resource)
+              IO.inspect(bid.town_id, label: to_string(resource))
 
-              ResourceStatistics.getStorage(resources) - ResourceStatistics.getNextStock(resources) +
-                ResourceStatistics.getNetProduction(resources) >= bid.amount
+              if is_nil(leftovers_by_id[bid.town_id]) do
+                false
+              else
+                resources = leftovers_by_id[bid.town_id] |> TownStatistics.getResource(resource)
+
+                ResourceStatistics.getStorage(resources) - ResourceStatistics.getNextStock(resources) +
+                  ResourceStatistics.getNetProduction(resources) >= bid.amount
+              end
             end)
 
           if !is_nil(potentially_valid_markets) && potentially_valid_markets != [] do
