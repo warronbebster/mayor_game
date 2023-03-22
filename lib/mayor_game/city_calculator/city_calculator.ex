@@ -52,6 +52,8 @@ defmodule MayorGame.CityCalculator do
     # profiling
     {:ok, datetime_pre} = DateTime.now("Etc/UTC")
 
+    # :eprof.start_profiling([self()])
+
     # filter obviously ghost cities
     # add pollution check. It is possible to trick this check with a city reset, and by building road and park without building housing
     cities =
@@ -59,7 +61,7 @@ defmodule MayorGame.CityCalculator do
       |> Enum.filter(fn city ->
         city.huts > 0 || city.single_family_homes > 0 || city.apartments > 0 ||
           city.homeless_shelters > 0 || city.micro_apartments > 0 || city.high_rises > 0 ||
-          city.megablocks > 0 || city.pollution != 0
+          city.megablocks > 0
       end)
 
     # should we tie pollution effect to RNG?
@@ -250,6 +252,9 @@ defmodule MayorGame.CityCalculator do
         timeout: 6_000_000
       )
     end)
+
+    # :eprof.stop_profiling()
+    # :eprof.analyze()
 
     # maybe do combat here?
     # based on all the ongoing_attacks?
