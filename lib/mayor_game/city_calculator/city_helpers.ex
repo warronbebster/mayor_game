@@ -681,7 +681,11 @@ defmodule MayorGame.CityHelpers do
             market_list
             |> Enum.filter(fn market -> market.min_price <= highest_bid_price end)
             |> Enum.filter(fn market ->
-              TownStatistics.getResource(leftovers_by_id[market.town_id], resource).stock > 0
+              if is_nil(leftovers_by_id[market.town_id]) do
+                false
+              else
+                TownStatistics.getResource(leftovers_by_id[market.town_id], resource).stock > 0
+              end
             end)
             |> Enum.sort_by(& &1.min_price, :desc)
             |> Enum.map(fn market ->
