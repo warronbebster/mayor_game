@@ -1,7 +1,7 @@
 defmodule MayorGame.CityCalculator do
   use GenServer, restart: :permanent
   alias MayorGame.CityCombat
-  alias MayorGame.City.{Town, Buildable, OngoingAttacks, TownStatistics, ResourceStatistics}
+  alias MayorGame.City.{Town, Buildable, OngoingAttacks, TownStatistics, ResourceStatistics, Citizens}
   alias MayorGame.{City, CityHelpers, Repo, Rules}
   import Ecto.Query
 
@@ -56,13 +56,7 @@ defmodule MayorGame.CityCalculator do
 
     # filter obviously ghost cities
     # add pollution check. It is possible to trick this check with a city reset, and by building road and park without building housing
-    cities =
-      City.list_cities_preload()
-      |> Enum.filter(fn city ->
-        city.huts > 0 || city.single_family_homes > 0 || city.apartments > 0 ||
-          city.homeless_shelters > 0 || city.micro_apartments > 0 || city.high_rises > 0 ||
-          city.megablocks > 0
-      end)
+    cities = CityHelpers.prepare_cities(datetime_pre, world.day)
 
     # should we tie pollution effect to RNG?
     pollution_ceiling = 2_000_000_000 * Random.gammavariate(7.5, 1)
@@ -212,38 +206,42 @@ defmodule MayorGame.CityCalculator do
 
             ### Potential data conflict with migrator updates?
             ### maybe move this to migrator instead
-            if city.total_citizens < 100 do
-              updated_citizens =
-                Enum.map(1..:rand.uniform(3), fn _citizen ->
-                  %{
-                    "age" => 0,
-                    "town_id" => city.id,
-                    "education" => 0,
-                    "last_moved" => db_world.day,
-                    "preferences" => :rand.uniform(11)
-                  }
-                end)
+            # if city.total_citizens < 20 do
+            #   updated_citizens =
+            #     Enum.map(1..:rand.uniform(3), fn _citizen ->
+            #       %{
+            #         "age" => 0,
+            #         "town_id" => city.id,
+            #         "education" => 0,
+            #         "preferences" => :rand.uniform(11)
+            #       }
+            #     end)
 
-              citizens =
-                [updated_citizens | city.citizens_blob]
-                |> List.flatten()
-                |> Enum.take(
-                  city
-                  |> TownStatistics.getResource(:housing)
-                  |> ResourceStatistics.getProduction()
-                )
+            #   citizens =
+            #     [updated_citizens | city.citizens_blob]
+            #     |> List.flatten()
+            #     |> Enum.take(
+            #       city
+            #       |> TownStatistics.getResource(:housing)
+            #       |> ResourceStatistics.getProduction()
+            #     )
 
-              from(t in Town,
-                where: t.id == ^city.id,
-                update: [
-                  set: [
-                    citizens_blob: ^citizens,
-                    citizen_count: ^city.total_citizens
-                  ]
-                ]
-              )
-              |> Repo.update_all([])
-            end
+            #   # IO.inspect(length(citizens), label: "citizens count")
+
+            #   render_blob = Citizens.compress_citizen_blob(citizens, world.day)
+
+            #   from(t in Town,
+            #     where: t.id == ^city.id,
+            #     update: [
+            #       set: [
+            #         # citizens_blob: ^citizens,
+            #         citizens_compressed: ^render_blob,
+            #         citizen_count: ^length(citizens)
+            #       ]
+            #     ]
+            #   )
+            #   |> Repo.update_all([])
+            # end
 
             # also update logs here for old deaths
             # and pollution deaths

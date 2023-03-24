@@ -41,7 +41,6 @@ defmodule MayorGame.City.Citizens do
       :name,
       :age,
       :education,
-      :last_moved,
       :preferences
     ]
   end
@@ -73,10 +72,73 @@ defmodule MayorGame.City.Citizens do
     }
   end
 
+  def compress_citizen_blob(citizens, day) do
+    if citizens == [] do
+      %{}
+    else
+      citizens
+      |> Enum.map(fn citizen ->
+        citizen
+        |> Map.update("birthday", round100(day - citizen["age"]), & &1)
+        |> Map.delete("age")
+        |> Map.delete("town_id")
+        |> Map.delete("last_moved")
+      end)
+      |> Enum.frequencies()
+      |> Enum.map(fn {k, v} -> {v, k} end)
+      |> Enum.group_by(fn {k, _} -> k end, fn {_, v} -> v end)
+
+      # aha this is where the trouble comes in. if there's a match in
+      # |> Enum.into(%{})
+    end
+  end
+
+  def unfold_citizen_blob(citizen_blob, day, town_id) do
+    if citizen_blob == %{} do
+      []
+    else
+      citizen_blob
+      |> Enum.map(fn {count, list_of_citizen_types} ->
+        if is_list(list_of_citizen_types) do
+          Enum.map(list_of_citizen_types, fn citizen ->
+            citizen =
+              citizen
+              |> Map.put("town_id", town_id)
+              |> Map.put("age", max(day - citizen["birthday"], 0))
+              |> Map.delete("birthday")
+
+            count = if is_number(count), do: count, else: String.to_integer(count)
+
+            for _i <- 1..count do
+              citizen
+            end
+          end)
+          |> List.flatten()
+        else
+          citizen =
+            list_of_citizen_types
+            |> Map.put("town_id", town_id)
+            |> Map.put("age", max(day - list_of_citizen_types["birthday"], 0))
+            |> Map.delete("birthday")
+
+          count = if is_number(count), do: count, else: String.to_integer(count)
+
+          for _i <- 1..count do
+            citizen
+          end
+        end
+      end)
+      |> List.flatten()
+    end
+  end
+
   @doc false
   def changeset(citizens, attrs) do
     citizens
     |> cast(attrs, [:town_id | attributes()])
     |> validate_required([:town_id | attributes()])
   end
+
+  def round100(n) when rem(n, 100) < 51, do: n - rem(n, 100)
+  def round100(n), do: n + (100 - rem(n, 100))
 end

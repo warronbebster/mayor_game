@@ -46,7 +46,7 @@ defmodule MayorGame.CityMigrator do
   def handle_info(
         :tax,
         %{
-          world: _world,
+          world: world,
           buildables_map: buildables_map,
           in_dev: in_dev,
           migration_tick: migration_tick
@@ -56,7 +56,8 @@ defmodule MayorGame.CityMigrator do
     {:ok, datetime_pre} = DateTime.now("Etc/UTC")
 
     # filter for
-    cities = City.list_cities_preload() |> Enum.filter(fn city -> length(city.citizens_blob) >= 20 end)
+
+    cities = CityHelpers.prepare_cities(datetime_pre, world.day)
 
     pollution_ceiling = 2_000_000_000 * Random.gammavariate(7.5, 1)
 
@@ -97,6 +98,16 @@ defmodule MayorGame.CityMigrator do
               time_to_learn
             )
 
+          # if city.id == 2 do
+          #   IO.inspect(length(leftover.staying_citizens), label: "staying_citizens")
+          #   IO.inspect(length(leftover.migrating_citizens_due_to_tax), label: "migrating_citizens_due_to_tax")
+          #   IO.inspect(length(leftover.migrating_citizens), label: "migrating_citizens")
+          #   IO.inspect(length(leftover.unemployed_citizens), label: "unemployed_citizens")
+          #   IO.inspect(length(leftover.unhoused_citizens), label: "unhoused_citizens")
+          #   IO.inspect(length(leftover.polluted_citizens), label: "polluted_citizens")
+
+          # end
+
           # combine town and the calculated stats (TownStatistics + TownMigrationStatistics)
           city |> Map.merge(city_stat) |> Map.merge(leftover)
         end)
@@ -111,8 +122,6 @@ defmodule MayorGame.CityMigrator do
       unemployed_citizens = List.flatten(Enum.map(leftovers, fn city -> city.unemployed_citizens end))
 
       unhoused_citizens = List.flatten(Enum.map(leftovers, fn city -> city.unhoused_citizens end))
-      # new_world_pollution = Enum.sum(Enum.map(leftovers, fn city -> city.pollution end))
-      # total_housing_slots = Enum.sum(Enum.map(leftovers, fn city -> city.housing_left end))
 
       housing_slots = Enum.map(leftovers, fn city -> {city.id, city.housing_left} end) |> Map.new()
 
@@ -391,8 +400,7 @@ defmodule MayorGame.CityMigrator do
                   chosen_city_id,
                   &[
                     citizen
-                    |> Map.take(["education", "preferences", "last_moved", "age"])
-                    |> Map.put("last_moved", db_world.day)
+                    |> Map.take(["education", "preferences", "age"])
                     | &1
                   ]
                 )
@@ -400,7 +408,7 @@ defmodule MayorGame.CityMigrator do
                 acc2
                 |> Map.update!(
                   chosen_city_id,
-                  &[citizen |> Map.take(["education", "preferences", "last_moved", "age"]) | &1]
+                  &[citizen |> Map.take(["education", "preferences", "age"]) | &1]
                 )
               end
             end)
@@ -416,7 +424,7 @@ defmodule MayorGame.CityMigrator do
             acc
             |> Map.update!(
               citizen["town_id"],
-              &[citizen |> Map.take(["education", "preferences", "last_moved", "age"]) | &1]
+              &[citizen |> Map.take(["education", "preferences", "age"]) | &1]
             )
           end)
         else
@@ -527,8 +535,7 @@ defmodule MayorGame.CityMigrator do
                 chosen_city_id,
                 &[
                   citizen
-                  |> Map.take(["education", "preferences", "last_moved", "age"])
-                  |> Map.put("last_moved", db_world.day)
+                  |> Map.take(["education", "preferences", "age"])
                   | &1
                 ]
               )
@@ -536,7 +543,7 @@ defmodule MayorGame.CityMigrator do
               acc2
               |> Map.update!(
                 chosen_city_id,
-                &[citizen |> Map.take(["education", "preferences", "last_moved", "age"]) | &1]
+                &[citizen |> Map.take(["education", "preferences", "age"]) | &1]
               )
             end
           end)
@@ -554,7 +561,7 @@ defmodule MayorGame.CityMigrator do
             |> Map.update!(
               citizen["town_id"],
               &[
-                citizen |> Map.take(["education", "preferences", "last_moved", "age"]) | &1
+                citizen |> Map.take(["education", "preferences", "age"]) | &1
               ]
             )
           end)
@@ -669,8 +676,7 @@ defmodule MayorGame.CityMigrator do
                   chosen_city_id,
                   &[
                     citizen
-                    |> Map.take(["education", "preferences", "last_moved", "age"])
-                    |> Map.put("last_moved", db_world.day)
+                    |> Map.take(["education", "preferences", "age"])
                     | &1
                   ]
                 )
@@ -678,7 +684,7 @@ defmodule MayorGame.CityMigrator do
                 acc2
                 |> Map.update!(
                   chosen_city_id,
-                  &[citizen |> Map.take(["education", "preferences", "last_moved", "age"]) | &1]
+                  &[citizen |> Map.take(["education", "preferences", "age"]) | &1]
                 )
               end
             end)
@@ -855,6 +861,9 @@ defmodule MayorGame.CityMigrator do
 
       # filter updated_citizens to remove jas_job and town_id before going in the DB
 
+      # IO.inspect(updated_citizens_by_id_7)
+      # ok this has all the ids I'd expect
+
       updated_citizens_by_id_7
       |> Enum.chunk_every(200)
       |> Enum.each(fn chunk ->
@@ -906,7 +915,7 @@ defmodule MayorGame.CityMigrator do
                 )
 
               births_count =
-                if slotted_cities_by_id[id].city.citizen_count > 100 do
+                if slotted_cities_by_id[id].city.citizen_count > 20 do
                   max(slotted_cities_by_id[id].city.aggregate_births, 0)
                 else
                   if :rand.uniform() > 0.8 do
@@ -923,7 +932,6 @@ defmodule MayorGame.CityMigrator do
                       "age" => 0,
                       "town_id" => id,
                       "education" => 0,
-                      "last_moved" => db_world.day,
                       "preferences" => :rand.uniform(11)
                     }
                   end) ++ list
@@ -931,9 +939,34 @@ defmodule MayorGame.CityMigrator do
                   list
                 end
 
-              # ok wtf. even this looks right
-
               unhoused_deaths = if Map.has_key?(unhoused_deaths, id), do: unhoused_deaths[id], else: 0
+              compress_blob = Citizens.compress_citizen_blob(updated_citizens, world.day)
+
+              # IO.inspect(length(updated_citizens),
+              #   label: slotted_cities_by_id[id].city.title <> " length after migrator "
+              # )
+
+              # if id == 2 do
+              # log deaths
+              # if births_count > 0,
+              #   do: IO.inspect(births_count, label: slotted_cities_by_id[id].city.title <> " births_count")
+
+              # if unhoused_deaths > 0,
+              #   do: IO.inspect(unhoused_deaths, label: slotted_cities_by_id[id].city.title <> " unhoused_deaths")
+
+              # if length(slotted_cities_by_id[id].city.polluted_citizens) > 0,
+              #   do:
+              #     IO.inspect(length(slotted_cities_by_id[id].city.polluted_citizens),
+              #       label: slotted_cities_by_id[id].city.title <> " pollution_deaths"
+              #     )
+
+              # if slotted_cities_by_id[id].city.aggregate_deaths_by_age > 0,
+              #   do:
+              #     IO.inspect(slotted_cities_by_id[id].city.aggregate_deaths_by_age,
+              #       label: slotted_cities_by_id[id].city.title <> " age_deaths"
+              #     )
+
+              # end
 
               from(t in Town,
                 where: t.id == ^id,
@@ -944,7 +977,8 @@ defmodule MayorGame.CityMigrator do
                     logs_emigration_housing: ^logs_emigration_housing,
                     logs_edu: ^updated_edu_logs,
                     citizen_count: ^length(updated_citizens),
-                    citizens_blob: ^updated_citizens
+                    # citizens_blob: ^updated_citizens,
+                    citizens_compressed: ^compress_blob
                   ],
                   inc: [
                     logs_deaths_housing: ^unhoused_deaths,

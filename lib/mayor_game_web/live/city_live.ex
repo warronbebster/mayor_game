@@ -5,10 +5,8 @@ defmodule MayorGameWeb.CityLive do
   use Phoenix.LiveView, container: {:div, class: "liveview-container"}
   use Phoenix.HTML
 
-  alias MayorGame.City.OngoingAttacks
-  alias MayorGame.CityCombat
-  alias MayorGame.{City, Repo, Rules}
-  alias MayorGame.City.{Town, Buildable}
+  alias MayorGame.{City, Repo, Rules, CityCombat, CityHelpers}
+  alias MayorGame.City.{Town, Buildable, Citizens, OngoingAttacks}
 
   import Ecto.Query, warn: false
 
@@ -140,7 +138,6 @@ defmodule MayorGameWeb.CityLive do
         "town_id" => city.id,
         "age" => 0,
         "education" => 0,
-        "last_moved" => socket.assigns.world.day,
         "preferences" => :rand.uniform(11)
       }
 
@@ -561,10 +558,10 @@ defmodule MayorGameWeb.CityLive do
     # This variable shall be unmodified. This way there is no need to recast it into a struct in other handle_info instructions.
     city =
       City.get_town_by_title!(title)
-      |> MayorGame.CityHelpers.preload_city_check()
+      |> CityHelpers.preload_city_check()
 
     town_stats =
-      MayorGame.CityHelpers.calculate_city_stats(
+      CityHelpers.calculate_city_stats(
         city,
         world,
         pollution_ceiling,
@@ -655,7 +652,8 @@ defmodule MayorGameWeb.CityLive do
     |> assign(:construction_cost, 0)
     |> assign(:operating_tax, operating_tax)
     |> assign(:tax_by_level, tax_by_level)
-    |> assign(:citizens_by_edu, citizen_edu_count)
+
+    # |> assign(:citizens_by_edu, citizen_edu_count)
   end
 
   # # function to mount city
@@ -1032,6 +1030,7 @@ defmodule MayorGameWeb.CityLive do
   # POW AUTH STUFF DOWN HERE BAYBEE ——————————————————————————————————————————————————————————————————
 
   defp assign_auth(socket, session) do
+    date = Date.utc_today()
     # add an assign :current_user to the socket
     socket =
       assign_new(socket, :current_user, fn ->
@@ -1049,6 +1048,11 @@ defmodule MayorGameWeb.CityLive do
         if !socket.assigns.in_dev,
           do: socket.assigns.current_user.id == 1,
           else: true
+
+      # auth check
+      if is_user_mayor do
+        City.update_town(socket.assigns.city, %{last_login: date})
+      end
 
       socket |> assign(:is_user_mayor, is_user_mayor) |> assign(:is_user_admin, is_user_admin)
     else

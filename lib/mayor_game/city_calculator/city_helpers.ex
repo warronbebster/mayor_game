@@ -2,6 +2,7 @@ defmodule MayorGame.CityHelpers do
   alias MayorGame.City.{
     Town,
     World,
+    Citizens,
     ResourceStatistics,
     BuildableStatistics,
     TownStatistics,
@@ -13,6 +14,14 @@ defmodule MayorGame.CityHelpers do
   alias MayorGame.Rules
 
   import Ecto.Query, warn: false
+
+  def unfold_town_citizens(town, day) do
+    if town.citizens_compressed != %{} do
+      Map.put(town, :citizens_blob, town.citizens_compressed |> Citizens.unfold_citizen_blob(day, town.id))
+    else
+      town
+    end
+  end
 
   @doc """
     takes a %Town{} struct and %World{} struct
@@ -29,7 +38,9 @@ defmodule MayorGame.CityHelpers do
         _in_dev,
         _time_to_learn
       ) do
-    town_preloaded = preload_city_check(town)
+    town_preloaded = unfold_town_citizens(town, world.day)
+
+    # if town.id == 2, do: IO.inspect(length(town_preloaded.citizens_blob), label: town.title <> " start of calculate")
 
     town_stats = TownStatistics.fromTown(town_preloaded, world)
 
@@ -250,8 +261,7 @@ defmodule MayorGame.CityHelpers do
              if is_nil(v.storage) || v.storage > v.stock + v.production do
                v
              else
-               v
-               |> Map.update!(:production, fn _ -> v.storage - v.stock end)
+               v |> Map.update!(:production, fn _ -> v.storage - v.stock end)
              end}
           end
         )
@@ -277,7 +287,7 @@ defmodule MayorGame.CityHelpers do
         _in_dev,
         time_to_learn
       ) do
-    town_preloaded = preload_city_check(town)
+    town_preloaded = unfold_town_citizens(town, world.day)
 
     # are we sure we want pollution_ceiling to be tied to a RNG?
     # pollution_reached = world.pollution > pollution_ceiling
@@ -293,10 +303,9 @@ defmodule MayorGame.CityHelpers do
     # this expensive operation may be avoided if we store the birthday instead of the age
     working_citizens =
       Enum.filter(town_preloaded.citizens_blob, &Rules.is_citizen_within_lifespan(&1))
-      |> Enum.map(fn citizen ->
-        citizen |> Map.put("town_id", town.id)
-      end)
-      |> Enum.map(fn c -> c |> Map.update!("age", &(&1 + 1)) end)
+      |> Enum.map(fn citizen -> citizen |> Map.put("town_id", town.id) end)
+
+    # |> Enum.map(fn c -> c |> Map.update!("age", &(&1 + 1)) end)
 
     # each citizen has a {health}% chance to reproducing, up to a minimum of 5% and maximum of 100%
     # the total reproduction rate cannot exceed the number of remaining housing
@@ -308,15 +317,11 @@ defmodule MayorGame.CityHelpers do
         min(
           excess_housing,
           reproductive_citizen_count *
-            max(
-              0.0,
-              min(
-                1.0,
-                town_stats
-                |> TownStatistics.getResource(:health)
-                |> ResourceStatistics.getNetProduction()
-              )
-            )
+            (town_stats
+             |> TownStatistics.getResource(:health)
+             |> ResourceStatistics.getNetProduction()
+             |> min(2.0)
+             |> max(0.1))
         )
       )
 
@@ -669,12 +674,8 @@ defmodule MayorGame.CityHelpers do
         resource = String.to_existing_atom(resource_string)
 
         if !is_nil(bid_list) do
-          # IO.inspect(resource_string)
-
           lowest_sell_price = Enum.min_by(market_list, & &1.min_price).min_price
           highest_bid_price = Enum.max_by(bid_list, & &1.max_price).max_price
-          # IO.inspect(lowest_sell_price, label: "lowest_sell_price")
-          # IO.inspect(highest_bid_price, label: "highest_bid_price")
 
           # all markets with a min price less than the highest bid price
           potentially_valid_markets =
@@ -703,8 +704,6 @@ defmodule MayorGame.CityHelpers do
             bid_list
             |> Enum.filter(fn bid -> bid.max_price >= lowest_sell_price end)
             |> Enum.filter(fn bid ->
-              IO.inspect(bid.town_id, label: to_string(resource))
-
               if is_nil(leftovers_by_id[bid.town_id]) do
                 false
               else
@@ -730,8 +729,6 @@ defmodule MayorGame.CityHelpers do
                 do: potentially_valid_markets |> Enum.sort_by(& &1.min_price, :desc),
                 else: potentially_valid_markets |> Enum.sort_by(& &1.min_price, :asc)
 
-            # IO.inspect(potentially_valid_bids)
-
             market_match_results =
               Enum.reduce_while(
                 potentially_valid_bids,
@@ -741,7 +738,6 @@ defmodule MayorGame.CityHelpers do
                     # if no more markets
                     {:halt, acc}
                   else
-                    # IO.inspect(bid.max_price)
                     paid_price = round((bid.max_price + hd(acc.markets).min_price) / 2)
 
                     town_money_stats = leftovers_by_id[bid.town_id] |> TownStatistics.getResource(:money)
@@ -750,8 +746,6 @@ defmodule MayorGame.CityHelpers do
                      if town_money_stats.stock + town_money_stats.production - town_money_stats.consumption >=
                           bid.amount * paid_price &&
                           bid.max_price > hd(acc.markets).min_price do
-                       # IO.inspect(paid_price, label: "paid price")
-
                        Enum.reduce_while(acc.markets, Map.put_new(acc, :bid_amount, bid.amount), fn market, acc2 ->
                          if market.amount_to_sell >= acc2.bid_amount do
                            # if enough in the top market
@@ -1231,6 +1225,19 @@ defmodule MayorGame.CityHelpers do
         end
       )
     end
+  end
+
+  def prepare_cities(datetime, day) do
+    City.list_cities_preload()
+    |> Enum.filter(fn city -> Date.diff(city.last_login, datetime) > -30 end)
+    |> Enum.filter(fn city ->
+      city.huts > 0 || city.single_family_homes > 0 || city.apartments > 0 ||
+        city.homeless_shelters > 0 || city.micro_apartments > 0 || city.high_rises > 0 ||
+        city.megablocks > 0
+    end)
+    |> Enum.map(fn city ->
+      Map.put(city, :citizens_blob, city.citizens_compressed |> Citizens.unfold_citizen_blob(day, city.id))
+    end)
   end
 
   def atomize_keys(map) do

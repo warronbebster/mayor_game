@@ -23,7 +23,7 @@ defmodule MayorGame.Rules do
 
   @spec is_citizen_restless(map, %World{}) :: boolean
   def is_citizen_restless(citizen, world) do
-    citizen["last_moved"] < world.day - 10 * citizen["education"]
+    rem(world.day, (citizen["education"] + 1) * (:rand.uniform(10) + 5)) == 0
   end
 
   @spec excessive_tax_chance(integer, number) :: number
