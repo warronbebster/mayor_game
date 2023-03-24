@@ -198,8 +198,7 @@ defmodule MayorGame.CityCalculator do
                   pollution:
                     ^(city
                       |> TownStatistics.getResource(:pollution)
-                      |> ResourceStatistics.getNetProduction()),
-                  citizen_count: ^length(city.citizens_blob)
+                      |> ResourceStatistics.getNetProduction())
                 ]
               ]
             )

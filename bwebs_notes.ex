@@ -14,6 +14,8 @@
 # fly postgres connect -a mayorgame-db connects to prod DB
 # fly volumes list --app mayorgame-db gets volumes from the db project thingy
 
+
+# do some optimization to update_city_by_title, see if calculator and migrator can just send changes instead of having the city_live server recalculate it every time
 # flow some more calculations for optimization
 # add crime (random deaths)
 # add homeless people
@@ -23,7 +25,6 @@
 # ^ Do this with an entirely seperate process
 # switch most logs to just counts: births, deaths for different reasons. Some can be text: moved_to, moved_from, attacks
 # potentially switch city representation of cities to a count for each type of citizen? would this… make sense? For each citizen that "looks" would it just grab a random citizen from the DB?
-# have libraries randomly add some education
 # make updates atomic
 # potentially use list.keysort instead of sort_by for perf reasons
 # could just save a set of pre-defined preference maps and each "citizen" could reference them
