@@ -18,6 +18,8 @@ defmodule MayorGame.CityHelpers do
   def unfold_town_citizens(town, day) do
     if town.citizens_compressed != %{} do
       Map.put(town, :citizens_blob, town.citizens_compressed |> Citizens.unfold_citizen_blob(day, town.id))
+
+      town
     else
       town
     end
