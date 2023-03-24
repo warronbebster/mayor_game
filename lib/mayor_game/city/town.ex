@@ -61,6 +61,7 @@ defmodule MayorGame.City.Town do
             treasury: integer,
             citizen_count: integer,
             citizens_blob: list(map),
+            citizens_compressed: map,
             patron: integer,
             contributor: boolean,
             priorities: map,
