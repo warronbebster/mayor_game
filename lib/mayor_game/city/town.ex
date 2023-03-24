@@ -202,6 +202,8 @@ defmodule MayorGame.City.Town do
     field(:contributor, :boolean)
     field(:retaliate, :boolean)
     field :citizens_blob, {:array, :map}, null: false, default: []
+    field :citizens_compressed, :map, null: false, default: %{}
+    field :last_login, :date
     field :priorities, :map, null: false, default: Buildable.buildables_default_priorities()
 
     # this corresponds to an elixir list
@@ -304,6 +306,10 @@ defmodule MayorGame.City.Town do
         :patron,
         :contributor,
         :citizens_blob,
+        :citizens_compressed,
+        :last_login,
+
+        # logs
         :logs_emigration_housing,
         :logs_emigration_taxes,
         :logs_emigration_jobs,
