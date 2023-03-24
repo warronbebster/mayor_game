@@ -42,7 +42,7 @@ if config_env() == :prod do
     # ssl: true,
     url: database_url,
     pool_size: String.to_integer(System.get_env("POOL_SIZE") || "35"),
-    timeout: 30_000,
+    timeout: 500_000,
     socket_options: maybe_ipv6,
     queue_target: 30_000,
     queue_interval: 40_000
