@@ -31,10 +31,12 @@ defmodule MayorGameWeb.DashboardLive do
   # if user is not logged in
   def mount(_params, _session, socket) do
     MayorGameWeb.Endpoint.subscribe("cityPubSub")
+    {:ok, datetime} = DateTime.now("Etc/UTC")
 
     {:ok,
      socket
      |> assign_cities()
+     |> assign(today: datetime)
      |> assign_attacks()}
   end
 
