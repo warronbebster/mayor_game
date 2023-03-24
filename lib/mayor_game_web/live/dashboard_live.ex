@@ -18,10 +18,12 @@ defmodule MayorGameWeb.DashboardLive do
   # if user is logged in:
   def mount(_params, %{"current_user" => current_user}, socket) do
     MayorGameWeb.Endpoint.subscribe("cityPubSub")
+    {:ok, datetime} = DateTime.now("Etc/UTC")
 
     {:ok,
      socket
      |> assign(current_user: current_user |> Repo.preload(:town))
+     |> assign(today: datetime)
      |> assign_cities()
      |> assign_attacks()}
   end
@@ -181,7 +183,7 @@ defmodule MayorGameWeb.DashboardLive do
     # cities_count = MayorGame.Repo.aggregate(City.Town, :count, :id)
     all_cities_recent =
       from(t in Town,
-        select: [:citizen_count, :pollution, :id, :title, :user_id, :patron, :contributor]
+        select: [:citizen_count, :pollution, :id, :title, :user_id, :patron, :contributor, :last_login]
       )
       |> Repo.all()
       |> Repo.preload(:user)

@@ -265,6 +265,67 @@ defmodule MayorGame.City.Town do
     ]
   end
 
+  def traits_minus_blob do
+    [
+      :id,
+      :title,
+      :pollution,
+      :citizen_count,
+      :treasury,
+      :region,
+      :climate,
+      :user_id,
+      :tax_rates,
+      # resources
+      :missiles,
+      :shields,
+      # resources
+      :steel,
+      :stone,
+      :sulfur,
+      :gold,
+      :uranium,
+      :water,
+      :salt,
+      :fish,
+      :oil,
+      :wood,
+      :stone,
+      :lithium,
+      :food,
+      :cows,
+      :rice,
+      :meat,
+      :grapes,
+      :produce,
+      :wheat,
+      :bread,
+
+      # —————————————
+      :patron,
+      :contributor,
+      :citizens_compressed,
+      :last_login,
+
+      # logs
+      :logs_emigration_housing,
+      :logs_emigration_taxes,
+      :logs_emigration_jobs,
+      :logs_immigration,
+      :logs_attacks,
+      :logs_edu,
+      :logs_deaths_pollution,
+      :logs_deaths_age,
+      :logs_deaths_housing,
+      :logs_deaths_attacks,
+      :logs_births,
+      :logs_sent,
+      :logs_received,
+      :priorities,
+      :retaliate
+    ] ++ Buildable.buildables_list()
+  end
+
   @doc false
   def changeset(%MayorGame.City.Town{} = town, attrs) do
     town

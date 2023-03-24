@@ -198,7 +198,8 @@ defmodule MayorGame.CityCalculator do
                   pollution:
                     ^(city
                       |> TownStatistics.getResource(:pollution)
-                      |> ResourceStatistics.getNetProduction())
+                      |> ResourceStatistics.getNetProduction()),
+                  citizen_count: ^length(city.citizens_blob)
                 ]
               ]
             )
@@ -230,17 +231,17 @@ defmodule MayorGame.CityCalculator do
 
             #   render_blob = Citizens.compress_citizen_blob(citizens, world.day)
 
-            #   from(t in Town,
-            #     where: t.id == ^city.id,
-            #     update: [
-            #       set: [
-            #         # citizens_blob: ^citizens,
-            #         citizens_compressed: ^render_blob,
-            #         citizen_count: ^length(citizens)
-            #       ]
+            # from(t in Town,
+            #   where: t.id == ^city.id,
+            #   update: [
+            #     set: [
+            #       # citizens_blob: ^citizens,
+            #       citizens_compressed: ^render_blob,
+            #       citizen_count: ^length(citizens)
             #     ]
-            #   )
-            #   |> Repo.update_all([])
+            #   ]
+            # )
+            # |> Repo.update_all([])
             # end
 
             # also update logs here for old deaths
