@@ -39,7 +39,7 @@ defmodule MayorGame.City do
 
   """
   def list_cities_preload do
-    Repo.all(Town, timeout: 200_000) |> Repo.preload([:user], timeout: 200_000)
+    Repo.all(Town, timeout: 800_000) |> Repo.preload([:user], timeout: 500_000)
   end
 
   @doc """
