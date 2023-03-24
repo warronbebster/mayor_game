@@ -18,7 +18,7 @@ defmodule MayorGame.CityHelpers do
   def unfold_town_citizens(town, day) do
     unfolded_citizens = town.citizens_compressed |> Citizens.unfold_citizen_blob(day, town.id)
 
-    if length(unfolded_citizens) < length(town.citizens_blob) do
+    if length(unfolded_citizens) > length(town.citizens_blob) do
       Map.put(town, :citizens_blob, unfolded_citizens)
     else
       town
@@ -41,8 +41,6 @@ defmodule MayorGame.CityHelpers do
         _time_to_learn
       ) do
     town_preloaded = unfold_town_citizens(town, world.day)
-
-    # if town.id == 2, do: IO.inspect(length(town_preloaded.citizens_blob), label: town.title <> " start of calculate")
 
     town_stats = TownStatistics.fromTown(town_preloaded, world)
 
