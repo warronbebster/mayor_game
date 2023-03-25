@@ -97,7 +97,7 @@
         <span>Sort by:</span>
         <button
           class={
-            "btn m-0 border rounded-none border-neutral-800/25 leading-none #{if @sort_by != :title, do: "opacity-50"}"
+            "btn m-0 border rounded-none border-neutral-800/25 leading-none #{if @sort_by == :title, do: "opacity-50"}"
           }
           disabled={if @sort_by == :title, do: "true"}
           phx-click="sort_by_name"
@@ -107,7 +107,7 @@
         </button>
         <button
           class={
-            "btn m-0 border rounded-none border-neutral-800/25 leading-none #{if @sort_by != :id, do: "opacity-50"}"
+            "btn m-0 border rounded-none border-neutral-800/25 leading-none #{if @sort_by == :id, do: "opacity-50"}"
           }
           disabled={if @sort_by == :id, do: "true"}
           phx-click="sort_by_age"
@@ -117,7 +117,7 @@
         </button>
         <button
           class={
-            "btn m-0 border rounded-none border-neutral-800/25 leading-none #{if @sort_by != :citizen_count, do: "opacity-50"}"
+            "btn m-0 border rounded-none border-neutral-800/25 leading-none #{if @sort_by == :citizen_count, do: "opacity-50"}"
           }
           disabled={if @sort_by == :citizen_count, do: "true"}
           phx-click="sort_by_population"
@@ -127,7 +127,7 @@
         </button>
         <button
           class={
-            "btn m-0 mr-auto border rounded-none border-neutral-800/25 leading-none #{if @sort_by != :pollution, do: "opacity-50"}"
+            "btn m-0 mr-auto border rounded-none border-neutral-800/25 leading-none #{if @sort_by == :pollution, do: "opacity-50"}"
           }
           disabled={if @sort_by == :pollution, do: "true"}
           phx-click="sort_by_pollution"
