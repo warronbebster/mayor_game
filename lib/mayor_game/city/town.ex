@@ -40,7 +40,7 @@ defmodule MayorGame.City.Town do
   ]
 
   # don't print these on inspect
-  @derive {Inspect, except: [:priorities] ++ Buildable.buildables_list() ++ logs_types}
+  @derive {Inspect, except: [:priorities, :citizens_compressed] ++ Buildable.buildables_list() ++ logs_types}
 
   @typedoc """
       Type for %Town{} that's callable with MayorGame.City.Buildable.t()

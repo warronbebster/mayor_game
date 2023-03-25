@@ -21,6 +21,7 @@ defmodule MayorGameWeb.CityLive do
 
   def mount(%{"title" => title}, session, socket) do
     # subscribe to the channel "cityPubSub". everyone subscribes to this channel
+
     MayorGameWeb.Endpoint.subscribe("cityPubSub")
     world = Repo.get!(MayorGame.City.World, 1)
     in_dev = Application.get_env(:mayor_game, :env) == :dev
@@ -131,25 +132,12 @@ defmodule MayorGameWeb.CityLive do
         "add_citizen",
         _value,
         # pull these variables out of the socket
-        %{assigns: %{city: city}} = socket
+        %{assigns: %{city: city, world: world}} = socket
       ) do
     if socket.assigns.current_user.id == 1 do
-      new_citizen = %{
-        "town_id" => city.id,
-        "age" => 0,
-        "education" => 0,
-        "preferences" => :rand.uniform(11)
-      }
+      IO.inspect(city.citizens_compressed)
 
-      from(t in Town,
-        where: t.id == ^city.id,
-        update: [
-          push: [
-            citizens_blob: ^new_citizen
-          ]
-        ]
-      )
-      |> Repo.update_all([])
+      City.add_citizens(city, world.day)
     end
 
     {:noreply, socket |> update_city_by_title()}

@@ -15,7 +15,7 @@
         <span>Cities</span>
         <hr class="border-neutral-300 flex-1" />
         <span>
-          <%= Number.Delimit.number_to_delimited(length(@cities)) %>
+          <%= Number.Delimit.number_to_delimited(@city_count) %>
         </span>
       </div>
       <div class="flex flex-row items-center space-x-1 max-w-sm">
@@ -93,35 +93,54 @@
         </div>
       <% end %>
       <!-- sort options-->
-      <div class="flex flex-row space-x-1 pb-2 items-center">
+      <div class="flex flex-row gap-x-1 pb-2 items-center">
         <span>Sort by:</span>
         <button
-          class="btn m-0 border rounded-none border-neutral-800/25 leading-none"
+          class={
+            "btn m-0 border rounded-none border-neutral-800/25 leading-none #{if @sort_by != :title, do: "opacity-50"}"
+          }
+          disabled={if @sort_by == :title, do: "true"}
           phx-click="sort_by_name"
           phx-throttle="300"
         >
           Name
         </button>
         <button
-          class="btn m-0 border rounded-none border-neutral-800/25 leading-none"
+          class={
+            "btn m-0 border rounded-none border-neutral-800/25 leading-none #{if @sort_by != :id, do: "opacity-50"}"
+          }
+          disabled={if @sort_by == :id, do: "true"}
+          phx-click="sort_by_age"
+          phx-throttle="300"
+        >
+          Age
+        </button>
+        <button
+          class={
+            "btn m-0 border rounded-none border-neutral-800/25 leading-none #{if @sort_by != :citizen_count, do: "opacity-50"}"
+          }
+          disabled={if @sort_by == :citizen_count, do: "true"}
           phx-click="sort_by_population"
           phx-throttle="300"
         >
           Population
         </button>
         <button
-          class="btn m-0 border rounded-none border-neutral-800/25 leading-none"
-          phx-click="sort_by_age"
-          phx-throttle="300"
-        >
-          Newest
-        </button>
-        <button
-          class="btn m-0 border rounded-none border-neutral-800/25 leading-none"
+          class={
+            "btn m-0 mr-auto border rounded-none border-neutral-800/25 leading-none #{if @sort_by != :pollution, do: "opacity-50"}"
+          }
+          disabled={if @sort_by == :pollution, do: "true"}
           phx-click="sort_by_pollution"
           phx-throttle="300"
         >
           Pollution
+        </button>
+        <button
+          class="btn m-0 border rounded-none border-neutral-800/25 leading-none"
+          phx-click="switch_order"
+          phx-throttle="300"
+        >
+          <%= if @sort_direction == :desc, do: "↑", else: "↓" %>
         </button>
       </div>
       <!-- list cities-->
@@ -190,6 +209,13 @@
           </div>
         </div>
       <% end %>
+      <button
+        class="btn m-0 mt-2 border rounded-none border-neutral-800/25 leading-none"
+        phx-click="load_more"
+        phx-throttle="300"
+      >
+        Load More
+      </button>
     </article>
   </section>
 

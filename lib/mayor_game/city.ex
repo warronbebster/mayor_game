@@ -218,133 +218,28 @@ defmodule MayorGame.City do
     Town.changeset(town, attrs)
   end
 
-  # ###############################################
-  # CITIZENS CITIZENS CITIZENS CITIZENS CITIZENS CITIZENS
-  # ###############################################
-
   @doc """
-  Returns the list of citizens.
-
-  ## Examples
-
-      iex> list_citizens()
-      [%Citizens{}, ...]
+  Returns a tuple of changes from the repo
 
   """
-  def list_citizens do
-    Repo.all(Citizens)
+  def add_citizens(%Town{} = town, day) do
+    updated_compressed_citizens =
+      town.citizens_compressed
+      |> Map.merge(
+        %{"5" => [%{"birthday" => Citizens.round100(day), "education" => 0, "preferences" => :rand.uniform(11)}]},
+        fn _k, v1, v2 -> v1 ++ v2 end
+      )
+
+    from(t in Town,
+      where: t.id == ^town.id,
+      update: [
+        set: [
+          citizens_compressed: ^updated_compressed_citizens
+        ]
+      ]
+    )
+    |> Repo.update_all([])
   end
-
-  def list_citizens_preload do
-    Repo.all(Citizens) |> Repo.preload([:town])
-  end
-
-  @doc """
-  Gets a single citizens.
-
-  Raises `Ecto.NoResultsError` if the Citizens does not exist.
-
-  ## Examples
-
-      iex> get_citizens!(123)
-      %Citizens{}
-
-      iex> get_citizens!(456)
-      ** (Ecto.NoResultsError)
-
-  """
-  def get_citizens!(id), do: Repo.get!(Citizens, id)
-
-  @doc """
-  Creates a citizens.
-
-  ## Examples
-
-      iex> create_citizens(%{field: value})
-      {:ok, %Citizens{}}
-
-      iex> create_citizens(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-
-  # def create_citizens(attrs \\ %{}) do
-  #   # this makes a map with random values that add up to 1
-  #   decision_factors = Enum.shuffle([:tax_rates, :sprawl, :fun, :health, :pollution, :culture])
-
-  #   random_preferences =
-  #     Enum.reduce(decision_factors, %{preference_map: %{}, room_taken: 0}, fn x, acc ->
-  #       value =
-  #         if x == List.last(decision_factors),
-  #           do: (1 - acc.room_taken) |> Float.round(2),
-  #           else: (:rand.uniform() * (1 - acc.room_taken)) |> Float.round(2)
-
-  #       %{
-  #         preference_map: Map.put(acc.preference_map, to_string(x), value),
-  #         room_taken: acc.room_taken + value
-  #       }
-  #     end)
-
-  #   # add new attribute if not set
-  #   attrs_plus_preferences =
-  #     attrs
-  #     |> Map.put_new(:name, Faker.Person.name())
-  #     |> Map.put(:preferences, random_preferences.preference_map)
-
-  #   %Citizens{}
-  #   |> Citizens.changeset(attrs_plus_preferences)
-  #   |> Repo.insert()
-  # end
-
-  @doc """
-  Updates a citizens.
-
-  ## Examples
-
-      iex> update_citizens(citizens, %{field: new_value})
-      {:ok, %Citizens{}}
-
-      iex> update_citizens(citizens, %{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-
-  # def update_citizens(%Citizens{} = citizens, attrs) do
-  #   citizens
-  #   |> Citizens.changeset(attrs)
-  #   |> Repo.update()
-  # end
-
-  @doc """
-  Deletes a citizens.
-
-  ## Examples
-
-      iex> delete_citizens(citizens)
-      {:ok, %Citizens{}}
-
-      iex> delete_citizens(citizens)
-      {:error, %Ecto.Changeset{}}
-
-  """
-
-  # def delete_citizens(%Citizens{} = citizens) do
-  #   Repo.delete(citizens)
-  # end
-
-  @doc """
-  Returns an `%Ecto.Changeset{}` for tracking citizens changes.
-
-  ## Examples
-
-      iex> change_citizens(citizens)
-      %Ecto.Changeset{data: %Citizens{}}
-
-  """
-
-  # def change_citizens(%Citizens{} = citizens, attrs \\ %{}) do
-  #   Citizens.changeset(citizens, attrs)
-  # end
 
   # ###############################################
   # BUILDABLES

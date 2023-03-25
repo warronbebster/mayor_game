@@ -1081,35 +1081,6 @@
       </div>
     <% end %>
   </div>
-  <!-- RESOURCES -->
-  <div class="border-l grow border-neutral-800/10 px-3 flex flex-col w-full md:w-48 xl:grow-0">
-    <!-- RESOURCES CONTAINER -->
-    <div class="divide-y divide-neutral-800/10 sticky top-0">
-      <h2 class="text-base pt-2 pb-1">
-        Resources
-      </h2>
-      <%= for {resource_type, color} <- @resource_types do %>
-        <div class={"flex flex-row items-center justify-between gap-2 py-1 leading-none #{color}"}>
-          <img
-            src={"/images/#{to_string(resource_type)}.svg"}
-            alt={"total #{resource_type}"}
-            height="12"
-            width="12"
-            class="inline"
-          />
-          <span><%= resource_type %></span>
-          <hr class="border-neutral-300 flex-1" />
-          <span>
-            <%= @city_stats
-            |> TownStatistics.getResource(resource_type)
-            |> ResourceStatistics.expressStockOverStorage_SI() %>
-          </span>
-        </div>
-      <% end %>
-      <!-- ^End of individual logs sections -->
-    </div>
-    <!-- End of logs inner container -->
-  </div>
   <!-- LOGS -->
   <div class="border-l grow border-neutral-800/10 px-3 flex flex-col w-full md:w-48 xl:grow-0">
     <!-- LOGS CONTAINER -->
@@ -1414,4 +1385,33 @@
     <!-- End of logs inner container -->
   </div>
   <!-- End of logs container -->
+    <!-- RESOURCES -->
+  <div class="border-l grow border-neutral-800/10 px-3 flex flex-col w-full md:w-48 xl:grow-0">
+    <!-- RESOURCES CONTAINER -->
+    <div class="divide-y divide-neutral-800/10 sticky top-0">
+      <h2 class="text-base pt-2 pb-1">
+        Resources
+      </h2>
+      <%= for {resource_type, color} <- @resource_types do %>
+        <div class={"flex flex-row items-center justify-between gap-2 py-1 leading-none #{color}"}>
+          <img
+            src={"/images/#{to_string(resource_type)}.svg"}
+            alt={"total #{resource_type}"}
+            height="12"
+            width="12"
+            class="inline"
+          />
+          <span><%= resource_type %></span>
+          <hr class="border-neutral-300 flex-1" />
+          <span>
+            <%= @city_stats
+            |> TownStatistics.getResource(resource_type)
+            |> ResourceStatistics.expressStockOverStorage_SI() %>
+          </span>
+        </div>
+      <% end %>
+      <!-- ^End of individual resources sections -->
+    </div>
+    <!-- End of resources inner container -->
+  </div>
 </div>
