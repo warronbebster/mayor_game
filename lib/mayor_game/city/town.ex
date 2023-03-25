@@ -40,7 +40,7 @@ defmodule MayorGame.City.Town do
   ]
 
   # don't print these on inspect
-  @derive {Inspect, except: [:citizens_blob, :priorities] ++ Buildable.buildables_list() ++ logs_types}
+  @derive {Inspect, except: [:priorities] ++ Buildable.buildables_list() ++ logs_types}
 
   @typedoc """
       Type for %Town{} that's callable with MayorGame.City.Buildable.t()
@@ -60,7 +60,6 @@ defmodule MayorGame.City.Town do
             pollution: integer,
             treasury: integer,
             citizen_count: integer,
-            citizens_blob: list(map),
             citizens_compressed: map,
             patron: integer,
             contributor: boolean,
@@ -202,7 +201,6 @@ defmodule MayorGame.City.Town do
     field(:patron, :integer)
     field(:contributor, :boolean)
     field(:retaliate, :boolean)
-    field :citizens_blob, {:array, :map}, null: false, default: []
     field :citizens_compressed, :map, null: false, default: %{}
     field :last_login, :date
     field :priorities, :map, null: false, default: Buildable.buildables_default_priorities()
@@ -367,7 +365,6 @@ defmodule MayorGame.City.Town do
         # —————————————
         :patron,
         :contributor,
-        :citizens_blob,
         :citizens_compressed,
         :last_login,
 
