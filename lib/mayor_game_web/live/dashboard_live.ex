@@ -81,7 +81,7 @@ defmodule MayorGameWeb.DashboardLive do
     end
   end
 
-  def handle_info(%{event: "pong", payload: world}, socket) do
+  def handle_info(%{event: "pong", payload: _world}, socket) do
     if Map.has_key?(socket.assigns, :current_user) do
       {:noreply,
        socket
@@ -91,16 +91,12 @@ defmodule MayorGameWeb.DashboardLive do
            |> Repo.preload(:town)
        )
        |> refresh_cities()
-       |> assign_totals()
-       |> assign_attacks()
-       |> assign(:world, world)}
+       |> assign_totals()}
     else
       {:noreply,
        socket
        |> refresh_cities()
-       |> assign_totals()
-       |> assign_attacks()
-       |> assign(:world, world)}
+       |> assign_totals()}
     end
   end
 
