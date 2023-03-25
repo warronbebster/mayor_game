@@ -21,7 +21,7 @@ defmodule MayorGameWeb.DashboardLive do
 
     world = Repo.get!(World, 1)
     cities_count = MayorGame.Repo.aggregate(City.Town, :count, :id)
-    page_length = 20
+    page_length = 50
 
     {:ok,
      socket
@@ -44,7 +44,7 @@ defmodule MayorGameWeb.DashboardLive do
     {:ok, datetime} = DateTime.now("Etc/UTC")
     world = Repo.get!(World, 1)
     cities_count = MayorGame.Repo.aggregate(City.Town, :count, :id)
-    page_length = 20
+    page_length = 50
 
     {:ok,
      socket
@@ -55,7 +55,7 @@ defmodule MayorGameWeb.DashboardLive do
      |> assign(sort_direction: :desc)
      |> assign(sort_by: :citizen_count)
      |> assign(:world, world)
-     |> assign(:cities, get_towns(0))
+     |> assign(:cities, get_towns(0, page_length))
      |> assign_totals()
      |> assign_attacks()}
   end
