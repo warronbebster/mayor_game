@@ -1225,7 +1225,7 @@ defmodule MayorGame.CityHelpers do
 
   def prepare_cities(datetime, day) do
     City.list_cities_preload()
-    |> Enum.filter(fn city -> Date.diff(city.last_login, datetime) > -30 end)
+    |> Enum.filter(fn city -> Date.diff(city.last_login, datetime) > -7 end)
     |> Enum.filter(fn city ->
       city.huts > 0 || city.single_family_homes > 0 || city.apartments > 0 ||
         city.homeless_shelters > 0 || city.micro_apartments > 0 || city.high_rises > 0 ||

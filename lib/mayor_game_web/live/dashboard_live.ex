@@ -21,7 +21,7 @@ defmodule MayorGameWeb.DashboardLive do
 
     world = Repo.get!(World, 1)
     cities_count = MayorGame.Repo.aggregate(City.Town, :count, :id)
-    page_length = 5
+    page_length = 20
 
     {:ok,
      socket

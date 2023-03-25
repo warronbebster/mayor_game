@@ -1037,7 +1037,7 @@ defmodule MayorGameWeb.CityLive do
           do: socket.assigns.current_user.id == 1,
           else: true
 
-      # auth check
+      # reset last_login
       if is_user_mayor do
         City.update_town(socket.assigns.city, %{last_login: date})
       end
