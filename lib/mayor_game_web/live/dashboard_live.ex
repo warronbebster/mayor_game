@@ -69,14 +69,12 @@ defmodule MayorGameWeb.DashboardLive do
            MayorGame.Auth.get_user!(socket.assigns.current_user.id)
            |> Repo.preload(:town)
        )
-       #  |> assign_cities()
        |> assign_totals()
        |> assign_attacks()
        |> assign(:world, world)}
     else
       {:noreply,
        socket
-       #  |> assign_cities()
        |> assign_totals()
        |> assign_attacks()
        |> assign(:world, world)}
@@ -107,17 +105,12 @@ defmodule MayorGameWeb.DashboardLive do
   end
 
   # this handles different events
-  def handle_event(
-        "add_citizen",
-        %{"city_id" => city_id},
-        # pull these variables out of the socket
-        assigns = socket
-      ) do
+  def handle_event("add_citizen", %{"city_id" => city_id}, socket) do
     # IO.inspect(get_user(socket, session))
 
     if socket.assigns.current_user.id == 1 do
       town = City.get_town!(city_id)
-      City.add_citizens(town, assigns.world.day)
+      City.add_citizens(town, socket.assigns.world.day)
     end
 
     {:noreply, socket |> refresh_cities()}
@@ -243,11 +236,10 @@ defmodule MayorGameWeb.DashboardLive do
 
   def get_towns(page, per_page \\ 20, sort_field \\ :citizen_count, direction \\ :desc) do
     from(t in Town)
-    |> select([:citizen_count, :pollution, :id, :title, :user_id, :patron, :contributor, :last_login])
+    |> select([:citizen_count, :pollution, :id, :title, :patron, :contributor, :last_login])
     |> paginate(page, per_page)
     |> order_by([{^direction, ^sort_field}])
     |> Repo.all()
-    |> Repo.preload(:user)
   end
 
   def paginate(query, page, per_page) do

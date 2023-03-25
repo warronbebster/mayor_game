@@ -173,11 +173,6 @@
               </div>
             </div>
           <% end %>
-          <%= if assigns[:current_user] && assigns[:current_user].nickname == city.user.nickname do %>
-            <span class="opacity-50">
-              My City
-            </span>
-          <% end %>
           <hr class="border-neutral-300 flex-1" />
           <div class="flex flex-row items-center gap-1">
             <div class="flex flex-row items-center gap-1 w-20">
@@ -196,7 +191,7 @@
             </div>
             <%= if assigns[:current_user] && @current_user.id == 1 do %>
               <button
-                class="btn text-xs px-1 border-none"
+                class="btn text-xs py-0 px-1 border-none"
                 phx-click="add_citizen"
                 phx-throttle="100"
                 phx-value-name="name"
