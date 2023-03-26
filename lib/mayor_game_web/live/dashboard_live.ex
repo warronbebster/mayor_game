@@ -230,7 +230,7 @@ defmodule MayorGameWeb.DashboardLive do
     |> assign(:attacks, attacks)
   end
 
-  def get_towns(page, per_page \\ 20, sort_field \\ :citizen_count, direction \\ :desc) do
+  def get_towns(page, per_page \\ 50, sort_field \\ :citizen_count, direction \\ :desc) do
     from(t in Town)
     |> select([:citizen_count, :pollution, :id, :title, :patron, :contributor, :last_login])
     |> paginate(page, per_page)
