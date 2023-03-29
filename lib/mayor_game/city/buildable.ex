@@ -361,7 +361,7 @@ defmodule MayorGame.City.Buildable do
         },
         produces: %{
           housing: 6,
-          pollution: 4,
+          pollution: 5,
           sprawl: 3
         }
       },
@@ -394,7 +394,7 @@ defmodule MayorGame.City.Buildable do
         },
         produces: %{
           housing: 20,
-          pollution: 10
+          pollution: 15
         }
       },
       # micro apartments ————————————————————————————————————
@@ -410,7 +410,7 @@ defmodule MayorGame.City.Buildable do
         },
         produces: %{
           housing: 20,
-          pollution: 5
+          pollution: 12
         }
       },
       # high rises ————————————————————————————————————
@@ -426,7 +426,7 @@ defmodule MayorGame.City.Buildable do
         },
         produces: %{
           housing: 100,
-          pollution: 10
+          pollution: 50
         }
       },
       # Megablocks ————————————————————————————————————
@@ -437,12 +437,12 @@ defmodule MayorGame.City.Buildable do
         title: :megablocks,
         price: 5_000_000,
         requires: %{
-          area: 100,
-          energy: 2000
+          area: 10,
+          energy: 500
         },
         produces: %{
-          housing: 3000,
-          pollution: 25
+          housing: 2500,
+          pollution: 100
         }
       },
       # TRANSIT ——————————————————————————————————————————————————————————————————————————————
@@ -1107,7 +1107,7 @@ defmodule MayorGame.City.Buildable do
         category: :resources,
         level: 4,
         title: :lithium_mines,
-        price: 30_000_000,
+        price: 3_000_000,
         requires: %{
           money: 1000,
           energy: 5000,
@@ -1128,7 +1128,7 @@ defmodule MayorGame.City.Buildable do
         category: :resources,
         level: 4,
         title: :reservoirs,
-        price: 3_000_000,
+        price: 300_000,
         requires: %{
           money: 100,
           energy: 100,
@@ -1147,7 +1147,7 @@ defmodule MayorGame.City.Buildable do
         category: :resources,
         level: 4,
         title: :salt_farms,
-        price: 2_000_000,
+        price: 200_000,
         requires: %{
           money: 1000,
           energy: 500,
@@ -1164,7 +1164,7 @@ defmodule MayorGame.City.Buildable do
         category: :resources,
         level: 4,
         title: :quarries,
-        price: 2_000_000,
+        price: 200_000,
         requires: %{
           money: 1000,
           energy: 500,
@@ -1200,7 +1200,7 @@ defmodule MayorGame.City.Buildable do
         category: :farms,
         level: 4,
         title: :rice_farms,
-        price: 1_000_000,
+        price: 100_000,
         requires: %{
           money: 10,
           water: 20,
@@ -1218,7 +1218,7 @@ defmodule MayorGame.City.Buildable do
         category: :farms,
         level: 4,
         title: :wheat_farms,
-        price: 1_000_000,
+        price: 100_000,
         requires: %{
           money: 10,
           water: 5,
@@ -1235,7 +1235,7 @@ defmodule MayorGame.City.Buildable do
         category: :farms,
         level: 4,
         title: :produce_farms,
-        price: 1_000_000,
+        price: 200_000,
         requires: %{
           money: 10,
           water: 5,
@@ -1252,7 +1252,7 @@ defmodule MayorGame.City.Buildable do
         category: :farms,
         level: 4,
         title: :livestock_farms,
-        price: 1_000_000,
+        price: 300_000,
         requires: %{
           money: 10,
           water: 10,
@@ -1270,7 +1270,7 @@ defmodule MayorGame.City.Buildable do
         category: :farms,
         level: 4,
         title: :vineyards,
-        price: 1_000_000,
+        price: 500_000,
         requires: %{
           money: 10,
           water: 10,
@@ -1289,7 +1289,7 @@ defmodule MayorGame.City.Buildable do
         category: :food,
         level: 4,
         title: :bakeries,
-        price: 400_000,
+        price: 40_000,
         requires: %{
           money: 10,
           wheat: 5,
@@ -1308,7 +1308,7 @@ defmodule MayorGame.City.Buildable do
         category: :food,
         level: 4,
         title: :sushi_restaurants,
-        price: 7_000,
+        price: 70_000,
         requires: %{
           money: 10,
           water: 1,
@@ -1327,7 +1327,7 @@ defmodule MayorGame.City.Buildable do
         category: :food,
         level: 4,
         title: :farmers_markets,
-        price: 2000,
+        price: 20_000,
         requires: %{
           produce: 5,
           area: 5,
@@ -1505,7 +1505,7 @@ defmodule MayorGame.City.Buildable do
         category: :entertainment,
         level: 0,
         title: :zoos,
-        price: 2_500,
+        price: 25_000,
         multipliers: %{
           region: %{
             energy: %{
