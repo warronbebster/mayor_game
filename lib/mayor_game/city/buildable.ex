@@ -1366,13 +1366,13 @@ defmodule MayorGame.City.Buildable do
           money: 100,
           area: 5,
           energy: 10,
-          workers: %{count: 15, level: 1}
+          workers: %{count: 15, level: 1},
           bread: 5,
           water: 1,
           fish: 1,
           rice: 5,
           meat: 1,
-          produce: 1,
+          produce: 1
         },
         produces: %{food: 100},
         stores: %{food: 1000}
