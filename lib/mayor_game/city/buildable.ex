@@ -378,7 +378,8 @@ defmodule MayorGame.City.Buildable do
           energy: 70
         },
         produces: %{
-          housing: 20
+          housing: 20,
+          sprawl: 1
         }
       },
       # apartments ————————————————————————————————————
@@ -421,7 +422,7 @@ defmodule MayorGame.City.Buildable do
         title: :high_rises,
         price: 6_000,
         requires: %{
-          area: 2,
+          area: 20,
           energy: 150
         },
         produces: %{
@@ -437,11 +438,11 @@ defmodule MayorGame.City.Buildable do
         title: :megablocks,
         price: 5_000_000,
         requires: %{
-          area: 10,
+          area: 100,
           energy: 500
         },
         produces: %{
-          housing: 2500,
+          housing: 2000,
           pollution: 100
         }
       },
@@ -1069,7 +1070,7 @@ defmodule MayorGame.City.Buildable do
         requires: %{
           money: 1000,
           energy: 5000,
-          area: 100,
+          area: 50,
           workers: %{count: 20, level: 4}
         },
         produces: %{
@@ -1090,7 +1091,7 @@ defmodule MayorGame.City.Buildable do
         requires: %{
           money: 1000,
           energy: 3000,
-          area: 100,
+          area: 10,
           workers: %{count: 20, level: 1}
         },
         produces: %{
@@ -1111,7 +1112,7 @@ defmodule MayorGame.City.Buildable do
         requires: %{
           money: 1000,
           energy: 5000,
-          area: 100,
+          area: 10,
           workers: %{count: 20, level: 4}
         },
         produces: %{
@@ -1203,7 +1204,7 @@ defmodule MayorGame.City.Buildable do
         price: 100_000,
         requires: %{
           money: 10,
-          water: 20,
+          water: 5,
           energy: 10,
           area: 100,
           workers: %{count: 5, level: 0}
@@ -1312,8 +1313,8 @@ defmodule MayorGame.City.Buildable do
         requires: %{
           money: 10,
           water: 1,
-          rice: 5,
-          fish: 5,
+          rice: 1,
+          fish: 1,
           energy: 50,
           area: 2,
           workers: %{count: 5, level: 3}
@@ -1356,21 +1357,22 @@ defmodule MayorGame.City.Buildable do
       },
       # GROCERY STORES
       grocery_stores: %BuildableMetadata{
-        size: 2,
+        size: 5,
         category: :food,
         level: 4,
         title: :grocery_stores,
         price: 40000,
         requires: %{
-          money: 10,
-          bread: 5,
-          water: 1,
-          rice: 5,
-          meat: 1,
-          produce: 1,
+          money: 100,
           area: 5,
           energy: 10,
           workers: %{count: 15, level: 1}
+          bread: 5,
+          water: 1,
+          fish: 1,
+          rice: 5,
+          meat: 1,
+          produce: 1,
         },
         produces: %{food: 100},
         stores: %{food: 1000}
