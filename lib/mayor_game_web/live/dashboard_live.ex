@@ -102,8 +102,6 @@ defmodule MayorGameWeb.DashboardLive do
 
   # this handles different events
   def handle_event("add_citizen", %{"city_id" => city_id}, socket) do
-    # IO.inspect(get_user(socket, session))
-
     if socket.assigns.current_user.id == 1 do
       town = City.get_town!(city_id)
       City.add_citizens(town, socket.assigns.world.day)

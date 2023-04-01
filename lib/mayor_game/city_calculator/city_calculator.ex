@@ -56,7 +56,7 @@ defmodule MayorGame.CityCalculator do
 
     # filter obviously ghost cities
     # add pollution check. It is possible to trick this check with a city reset, and by building road and park without building housing
-    cities = CityHelpers.prepare_cities(datetime_pre, world.day)
+    cities = CityHelpers.prepare_cities(datetime_pre, world.day, in_dev)
 
     # should we tie pollution effect to RNG?
     pollution_ceiling = 2_000_000_000 * Random.gammavariate(7.5, 1)
@@ -203,48 +203,6 @@ defmodule MayorGame.CityCalculator do
               ]
             )
             |> Repo.update_all([])
-
-            ### Potential data conflict with migrator updates?
-            ### maybe move this to migrator instead
-            # if city.total_citizens < 20 do
-            #   updated_citizens =
-            #     Enum.map(1..:rand.uniform(3), fn _citizen ->
-            #       %{
-            #         "age" => 0,
-            #         "town_id" => city.id,
-            #         "education" => 0,
-            #         "preferences" => :rand.uniform(11)
-            #       }
-            #     end)
-
-            #   citizens =
-            #     [updated_citizens | city.citizens_blob]
-            #     |> List.flatten()
-            #     |> Enum.take(
-            #       city
-            #       |> TownStatistics.getResource(:housing)
-            #       |> ResourceStatistics.getProduction()
-            #     )
-
-            #   # IO.inspect(length(citizens), label: "citizens count")
-
-            #   render_blob = Citizens.compress_citizen_blob(citizens, world.day)
-
-            # from(t in Town,
-            #   where: t.id == ^city.id,
-            #   update: [
-            #     set: [
-            #       # citizens_blob: ^citizens,
-            #       citizens_compressed: ^render_blob,
-            #       citizen_count: ^length(citizens)
-            #     ]
-            #   ]
-            # )
-            # |> Repo.update_all([])
-            # end
-
-            # also update logs here for old deaths
-            # and pollution deaths
           end)
         end,
         timeout: 6_000_000

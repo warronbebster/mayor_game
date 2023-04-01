@@ -135,8 +135,6 @@ defmodule MayorGameWeb.CityLive do
         %{assigns: %{city: city, world: world}} = socket
       ) do
     if socket.assigns.current_user.id == 1 do
-      IO.inspect(city.citizens_compressed)
-
       City.add_citizens(city, world.day)
     end
 

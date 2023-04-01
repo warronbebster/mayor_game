@@ -57,7 +57,7 @@ defmodule MayorGame.CityMigrator do
 
     # filter for
 
-    cities = CityHelpers.prepare_cities(datetime_pre, world.day)
+    cities = CityHelpers.prepare_cities(datetime_pre, world.day, in_dev)
 
     pollution_ceiling = 2_000_000_000 * Random.gammavariate(7.5, 1)
 

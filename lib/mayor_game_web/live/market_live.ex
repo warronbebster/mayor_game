@@ -110,7 +110,6 @@ defmodule MayorGameWeb.MarketLive do
         %{"market_id" => market_id, "value" => updated_value},
         %{assigns: %{current_user: current_user}} = socket
       ) do
-    # IO.inspect(market)
     updated_value_int = Integer.parse(updated_value)
 
     if updated_value_int != :error do
@@ -175,7 +174,6 @@ defmodule MayorGameWeb.MarketLive do
         %{"bid_id" => bid_id, "value" => updated_value},
         %{assigns: %{current_user: current_user}} = socket
       ) do
-    # IO.inspect(market)
     updated_value_int = Integer.parse(updated_value)
 
     bid = Bid.get_bid(bid_id)

@@ -442,7 +442,7 @@ defmodule MayorGame.City.Buildable do
           energy: 500
         },
         produces: %{
-          housing: 2000,
+          housing: 1500,
           pollution: 100
         }
       },
