@@ -342,7 +342,8 @@ defmodule MayorGameWeb.CityLive do
         case City.demolish_buildable(
                city,
                {socket.assigns.construction_count, socket.assigns.construction_cost},
-               buildable_to_demolish_atom
+               buildable_to_demolish_atom,
+               buildable_count
              ) do
           {_x, nil} ->
             IO.puts("demolition success")
@@ -357,12 +358,10 @@ defmodule MayorGameWeb.CityLive do
         end
 
       if success do
-        new_construction_cost = socket.assigns.construction_cost - purchase_price
+        new_construction_cost = socket.assigns.construction_cost - round(purchase_price / 2)
 
         new_construction_count =
           Map.update(socket.assigns.construction_count, buildable_to_demolish_atom, -1, fn current -> current - 1 end)
-
-        new_purchase_price = Rules.building_price(initial_purchase_price, buildable_count - 1)
 
         new_buildables =
           socket.assigns.buildables
@@ -372,7 +371,7 @@ defmodule MayorGameWeb.CityLive do
               buildable_to_demolish_atom,
               :price
             ],
-            new_purchase_price
+            purchase_price
           )
 
         {:noreply,

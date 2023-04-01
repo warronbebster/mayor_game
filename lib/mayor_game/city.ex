@@ -315,9 +315,8 @@ defmodule MayorGame.City do
       {:ok, %Details{}}
 
   """
-  def demolish_buildable(%Town{} = city, {ledger_buildable, _ledger_cost}, buildable_to_demolish) do
+  def demolish_buildable(%Town{} = city, {ledger_buildable, _ledger_cost}, buildable_to_demolish, buildable_count) do
     # city is unchanged, use the ledger to hold the accumlated construction and cost prior to UI refresh
-    buildable_count = city[buildable_to_demolish]
 
     buildable_pending =
       if !is_nil(ledger_buildable[buildable_to_demolish]) do
@@ -326,36 +325,45 @@ defmodule MayorGame.City do
         0
       end
 
-    city_attrs = %{buildable_to_demolish => city[buildable_to_demolish] + buildable_pending - 1}
+    # city_attrs = %{buildable_to_demolish => city[buildable_to_demolish] + buildable_pending - 1}
 
-    refund_city =
-      city
-      |> Town.changeset(city_attrs)
-      |> Ecto.Changeset.validate_number(buildable_to_demolish, greater_than_or_equal_to: 0)
-      |> Repo.update()
+    # refund_city =
+    #   city
+    #   |> Town.changeset(city_attrs)
+    #   |> Ecto.Changeset.validate_number(buildable_to_demolish, greater_than_or_equal_to: 0)
+    #   |> Repo.update()
 
     refund_price =
       round(
         Rules.building_price(
           Buildable.buildables_flat()[buildable_to_demolish].price,
-          buildable_count
+          buildable_count - 1
         ) / 2
       )
 
-    case refund_city do
-      {:ok, _result} ->
-        from(t in Town,
-          where: [id: ^city.id]
-        )
-        |> Repo.update_all(inc: [{:treasury, refund_price}])
+    # refund_price =
+    #   if buildable_count > 0 do
+    #     Rules.building_price(initial_purchase_price, buildable_count - 1)
+    #   else
+    #     initial_purchase_price
+    #   end
 
-      {:error, err} ->
-        Logger.error(inspect(err))
-        {:error, err}
+    IO.inspect(refund_price, label: "refund-price")
 
-      _ ->
-        nil
-    end
+    # case refund_city do
+    #   {:ok, _result} ->
+    from(t in Town,
+      where: [id: ^city.id]
+    )
+    |> Repo.update_all(inc: [{:treasury, refund_price}, {buildable_to_demolish, -1}])
+
+    # {:error, err} ->
+    #   Logger.error(inspect(err))
+    #   {:error, err}
+
+    # _ ->
+    #   nil
+    # end
   end
 
   # WORLD
