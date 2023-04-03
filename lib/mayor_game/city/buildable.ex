@@ -436,13 +436,13 @@ defmodule MayorGame.City.Buildable do
         category: :housing,
         level: 0,
         title: :megablocks,
-        price: 5_000_000,
+        price: 500_000,
         requires: %{
           area: 100,
           energy: 500
         },
         produces: %{
-          housing: 1500,
+          housing: 1000,
           pollution: 100
         }
       },

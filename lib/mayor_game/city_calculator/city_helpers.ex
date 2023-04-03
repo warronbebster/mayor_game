@@ -535,16 +535,14 @@ defmodule MayorGame.CityHelpers do
     if is_nil(production_map) do
       %{}
     else
-      citizen_count = Enum.sum(Map.values(town.citizen_count_by_level))
-
-      get_production_map(production_map, multiplier_map, citizen_count, town.region, town.season)
+      get_production_map(production_map, multiplier_map, town.total_citizens, town.region, town.season)
       |> Enum.map(fn {k, v} ->
         value =
           cond do
             # bug-fix: multiplers will always generate a float, use is_number instead of is_integer
             is_number(v) -> round(v)
             # pollution per pop (consider making generic)
-            is_function(v, 1) -> round(v.(citizen_count))
+            is_function(v, 1) -> round(v.(town.total_citizens))
             true -> 0
           end
 
