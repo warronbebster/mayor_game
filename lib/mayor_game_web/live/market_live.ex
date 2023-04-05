@@ -178,7 +178,7 @@ defmodule MayorGameWeb.MarketLive do
 
     bid = Bid.get_bid(bid_id)
 
-    if updated_value_int != :error && current_user.town.id == bid.town_id do
+    if updated_value_int != :error && (current_user.town.id == bid.town_id || socket.assigns.is_user_admin) do
       updated_value_constrained = elem(updated_value_int, 0) |> max(1)
 
       Bid.update_bid(bid, %{max_price: updated_value_constrained})
