@@ -74,198 +74,83 @@ defmodule MayorGame.City.TownStatistics do
       total_citizens: length(town.citizens_blob),
       citizen_count_by_level: Enum.frequencies_by(town.citizens_blob, & &1["education"]),
       employed_citizen_count_by_level: %{},
-      resource_stats: %{
-        money: %ResourceStatistics{
-          title: "money",
-          stock: town.treasury,
-          storage: nil,
-          production: 0,
-          consumption: 0
-        },
-        pollution: %ResourceStatistics{
-          title: "pollution",
-          stock: 0,
-          storage: nil,
-          production: 0,
-          consumption: 0
-        },
-        energy: %ResourceStatistics{
-          title: "energy",
-          stock: 0,
-          storage: nil,
-          production: 0,
-          consumption: 0
-        },
-        area: %ResourceStatistics{
-          title: "area",
-          stock: 0,
-          storage: nil,
-          production: 0,
-          consumption: 0
-        },
-        housing: %ResourceStatistics{
-          title: "housing",
-          stock: 0,
-          storage: nil,
-          production: 0,
-          consumption: 0
-        },
-        health: %ResourceStatistics{
-          title: "health",
-          stock: 0,
-          storage: nil,
-          production: 0,
-          consumption: 0
-        },
-        steel: %ResourceStatistics{
-          title: "steel",
-          stock: town.steel,
-          storage: nil,
-          production: 0,
-          consumption: 0
-        },
-        uranium: %ResourceStatistics{
-          title: "uranium",
-          stock: town.uranium,
-          storage: 50,
-          production: 0,
-          consumption: 0
-        },
-        gold: %ResourceStatistics{
-          title: "gold",
-          stock: town.gold,
-          storage: 50,
-          production: 0,
-          consumption: 0
-        },
-        sulfur: %ResourceStatistics{
-          title: "sulfur",
-          stock: town.sulfur,
-          storage: 50,
-          production: 0,
-          consumption: 0
-        },
-        stone: %ResourceStatistics{
-          title: "stone",
-          stock: town.stone,
-          storage: 50,
-          production: 0,
-          consumption: 0
-        },
-        wood: %ResourceStatistics{
-          title: "wood",
-          stock: town.wood,
-          storage: 50,
-          production: 0,
-          consumption: 0
-        },
-        fish: %ResourceStatistics{
-          title: "fish",
-          stock: town.fish,
-          storage: 50,
-          production: 0,
-          consumption: 0
-        },
-        oil: %ResourceStatistics{
-          title: "oil",
-          stock: town.oil,
-          storage: 50,
-          production: 0,
-          consumption: 0
-        },
-        salt: %ResourceStatistics{
-          title: "salt",
-          stock: town.salt,
-          storage: 50,
-          production: 0,
-          consumption: 0
-        },
-        water: %ResourceStatistics{
-          title: "water",
-          stock: town.water,
-          storage: 50,
-          production: 0,
-          consumption: 0
-        },
-        lithium: %ResourceStatistics{
-          title: "lithium",
-          stock: town.lithium,
-          storage: 50,
-          production: 0,
-          consumption: 0
-        },
-        rice: %ResourceStatistics{
-          title: "rice",
-          stock: town.rice,
-          storage: 50,
-          production: 0,
-          consumption: 0
-        },
-        wheat: %ResourceStatistics{
-          title: "wheat",
-          stock: town.wheat,
-          storage: 50,
-          production: 0,
-          consumption: 0
-        },
-        produce: %ResourceStatistics{
-          title: "produce",
-          stock: town.produce,
-          storage: 50,
-          production: 0,
-          consumption: 0
-        },
-        cows: %ResourceStatistics{
-          title: "cows",
-          stock: town.cows,
-          storage: 50,
-          production: 0,
-          consumption: 0
-        },
-        meat: %ResourceStatistics{
-          title: "meat",
-          stock: town.meat,
-          storage: 50,
-          production: 0,
-          consumption: 0
-        },
-        food: %ResourceStatistics{
-          title: "food",
-          stock: town.food,
-          storage: 50,
-          production: 0,
-          consumption: 0
-        },
-        bread: %ResourceStatistics{
-          title: "bread",
-          stock: town.bread,
-          storage: 50,
-          production: 0,
-          consumption: 0
-        },
-        grapes: %ResourceStatistics{
-          title: "grapes",
-          stock: town.grapes,
-          storage: 50,
-          production: 0,
-          consumption: 0
-        },
-        # combat
-        shields: %ResourceStatistics{
-          title: "shields",
-          stock: town.shields,
-          storage: 50,
-          production: 0,
-          consumption: 0
-        },
-        missiles: %ResourceStatistics{
-          title: "missiles",
-          stock: town.missiles,
-          storage: 50,
-          production: 0,
-          consumption: 0
-        }
-      },
+      resource_stats:
+        ResourceStatistics.resource_list()
+        |> Enum.map(
+          &{&1,
+           %ResourceStatistics{
+             title: to_string(&1),
+             stock: town[&1],
+             storage: 50,
+             production: 0,
+             consumption: 0
+           }}
+        )
+        |> Enum.into(%{
+          money: %ResourceStatistics{
+            title: "money",
+            stock: town.treasury,
+            storage: nil,
+            production: 0,
+            consumption: 0
+          },
+          pollution: %ResourceStatistics{
+            title: "pollution",
+            stock: 0,
+            storage: nil,
+            production: 0,
+            consumption: 0
+          },
+          energy: %ResourceStatistics{
+            title: "energy",
+            stock: 0,
+            storage: nil,
+            production: 0,
+            consumption: 0
+          },
+          area: %ResourceStatistics{
+            title: "area",
+            stock: 0,
+            storage: nil,
+            production: 0,
+            consumption: 0
+          },
+          housing: %ResourceStatistics{
+            title: "housing",
+            stock: 0,
+            storage: nil,
+            production: 0,
+            consumption: 0
+          },
+          health: %ResourceStatistics{
+            title: "health",
+            stock: 0,
+            storage: nil,
+            production: 0,
+            consumption: 0
+          },
+          fun: %ResourceStatistics{
+            title: "fun",
+            stock: 0,
+            storage: nil,
+            production: 0,
+            consumption: 0
+          },
+          sprawl: %ResourceStatistics{
+            title: "sprawl",
+            stock: 0,
+            storage: nil,
+            production: 0,
+            consumption: 0
+          },
+          culture: %ResourceStatistics{
+            title: "culture",
+            stock: 0,
+            storage: nil,
+            production: 0,
+            consumption: 0
+          }
+        }),
       buildable_stats: %{}
     }
   end

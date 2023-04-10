@@ -103,97 +103,22 @@ defmodule MayorGame.CityCalculator do
             from(t in Town,
               where: t.id == ^city.id,
               update: [
-                inc: [
-                  treasury:
-                    ^(city
-                      |> TownStatistics.getResource(:money)
-                      |> ResourceStatistics.getNetProduction()),
-                  missiles:
-                    ^(city
-                      |> TownStatistics.getResource(:missiles)
-                      |> ResourceStatistics.getNetProduction()),
-                  shields:
-                    ^(city
-                      |> TownStatistics.getResource(:shields)
-                      |> ResourceStatistics.getNetProduction()),
-                  steel:
-                    ^(city
-                      |> TownStatistics.getResource(:steel)
-                      |> ResourceStatistics.getNetProduction()),
-                  sulfur:
-                    ^(city
-                      |> TownStatistics.getResource(:sulfur)
-                      |> ResourceStatistics.getNetProduction()),
-                  gold:
-                    ^(city
-                      |> TownStatistics.getResource(:gold)
-                      |> ResourceStatistics.getNetProduction()),
-                  uranium:
-                    ^(city
-                      |> TownStatistics.getResource(:uranium)
-                      |> ResourceStatistics.getNetProduction()),
-                  stone:
-                    ^(city
-                      |> TownStatistics.getResource(:stone)
-                      |> ResourceStatistics.getNetProduction()),
-                  wood:
-                    ^(city
-                      |> TownStatistics.getResource(:wood)
-                      |> ResourceStatistics.getNetProduction()),
-                  fish:
-                    ^(city
-                      |> TownStatistics.getResource(:fish)
-                      |> ResourceStatistics.getNetProduction()),
-                  oil:
-                    ^(city
-                      |> TownStatistics.getResource(:oil)
-                      |> ResourceStatistics.getNetProduction()),
-                  salt:
-                    ^(city
-                      |> TownStatistics.getResource(:salt)
-                      |> ResourceStatistics.getNetProduction()),
-                  lithium:
-                    ^(city
-                      |> TownStatistics.getResource(:lithium)
-                      |> ResourceStatistics.getNetProduction()),
-                  water:
-                    ^(city
-                      |> TownStatistics.getResource(:water)
-                      |> ResourceStatistics.getNetProduction()),
-                  cows:
-                    ^(city
-                      |> TownStatistics.getResource(:cows)
-                      |> ResourceStatistics.getNetProduction()),
-                  produce:
-                    ^(city
-                      |> TownStatistics.getResource(:produce)
-                      |> ResourceStatistics.getNetProduction()),
-                  rice:
-                    ^(city
-                      |> TownStatistics.getResource(:rice)
-                      |> ResourceStatistics.getNetProduction()),
-                  food:
-                    ^(city
-                      |> TownStatistics.getResource(:food)
-                      |> ResourceStatistics.getNetProduction()),
-                  grapes:
-                    ^(city
-                      |> TownStatistics.getResource(:grapes)
-                      |> ResourceStatistics.getNetProduction()),
-                  bread:
-                    ^(city
-                      |> TownStatistics.getResource(:bread)
-                      |> ResourceStatistics.getNetProduction()),
-                  wheat:
-                    ^(city
-                      |> TownStatistics.getResource(:wheat)
-                      |> ResourceStatistics.getNetProduction()),
-                  meat:
-                    ^(city
-                      |> TownStatistics.getResource(:meat)
-                      |> ResourceStatistics.getNetProduction())
-                  # logs—————————
-                ],
+                inc:
+                  ^(Enum.map(
+                      ResourceStatistics.resource_list(),
+                      &{&1,
+                       city
+                       |> TownStatistics.getResource(&1)
+                       |> ResourceStatistics.getNetProduction()}
+                    )
+                    |> Keyword.merge(
+                      treasury:
+                        city
+                        |> TownStatistics.getResource(:money)
+                        |> ResourceStatistics.getNetProduction()
+                    )),
+                # logs—————————
+                # ],
                 set: [
                   pollution:
                     ^(city
@@ -278,6 +203,17 @@ defmodule MayorGame.CityCalculator do
       "ping",
       updated_world
     )
+
+    # for each city
+    # ok this could be kinda weird, buuut i could like send a request when every liveview opens
+    # to the pubsub channel,
+    # ah shit but this doesn't account for disconnects
+    # okk
+    # MayorGameWeb.Endpoint.broadcast!(
+    #   "cityPubSub",
+    #   "ping",
+    #   updated_world
+    # )
 
     # profiling
     {:ok, datetime_post} = DateTime.now("Etc/UTC")

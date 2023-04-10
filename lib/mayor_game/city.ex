@@ -39,7 +39,7 @@ defmodule MayorGame.City do
 
   """
   def list_cities_preload do
-    # can I filter here by last_login
+    # TODO: can I filter here by last_login? that way I don't even have to do the filter in the server
     from(Town,
       select: ^Town.traits_minus_blob()
     )

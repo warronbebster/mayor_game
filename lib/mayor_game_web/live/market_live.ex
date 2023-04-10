@@ -5,7 +5,7 @@ defmodule MayorGameWeb.MarketLive do
   use Phoenix.LiveView, container: {:div, class: "liveview-container"}
   use Phoenix.HTML
 
-  alias MayorGame.City.{Town}
+  alias MayorGame.City.{Town, ResourceStatistics}
   alias MayorGame.{City, Repo, Rules, Market, Bid}
 
   import Ecto.Query, warn: false
@@ -22,31 +22,10 @@ defmodule MayorGameWeb.MarketLive do
   def mount(%{}, session, socket) do
     # subscribe to the channel "cityPubSub". everyone subscribes to this channel
     MayorGameWeb.Endpoint.subscribe("cityPubSub")
-    world = Repo.get!(MayorGame.City.World, 1)
+    # world = Repo.get!(MayorGame.City.World, 1)
     in_dev = Application.get_env(:mayor_game, :env) == :dev
 
-    resource_types = [
-      {:sulfur, "orange-700"},
-      {:uranium, "violet-700"},
-      {:steel, "slate-700"},
-      {:fish, "cyan-700"},
-      {:oil, "stone-700"},
-      {:stone, "slate-700"},
-      {:bread, "amber-800"},
-      {:wheat, "amber-600"},
-      {:grapes, "indigo-700"},
-      {:wood, "amber-700"},
-      {:food, "yellow-700"},
-      {:produce, "green-700"},
-      {:meat, "red-700"},
-      {:rice, "yellow-700"},
-      {:cows, "stone-700"},
-      {:lithium, "lime-700"},
-      {:water, "sky-700"},
-      {:salt, "zinc-700"},
-      {:missiles, "red-700"},
-      {:shields, "blue-700"}
-    ]
+    resource_types = ResourceStatistics.resource_kw_list()
 
     # production_categories = [:energy, :area, :housing]
 

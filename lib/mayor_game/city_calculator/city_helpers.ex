@@ -806,18 +806,53 @@ defmodule MayorGame.CityHelpers do
                 end
               )
 
+            # IO.inspect(market_match_results.results)
+            # shape is like this
+            # %{2 => %{money: 6, stone: -1}, 20 => %{money: -6, stone: 1}}
+            # so this is where I could add logs
+
             market_match_results.results
             |> Enum.chunk_every(200)
             |> Enum.each(fn chunk ->
               Repo.checkout(fn ->
                 # town_ids = Enum.map(chunk, fn city -> city.id end)
                 Enum.each(chunk, fn {city_id, resource_map} ->
-                  for {resource, amount} <- resource_map do
-                    resource = if resource == :money, do: :treasury, else: resource
+                  # I think I could clean this up to only do one repo update per city instead of one per resource
 
-                    from(t in Town, where: [id: ^city_id])
-                    |> Repo.update_all(inc: [{resource, amount}])
-                  end
+                  to_inc =
+                    resource_map
+                    |> Enum.map(fn {key, value} ->
+                      updated_key = if key == :money, do: :treasury, else: key
+                      {updated_key, value}
+                    end)
+
+                  logs_market_sales = leftovers_by_id[city_id].logs_market_sales
+                  logs_market_purchases = leftovers_by_id[city_id].logs_market_purchases
+
+                  new_sales =
+                    to_inc
+                    |> Keyword.drop([:treasury])
+                    |> Keyword.filter(fn {_k, v} -> v < 0 end)
+
+                  new_purchases =
+                    to_inc
+                    |> Keyword.drop([:treasury])
+                    |> Keyword.filter(fn {_k, v} -> v > 0 end)
+
+                  new_sales_logs =
+                    Enum.reduce(new_sales, logs_market_sales, fn {k, v}, acc ->
+                      Map.update(acc, to_string(k), -v, &(&1 - v))
+                    end)
+
+                  new_purchases_logs =
+                    Enum.reduce(new_purchases, logs_market_purchases, fn {k, v}, acc ->
+                      Map.update(acc, to_string(k), v, &(&1 + v))
+                    end)
+
+                  to_set = [logs_market_sales: new_sales_logs, logs_market_purchases: new_purchases_logs]
+
+                  from(t in Town, where: [id: ^city_id])
+                  |> Repo.update_all(inc: to_inc, set: to_set)
                 end)
               end)
             end)

@@ -75,6 +75,8 @@ defmodule MayorGame.City.Town do
             logs_edu: map,
             logs_sent: map,
             logs_received: map,
+            logs_market_sales: map,
+            logs_market_purchases: map,
             logs_deaths_pollution: integer,
             logs_deaths_age: integer,
             logs_deaths_housing: integer,
@@ -89,9 +91,11 @@ defmodule MayorGame.City.Town do
             gold: integer,
             # ^ unused
             uranium: integer,
+            coal: integer,
             stone: integer,
             fish: integer,
             oil: integer,
+            # ^ unused
             wood: integer,
             salt: integer,
             water: integer,
@@ -105,6 +109,8 @@ defmodule MayorGame.City.Town do
             meat: integer,
             grapes: integer,
             bread: integer,
+            wine: integer,
+            beer: integer,
             food: integer,
 
             # Buildings ————————————————————————————
@@ -115,6 +121,7 @@ defmodule MayorGame.City.Town do
             apartments: integer,
             high_rises: integer,
             megablocks: integer,
+            # transport
             roads: integer,
             highways: integer,
             airports: integer,
@@ -122,6 +129,8 @@ defmodule MayorGame.City.Town do
             subway_lines: integer,
             bike_lanes: integer,
             bikeshare_stations: integer,
+            gas_stations: integer,
+            # energy
             coal_plants: integer,
             natural_gas_plants: integer,
             wind_turbines: integer,
@@ -129,15 +138,18 @@ defmodule MayorGame.City.Town do
             nuclear_plants: integer,
             dams: integer,
             carbon_capture_plants: integer,
+            # civic
             parks: integer,
             campgrounds: integer,
             nature_preserves: integer,
             libraries: integer,
+            # education
             schools: integer,
             middle_schools: integer,
             high_schools: integer,
             universities: integer,
             research_labs: integer,
+            # commercial
             retail_shops: integer,
             factories: integer,
             mines: integer,
@@ -150,11 +162,14 @@ defmodule MayorGame.City.Town do
             arenas: integer,
             zoos: integer,
             aquariums: integer,
+            # medical
             hospitals: integer,
             doctor_offices: integer,
+            # combat
             air_bases: integer,
             defense_bases: integer,
             missile_defense_arrays: integer,
+            # storage
             wood_warehouses: integer,
             fish_tanks: integer,
             lithium_vats: integer,
@@ -185,6 +200,7 @@ defmodule MayorGame.City.Town do
     field(:wood, :integer)
     field(:fish, :integer)
     field(:oil, :integer)
+    field(:coal, :integer)
     field(:salt, :integer)
     field(:water, :integer)
     field(:lithium, :integer)
@@ -197,6 +213,8 @@ defmodule MayorGame.City.Town do
     field(:bread, :integer)
     field(:grapes, :integer)
     field(:food, :integer)
+    field(:wine, :integer)
+    field(:beer, :integer)
 
     field(:patron, :integer)
     field(:contributor, :boolean)
@@ -218,6 +236,8 @@ defmodule MayorGame.City.Town do
     field :logs_edu, :map, default: %{}
     field :logs_sent, :map, default: %{}
     field :logs_received, :map, default: %{}
+    field :logs_market_sales, :map, default: %{}
+    field :logs_market_purchases, :map, default: %{}
     field :logs_deaths_pollution, :integer, default: 0
     field :logs_deaths_age, :integer, default: 0
     field :logs_deaths_housing, :integer, default: 0
@@ -282,6 +302,7 @@ defmodule MayorGame.City.Town do
       :stone,
       :sulfur,
       :gold,
+      :coal,
       :uranium,
       :water,
       :salt,
@@ -298,6 +319,8 @@ defmodule MayorGame.City.Town do
       :produce,
       :wheat,
       :bread,
+      :beer,
+      :wine,
 
       # —————————————
       :patron,
@@ -316,6 +339,8 @@ defmodule MayorGame.City.Town do
       :logs_deaths_age,
       :logs_deaths_housing,
       :logs_deaths_attacks,
+      :logs_market_purchases,
+      :logs_market_sales,
       :logs_births,
       :logs_sent,
       :logs_received,
@@ -381,6 +406,8 @@ defmodule MayorGame.City.Town do
         :logs_deaths_attacks,
         :logs_births,
         :logs_sent,
+        :logs_received,
+        :logs_market_purchases,
         :logs_received,
         :priorities,
         :retaliate

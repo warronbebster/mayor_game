@@ -230,4 +230,37 @@ defmodule MayorGame.City.ResourceStatistics do
     Number.Delimit.number_to_delimited(getNetProduction(stat)) <>
       "/" <> Number.Delimit.number_to_delimited(stat.production)
   end
+
+  def resource_kw_list() do
+    [
+      {:sulfur, "orange-700"},
+      {:uranium, "violet-700"},
+      {:steel, "slate-700"},
+      {:fish, "cyan-700"},
+      {:oil, "stone-700"},
+      {:gold, "amber-500"},
+      {:coal, "stone-700"},
+      {:stone, "slate-700"},
+      {:bread, "amber-800"},
+      {:wheat, "amber-600"},
+      {:grapes, "indigo-700"},
+      {:wood, "amber-700"},
+      {:beer, "amber-700"},
+      {:wine, "rose-700"},
+      {:food, "yellow-700"},
+      {:produce, "green-700"},
+      {:meat, "red-700"},
+      {:rice, "yellow-700"},
+      {:cows, "stone-700"},
+      {:lithium, "lime-700"},
+      {:water, "sky-700"},
+      {:salt, "zinc-700"},
+      {:missiles, "red-700"},
+      {:shields, "blue-700"}
+    ]
+  end
+
+  def resource_list() do
+    Keyword.keys(resource_kw_list())
+  end
 end

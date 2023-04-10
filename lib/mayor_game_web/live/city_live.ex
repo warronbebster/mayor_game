@@ -6,7 +6,7 @@ defmodule MayorGameWeb.CityLive do
   use Phoenix.HTML
 
   alias MayorGame.{City, Repo, Rules, CityCombat, CityHelpers}
-  alias MayorGame.City.{Town, Buildable, Citizens, OngoingAttacks}
+  alias MayorGame.City.{Town, Buildable, Citizens, OngoingAttacks, ResourceStatistics}
 
   import Ecto.Query, warn: false
 
@@ -26,28 +26,7 @@ defmodule MayorGameWeb.CityLive do
     world = Repo.get!(MayorGame.City.World, 1)
     in_dev = Application.get_env(:mayor_game, :env) == :dev
 
-    resource_types = [
-      {:sulfur, "text-orange-700"},
-      {:uranium, "text-violet-700"},
-      {:steel, "text-slate-700"},
-      {:fish, "text-cyan-700"},
-      {:oil, "text-stone-700"},
-      {:stone, "text-slate-700"},
-      {:bread, "text-amber-800"},
-      {:wheat, "text-amber-600"},
-      {:grapes, "text-indigo-700"},
-      {:wood, "text-amber-700"},
-      {:food, "text-yellow-700"},
-      {:produce, "text-green-700"},
-      {:meat, "text-red-700"},
-      {:rice, "text-yellow-700"},
-      {:cows, "text-stone-700"},
-      {:lithium, "text-lime-700"},
-      {:water, "text-sky-700"},
-      {:salt, "text-zinc-700"},
-      {:missiles, "text-red-700"},
-      {:shields, "text-blue-700"}
-    ]
+    resource_types = ResourceStatistics.resource_kw_list()
 
     subtotal_types =
       [
@@ -56,7 +35,8 @@ defmodule MayorGameWeb.CityLive do
         {:housing, "text-amber-700"},
         {:energy, "text-yellow-700"},
         {:culture, "text-blue-700"},
-        {:sprawl, "text-yellow-700"}
+        {:sprawl, "text-yellow-700"},
+        {:fun, "text-violet-700"}
       ] ++ resource_types
 
     explanations = %{
@@ -114,7 +94,9 @@ defmodule MayorGameWeb.CityLive do
         "bread",
         "wheat",
         "produce",
-        "salt"
+        "salt",
+        "oil",
+        "grapes"
       ])
       |> assign(:category_explanations, explanations)
       |> assign(:subtotal_types, subtotal_types)
@@ -541,9 +523,12 @@ defmodule MayorGameWeb.CityLive do
     season = Rules.season_from_day(world.day)
 
     # This variable shall be unmodified. This way there is no need to recast it into a struct in other handle_info instructions.
+    # ok this bit is uhhh not light
     city =
       City.get_town_by_title!(title)
       |> CityHelpers.preload_city_check()
+
+    # :eprof.start_profiling([self()])
 
     town_stats =
       CityHelpers.calculate_city_stats(
@@ -569,11 +554,13 @@ defmodule MayorGameWeb.CityLive do
         socket.assigns.buildables_map.buildables_kw_list
       )
 
+    # :eprof.stop_profiling()
+    # :eprof.analyze()
+
     # this is still used
     operating_count =
-      Enum.map(town_stats.buildable_stats, fn {name, buildable_stat} ->
-        {name, buildable_stat.operational}
-      end)
+      town_stats.buildable_stats
+      |> Enum.map(fn {name, buildable_stat} -> {name, buildable_stat.operational} end)
       |> Enum.into(%{})
 
     operating_tax =
@@ -600,28 +587,26 @@ defmodule MayorGameWeb.CityLive do
       |> Enum.into(%{})
 
     tax_by_level =
-      Enum.map(
-        Enum.group_by(
-          operating_tax,
-          fn {category, _} ->
-            buildable = socket.assigns.buildables_map.buildables_flat[category]
+      operating_tax
+      |> Enum.group_by(
+        fn {category, _} ->
+          buildable = socket.assigns.buildables_map.buildables_flat[category]
 
-            if operating_count[category] != nil && Map.has_key?(buildable, :requires) &&
-                 buildable.requires != nil,
-               do:
-                 if(Map.has_key?(buildable.requires, :workers),
-                   do: buildable.requires.workers.level,
-                   else: 0
-                 ),
-               else: 0
-          end,
-          fn {_, value} -> value end
-        ),
-        fn {level, array} -> {level, Enum.sum(array)} end
+          if operating_count[category] != nil && Map.has_key?(buildable, :requires) &&
+               buildable.requires != nil,
+             do:
+               if(Map.has_key?(buildable.requires, :workers),
+                 do: buildable.requires.workers.level,
+                 else: 0
+               ),
+             else: 0
+        end,
+        fn {_, value} -> value end
       )
+      |> Enum.map(fn {level, array} -> {level, Enum.sum(array)} end)
       |> Enum.into(%{})
 
-    citizen_edu_count = town_stats.citizen_count_by_level
+    # citizen_edu_count = town_stats.citizen_count_by_level
 
     socket
     |> assign(:season, season)
@@ -637,8 +622,6 @@ defmodule MayorGameWeb.CityLive do
     |> assign(:construction_cost, 0)
     |> assign(:operating_tax, operating_tax)
     |> assign(:tax_by_level, tax_by_level)
-
-    # |> assign(:citizens_by_edu, citizen_edu_count)
   end
 
   # # function to mount city

@@ -1220,6 +1220,62 @@
           </div>
         <% end %>
       </div>
+      <!-- SOLD MARKET RESOURCES -->
+      <div class="flex flex-col gap-2 py-1">
+        <div class="group relative inline-block">
+          <h3 class="text-l first-letter:uppercase decoration-1	underline underline-offset-4 cursor-help decoration-neutral-800/40 decoration-dotted	">
+            Resources Sold
+          </h3>
+
+          <div class="tooltip w-40">
+            Resources this city has sold on the market.
+          </div>
+        </div>
+
+        <%= for {resource, amount} <- @city.logs_market_sales do %>
+          <div class="flex flex-col justify-between gap-2 my-0 leading-none">
+            <div class="flex flex-row items-center justify-between gap-2 my-0 leading-none">
+              <span><%= resource %></span>
+              <hr class="border-neutral-300 flex-1" />
+              <span>
+                <%= Number.SI.number_to_si(
+                  amount,
+                  precision: 3,
+                  trim: true
+                ) %>
+              </span>
+            </div>
+          </div>
+        <% end %>
+      </div>
+      <!-- PURCHASED MARKET RESOURCES -->
+      <div class="flex flex-col gap-2 py-1">
+        <div class="group relative inline-block">
+          <h3 class="text-l first-letter:uppercase decoration-1	underline underline-offset-4 cursor-help decoration-neutral-800/40 decoration-dotted	">
+            Resources Purchased
+          </h3>
+
+          <div class="tooltip w-40">
+            Resources this city has purchased on the market.
+          </div>
+        </div>
+
+        <%= for {resource, amount} <- @city.logs_market_purchases do %>
+          <div class="flex flex-col justify-between gap-2 my-0 leading-none">
+            <div class="flex flex-row items-center justify-between gap-2 my-0 leading-none">
+              <span><%= resource %></span>
+              <hr class="border-neutral-300 flex-1" />
+              <span>
+                <%= Number.SI.number_to_si(
+                  amount,
+                  precision: 3,
+                  trim: true
+                ) %>
+              </span>
+            </div>
+          </div>
+        <% end %>
+      </div>
       <!-- SENT RESOURCES -->
       <div class="flex flex-col gap-2 py-1">
         <div class="group relative inline-block">

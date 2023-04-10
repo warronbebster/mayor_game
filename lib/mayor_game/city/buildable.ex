@@ -171,7 +171,8 @@ defmodule MayorGame.City.Buildable do
         bus_lines: buildables_flat().bus_lines,
         subway_lines: buildables_flat().subway_lines,
         bike_lanes: buildables_flat().bike_lanes,
-        bikeshare_stations: buildables_flat().bikeshare_stations
+        bikeshare_stations: buildables_flat().bikeshare_stations,
+        gas_stations: buildables_flat().gas_stations
       ],
       housing: [
         huts: buildables_flat().huts,
@@ -225,7 +226,10 @@ defmodule MayorGame.City.Buildable do
         grocery_stores: buildables_flat().grocery_stores,
         farmers_markets: buildables_flat().farmers_markets,
         butchers: buildables_flat().butchers,
-        bakeries: buildables_flat().bakeries
+        bakeries: buildables_flat().bakeries,
+        wineries: buildables_flat().wineries,
+        breweries: buildables_flat().breweries,
+        bars: buildables_flat().bars
       ],
       civic: [
         parks: buildables_flat().parks,
@@ -242,6 +246,7 @@ defmodule MayorGame.City.Buildable do
       entertainment: [
         theatres: buildables_flat().theatres,
         arenas: buildables_flat().arenas,
+        galleries: buildables_flat().galleries,
         zoos: buildables_flat().zoos,
         aquariums: buildables_flat().aquariums
       ],
@@ -584,6 +589,25 @@ defmodule MayorGame.City.Buildable do
         produces: %{
           health: 1,
           area: 10
+        }
+      },
+      # GAS STATIONS ————————————————————————————————————
+      gas_stations: %BuildableMetadata{
+        size: 1,
+        category: :transit,
+        level: 0,
+        title: :gas_stations,
+        price: 1000,
+        requires: %{
+          area: 2,
+          money: 10,
+          energy: 10,
+          oil: 1,
+          workers: %{count: 5, level: 0}
+        },
+        produces: %{
+          mileage: 10,
+          pollution: 1
         }
       },
       # ENERGY ————————————————————————————————————————————————————————————————————————
@@ -1015,14 +1039,18 @@ defmodule MayorGame.City.Buildable do
           health: -5,
           pollution: 10,
           sulfur: 1,
+          coal: 1,
           # fn _rng, _number_of_instances -> drop_amount
           uranium: fn rng, number_of_buildables ->
             # low-luck calculation at 0.1% chance, so rng needs only be used once
             Utility.dice_roll(number_of_buildables, 0.001)
+          end,
+          gold: fn rng, number_of_buildables ->
+            # low-luck calculation at 0.1% chance, so rng needs only be used once
+            Utility.dice_roll(number_of_buildables, 0.001)
           end
-          # gold: 1,
         },
-        stores: %{sulfur: 1000}
+        stores: %{sulfur: 1000, uranium: 100, gold: 100, coal: 100}
       },
       # LUMBER YARDS ————————————————————————————————————
       lumber_yards: %BuildableMetadata{
@@ -1393,6 +1421,56 @@ defmodule MayorGame.City.Buildable do
         produces: %{meat: 10},
         stores: %{meat: 50}
       },
+      # BREWERIES
+      breweries: %BuildableMetadata{
+        size: 4,
+        category: :food,
+        level: 4,
+        title: :breweries,
+        price: 5000,
+        requires: %{
+          wheat: 1,
+          water: 1,
+          area: 2,
+          energy: 10,
+          workers: %{count: 5, level: 2}
+        },
+        produces: %{beer: 1},
+        stores: %{beer: 50}
+      },
+      # WINERIES
+      wineries: %BuildableMetadata{
+        size: 4,
+        category: :food,
+        level: 4,
+        title: :wineries,
+        price: 5000,
+        requires: %{
+          grapes: 1,
+          water: 1,
+          area: 2,
+          energy: 10,
+          workers: %{count: 5, level: 2}
+        },
+        produces: %{wine: 1},
+        stores: %{wine: 50}
+      },
+      # BARS
+      bars: %BuildableMetadata{
+        size: 2,
+        category: :food,
+        level: 4,
+        title: :wineries,
+        price: 2000,
+        requires: %{
+          beer: 1,
+          wine: 1,
+          area: 2,
+          energy: 5,
+          workers: %{count: 2, level: 1}
+        },
+        produces: %{fun: 10}
+      },
       # BUSINESS ——————————————————————————————————————————————————————————————————————————————————————————————————————————
       # BUSINESS ——————————————————————————————————————————————————————————————————————————————————————————————————————————
       # RETAIL SHOPS ————————————————————————————————————
@@ -1499,6 +1577,24 @@ defmodule MayorGame.City.Buildable do
         },
         produces: %{
           fun: 10
+        }
+      },
+      # GALLERIES ————————————————————————————————————
+      galleries: %BuildableMetadata{
+        size: 5,
+        category: :entertainment,
+        level: 0,
+        title: :galleries,
+        price: 2_000,
+        requires: %{
+          money: 10,
+          energy: 10,
+          area: 2,
+          workers: %{count: 3, level: 4}
+        },
+        produces: %{
+          fun: 1,
+          culture: 5
         }
       },
       # ZOOS ————————————————————————————————————
