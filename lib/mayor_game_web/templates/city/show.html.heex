@@ -133,6 +133,14 @@
           Sprawl
         </div>
       </td>
+      <td class="group relative h-4 top_td text-rose-800">
+        <div class="flex gap-1 items-center w-full">
+          <img src="/images/crime.svg" alt="total crime" height="12" width="12" class="inline" />
+        </div>
+        <div class="tooltip top-0 left-0 -translate-x-full">
+          Crime
+        </div>
+      </td>
       <td class="group relative h-4 top_td text-fuchsia-600">
         <div class="flex gap-1 items-center w-full">
           <img src="/images/fun.svg" alt="total fun" height="12" width="12" class="inline" />
@@ -208,6 +216,11 @@
       <td class="top_td">
         <span class="text-yellow-800">
           <%= @city_stats |> TownStatistics.getResource(:sprawl) |> ResourceStatistics.expressNetProduction_SI() %>
+        </span>
+      </td>
+      <td class="top_td">
+        <span class="text-rose-800">
+          <%= @city_stats |> TownStatistics.getResource(:crime) |> ResourceStatistics.expressNetProduction_SI() %>
         </span>
       </td>
       <td class="top_td">
@@ -818,7 +831,7 @@
                       <!-- produced -->
                       <%= if !is_nil(building_stats.actual_produces) && Map.has_key?(building_stats.actual_produces, subtotal_type) do %>
                         <div class={
-                          "group relative flex flex-row items-center gap-[2px] w-16 cursor-help #{append_class}"
+                          "group relative flex flex-row items-center gap-[2px] w-16 cursor-help text-#{append_class}"
                         }>
                           <img
                             src={"/images/" <> to_string(subtotal_type) <> ".svg"}
@@ -867,7 +880,7 @@
                       <!-- required -->
                       <%= if !is_nil(building_stats.requires) && Map.has_key?(building_stats.requires, subtotal_type) do %>
                         <div class={
-                          "group relative flex flex-row items-center gap-[2px] w-16 cursor-help #{append_class}"
+                          "group relative flex flex-row items-center gap-[2px] w-16 cursor-help text-#{append_class}"
                         }>
                           <img
                             src={"/images/" <> to_string(subtotal_type) <> ".svg"}
@@ -1209,7 +1222,7 @@
         <%= for {edu_level, educated_citizens_count} <- @city.logs_edu do %>
           <div class="flex flex-row items-center justify-between gap-2 my-0 leading-none">
             <span><%= edu_level %></span>
-            <hr class="border-neutral-300 flex-1" />
+            <hr class="border-neutral-800/10 flex-1" />
             <span>
               <%= Number.SI.number_to_si(
                 educated_citizens_count,
@@ -1236,7 +1249,7 @@
           <div class="flex flex-col justify-between gap-2 my-0 leading-none">
             <div class="flex flex-row items-center justify-between gap-2 my-0 leading-none">
               <span><%= resource %></span>
-              <hr class="border-neutral-300 flex-1" />
+              <hr class="border-neutral-800/10 flex-1" />
               <span>
                 <%= Number.SI.number_to_si(
                   amount,
@@ -1264,7 +1277,7 @@
           <div class="flex flex-col justify-between gap-2 my-0 leading-none">
             <div class="flex flex-row items-center justify-between gap-2 my-0 leading-none">
               <span><%= resource %></span>
-              <hr class="border-neutral-300 flex-1" />
+              <hr class="border-neutral-800/10 flex-1" />
               <span>
                 <%= Number.SI.number_to_si(
                   amount,
@@ -1294,7 +1307,7 @@
             <%= for {resource, amount} <- resource_map do %>
               <div class="flex flex-row items-center justify-between gap-2 my-0 leading-none">
                 <span><%= resource %></span>
-                <hr class="border-neutral-300 flex-1" />
+                <hr class="border-neutral-800/10 flex-1" />
                 <span>
                   <%= Number.SI.number_to_si(
                     amount,
@@ -1325,7 +1338,7 @@
             <%= for {resource, amount} <- resource_map do %>
               <div class="flex flex-row items-center justify-between gap-2 my-0 leading-none">
                 <span><%= resource %></span>
-                <hr class="border-neutral-300 flex-1" />
+                <hr class="border-neutral-800/10 flex-1" />
                 <span>
                   <%= Number.SI.number_to_si(
                     amount,
@@ -1353,7 +1366,7 @@
         <%= for {attacking_town, attack_counts} <- @city.logs_attacks do %>
           <div class="flex flex-row items-center justify-between gap-2 my-0 leading-none">
             <span><%= attacking_town %></span>
-            <hr class="border-neutral-300 flex-1" />
+            <hr class="border-neutral-800/10 flex-1" />
             <span><%= Number.Delimit.number_to_delimited(attack_counts) %></span>
           </div>
         <% end %>
@@ -1373,7 +1386,7 @@
         <%= for {edu_level, emigration_count} <- @city.logs_emigration_housing do %>
           <div class="flex flex-row items-center justify-between gap-2 my-0 leading-none">
             <span><%= edu_level %></span>
-            <hr class="border-neutral-300 flex-1" />
+            <hr class="border-neutral-800/10 flex-1" />
             <span>
               <%= Number.SI.number_to_si(
                 emigration_count,
@@ -1399,7 +1412,7 @@
         <%= for {edu_level, emigration_count} <- @city.logs_emigration_taxes do %>
           <div class="flex flex-row items-center justify-between gap-2 my-0 leading-none">
             <span><%= edu_level %></span>
-            <hr class="border-neutral-300 flex-1" />
+            <hr class="border-neutral-800/10 flex-1" />
             <span>
               <%= Number.SI.number_to_si(
                 emigration_count,
@@ -1425,7 +1438,7 @@
         <%= for {edu_level, emigration_count} <- @city.logs_emigration_jobs do %>
           <div class="flex flex-row items-center justify-between gap-2 my-0 leading-none">
             <span><%= edu_level %></span>
-            <hr class="border-neutral-300 flex-1" />
+            <hr class="border-neutral-800/10 flex-1" />
             <span>
               <%= Number.SI.number_to_si(
                 emigration_count,
@@ -1458,7 +1471,7 @@
             class="inline"
           />
           <span><%= resource_type %></span>
-          <hr class="border-neutral-300 flex-1" />
+          <span class=" flex-1" />
           <span>
             <%= @city_stats
             |> TownStatistics.getResource(resource_type)

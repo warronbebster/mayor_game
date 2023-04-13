@@ -238,6 +238,7 @@ defmodule MayorGame.City.ResourceStatistics do
       {:steel, "slate-700"},
       {:fish, "cyan-700"},
       {:oil, "stone-700"},
+      {:gas, "orange-700"},
       {:gold, "amber-500"},
       {:coal, "stone-700"},
       {:stone, "slate-700"},

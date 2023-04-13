@@ -343,6 +343,7 @@ defmodule MayorGame.City.Buildable do
         level: 0,
         title: :single_family_homes,
         price: 100,
+        building_reqs: %{wood: 10},
         requires: %{
           area: 1,
           energy: 12
@@ -360,6 +361,7 @@ defmodule MayorGame.City.Buildable do
         level: 0,
         title: :multi_family_homes,
         price: 200,
+        building_reqs: %{wood: 20},
         requires: %{
           area: 1,
           energy: 18
@@ -377,6 +379,7 @@ defmodule MayorGame.City.Buildable do
         level: 0,
         title: :homeless_shelters,
         price: 100,
+        building_reqs: %{wood: 10},
         requires: %{
           area: 5,
           money: 100,
@@ -606,7 +609,7 @@ defmodule MayorGame.City.Buildable do
           workers: %{count: 5, level: 0}
         },
         produces: %{
-          mileage: 10,
+          gas: 10,
           pollution: 1
         }
       },
@@ -627,6 +630,7 @@ defmodule MayorGame.City.Buildable do
           }
         },
         requires: %{
+          # coal: 1,
           area: 5,
           money: 10,
           workers: %{count: 5, level: 0}
@@ -1460,7 +1464,7 @@ defmodule MayorGame.City.Buildable do
         size: 2,
         category: :food,
         level: 4,
-        title: :wineries,
+        title: :bars,
         price: 2000,
         requires: %{
           beer: 1,
@@ -1469,7 +1473,7 @@ defmodule MayorGame.City.Buildable do
           energy: 5,
           workers: %{count: 2, level: 1}
         },
-        produces: %{fun: 10}
+        produces: %{fun: 10, crime: 1}
       },
       # BUSINESS ——————————————————————————————————————————————————————————————————————————————————————————————————————————
       # BUSINESS ——————————————————————————————————————————————————————————————————————————————————————————————————————————

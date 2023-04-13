@@ -30,13 +30,13 @@ defmodule MayorGameWeb.CityLive do
 
     subtotal_types =
       [
-        {:health, "text-rose-700"},
-        {:area, "text-cyan-700"},
-        {:housing, "text-amber-700"},
-        {:energy, "text-yellow-700"},
-        {:culture, "text-blue-700"},
-        {:sprawl, "text-yellow-700"},
-        {:fun, "text-violet-700"}
+        {:health, "rose-700"},
+        {:area, "cyan-700"},
+        {:housing, "amber-700"},
+        {:energy, "yellow-700"},
+        {:culture, "blue-700"},
+        {:sprawl, "yellow-700"},
+        {:fun, "violet-700"}
       ] ++ resource_types
 
     explanations = %{
@@ -96,7 +96,10 @@ defmodule MayorGameWeb.CityLive do
         "produce",
         "salt",
         "oil",
-        "grapes"
+        "beer",
+        "wine",
+        "grapes",
+        "coal"
       ])
       |> assign(:category_explanations, explanations)
       |> assign(:subtotal_types, subtotal_types)

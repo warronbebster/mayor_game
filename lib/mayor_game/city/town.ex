@@ -95,6 +95,7 @@ defmodule MayorGame.City.Town do
             stone: integer,
             fish: integer,
             oil: integer,
+            gas: integer,
             # ^ unused
             wood: integer,
             salt: integer,
@@ -200,6 +201,7 @@ defmodule MayorGame.City.Town do
     field(:wood, :integer)
     field(:fish, :integer)
     field(:oil, :integer)
+    field(:gas, :integer)
     field(:coal, :integer)
     field(:salt, :integer)
     field(:water, :integer)
@@ -321,6 +323,7 @@ defmodule MayorGame.City.Town do
       :bread,
       :beer,
       :wine,
+      :gas,
 
       # —————————————
       :patron,
@@ -376,6 +379,7 @@ defmodule MayorGame.City.Town do
         :salt,
         :fish,
         :oil,
+        :gas,
         :wood,
         :stone,
         :lithium,
