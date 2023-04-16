@@ -611,6 +611,9 @@ defmodule MayorGame.City.Buildable do
         produces: %{
           gas: 10,
           pollution: 1
+        },
+        stores: %{
+          gas: 100
         }
       },
       # ENERGY ————————————————————————————————————————————————————————————————————————
@@ -1795,7 +1798,7 @@ defmodule MayorGame.City.Buildable do
           shields: 1
         },
         stores: %{
-          shields: 100
+          shields: 250
         }
       },
       # MISSILE DEFENSE ARRAY ————————————————————————————————————
@@ -1810,12 +1813,12 @@ defmodule MayorGame.City.Buildable do
           money: 5000,
           steel: 100,
           sulfur: 20,
-          energy: 10000,
-          area: 2000,
+          energy: 5000,
+          area: 200,
           workers: %{count: 20, level: 5}
         },
         stores: %{
-          shields: 200
+          shields: 1000
         }
       },
       # STORAGE ——————————————————————————————————————————————————

@@ -1,10 +1,6 @@
-# society simulator 2021
+# fragile.city
 
 # TODO:
-
-
-# implement regional differences (check region in generation functions) (done for energy, should do for health & fun)
-# figure out why server sometimes doesn't restart
 
 # FIRST RELEASE DONE
 
@@ -15,7 +11,10 @@
 # fly volumes list --app mayorgame-db gets volumes from the db project thingy
 
 
+
 # do some optimization to update_city_by_title, see if calculator and migrator can just send changes instead of having the city_live server recalculate it every time
+# factions — allow people to select a specific color / faction to display
+# maybe if you have a certain building, you can create a faction
 # flow some more calculations for optimization
 # add crime (random deaths)
   # also based on jobless people

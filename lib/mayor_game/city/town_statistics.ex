@@ -149,6 +149,13 @@ defmodule MayorGame.City.TownStatistics do
             storage: nil,
             production: 0,
             consumption: 0
+          },
+          crime: %ResourceStatistics{
+            title: "crime",
+            stock: 0,
+            storage: nil,
+            production: 0,
+            consumption: 0
           }
         }),
       buildable_stats: %{}

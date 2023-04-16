@@ -157,6 +157,13 @@ defmodule MayorGame.CityMigrator do
           end)
         )
 
+      crime_max =
+        Enum.max(
+          Enum.map(leftovers, fn city ->
+            city |> TownStatistics.getResource(:crime) |> ResourceStatistics.getNetProduction()
+          end)
+        )
+
       health_enum =
         Enum.map(leftovers, fn city ->
           city |> TownStatistics.getResource(:health) |> ResourceStatistics.getNetProduction()
@@ -177,7 +184,8 @@ defmodule MayorGame.CityMigrator do
             health_spread,
             pollution_spread,
             sprawl_max,
-            culture_max
+            culture_max,
+            crime_max
           )
         end)
         |> Map.new(fn city ->
@@ -1032,7 +1040,7 @@ defmodule MayorGame.CityMigrator do
     if Map.has_key?(map, key), do: map[key], else: 0
   end
 
-  def normalize_city(city, max_fun, spread_health, spread_pollution, max_sprawl, max_culture) do
+  def normalize_city(city, max_fun, spread_health, spread_pollution, max_sprawl, max_culture, max_crime) do
     %{
       city: city,
       jobs: city.vacancies_by_level,
@@ -1061,6 +1069,11 @@ defmodule MayorGame.CityMigrator do
         zero_check(
           city |> TownStatistics.getResource(:culture) |> ResourceStatistics.getNetProduction(),
           max_culture
+        ),
+      crime_normalized:
+        zero_check(
+          city |> TownStatistics.getResource(:crime) |> ResourceStatistics.getNetProduction(),
+          max_crime
         ),
       tax_rates: city.tax_rates
     }

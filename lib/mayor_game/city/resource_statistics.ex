@@ -109,6 +109,7 @@ defmodule MayorGame.City.ResourceStatistics do
     }
   end
 
+  # I think this creates a new statistic from what's required, which then you can merge with the existing resource statistic
   @spec fromRequires(String.t(), integer, integer) :: ResourceStatistics.t()
   def fromRequires(title, value, storage \\ nil) do
     %ResourceStatistics{

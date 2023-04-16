@@ -52,23 +52,27 @@ defmodule MayorGame.City.Citizens do
       :fun,
       :health,
       :pollution,
-      :culture
+      :culture,
+      :crime
     ]
   end
 
   def preset_preferences do
+    # https://numbergenerator.org/randomnumbergenerator/sum-to#!numbers=7&low=1&high=100&unique=true&csv=&oddeven=&oddqty=0&sorted=false&addfilters=sum_of_numbers-val-100
     %{
-      1 => %{tax_rates: 0.1, sprawl: 0.2, fun: 0.30, health: 0.25, pollution: 0.1, culture: 0.05},
-      2 => %{tax_rates: 0.46, sprawl: 0.2, fun: 0.2, health: 0.07, pollution: 0.03, culture: 0.04},
-      3 => %{tax_rates: 0.15, sprawl: 0.4, fun: 0.05, health: 0.25, pollution: 0.14, culture: 0.11},
-      4 => %{tax_rates: 0.6, sprawl: 0.12, fun: 0.15, health: 0.03, pollution: 0.1, culture: 0.11},
-      5 => %{tax_rates: 0.2, sprawl: 0.09, fun: 0.10, health: 0.11, pollution: 0.45, culture: 0.05},
-      6 => %{tax_rates: 0.75, sprawl: 0.04, fun: 0.05, health: 0.03, pollution: 0.06, culture: 0.7},
-      7 => %{tax_rates: 0.82, sprawl: 0.02, fun: 0.09, health: 0.01, pollution: 0.11, culture: 0.5},
-      8 => %{tax_rates: 0.26, sprawl: 0.04, fun: 0.01, health: 0.08, pollution: 0.52, culture: 0.9},
-      9 => %{tax_rates: 0.03, sprawl: 0.23, fun: 0.59, health: 0.02, pollution: 0.01, culture: 0.12},
-      10 => %{tax_rates: 0.55, sprawl: 0.16, fun: 0.12, health: 0.06, pollution: 0.01, culture: 0.10},
-      11 => %{tax_rates: 0.10, sprawl: 0.14, fun: 0.12, health: 0.06, pollution: 0.03, culture: 0.55}
+      1 => %{tax_rates: 0.1, sprawl: 0.4, fun: 0.72, health: 0.2, pollution: 0.3, culture: 0.7, crime: 0.11},
+      2 => %{tax_rates: 0.43, sprawl: 0.1, fun: 0.16, health: 0.5, pollution: 0.2, culture: 0.3, crime: 0.30},
+      3 => %{tax_rates: 0.2, sprawl: 0.4, fun: 0.61, health: 0.9, pollution: 0.3, culture: 0.20, crime: 0.1},
+      4 => %{tax_rates: 0.7, sprawl: 0.6, fun: 0.1, health: 0.2, pollution: 0.65, culture: 0.4, crime: 0.15},
+      5 => %{tax_rates: 0.7, sprawl: 0.2, fun: 0.6, health: 0.27, pollution: 0.54, culture: 0.3, crime: 0.1},
+      6 => %{tax_rates: 0.32, sprawl: 0.23, fun: 0.20, health: 0.19, pollution: 0.2, culture: 0.1, crime: 0.3},
+      7 => %{tax_rates: 0.2, sprawl: 0.5, fun: 0.33, health: 0.43, pollution: 0.4, culture: 0.10, crime: 0.3},
+      8 => %{tax_rates: 0.1, sprawl: 0.24, fun: 0.3, health: 0.5, pollution: 0.2, culture: 0.61, crime: 0.4},
+      9 => %{tax_rates: 0.1, sprawl: 0.21, fun: 0.61, health: 0.5, pollution: 0.2, culture: 0.6, crime: 0.4},
+      10 => %{tax_rates: 0.2, sprawl: 0.4, fun: 0.1, health: 0.3, pollution: 0.7, culture: 0.70, crime: 0.13},
+      11 => %{tax_rates: 0.18, sprawl: 0.5, fun: 0.28, health: 0.26, pollution: 0.19, culture: 0.3, crime: 0.1},
+      12 => %{tax_rates: 0.1, sprawl: 0.4, fun: 0.16, health: 0.6, pollution: 0.2, culture: 0.3, crime: 0.68},
+      13 => %{tax_rates: 0.2, sprawl: 0.51, fun: 0.6, health: 0.3, pollution: 0.29, culture: 0.5, crime: 0.4}
     }
   end
 
