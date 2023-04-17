@@ -226,7 +226,7 @@ defmodule MayorGame.City do
     updated_compressed_citizens =
       town.citizens_compressed
       |> Map.merge(
-        %{"5" => [%{"birthday" => Citizens.round100(day), "education" => 0, "preferences" => :rand.uniform(11)}]},
+        %{"100" => [%{"birthday" => Citizens.round100(day), "education" => 0, "preferences" => :rand.uniform(11)}]},
         fn _k, v1, v2 -> v1 ++ v2 end
       )
 
