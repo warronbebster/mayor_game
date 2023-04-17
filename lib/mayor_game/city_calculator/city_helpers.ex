@@ -285,8 +285,38 @@ defmodule MayorGame.CityHelpers do
       ) do
     town_preloaded = unfold_town_citizens(town, world.day)
 
+    # IO.inspect(
+    #   town_stats
+    #   |> TownStatistics.getResource(:food)
+    #   |> ResourceStatistics.getStock(),
+    #   label: "food stock"
+    # )
+
+    # town_stats
+    # |> TownStatistics.getResource(:food)
+
+    # ok this does add to the consumption
+    # IO.inspect(
+    #   ResourceStatistics.merge(
+    #     town_stats
+    #     |> TownStatistics.getResource(:food),
+    #     ResourceStatistics.fromRequires(:food, 20)
+    #   ),
+    #   label: "after_mrge"
+    # )
+
+    # getNextStock will get the total, including production and consumption
+    # so if getNextStock > 0, there's still some
+
+    # check consumption here
+    # maybe add consumption
+    # production
+    # check total
+
     # are we sure we want pollution_ceiling to be tied to a RNG?
     # pollution_reached = world.pollution > pollution_ceiling
+
+    # ok somewhere in here i can do the food thing
 
     pollution_reached =
       world.pollution > pollution_ceiling ||
@@ -294,6 +324,7 @@ defmodule MayorGame.CityHelpers do
 
     # if this is all that matters, that's a lot of calls to that function
     # probably can optimize this a bit
+    # TODO
     reproductive_citizen_count = Enum.count(town_preloaded.citizens_blob, &Rules.is_citizen_reproductive(&1))
 
     # this expensive operation may be avoided if we store the birthday instead of the age
@@ -331,6 +362,11 @@ defmodule MayorGame.CityHelpers do
       else
         floor(length(working_citizens) * 0.05)
       end
+
+    # I could do aggregate deaths by hunger here just as a count
+    # but then it wouldn't drain correctly
+    # I think? I guess I could just adjust each food resource from high to low
+    # I think I'll know how much food is required (basically citizen count)
 
     # start random here, exclude live view from calling this. UI does not need to play gacha, that's server's job
     # might be worthwhile to split the above into calculate_city_stats, so the UI has access to
@@ -687,7 +723,7 @@ defmodule MayorGame.CityHelpers do
               # actually here you want to sell the resources for the leftover cities
               available_resources = TownStatistics.getResource(leftovers_by_id[market.town_id], resource)
 
-              if market.sell_excess do
+              if market.sell_excess && available_resources.stock > 0 do
                 market |> Map.put(:amount_to_sell, available_resources.stock)
               else
                 market |> Map.update!(:amount_to_sell, &min(&1, available_resources.stock))

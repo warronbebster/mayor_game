@@ -926,7 +926,7 @@ defmodule MayorGame.CityMigrator do
                 if slotted_cities_by_id[id].city.citizen_count > 20 do
                   max(slotted_cities_by_id[id].city.aggregate_births, 0)
                 else
-                  if :rand.uniform() > 0.8 do
+                  if :rand.uniform() > 0.5 do
                     1
                   else
                     0

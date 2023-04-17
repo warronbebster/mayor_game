@@ -25,7 +25,7 @@ defmodule MayorGameWeb.MarketLive do
     # world = Repo.get!(MayorGame.City.World, 1)
     in_dev = Application.get_env(:mayor_game, :env) == :dev
 
-    resource_types = ResourceStatistics.resource_kw_list()
+    resource_types = ResourceStatistics.resource_kw_list() |> Keyword.drop([:shields])
 
     # production_categories = [:energy, :area, :housing]
 
