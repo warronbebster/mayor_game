@@ -359,7 +359,7 @@
       </h2>
 
       <%= if !@is_user_mayor && !is_nil(@current_user) && @is_user_verified do %>
-        <%!-- need a way to check if sanctioned already --%>
+        <!-- check if sanctioned already -->
         <%= if !Enum.any?( @city.sanctions_recieved, & &1.sanctioning_id == @current_user.town.id) do %>
           <button
             class="btn m-0 rounded-none border border-neutral-800/25 leading-none h-6 self-start"
