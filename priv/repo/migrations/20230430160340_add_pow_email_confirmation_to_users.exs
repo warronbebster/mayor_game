@@ -9,12 +9,12 @@ defmodule MayorGame.Repo.Migrations.AddPowEmailConfirmationToUsers do
       add :unconfirmed_email, :string
     end
 
-    flush()
+    # flush()
 
-    from(u in MayorGame.Auth.User,
-      update: [set: [unconfirmed_email: u.email]]
-    )
-    |> MayorGame.Repo.update_all([])
+    # from(u in MayorGame.Auth.User,
+    #   update: [set: [unconfirmed_email: u.email]]
+    # )
+    # |> MayorGame.Repo.update_all([])
 
     create unique_index(:auth_users, [:email_confirmation_token])
   end
