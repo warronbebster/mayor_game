@@ -39,6 +39,8 @@ config :mayor_game, MayorGameWeb.Endpoint,
     # ]
   ]
 
+# front_end_email_confirm_url: "http://localhost:3000/confirm-email/{token}"
+
 # ## SSL Support
 #
 # In order to use HTTPS in development, a self-signed

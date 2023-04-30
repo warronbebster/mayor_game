@@ -1,7 +1,8 @@
 defmodule MayorGame.Auth.User do
   use Ecto.Schema
   use Pow.Ecto.Schema
-  use Pow.Extension.Ecto.Schema, extensions: [PowResetPassword, PowPersistentSession]
+  use Pow.Extension.Ecto.Schema, extensions: [PowResetPassword, PowPersistentSession, PowEmailConfirmation]
+  alias EctoCommons.EmailValidator
 
   import Ecto.Changeset
 
@@ -25,8 +26,9 @@ defmodule MayorGame.Auth.User do
     |> pow_changeset(attrs)
     |> pow_extension_changeset(attrs)
     |> cast(attrs, [:nickname])
-    |> validate_required([:nickname])
+    |> EmailValidator.validate_email(:email, checks: [:html_input, :burner, :check_mx_record])
     |> validate_length(:nickname, min: 1, max: 20)
-    |> unique_constraint(:nickname)
+    |> validate_required([:nickname])
+    |> unique_constraint([:nickname])
   end
 end

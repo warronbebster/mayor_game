@@ -163,6 +163,14 @@
               </div>
             </div>
           <% end %>
+          <%= if !is_nil(city.user.email_confirmed_at) do %>
+            <div class="group relative flex flex-row items-center text-blue-600">
+              <img src="/images/mail.svg" height="12" width="12" />
+              <div class="tooltip w-32">
+                This city is email-verified
+              </div>
+            </div>
+          <% end %>
           <%= if city.contributor do %>
             <div class="group relative flex flex-row items-center text-purple-600">
               <a href="https://github.com/warronbebster/mayor_game" target="_blank">
@@ -228,6 +236,9 @@
     </p>
     <p class="max-w-sm">
       All cities are beholden to pollution. If there's enough pollution, citizens start dying. It's very expensive to remove pollution from the world. However, it's also expensive to build clean power sources.
+    </p>
+    <p class="max-w-sm">
+      Verify your email to be able to trade & enter combat.
     </p>
     <p class="max-w-sm">
       Learn more on the

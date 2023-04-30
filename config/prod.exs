@@ -20,6 +20,8 @@ config :mayor_game, MayorGameWeb.Endpoint,
   cache_static_manifest: "priv/static/cache_manifest.json",
   force_ssl: [rewrite_on: [:x_forwarded_host, :x_forwarded_port, :x_forwarded_proto]]
 
+# front_end_email_confirm_url: "https://fragile.city/confirm-email/{token}"
+
 config :mayor_game, MayorGameWeb.Pow.Mailer,
   adapter: Swoosh.Adapters.Mailjet,
   api_key: "71dfa3a267a5a221900658d68768d405",

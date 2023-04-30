@@ -230,10 +230,11 @@ defmodule MayorGameWeb.DashboardLive do
 
   def get_towns(page, per_page \\ 50, sort_field \\ :citizen_count, direction \\ :desc) do
     from(t in Town)
-    |> select([:citizen_count, :pollution, :id, :title, :patron, :contributor, :last_login])
+    |> select([:citizen_count, :pollution, :id, :user_id, :title, :patron, :contributor, :last_login])
     |> paginate(page, per_page)
     |> order_by([{^direction, ^sort_field}])
     |> Repo.all()
+    |> Repo.preload([:user])
   end
 
   def paginate(query, page, per_page) do

@@ -60,7 +60,8 @@ defmodule MayorGame.MixProject do
       {:pow_postgres_store, "~> 1.0"},
       {:number, "~> 1.0.3"},
       {:flow, "~> 1.0"},
-      {:statistics, "~> 0.6.2"}
+      {:statistics, "~> 0.6.2"},
+      {:ecto_commons, "~> 0.3.3"}
     ]
   end
 

@@ -14,6 +14,14 @@
               </div>
             </div>
           <% end %>
+          <%= if !is_nil(@city.user.email_confirmed_at) do %>
+            <div class="group relative flex flex-row items-center text-blue-600">
+              <img src="/images/mail.svg" height="12" width="12" />
+              <div class="tooltip w-32">
+                This city is email-verified
+              </div>
+            </div>
+          <% end %>
           <%= if @city.contributor do %>
             <div class="group relative flex flex-row items-center text-purple-600">
               <a href="https://github.com/warronbebster/mayor_game" target="_blank">
@@ -321,7 +329,7 @@
       <% end %>
     </div>
     <!-- TRADE FORM -->
-    <%= if !@is_user_mayor && !is_nil(@current_user) do %>
+    <%= if !@is_user_mayor && !is_nil(@current_user) && @is_user_verified do %>
       <div class="flex-row items-center">
         <h2 class="text-base pt-4 pb-1">
           Send Resources
@@ -350,7 +358,7 @@
         Sanctions
       </h2>
 
-      <%= if !@is_user_mayor && !is_nil(@current_user) do %>
+      <%= if !@is_user_mayor && !is_nil(@current_user) && @is_user_verified do %>
         <%!-- need a way to check if sanctioned already --%>
         <%= if !Enum.any?( @city.sanctions_recieved, & &1.sanctioning_id == @current_user.town.id) do %>
           <button
@@ -388,7 +396,7 @@
       <h2 class="text-base pt-4 pb-1">
         Combat
       </h2>
-      <%= if @is_user_mayor do %>
+      <%= if @is_user_mayor && @is_user_verified do %>
         <div class="flex flex-row space-x-1 align-middle">
           <input type="checkbox" checked={@city.retaliate} phx-click="toggle_retaliate" />
 
@@ -403,7 +411,7 @@
         </div>
       <% end %>
 
-      <%= if !@is_user_mayor && !is_nil(@current_user) do %>
+      <%= if !@is_user_mayor && !is_nil(@current_user) && @is_user_verified do %>
         <%= if @current_user.town.attacks_sent |> Enum.map(& &1.attack_count) |> Enum.sum() < @current_user.town.air_bases do %>
           <button
             class="btn m-0 rounded-none border border-neutral-800/25 leading-none h-6 self-start"
@@ -706,7 +714,7 @@
                       phx-value-building_type={building_type}
                     />
                   <% end %>
-                  <%= if @current_user && !is_nil(@current_user.town) && !@is_user_mayor do %>
+                  <%= if @current_user && !is_nil(@current_user.town) && !@is_user_mayor && @is_user_verified do %>
                     <%= if (@city_stats |> TownStatistics.getBuildable(building_type)).number > 0 do %>
                       <%= if @current_user.town.missiles > 0 do %>
                         <%= if @city_stats |> TownStatistics.getResource(:shields) |> ResourceStatistics.getStock() == 0 do %>

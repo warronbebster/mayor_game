@@ -17,7 +17,7 @@
         <section class="basis-1/2 flex flex-col gap-1">
           <h2>Sell orders</h2>
           <%= if !is_nil(@current_user) and @current_user.town.markets |> Enum.map(& &1.resource) |> Enum.member?(to_string(resource_type)) == false and  @current_user.town.bids |> Enum.map(& &1.resource) |> Enum.member?(to_string(resource_type)) == false do %>
-            <%= if @current_user.town[resource_type] > 0 do %>
+            <%= if @current_user.town[resource_type] > 0 && @is_user_verified do %>
               <button
                 class="btn m-0 rounded-none border border-neutral-800/25 leading-none h-6 self-start"
                 phx-click="add_market"
@@ -34,7 +34,7 @@
                 phx-value-resource={resource_type}
                 phx-throttle="500"
               >
-                No <%= resource_type %>
+                No <%= resource_type %> or not verified
               </button>
             <% end %>
           <% end %>
@@ -103,7 +103,8 @@
           <h2>Buy orders</h2>
           <%= if !is_nil(@current_user) and 
           @current_user.town.markets |> Enum.map(& &1.resource) |> Enum.member?(to_string(resource_type)) == false and 
-          @current_user.town.bids |> Enum.map(& &1.resource) |> Enum.member?(to_string(resource_type)) == false do %>
+          @current_user.town.bids |> Enum.map(& &1.resource) |> Enum.member?(to_string(resource_type)) == false
+          and @is_user_verified do %>
             <button
               class="btn m-0 rounded-none border border-neutral-800/25 leading-none h-6 self-start"
               phx-click="add_bid"

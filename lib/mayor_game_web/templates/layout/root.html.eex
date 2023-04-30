@@ -34,6 +34,9 @@
             <li class="hover:underline"><a href="https://patreon.com/user?u=88349213" target="_blank">Patreon</a></li>
             <li class="hover:underline"><a href="https://fragile-city.notion.site/Intro-25d07a8aade7459a9b2a93429170b29b" target="_blank">FAQ</a></li>
             <%= if Pow.Plug.current_user(@conn) do %>
+              <%= if is_nil(Pow.Plug.current_user(@conn).unconfirmed_email) do %>
+                <li class="hover:underline"><%= link("Verify Email", to: Routes.registration_path(@conn, :resend_confirmation_email), method: :post) %></li>
+              <% end %>
 
               <li class="hover:underline"><a href="https://discord.gg/mnVnRdV3k7" target="_blank">Discord</a></li>
               <li class="hover:underline"><%= link "Profile", to: Routes.pow_registration_path(@conn, :edit) %></li>

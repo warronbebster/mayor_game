@@ -57,11 +57,13 @@ defmodule MayorGameWeb.MarketLive do
         "add_market",
         %{"resource" => resource},
         # pull these variables out of the socket
-        %{assigns: %{current_user: current_user}} = socket
+        %{assigns: %{current_user: current_user, is_user_verified: is_user_verified}} = socket
       ) do
-    Market.create_market(%{resource: resource, town_id: current_user.town.id, min_price: 5, amount_to_sell: 1})
+    if is_user_verified do
+      Market.create_market(%{resource: resource, town_id: current_user.town.id, min_price: 5, amount_to_sell: 1})
 
-    {:noreply, socket |> get_markets_and_bids() |> update_current_user()}
+      {:noreply, socket |> get_markets_and_bids() |> update_current_user()}
+    end
   end
 
   def handle_event("toggle_market", %{"market_id" => market_id}, %{assigns: %{current_user: _current_user}} = socket) do
@@ -141,11 +143,13 @@ defmodule MayorGameWeb.MarketLive do
         "add_bid",
         %{"resource" => resource},
         # pull these variables out of the socket
-        %{assigns: %{current_user: current_user}} = socket
+        %{assigns: %{current_user: current_user, is_user_verified: is_user_verified}} = socket
       ) do
-    Bid.create_bid(%{resource: resource, town_id: current_user.town.id, max_price: 5})
+    if is_user_verified do
+      Bid.create_bid(%{resource: resource, town_id: current_user.town.id, max_price: 5})
 
-    {:noreply, socket |> get_markets_and_bids() |> update_current_user()}
+      {:noreply, socket |> get_markets_and_bids() |> update_current_user()}
+    end
   end
 
   def handle_event(
@@ -273,10 +277,15 @@ defmodule MayorGameWeb.MarketLive do
           do: socket.assigns.current_user.id == 1,
           else: true
 
-      socket |> assign(:is_user_admin, is_user_admin)
+      is_user_verified =
+        if !socket.assigns.in_dev,
+          do: !is_nil(socket.assigns.current_user.email_confirmed_at),
+          else: true
+
+      socket |> assign(is_user_admin: is_user_admin, is_user_verified: is_user_verified)
     else
       # if there's no user logged in
-      socket |> assign(:is_user_admin, false)
+      socket |> assign(is_user_admin: false, is_user_verified: false)
     end
   end
 

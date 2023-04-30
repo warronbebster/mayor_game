@@ -40,7 +40,7 @@ config :mayor_game, :pow,
   user: MayorGame.Auth.User,
   repo: MayorGame.Repo,
   web_module: MayorGameWeb,
-  extensions: [PowPersistentSession, PowResetPassword],
+  extensions: [PowPersistentSession, PowResetPassword, PowEmailConfirmation],
   controller_callbacks: Pow.Extension.Phoenix.ControllerCallbacks,
   mailer_backend: MayorGameWeb.Pow.Mailer
 

@@ -22,7 +22,8 @@ defmodule MayorGame.MarketHelpers do
       Repo.all(OngoingSanctions)
       |> Repo.preload([:sanctioning, :sanctioned])
 
-    IO.inspect(sanctions, label: "sanctions")
+    # IO.inspect(sanctions, label: "sanctions")
+    # is it bidirectional? I think so
 
     # if !is_nil(markets_by_resource) do
     # if there are markets at all
@@ -35,6 +36,7 @@ defmodule MayorGame.MarketHelpers do
         highest_bid_price = Enum.max_by(bid_list, & &1.max_price).max_price
 
         # all markets with a min price less than the highest bid price
+        # could also filter here by sanctions?
         potentially_valid_markets =
           market_list
           |> Enum.filter(fn market -> market.min_price <= highest_bid_price end)

@@ -4,7 +4,7 @@ defmodule MayorGameWeb.Router do
   use Pow.Phoenix.Router
 
   use Pow.Extension.Phoenix.Router,
-    extensions: [PowResetPassword, PowPersistentSession]
+    extensions: [PowResetPassword, PowPersistentSession, PowEmailConfirmation]
 
   # create pipeline for general browser
   pipeline :browser do
@@ -29,6 +29,14 @@ defmodule MayorGameWeb.Router do
     plug :accepts, ["json"]
   end
 
+  # customize registrationController?
+  # actually first let me just try doing this on the homepage
+  # scope "/", Pow.Phoenix, as: "pow" do
+  #   pipe_through :browser
+
+  #   post "/sign_up", RegistrationController, :create
+  # end
+
   scope "/" do
     pipe_through :browser
 
@@ -46,19 +54,24 @@ defmodule MayorGameWeb.Router do
     live "/market", MarketLive
     live "/city/:title", CityLive, as: :city
 
+    # Line Added
+    # resources "/verify-email", VerificationController, singleton: true, only: [:show]
+    # Line Added
+    # resources "/confirm-email", ConfirmationController, only: [:show]
+
     # get "/cities/:town_id/users/:user_id", CityController, :index
   end
 
   # Make city routes protected by requiring authentication
   # don't need to do this tho
-  # scope "/", MayorGameWeb do
-  #   pipe_through [:browser, :protected]
+  scope "/", MayorGameWeb do
+    pipe_through [:browser, :protected]
 
-  #   # don't think we made this yet
-  #   # resources "/cities", CityController
+    # don't think we made this yet
+    # resources "/cities", CityController
 
-  #   live "/cities/:town_id/users/:user_id", CityLive, as: :city
-  # end
+    post "/registration/send-confirmation-email", RegistrationController, :resend_confirmation_email
+  end
 
   # Other scopes may use custom stacks.
   # scope "/api", MayorGameWeb do

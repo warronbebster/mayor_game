@@ -4,6 +4,8 @@ defmodule MayorGame.City.OngoingSanctions do
 
   @attrs [:sanctioning, :sanctioned]
 
+  @derive {Inspect, except: [:sanctioned, :sanctioning]}
+
   schema "sanctions" do
     belongs_to :sanctioning, Town
     belongs_to :sanctioned, Town

@@ -1198,12 +1198,12 @@ select {
   width: 18rem;
 }
 
-.w-full {
-  width: 100%;
-}
-
 .w-32 {
   width: 8rem;
+}
+
+.w-full {
+  width: 100%;
 }
 
 .w-24 {
@@ -1590,6 +1590,11 @@ select {
   color: rgb(217 119 6 / var(--tw-text-opacity));
 }
 
+.text-blue-600 {
+  --tw-text-opacity: 1;
+  color: rgb(37 99 235 / var(--tw-text-opacity));
+}
+
 .text-purple-600 {
   --tw-text-opacity: 1;
   color: rgb(147 51 234 / var(--tw-text-opacity));
@@ -1623,11 +1628,6 @@ select {
 .text-fuchsia-600 {
   --tw-text-opacity: 1;
   color: rgb(192 38 211 / var(--tw-text-opacity));
-}
-
-.text-blue-600 {
-  --tw-text-opacity: 1;
-  color: rgb(37 99 235 / var(--tw-text-opacity));
 }
 
 .text-rose-600 {
