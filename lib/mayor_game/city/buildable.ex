@@ -24,7 +24,7 @@ defmodule MayorGame.City.Buildable do
   schema "buildable" do
     # has an id built-in?
     # what are the upgrades the buildable currently possesses
-    belongs_to(:details, MayorGame.City.Details)
+    # belongs_to(:details, MayorGame.City.Details)
 
     timestamps()
 
