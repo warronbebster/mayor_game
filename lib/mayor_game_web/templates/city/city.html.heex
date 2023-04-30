@@ -344,6 +344,45 @@
         </.form>
       </div>
     <% end %>
+    <!-- SANCTIONS -->
+    <div class="space-y-1">
+      <h2 class="text-base pt-4 pb-1">
+        Sanctions
+      </h2>
+
+      <%= if !@is_user_mayor && !is_nil(@current_user) do %>
+        <%!-- need a way to check if sanctioned already --%>
+        <%= if !Enum.any?( @city.sanctions_recieved, & &1.sanctioning_id == @current_user.town.id) do %>
+          <button
+            class="btn m-0 rounded-none border border-neutral-800/25 leading-none h-6 self-start"
+            phx-click="commence_sanctions"
+            phx-throttle="500"
+          >
+            Enact sanctions
+          </button>
+        <% else %>
+          <button
+            class="btn m-0 rounded-none border border-neutral-800/25 leading-none h-6 self-start"
+            phx-click="remove_sanctions"
+            phx-throttle="500"
+          >
+            Remove sanctions
+          </button>
+        <% end %>
+      <% end %>
+
+      <%= for ongoing_sanctions <- @city.sanctions_recieved do %>
+        <div class="flex flex-row items-center gap-2">
+          <span class="underline">
+            <%= link(ongoing_sanctions.sanctioning.title,
+              to: Routes.city_path(@socket, MayorGameWeb.CityLive, ongoing_sanctions.sanctioning.title)
+            ) %>
+          </span>
+          is sanctioning this city
+        </div>
+      <% end %>
+    </div>
+    <!-- end of sanctions -->
     <!-- COMBAT -->
     <div class="space-y-1">
       <h2 class="text-base pt-4 pb-1">

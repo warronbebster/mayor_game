@@ -4,6 +4,8 @@ defmodule MayorGame.Market do
   alias MayorGame.City.{Market}
 
   def create_market(attrs \\ %{}) do
+    # might wanna check here to see if there's already a market or bid for the city & resource
+
     %Market{}
     |> Market.changeset(attrs)
     |> Repo.insert()

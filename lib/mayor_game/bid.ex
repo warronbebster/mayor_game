@@ -1,6 +1,8 @@
 defmodule MayorGame.Bid do
+  # the bid context
+
   import Ecto.Query
-  alias MayorGame.City.Bid
+  alias MayorGame.Market.Bid
   alias MayorGame.Repo
 
   def create_bid(attrs \\ %{}) do

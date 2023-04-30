@@ -1,8 +1,8 @@
 defmodule MayorGame.CityCalculator do
   use GenServer, restart: :permanent
   alias MayorGame.CityCombat
-  alias MayorGame.City.{Town, Buildable, OngoingAttacks, TownStatistics, ResourceStatistics, Citizens}
-  alias MayorGame.{City, CityHelpers, Repo, Rules}
+  alias MayorGame.City.{Town, Buildable, OngoingAttacks, TownStatistics, ResourceStatistics}
+  alias MayorGame.{City, CityHelpers, MarketHelpers, Repo, Rules}
   import Ecto.Query
 
   def start_link(initial_val) do
@@ -90,7 +90,7 @@ defmodule MayorGame.CityCalculator do
       |> Enum.map(fn city -> city.pollution end)
       |> Enum.sum()
 
-    CityHelpers.calculate_market_trades(leftovers |> Enum.map(fn city -> {city.id, city} end) |> Enum.into(%{}))
+    MarketHelpers.calculate_market_trades(leftovers |> Enum.map(fn city -> {city.id, city} end) |> Enum.into(%{}))
 
     leftovers
     # |> Enum.sort_by(& &1.id)

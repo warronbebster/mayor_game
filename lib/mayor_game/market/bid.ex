@@ -1,4 +1,4 @@
-defmodule MayorGame.City.Bid do
+defmodule MayorGame.Market.Bid do
   use Ecto.Schema
   alias MayorGame.City.{Town}
   import Ecto.Changeset

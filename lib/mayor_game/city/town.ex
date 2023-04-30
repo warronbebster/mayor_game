@@ -18,7 +18,8 @@ defmodule MayorGame.City.Town do
 
   use Ecto.Schema
   import Ecto.Changeset
-  alias MayorGame.City.{Buildable, OngoingAttacks, Town, Market, Bid}
+  alias MayorGame.City.{Buildable, OngoingAttacks, OngoingSanctions, Town, Market}
+  alias MayorGame.Market.{Bid}
   use Accessible
 
   @timestamps_opts [type: :utc_datetime]
@@ -252,6 +253,11 @@ defmodule MayorGame.City.Town do
     has_many :attacks_recieved, OngoingAttacks, foreign_key: :attacked_id
     has_many :attacking, through: [:attacks_sent, :attacked]
     has_many :attacked, through: [:attacks_recieved, :attacking]
+
+    has_many :sanctions_sent, OngoingSanctions, foreign_key: :sanctioning_id
+    has_many :sanctions_recieved, OngoingSanctions, foreign_key: :sanctioned_id
+    has_many :sanctioning, through: [:sanctions_sent, :sanctioned]
+    has_many :sanctioned, through: [:sanctions_recieved, :sanctioning]
 
     # markets
     has_many :markets, Market

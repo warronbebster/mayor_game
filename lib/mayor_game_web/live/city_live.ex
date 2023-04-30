@@ -5,8 +5,9 @@ defmodule MayorGameWeb.CityLive do
   use Phoenix.LiveView, container: {:div, class: "liveview-container"}
   use Phoenix.HTML
 
+  alias MayorGame.Sanctions
   alias MayorGame.{City, Repo, Rules, CityCombat, CityHelpers}
-  alias MayorGame.City.{Town, Buildable, Citizens, OngoingAttacks, ResourceStatistics}
+  alias MayorGame.City.{Town, Buildable, ResourceStatistics}
 
   import Ecto.Query, warn: false
 
@@ -15,8 +16,8 @@ defmodule MayorGameWeb.CityLive do
   alias Pow.Store.CredentialsCache
 
   def render(assigns) do
-    # use CityView view to render city/show.html.leex template with assigns
-    CityView.render("show.html", assigns)
+    # use CityView view to render city/city.html.leex template with assigns
+    CityView.render("city.html", assigns)
   end
 
   def mount(%{"title" => title}, session, socket) do
@@ -893,8 +894,8 @@ defmodule MayorGameWeb.CityLive do
     # ————————————————————————————————————————————————————————————————————————————————
     # ————————————————————————————————————————————————————————————————————————————————
 
-    attacking_town_struct = Repo.get!(Town, current_user.town.id)
-    shielded_town_struct = city
+    # attacking_town_struct = Repo.get!(Town, current_user.town.id)
+    # shielded_town_struct = city
 
     amount = if city_form["amount"] != "", do: String.to_integer(city_form["amount"]), else: 1
 
@@ -978,6 +979,26 @@ defmodule MayorGameWeb.CityLive do
       end
 
     {:noreply, assign(socket, :attack_set, attack_set)}
+  end
+
+  def handle_event(
+        "commence_sanctions",
+        %{},
+        %{assigns: %{city: city, current_user: current_user}} = socket
+      ) do
+    Sanctions.initiate_sanctions(city, current_user.town.id)
+
+    {:noreply, socket |> update_city_by_title() |> update_current_user()}
+  end
+
+  def handle_event(
+        "remove_sanctions",
+        %{},
+        %{assigns: %{city: city, current_user: current_user}} = socket
+      ) do
+    Sanctions.remove_sanctions(city, current_user.town.id)
+
+    {:noreply, socket |> update_city_by_title() |> update_current_user()}
   end
 
   # Build a changeset for the newly created city,
