@@ -74,11 +74,14 @@ MayorGame.City.update_world(world, %{pollution: 1000000})
 city = MayorGame.City.get_town_by_title!("hi21")
 city = MayorGame.City.get_town_by_title!("wat")
 MayorGame.City.update_town(city, %{steel: 1000})
+MayorGame.Auth.update_user(user, %{email_confirmation_token: "watsjjshjkfdjskal"})
 
 To update all:
 import Ecto.Query
 from(t in MayorGame.City.Town, update: [set: [logs_deaths_housing: 0]])|> MayorGame.Repo.update_all([])
 from(t in MayorGame.City.Town, where: t.treasury < 0, update: [set: [treasury: 0]])|> MayorGame.Repo.update_all([])
+
+for n <- 1..10, do: from(u in MayorGame.Auth.User, where: u.id == ^n, update: [set: [email_confirmation_token: ^(:crypto.strong_rand_bytes(32) |> Base.encode64(padding: false))]])|> MayorGame.Repo.update_all([])
 
 alias MayorGame.City.Buildable
 import Ecto.Query

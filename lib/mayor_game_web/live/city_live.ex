@@ -1058,7 +1058,7 @@ defmodule MayorGameWeb.CityLive do
       is_user_verified =
         if !socket.assigns.in_dev,
           do: !is_nil(socket.assigns.current_user.email_confirmed_at),
-          else: true
+          else: !is_nil(socket.assigns.current_user.email_confirmed_at)
 
       # reset last_login
       if is_user_mayor do

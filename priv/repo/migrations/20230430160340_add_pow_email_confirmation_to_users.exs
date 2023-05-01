@@ -12,9 +12,11 @@ defmodule MayorGame.Repo.Migrations.AddPowEmailConfirmationToUsers do
     # flush()
 
     # from(u in MayorGame.Auth.User,
+    #   where: u.id < 100,
     #   update: [set: [unconfirmed_email: u.email]]
     # )
     # |> MayorGame.Repo.update_all([])
+    # ok so basically I also have to give each user a token. wat is the token
 
     create unique_index(:auth_users, [:email_confirmation_token])
   end
