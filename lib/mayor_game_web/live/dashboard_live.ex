@@ -229,7 +229,18 @@ defmodule MayorGameWeb.DashboardLive do
   end
 
   def get_towns(page, per_page \\ 50, sort_field \\ :citizen_count, direction \\ :desc) do
+    {:ok, date} = DateTime.now("Etc/UTC")
+
+    check_date = DateTime.add(date, -14, :day) |> DateTime.to_date()
+    # {:ok, datetime} = NaiveDateTime.new(check_date, ~T[00:00:00])
+
+    # eventually can move this to pull out of assigns for effeciency
+
+    # conditions = dynamic([q], Date.diff(t.last_login, datetime) <= -14)
+
     from(t in Town)
+    |> where([t], fragment("?::date", t.last_login) >= ^check_date)
+    # ok this looks to be working
     |> select([:citizen_count, :pollution, :id, :user_id, :title, :patron, :contributor, :last_login])
     |> paginate(page, per_page)
     |> order_by([{^direction, ^sort_field}])

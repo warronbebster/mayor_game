@@ -1066,13 +1066,13 @@ defmodule MayorGame.CityHelpers do
   end
 
   def prepare_cities(datetime, day, in_dev) do
-    City.list_cities_preload()
-    |> Enum.filter(fn city -> if in_dev, do: true, else: Date.diff(city.last_login, datetime) > -14 end)
-    |> Enum.filter(fn city ->
-      city.huts > 0 || city.single_family_homes > 0 || city.apartments > 0 ||
-        city.homeless_shelters > 0 || city.micro_apartments > 0 || city.high_rises > 0 ||
-        city.megablocks > 0
-    end)
+    City.list_active_cities_preload(datetime, in_dev)
+    # |> Enum.filter(fn city -> if in_dev, do: true, else: Date.diff(city.last_login, datetime) > -14 end)
+    # |> Enum.filter(fn city ->
+    #   city.huts > 5 || city.single_family_homes > 0 || city.apartments > 0 ||
+    #     city.homeless_shelters > 0 || city.micro_apartments > 0 || city.high_rises > 0 ||
+    #     city.megablocks > 0
+    # end)
     |> Enum.map(fn city ->
       Map.put(city, :citizens_blob, city.citizens_compressed |> Citizens.unfold_citizen_blob(day, city.id))
     end)

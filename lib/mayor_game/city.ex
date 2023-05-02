@@ -38,11 +38,41 @@ defmodule MayorGame.City do
       }, ...]
 
   """
-  def list_cities_preload do
+  def list_cities_preload() do
     # TODO: can I filter here by last_login? that way I don't even have to do the filter in the server
     from(Town,
       select: ^Town.traits_minus_blob()
     )
+    |> Repo.all(timeout: 800_000)
+    |> Repo.preload(:user, timeout: 500_000)
+
+    # Repo.all(Town, timeout: 800_000) |> Repo.preload([:user], timeout: 500_000)
+  end
+
+  @doc """
+  Returns the list of cities with preloads on the cities: preloads :citizens, :user, :details
+
+  ## Examples
+
+      iex> list_cities()
+      [%Town{
+        :citizens: [...],
+        :user: %User{},
+        :details: %details{
+
+        }
+      }, ...]
+
+  """
+  def list_active_cities_preload(datetime, in_dev) do
+    date_range = if in_dev, do: 2000, else: 14
+
+    check_date = DateTime.add(datetime, -date_range, :day) |> DateTime.to_date()
+    # TODO: can I filter here by last_login? that way I don't even have to do the filter in the server
+    from(Town,
+      select: ^Town.traits_minus_blob()
+    )
+    |> where([t], fragment("?::date", t.last_login) >= ^check_date)
     |> Repo.all(timeout: 800_000)
     |> Repo.preload(:user, timeout: 500_000)
 

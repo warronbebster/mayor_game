@@ -78,6 +78,8 @@ MayorGame.Auth.update_user(user, %{email_confirmation_token: "watsjjshjkfdjskal"
 
 To update all:
 import Ecto.Query
+from(t in MayorGame.City.OngoingAttacks)|> MayorGame.Repo.delete_all([])
+
 from(t in MayorGame.City.Town, update: [set: [logs_deaths_housing: 0]])|> MayorGame.Repo.update_all([])
 from(t in MayorGame.City.Town, where: t.treasury < 0, update: [set: [treasury: 0]])|> MayorGame.Repo.update_all([])
 
@@ -88,6 +90,8 @@ import Ecto.Query
 for buildable <- MayorGame.City.Buildable.buildables_list() do
 from(t in MayorGame.City.Town, where: field(t, ^buildable) < 0) |> MayorGame.Repo.update_all(set: [{buildable, 0}])
 end
+
+https://fly.io/phoenix-files/backfilling-data/#bad
 
 ```
 
@@ -109,6 +113,8 @@ see db machine details
 
 scaling fly postgres
 https://fly.io/docs/postgres/managing/scaling/
+
+migrations are in `app/bin/ma
 
 ## Learn more
 
