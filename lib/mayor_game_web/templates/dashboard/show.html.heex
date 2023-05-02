@@ -138,7 +138,7 @@
       <!-- list cities-->
       <%= for city <- @cities do %>
         <div class={
-          "flex flex-row items-center space-x-1 #{if Date.diff(city.last_login, @today) <= -14, do: "opacity-50"}"
+          "flex flex-row items-center space-x-1 #{if Date.diff(city.last_login, @today) < -14, do: "opacity-50"}"
         }>
           <span class="hover:underline">
             <%= link(city.title,

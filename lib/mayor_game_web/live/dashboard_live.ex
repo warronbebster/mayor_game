@@ -33,7 +33,7 @@ defmodule MayorGameWeb.DashboardLive do
      |> assign(sort_direction: :desc)
      |> assign(sort_by: :citizen_count)
      |> assign(:world, world)
-     |> assign(:cities, get_towns(0))
+     |> assign(:cities, get_towns(0, datetime))
      |> assign_totals()
      |> assign_attacks()}
   end
@@ -55,7 +55,7 @@ defmodule MayorGameWeb.DashboardLive do
      |> assign(sort_direction: :desc)
      |> assign(sort_by: :citizen_count)
      |> assign(:world, world)
-     |> assign(:cities, get_towns(0, page_length))
+     |> assign(:cities, get_towns(0, datetime, page_length))
      |> assign_totals()
      |> assign_attacks()}
   end
@@ -115,15 +115,21 @@ defmodule MayorGameWeb.DashboardLive do
         _value,
         socket
       ) do
-    %{page: page, page_length: page_length, cities: cities, sort_by: sort_by, sort_direction: sort_direction} =
-      socket.assigns
+    %{
+      page: page,
+      page_length: page_length,
+      cities: cities,
+      sort_by: sort_by,
+      sort_direction: sort_direction,
+      today: today
+    } = socket.assigns
 
     next_page = page + 1
 
     {:noreply,
      socket
      |> assign(:page, next_page)
-     |> assign(:cities, cities ++ get_towns(next_page, page_length, sort_by, sort_direction))}
+     |> assign(:cities, cities ++ get_towns(next_page, today, page_length, sort_by, sort_direction))}
   end
 
   # sort events
@@ -198,9 +204,10 @@ defmodule MayorGameWeb.DashboardLive do
   end
 
   defp refresh_cities(socket) do
-    %{page: page, page_length: page_length, sort_by: sort_by, sort_direction: sort_direction} = socket.assigns
+    %{page: page, page_length: page_length, sort_by: sort_by, sort_direction: sort_direction, today: today} =
+      socket.assigns
 
-    all_cities_recent = get_towns(0, (page + 1) * page_length, sort_by, sort_direction)
+    all_cities_recent = get_towns(0, today, (page + 1) * page_length, sort_by, sort_direction)
 
     # use sort_cities to sort
     #  |> Enum.sort_by(& &1.citizen_count, :desc)
@@ -210,10 +217,15 @@ defmodule MayorGameWeb.DashboardLive do
   end
 
   defp assign_totals(socket) do
-    pollution_sum = Repo.aggregate(Town, :sum, :pollution)
-    citizens_sum = Repo.aggregate(Town, :sum, :citizen_count)
+    date = socket.assigns.today
+    check_date = DateTime.add(date, -14, :day) |> DateTime.to_date()
 
-    # TODO: only get active cities here
+    query =
+      from(t in Town)
+      |> where([t], fragment("?::date", t.last_login) >= ^check_date)
+
+    pollution_sum = Repo.aggregate(query, :sum, :pollution)
+    citizens_sum = Repo.aggregate(query, :sum, :citizen_count)
 
     socket
     |> assign(:pollution_sum, pollution_sum)
@@ -230,9 +242,7 @@ defmodule MayorGameWeb.DashboardLive do
     |> assign(:attacks, attacks)
   end
 
-  def get_towns(page, per_page \\ 50, sort_field \\ :citizen_count, direction \\ :desc) do
-    {:ok, date} = DateTime.now("Etc/UTC")
-
+  def get_towns(page, date, per_page \\ 50, sort_field \\ :citizen_count, direction \\ :desc) do
     check_date = DateTime.add(date, -14, :day) |> DateTime.to_date()
     # {:ok, datetime} = NaiveDateTime.new(check_date, ~T[00:00:00])
 
