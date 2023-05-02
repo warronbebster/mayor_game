@@ -213,6 +213,8 @@ defmodule MayorGameWeb.DashboardLive do
     pollution_sum = Repo.aggregate(Town, :sum, :pollution)
     citizens_sum = Repo.aggregate(Town, :sum, :citizen_count)
 
+    # TODO: only get active cities here
+
     socket
     |> assign(:pollution_sum, pollution_sum)
     |> assign(:citizens_sum, citizens_sum)
