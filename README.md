@@ -83,7 +83,7 @@ from(t in MayorGame.City.OngoingAttacks)|> MayorGame.Repo.delete_all([])
 from(t in MayorGame.City.Town, update: [set: [logs_deaths_housing: 0]])|> MayorGame.Repo.update_all([])
 from(t in MayorGame.City.Town, where: t.treasury < 0, update: [set: [treasury: 0]])|> MayorGame.Repo.update_all([])
 
-for n <- 1..10, do: from(u in MayorGame.Auth.User, where: u.id == ^n, update: [set: [email_confirmation_token: ^(:crypto.strong_rand_bytes(32) |> Base.encode64(padding: false))]])|> MayorGame.Repo.update_all([])
+from(u in MayorGame.Auth.User, where: u.id == 2115, update: [set: [unconfirmed_email: nil, confirmed_at: ]])|> MayorGame.Repo.update_all([])
 
 alias MayorGame.City.Buildable
 import Ecto.Query

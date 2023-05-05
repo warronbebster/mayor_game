@@ -30,5 +30,6 @@ defmodule MayorGame.Auth.User do
     |> validate_length(:nickname, min: 1, max: 20)
     |> validate_required([:nickname])
     |> unique_constraint([:nickname])
+    |> unique_constraint([:email])
   end
 end
