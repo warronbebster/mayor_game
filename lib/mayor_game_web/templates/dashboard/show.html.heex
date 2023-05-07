@@ -15,7 +15,9 @@
         <span>Cities</span>
         <hr class="border-neutral-300 flex-1" />
         <span>
-          <%= Number.Delimit.number_to_delimited(@city_count) %>
+          <%= Number.Delimit.number_to_delimited(@city_count) %> (<%= Number.Delimit.number_to_delimited(
+            @active_cities_count
+          ) %>)
         </span>
       </div>
       <div class="flex flex-row items-center space-x-1 max-w-sm">

@@ -13,7 +13,7 @@ defmodule MayorGame.Auth.User do
     pow_user_fields()
 
     field :nickname, :string
-    field :is_alt, :boolean
+    field :is_alt, :boolean, default: false
     # it's got once city
     # this means the town table gets a user_id column
     has_one :town, MayorGame.City.Town
@@ -26,7 +26,7 @@ defmodule MayorGame.Auth.User do
     user_or_changeset
     |> pow_changeset(attrs)
     |> pow_extension_changeset(attrs)
-    |> cast(attrs, [:nickname])
+    |> cast(attrs, [:nickname, :is_alt])
     |> EmailValidator.validate_email(:email, checks: [:html_input, :burner, :check_mx_record])
     |> validate_length(:nickname, min: 1, max: 20)
     |> validate_required([:nickname])
