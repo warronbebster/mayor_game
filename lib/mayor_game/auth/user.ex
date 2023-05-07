@@ -13,6 +13,7 @@ defmodule MayorGame.Auth.User do
     pow_user_fields()
 
     field :nickname, :string
+    field :is_alt, :boolean
     # it's got once city
     # this means the town table gets a user_id column
     has_one :town, MayorGame.City.Town

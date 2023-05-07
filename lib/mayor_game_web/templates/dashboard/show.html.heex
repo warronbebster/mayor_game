@@ -163,6 +163,14 @@
               </div>
             </div>
           <% end %>
+          <%= if city.user.is_alt do %>
+            <div class="group relative flex flex-row items-center text-orange-600">
+              <img src="/images/warning.svg" height="12" width="12" />
+              <div class="tooltip w-32">
+                This city is likely an alt
+              </div>
+            </div>
+          <% end %>
           <%= if city.contributor do %>
             <div class="group relative flex flex-row items-center text-purple-600">
               <a href="https://github.com/warronbebster/mayor_game" target="_blank">

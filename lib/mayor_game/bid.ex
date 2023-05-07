@@ -4,6 +4,7 @@ defmodule MayorGame.Bid do
   import Ecto.Query
   alias MayorGame.Market.Bid
   alias MayorGame.Repo
+  alias MayorGame.City.Town
 
   def create_bid(attrs \\ %{}) do
     %Bid{}
@@ -13,6 +14,16 @@ defmodule MayorGame.Bid do
 
   def list_bids() do
     Repo.all(Bid) |> Repo.preload([:town])
+  end
+
+  def list_valid_bids(date) do
+    check_date = DateTime.add(date, -14, :day) |> DateTime.to_date()
+
+    Repo.all(Bid)
+    |> Repo.preload(
+      town: from(t in Town, select: [:title, :last_login], where: fragment("?::date", t.last_login) >= ^check_date)
+    )
+    |> Enum.filter(fn b -> !is_nil(b.town) end)
   end
 
   def get_bids_by_city(city) do

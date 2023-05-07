@@ -226,9 +226,10 @@ defmodule MayorGameWeb.MarketLive do
   # end
 
   def get_markets_and_bids(socket) do
+    {:ok, datetime} = DateTime.now("Etc/UTC")
     # just update the whole city
-    markets_by_resource = Enum.group_by(Market.list_markets(), & &1.resource)
-    bids_by_resource = Enum.group_by(Bid.list_bids(), & &1.resource)
+    markets_by_resource = Enum.group_by(Market.list_valid_markets(datetime), & &1.resource)
+    bids_by_resource = Enum.group_by(Bid.list_valid_bids(datetime), & &1.resource)
 
     socket
     |> assign(:markets, markets_by_resource)
@@ -279,7 +280,7 @@ defmodule MayorGameWeb.MarketLive do
 
       is_user_verified =
         if !socket.assigns.in_dev,
-          do: !is_nil(socket.assigns.current_user.email_confirmed_at),
+          do: !is_nil(socket.assigns.current_user.email_confirmed_at) && !socket.assigns.current_user.is_alt,
           else: true
 
       socket |> assign(is_user_admin: is_user_admin, is_user_verified: is_user_verified)

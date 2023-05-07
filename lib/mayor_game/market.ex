@@ -1,7 +1,7 @@
 defmodule MayorGame.Market do
   import Ecto.Query
   alias MayorGame.Repo
-  alias MayorGame.City.{Market}
+  alias MayorGame.City.{Market, Town}
 
   def create_market(attrs \\ %{}) do
     # might wanna check here to see if there's already a market or bid for the city & resource
@@ -12,7 +12,31 @@ defmodule MayorGame.Market do
   end
 
   def list_markets() do
-    Repo.all(Market) |> Repo.preload([:town])
+    Repo.all(Market)
+    |> Repo.preload(town: from(t in Town, select: [:title, :last_login]))
+  end
+
+  def list_valid_markets(date) do
+    check_date = DateTime.add(date, -14, :day) |> DateTime.to_date()
+
+    # from(
+    #   m in Market,
+    #   join: t in Town,
+    #   on: m.town_id == t.id,
+    #   as: :town,
+    #   where: fragment("?::date", t.last_login) >= ^check_date,
+    #   select: %{
+    #     title: t.title
+    #   }
+    # )
+    # |> Repo.all()
+    # |> IO.inspect(label: "wat")
+
+    Repo.all(Market)
+    |> Repo.preload(
+      town: from(t in Town, select: [:title, :last_login], where: fragment("?::date", t.last_login) >= ^check_date)
+    )
+    |> Enum.filter(fn m -> !is_nil(m.town) end)
   end
 
   def get_markets_by_city(arg) do

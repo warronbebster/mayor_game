@@ -15,8 +15,10 @@ defmodule MayorGame.MarketHelpers do
   import Ecto.Query, warn: false
 
   def calculate_market_trades(leftovers_by_id) do
-    markets_by_resource = Enum.group_by(Market.list_markets(), & &1.resource)
-    bids_by_resource = Enum.group_by(Bid.list_bids(), & &1.resource)
+    {:ok, datetime} = DateTime.now("Etc/UTC")
+
+    markets_by_resource = Enum.group_by(Market.list_valid_markets(datetime), & &1.resource)
+    bids_by_resource = Enum.group_by(Bid.list_valid_bids(datetime), & &1.resource)
 
     sanctions =
       Repo.all(OngoingSanctions)

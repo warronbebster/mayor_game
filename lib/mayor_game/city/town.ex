@@ -249,19 +249,19 @@ defmodule MayorGame.City.Town do
 
     # outline relationship between city and citizens
 
-    has_many :attacks_sent, OngoingAttacks, foreign_key: :attacking_id
-    has_many :attacks_recieved, OngoingAttacks, foreign_key: :attacked_id
+    has_many :attacks_sent, OngoingAttacks, foreign_key: :attacking_id, on_delete: :delete_all
+    has_many :attacks_recieved, OngoingAttacks, foreign_key: :attacked_id, on_delete: :delete_all
     has_many :attacking, through: [:attacks_sent, :attacked]
     has_many :attacked, through: [:attacks_recieved, :attacking]
 
-    has_many :sanctions_sent, OngoingSanctions, foreign_key: :sanctioning_id
-    has_many :sanctions_recieved, OngoingSanctions, foreign_key: :sanctioned_id
+    has_many :sanctions_sent, OngoingSanctions, foreign_key: :sanctioning_id, on_delete: :delete_all
+    has_many :sanctions_recieved, OngoingSanctions, foreign_key: :sanctioned_id, on_delete: :delete_all
     has_many :sanctioning, through: [:sanctions_sent, :sanctioned]
     has_many :sanctioned, through: [:sanctions_recieved, :sanctioning]
 
     # markets
-    has_many :markets, Market
-    has_many :bids, Bid
+    has_many :markets, Market, on_delete: :delete_all
+    has_many :bids, Bid, on_delete: :delete_all
 
     # buildable schema
     for buildable <- Buildable.buildables_list() do

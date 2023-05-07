@@ -11,7 +11,7 @@
 # fly volumes list --app mayorgame-db gets volumes from the db project thingy
 
 
-
+# prevent exchange or limit it
 
 # do some optimization to update_city_by_title, see if calculator and migrator can just send changes instead of having the city_live server recalculate it every time
 # factions — allow people to select a specific color / faction to display
