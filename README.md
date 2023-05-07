@@ -93,6 +93,10 @@ for buildable <- MayorGame.City.Buildable.buildables_list() do
 from(t in MayorGame.City.Town, where: field(t, ^buildable) < 0) |> MayorGame.Repo.update_all(set: [{buildable, 0}])
 end
 
+banning alts:
+alt_ids = [MayorGame.City.get_town_by_title!("Apokalypse").user_id | alt_ids]
+from(u in MayorGame.Auth.User, where: u.id in ^ alt_ids, update: [set: [is_alt: true]])|> MayorGame.Repo.update_all([])
+
 https://fly.io/phoenix-files/backfilling-data/#bad
 
 ```
