@@ -84,6 +84,8 @@ from(t in MayorGame.City.Town, update: [set: [logs_deaths_housing: 0]])|> MayorG
 from(t in MayorGame.City.Town, where: t.treasury < 0, update: [set: [treasury: 0]])|> MayorGame.Repo.update_all([])
 
 from(u in MayorGame.Auth.User, where: u.id == 2115, update: [set: [unconfirmed_email: nil, confirmed_at: ]])|> MayorGame.Repo.update_all([])
+from(u in MayorGame.Auth.User, where: u.id == 2115, update: [set: [is_alt: true]])|> MayorGame.Repo.update_all([])
+from(u in MayorGame.Auth.User, update: [set: [is_alt: false]])|> MayorGame.Repo.update_all([])
 
 alias MayorGame.City.Buildable
 import Ecto.Query
