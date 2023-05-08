@@ -5,8 +5,8 @@ defmodule MayorGameWeb.MarketLive do
   use Phoenix.LiveView, container: {:div, class: "liveview-container"}
   use Phoenix.HTML
 
-  alias MayorGame.City.{Town, ResourceStatistics}
-  alias MayorGame.{City, Repo, Rules, Market, Bid}
+  alias MayorGame.City.{ResourceStatistics}
+  alias MayorGame.{City, Repo, Market, Bid}
 
   import Ecto.Query, warn: false
 

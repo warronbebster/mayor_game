@@ -1,12 +1,8 @@
 defmodule MayorGame.MarketHelpers do
   alias MayorGame.City.{
     Town,
-    World,
-    Citizens,
     ResourceStatistics,
-    BuildableStatistics,
     TownStatistics,
-    TownMigrationStatistics,
     OngoingSanctions
   }
 
@@ -24,7 +20,6 @@ defmodule MayorGame.MarketHelpers do
       Repo.all(OngoingSanctions)
       |> Repo.preload([:sanctioning, :sanctioned])
 
-    IO.inspect(sanctions, label: "sanctions")
     # is it bidirectional? I think so
 
     # if !is_nil(markets_by_resource) do
