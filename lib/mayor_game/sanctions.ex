@@ -1,5 +1,5 @@
 defmodule MayorGame.Sanctions do
-  alias MayorGame.City.{OngoingSanctions, Town}
+  alias MayorGame.City.{OngoingSanctions}
   import Ecto.Query
   alias MayorGame.Repo
 

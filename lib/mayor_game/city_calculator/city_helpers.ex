@@ -9,7 +9,7 @@ defmodule MayorGame.CityHelpers do
     TownMigrationStatistics
   }
 
-  alias MayorGame.{Market, Bid, City, Repo}
+  alias MayorGame.{City}
 
   alias MayorGame.Rules
 

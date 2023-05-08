@@ -197,28 +197,28 @@ defmodule MayorGameWeb.DashboardLive do
   end
 
   # Sort cities here
-  defp sort_cities(socket) do
-    sorted_cities =
-      if Map.has_key?(socket.assigns, :sort),
-        do:
-          (case socket.assigns.sort do
-             "name" ->
-               socket.assigns.cities |> Enum.sort_by(&(&1.title |> String.downcase()), :asc)
+  # defp sort_cities(socket) do
+  #   sorted_cities =
+  #     if Map.has_key?(socket.assigns, :sort),
+  #       do:
+  #         (case socket.assigns.sort do
+  #            "name" ->
+  #              socket.assigns.cities |> Enum.sort_by(&(&1.title |> String.downcase()), :asc)
 
-             "pollution" ->
-               socket.assigns.cities |> Enum.sort_by(& &1.pollution, :desc)
+  #            "pollution" ->
+  #              socket.assigns.cities |> Enum.sort_by(& &1.pollution, :desc)
 
-             "age" ->
-               socket.assigns.cities |> Enum.sort_by(& &1.id, :desc)
+  #            "age" ->
+  #              socket.assigns.cities |> Enum.sort_by(& &1.id, :desc)
 
-             _ ->
-               socket.assigns.cities |> Enum.sort_by(& &1.citizen_count, :desc)
-           end),
-        else: socket.assigns.cities |> Enum.sort_by(& &1.citizen_count, :desc)
+  #            _ ->
+  #              socket.assigns.cities |> Enum.sort_by(& &1.citizen_count, :desc)
+  #          end),
+  #       else: socket.assigns.cities |> Enum.sort_by(& &1.citizen_count, :desc)
 
-    socket
-    |> assign(:cities, sorted_cities)
-  end
+  #   socket
+  #   |> assign(:cities, sorted_cities)
+  # end
 
   defp refresh_cities(socket) do
     %{page: page, page_length: page_length, sort_by: sort_by, sort_direction: sort_direction, today: today} =

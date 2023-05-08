@@ -18,7 +18,7 @@ defmodule MayorGame.City.Town do
 
   use Ecto.Schema
   import Ecto.Changeset
-  alias MayorGame.City.{Buildable, OngoingAttacks, OngoingSanctions, Town, Market}
+  alias MayorGame.City.{Buildable, OngoingAttacks, OngoingSanctions, Market}
   alias MayorGame.Market.{Bid}
   use Accessible
 
