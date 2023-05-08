@@ -31,6 +31,5 @@
   </div>
 <% end %>
 
-
 <span><%= link "Sign in", to: Routes.pow_session_path(@conn, :new) %></span>
 </div>

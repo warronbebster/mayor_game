@@ -24,12 +24,13 @@ defmodule MayorGame.MarketHelpers do
       Repo.all(OngoingSanctions)
       |> Repo.preload([:sanctioning, :sanctioned])
 
-    # IO.inspect(sanctions, label: "sanctions")
+    IO.inspect(sanctions, label: "sanctions")
     # is it bidirectional? I think so
 
     # if !is_nil(markets_by_resource) do
     # if there are markets at all
     Enum.each(markets_by_resource, fn {resource_string, market_list} ->
+      # for each set of markets per resource
       bid_list = bids_by_resource[resource_string]
       resource = String.to_existing_atom(resource_string)
 
@@ -103,72 +104,84 @@ defmodule MayorGame.MarketHelpers do
 
                   town_money_stats = leftovers_by_id[bid.town_id] |> TownStatistics.getResource(:money)
 
-                  {:cont,
-                   if town_money_stats.stock + town_money_stats.production - town_money_stats.consumption >=
-                        bid.amount * paid_price &&
-                        bid.max_price > hd(acc.markets).min_price do
-                     Enum.reduce_while(acc.markets, Map.put_new(acc, :bid_amount, bid.amount), fn market, acc2 ->
-                       if market.amount_to_sell >= acc2.bid_amount do
-                         # if enough in the top market
-                         {:halt,
-                          %{
-                            markets: [
-                              Map.update!(market, :amount_to_sell, &(&1 - acc2.bid_amount)) | tl(acc2.markets)
-                            ],
-                            results:
-                              acc2.results
-                              |> Map.update(
-                                bid.town_id,
-                                %{:money => -paid_price * acc2.bid_amount, resource => acc2.bid_amount},
-                                fn existing_results ->
-                                  existing_results
-                                  |> Map.update!(:money, &(&1 - paid_price * acc2.bid_amount))
-                                  |> Map.update(resource, acc2.bid_amount, &(&1 + acc2.bid_amount))
-                                end
-                              )
-                              |> Map.update(
-                                market.town_id,
-                                %{:money => paid_price * acc2.bid_amount, resource => -acc2.bid_amount},
-                                fn existing_results ->
-                                  existing_results
-                                  |> Map.update!(:money, &(&1 + paid_price * acc2.bid_amount))
-                                  |> Map.update(resource, acc2.bid_amount, &(&1 - acc2.bid_amount))
-                                end
-                              )
-                          }}
-                       else
-                         # if not enough
-                         {:cont,
-                          %{
-                            markets: tl(acc2.markets),
-                            bid_amount: acc2.bid_amount - market.amount_to_sell,
-                            results:
-                              acc2.results
-                              |> Map.update(
-                                bid.town_id,
-                                %{:money => -paid_price * market.amount_to_sell, resource => market.amount_to_sell},
-                                fn existing_results ->
-                                  existing_results
-                                  |> Map.update!(:money, &(&1 - paid_price * market.amount_to_sell))
-                                  |> Map.update(resource, market.amount_to_sell, &(&1 + market.amount_to_sell))
-                                end
-                              )
-                              |> Map.update(
-                                market.town_id,
-                                %{:money => paid_price * market.amount_to_sell, resource => -market.amount_to_sell},
-                                fn existing_results ->
-                                  existing_results
-                                  |> Map.update!(:money, &(&1 + paid_price * market.amount_to_sell))
-                                  |> Map.update(resource, market.amount_to_sell, &(&1 - market.amount_to_sell))
-                                end
-                              )
-                          }}
-                       end
-                     end)
-                   else
-                     # if city doesn't have enough money
-                     acc
-                   end}
+                  sanction_match =
+                    Enum.any?(sanctions, fn s ->
+                      (s.sanctioned_id == bid.town_id && s.sanctioning_id == hd(acc.markets).town_id) ||
+                        (s.sanctioned_id == hd(acc.markets).town_id && s.sanctioning_id == bid.town_id)
+                    end)
+
+                  # ok so here should check basically if any sanctions set contains both
+
+                  {
+                    :cont,
+                    #  if there's enough money to cover the whole bid
+                    #  and the bid price lines up
+                    if ResourceStatistics.getNextStock(town_money_stats) >= bid.amount * paid_price &&
+                         bid.max_price >= hd(acc.markets).min_price &&
+                         !sanction_match do
+                      Enum.reduce_while(acc.markets, Map.put_new(acc, :bid_amount, bid.amount), fn market, acc2 ->
+                        if market.amount_to_sell >= acc2.bid_amount do
+                          # if enough in the top market
+                          {:halt,
+                           %{
+                             markets: [
+                               Map.update!(market, :amount_to_sell, &(&1 - acc2.bid_amount)) | tl(acc2.markets)
+                             ],
+                             results:
+                               acc2.results
+                               |> Map.update(
+                                 bid.town_id,
+                                 %{:money => -paid_price * acc2.bid_amount, resource => acc2.bid_amount},
+                                 fn existing_results ->
+                                   existing_results
+                                   |> Map.update!(:money, &(&1 - paid_price * acc2.bid_amount))
+                                   |> Map.update(resource, acc2.bid_amount, &(&1 + acc2.bid_amount))
+                                 end
+                               )
+                               |> Map.update(
+                                 market.town_id,
+                                 %{:money => paid_price * acc2.bid_amount, resource => -acc2.bid_amount},
+                                 fn existing_results ->
+                                   existing_results
+                                   |> Map.update!(:money, &(&1 + paid_price * acc2.bid_amount))
+                                   |> Map.update(resource, acc2.bid_amount, &(&1 - acc2.bid_amount))
+                                 end
+                               )
+                           }}
+                        else
+                          # if not enough
+                          {:cont,
+                           %{
+                             markets: tl(acc2.markets),
+                             bid_amount: acc2.bid_amount - market.amount_to_sell,
+                             results:
+                               acc2.results
+                               |> Map.update(
+                                 bid.town_id,
+                                 %{:money => -paid_price * market.amount_to_sell, resource => market.amount_to_sell},
+                                 fn existing_results ->
+                                   existing_results
+                                   |> Map.update!(:money, &(&1 - paid_price * market.amount_to_sell))
+                                   |> Map.update(resource, market.amount_to_sell, &(&1 + market.amount_to_sell))
+                                 end
+                               )
+                               |> Map.update(
+                                 market.town_id,
+                                 %{:money => paid_price * market.amount_to_sell, resource => -market.amount_to_sell},
+                                 fn existing_results ->
+                                   existing_results
+                                   |> Map.update!(:money, &(&1 + paid_price * market.amount_to_sell))
+                                   |> Map.update(resource, market.amount_to_sell, &(&1 - market.amount_to_sell))
+                                 end
+                               )
+                           }}
+                        end
+                      end)
+                    else
+                      # if city doesn't have enough money
+                      acc
+                    end
+                  }
                 end
               end
             )
