@@ -933,7 +933,7 @@ defmodule MayorGame.City.Buildable do
         },
         # fn _rng, _number_of_instances -> drop_amount
         produces: %{
-          education: fn rng, number_of_buildables ->
+          education: fn _rng, number_of_buildables ->
             # low-luck calculation at 5% chance, so rng needs only be used once
             Utility.dice_roll(number_of_buildables, 0.05)
           end,
@@ -1048,11 +1048,11 @@ defmodule MayorGame.City.Buildable do
           sulfur: 1,
           coal: 1,
           # fn _rng, _number_of_instances -> drop_amount
-          uranium: fn rng, number_of_buildables ->
+          uranium: fn _rng, number_of_buildables ->
             # low-luck calculation at 0.1% chance, so rng needs only be used once
             Utility.dice_roll(number_of_buildables, 0.001)
           end,
-          gold: fn rng, number_of_buildables ->
+          gold: fn _rng, number_of_buildables ->
             # low-luck calculation at 0.1% chance, so rng needs only be used once
             Utility.dice_roll(number_of_buildables, 0.001)
           end

@@ -1,9 +1,5 @@
 # fragile.city
 
-# TODO:
-
-# FIRST RELEASE DONE
-
 # https://community.fly.io/t/need-help-with-postgresql/3971
 # https://community.fly.io/t/increase-diskspace-for-postgresql/8964
 # https://fly.io/blog/volumes-expand-restore/
@@ -11,32 +7,29 @@
 # fly volumes list --app mayorgame-db gets volumes from the db project thingy
 
 
-# prevent exchange or limit it
 
+#TODO
 # do some optimization to update_city_by_title, see if calculator and migrator can just send changes instead of having the city_live server recalculate it every time
 # factions — allow people to select a specific color / faction to display
 # maybe if you have a certain building, you can create a faction
 # flow some more calculations for optimization
 
-# maybe add ability to turn a number of buildings off
-# implement sanctions
-# ok, what other incentives could there be
-# economic? Maybe you can blacklist certain cities for trade?
+# prevent exchange or limit it
+# add ability to turn a number of buildings off
 # maybe you can choose to open up to migration/trade, you can do everything in your own city (north korea style) but won't get any talented people moving
 
 # Just like the real world, make all-out war a last resort. Introduce trade treaties and sanctions as a way to coerce different cities, without directly attacking them.
 # Introduce faction rules so that players can coordinate sharing resources or coordinate combat as a group.
 # Consider letting players set strict migration policies. Maybe you can pull a North Korea and not let anyone in or out; this would mean your populace might stay more stable, but you couldn’t grow as quickly or import higher-education or specialized citizens.
-# Try to introduce mechanics or account policies that makes alts less useful.
 # build tabs in the city interface
-# hide expired cities by default and in the population calculation
-# ^ actually maybe this kinda makes sense with migration, they close off
 
 # add crime (random deaths)
   # also based on jobless people
   # police stations
   # add job specialization (police, scientist, etc)
 # maybe make pubsub for each city when it's opened to subscribe to updates from other cities attacking u?
+# add food
+# add building requirements
 
 # potentially use list.keysort instead of sort_by for perf reasons
 

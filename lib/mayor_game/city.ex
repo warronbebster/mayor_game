@@ -345,15 +345,15 @@ defmodule MayorGame.City do
       {:ok, %Details{}}
 
   """
-  def demolish_buildable(%Town{} = city, {ledger_buildable, _ledger_cost}, buildable_to_demolish, buildable_count) do
+  def demolish_buildable(%Town{} = city, {_ledger_buildable, _ledger_cost}, buildable_to_demolish, buildable_count) do
     # city is unchanged, use the ledger to hold the accumlated construction and cost prior to UI refresh
 
-    buildable_pending =
-      if !is_nil(ledger_buildable[buildable_to_demolish]) do
-        ledger_buildable[buildable_to_demolish]
-      else
-        0
-      end
+    # buildable_pending =
+    #   if !is_nil(ledger_buildable[buildable_to_demolish]) do
+    #     ledger_buildable[buildable_to_demolish]
+    #   else
+    #     0
+    #   end
 
     # city_attrs = %{buildable_to_demolish => city[buildable_to_demolish] + buildable_pending - 1}
 
@@ -370,15 +370,6 @@ defmodule MayorGame.City do
           buildable_count - 1
         ) / 2
       )
-
-    # refund_price =
-    #   if buildable_count > 0 do
-    #     Rules.building_price(initial_purchase_price, buildable_count - 1)
-    #   else
-    #     initial_purchase_price
-    #   end
-
-    IO.inspect(refund_price, label: "refund-price")
 
     # case refund_city do
     #   {:ok, _result} ->
