@@ -17,7 +17,7 @@ defmodule MayorGame.Market do
   end
 
   def list_valid_markets(date) do
-    check_date = DateTime.add(date, -14, :day) |> DateTime.to_date()
+    check_date = DateTime.add(date, -30, :day) |> DateTime.to_date()
 
     # from(
     #   m in Market,

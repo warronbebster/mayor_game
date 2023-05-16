@@ -65,7 +65,7 @@ defmodule MayorGame.City do
 
   """
   def list_active_cities_preload(datetime, in_dev) do
-    date_range = if in_dev, do: 2000, else: 14
+    date_range = if in_dev, do: 2000, else: 30
 
     check_date = DateTime.add(datetime, -date_range, :day) |> DateTime.to_date()
     # TODO: can I filter here by last_login? that way I don't even have to do the filter in the server

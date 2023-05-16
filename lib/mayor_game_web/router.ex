@@ -50,9 +50,9 @@ defmodule MayorGameWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :index
-    # live "/cities/:town_id/users/:user_id", CityLive, as: :city
     live "/market", MarketLive
     live "/city/:title", CityLive, as: :city
+    live "/city/:title/logs", LogsLive, as: :city
 
     # Line Added
     # resources "/verify-email", VerificationController, singleton: true, only: [:show]

@@ -21,8 +21,8 @@
 
 # Just like the real world, make all-out war a last resort. Introduce trade treaties and sanctions as a way to coerce different cities, without directly attacking them.
 # Introduce faction rules so that players can coordinate sharing resources or coordinate combat as a group.
-# Consider letting players set strict migration policies. Maybe you can pull a North Korea and not let anyone in or out; this would mean your populace might stay more stable, but you couldn’t grow as quickly or import higher-education or specialized citizens.
 # build tabs in the city interface
+# add date logs for attacks
 
 # add crime (random deaths)
   # also based on jobless people

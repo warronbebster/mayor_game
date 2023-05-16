@@ -18,7 +18,7 @@ defmodule MayorGameWeb.DashboardLive do
   def mount(_params, %{"current_user" => current_user}, socket) do
     MayorGameWeb.Endpoint.subscribe("cityPubSub")
     {:ok, datetime} = DateTime.now("Etc/UTC")
-    check_date = DateTime.add(datetime, -14, :day) |> DateTime.to_date()
+    check_date = DateTime.add(datetime, -30, :day) |> DateTime.to_date()
 
     world = Repo.get!(World, 1)
     cities_count = MayorGame.Repo.aggregate(City.Town, :count, :id)
@@ -50,7 +50,7 @@ defmodule MayorGameWeb.DashboardLive do
   def mount(_params, _session, socket) do
     MayorGameWeb.Endpoint.subscribe("cityPubSub")
     {:ok, datetime} = DateTime.now("Etc/UTC")
-    check_date = DateTime.add(datetime, -14, :day) |> DateTime.to_date()
+    check_date = DateTime.add(datetime, -30, :day) |> DateTime.to_date()
 
     world = Repo.get!(World, 1)
     cities_count = MayorGame.Repo.aggregate(City.Town, :count, :id)
@@ -235,7 +235,7 @@ defmodule MayorGameWeb.DashboardLive do
 
   defp assign_totals(socket) do
     date = socket.assigns.today
-    check_date = DateTime.add(date, -14, :day) |> DateTime.to_date()
+    check_date = DateTime.add(date, -30, :day) |> DateTime.to_date()
 
     query =
       from(t in Town)
@@ -260,12 +260,12 @@ defmodule MayorGameWeb.DashboardLive do
   end
 
   def get_towns(page, date, per_page \\ 50, sort_field \\ :citizen_count, direction \\ :desc) do
-    check_date = DateTime.add(date, -14, :day) |> DateTime.to_date()
+    check_date = DateTime.add(date, -30, :day) |> DateTime.to_date()
     # {:ok, datetime} = NaiveDateTime.new(check_date, ~T[00:00:00])
 
     # eventually can move this to pull out of assigns for effeciency
 
-    # conditions = dynamic([q], Date.diff(t.last_login, datetime) <= -14)
+    # conditions = dynamic([q], Date.diff(t.last_login, datetime) <= -30)
 
     from(t in Town)
     |> where([t], fragment("?::date", t.last_login) >= ^check_date)
