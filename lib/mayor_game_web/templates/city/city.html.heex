@@ -342,11 +342,19 @@
         <h2 class="text-base pt-4 pb-1">
           Send Resources
         </h2>
-        <.form let={f} for={@trade_set} id="trade-form" phx_submit="trade" phx_change="validate_trade">
+        <.form
+          let={f}
+          for={@trade_set}
+          id="trade-form"
+          phx_submit="trade"
+          phx_change="validate_trade"
+          phx-throttle="1000"
+        >
           <%= number_input(f, :amount,
             required: true,
             placeholder: "amount",
-            min: 0
+            min: 0,
+            max: 1000
           ) %>
           <%= error_tag(f, :amount) %>
 
@@ -886,7 +894,7 @@
                       <!-- produced -->
                       <%= if !is_nil(building_stats.actual_produces) && Map.has_key?(building_stats.actual_produces, subtotal_type) do %>
                         <div class={
-                          "group relative flex flex-row items-center gap-[2px] w-16 cursor-help text-#{append_class}"
+                          "group relative flex flex-row items-center gap-[2px] w-16 cursor-help #{append_class}"
                         }>
                           <img
                             src={"/images/" <> to_string(subtotal_type) <> ".svg"}
@@ -935,7 +943,7 @@
                       <!-- required -->
                       <%= if !is_nil(building_stats.requires) && Map.has_key?(building_stats.requires, subtotal_type) do %>
                         <div class={
-                          "group relative flex flex-row items-center gap-[2px] w-16 cursor-help text-#{append_class}"
+                          "group relative flex flex-row items-center gap-[2px] w-16 cursor-help #{append_class}"
                         }>
                           <img
                             src={"/images/" <> to_string(subtotal_type) <> ".svg"}

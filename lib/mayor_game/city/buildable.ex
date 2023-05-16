@@ -397,6 +397,7 @@ defmodule MayorGame.City.Buildable do
         level: 0,
         title: :apartments,
         price: 800,
+        building_reqs: %{steel: 10},
         requires: %{
           area: 10,
           energy: 90
@@ -413,6 +414,7 @@ defmodule MayorGame.City.Buildable do
         level: 0,
         title: :micro_apartments,
         price: 1_300,
+        building_reqs: %{steel: 5},
         requires: %{
           area: 5,
           energy: 50
@@ -429,6 +431,7 @@ defmodule MayorGame.City.Buildable do
         level: 0,
         title: :high_rises,
         price: 6_000,
+        building_reqs: %{steel: 20},
         requires: %{
           area: 20,
           energy: 150
@@ -445,6 +448,7 @@ defmodule MayorGame.City.Buildable do
         level: 0,
         title: :megablocks,
         price: 50_000,
+        building_reqs: %{steel: 50},
         requires: %{
           area: 100,
           energy: 500

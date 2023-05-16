@@ -10,11 +10,12 @@
 
 #TODO
 # do some optimization to update_city_by_title, see if calculator and migrator can just send changes instead of having the city_live server recalculate it every time
+
 # factions — allow people to select a specific color / faction to display
 # maybe if you have a certain building, you can create a faction
 # flow some more calculations for optimization
 
-# prevent exchange or limit it
+# prevent exchange?
 # add ability to turn a number of buildings off
 # maybe you can choose to open up to migration/trade, you can do everything in your own city (north korea style) but won't get any talented people moving
 

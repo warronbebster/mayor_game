@@ -103,6 +103,8 @@ defmodule MayorGame.City.Town do
             water: integer,
             lithium: integer,
             microchips: integer,
+            sand: integer,
+            glass: integer,
             # ^ unused
             cows: integer,
             rice: integer,
@@ -208,6 +210,8 @@ defmodule MayorGame.City.Town do
     field(:water, :integer)
     field(:lithium, :integer)
     field(:microchips, :integer)
+    field(:sand, :integer)
+    field(:glass, :integer)
     field(:cows, :integer)
     field(:rice, :integer)
     field(:wheat, :integer)
@@ -319,6 +323,8 @@ defmodule MayorGame.City.Town do
       :wood,
       :stone,
       :lithium,
+      :sand,
+      :glass,
       :food,
       :cows,
       :rice,

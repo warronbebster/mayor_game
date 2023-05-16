@@ -257,6 +257,8 @@ defmodule MayorGame.City.ResourceStatistics do
       {:rice, "yellow-700"},
       {:cows, "stone-700"},
       {:lithium, "lime-700"},
+      {:sand, "yellow-700"},
+      {:glass, "sky-600"},
       {:water, "sky-700"},
       {:salt, "zinc-700"},
       {:missiles, "red-700"},
