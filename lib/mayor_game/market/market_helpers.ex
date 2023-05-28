@@ -42,18 +42,21 @@ defmodule MayorGame.MarketHelpers do
             if is_nil(leftovers_by_id[market.town_id]) do
               false
             else
-              TownStatistics.getResource(leftovers_by_id[market.town_id], resource).stock > 0
+              # replace this with getNextStock
+              TownStatistics.getResource(leftovers_by_id[market.town_id], resource) |> ResourceStatistics.getNextStock() >
+                0
             end
           end)
           |> Enum.sort_by(& &1.min_price, :desc)
           |> Enum.map(fn market ->
             # actually here you want to sell the resources for the leftover cities
-            available_resources = TownStatistics.getResource(leftovers_by_id[market.town_id], resource)
+            available_resources =
+              TownStatistics.getResource(leftovers_by_id[market.town_id], resource) |> ResourceStatistics.getNextStock()
 
-            if market.sell_excess && available_resources.stock > 0 do
-              market |> Map.put(:amount_to_sell, available_resources.stock)
+            if market.sell_excess && available_resources > 0 do
+              market |> Map.put(:amount_to_sell, available_resources)
             else
-              market |> Map.update!(:amount_to_sell, &min(&1, available_resources.stock))
+              market |> Map.update!(:amount_to_sell, &min(&1, available_resources))
             end
           end)
 

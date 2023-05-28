@@ -21,7 +21,8 @@ defmodule MayorGame.City.TownStatistics do
     :citizen_count_by_level,
     :employed_citizen_count_by_level,
     :resource_stats,
-    :buildable_stats
+    :buildable_stats,
+    :food_consumed
   ]
 
   @type t ::
@@ -53,7 +54,8 @@ defmodule MayorGame.City.TownStatistics do
 
             # changes
             resource_stats: %{atom => ResourceStatistics.t()},
-            buildable_stats: %{atom => BuildableStatistics.t()}
+            buildable_stats: %{atom => BuildableStatistics.t()},
+            food_consumed: integer
           }
 
   @spec fromTown(Town.t(), World.t()) :: TownStatistics.t()
@@ -158,7 +160,8 @@ defmodule MayorGame.City.TownStatistics do
             consumption: 0
           }
         }),
-      buildable_stats: %{}
+      buildable_stats: %{},
+      food_consumed: 0
     }
   end
 

@@ -990,7 +990,8 @@ defmodule MayorGame.CityMigrator do
                   ],
                   inc: [
                     logs_deaths_housing: ^unhoused_deaths,
-                    logs_deaths_pollution: ^length(slotted_cities_by_id[id].city.polluted_citizens),
+                    logs_deaths_pollution: ^slotted_cities_by_id[id].city.aggregate_deaths_by_pollution,
+                    logs_deaths_starvation: ^slotted_cities_by_id[id].city.aggregate_deaths_by_starvation,
                     logs_deaths_age: ^slotted_cities_by_id[id].city.aggregate_deaths_by_age,
                     logs_births: ^births_count
                   ]

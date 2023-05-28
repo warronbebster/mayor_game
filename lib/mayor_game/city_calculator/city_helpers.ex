@@ -40,6 +40,10 @@ defmodule MayorGame.CityHelpers do
 
     town_stats = TownStatistics.fromTown(town_preloaded, world)
 
+    # ok I do get the count here from town_stats.total_citizens
+
+    # I don't think I need to do anything fancy here?
+
     priorities_atoms =
       for {key, val} <- town_stats.priorities,
           into: %{},
@@ -49,12 +53,52 @@ defmodule MayorGame.CityHelpers do
 
     buildable_type_count_squared = length(sorted_buildables) * length(sorted_buildables)
 
-    # %TownStatistics{}
+    # need an array of food types to iterate through
+
+    # food_resources = [:food, :fish, :meat, :bread, :produce, :rice, :grapes]
+    food_resources = [food: 100, fish: 20, meat: 50, bread: 10, produce: 10, rice: 20, grapes: 2]
+
+    # returns a town_stats with food_consumed and actual resources consumed
+
+    town_stats_after_food =
+      Enum.reduce_while(food_resources, town_stats, fn {food_type, food_amount}, acc ->
+        hungry_citizens = town_stats.total_citizens - acc.food_consumed
+
+        if acc.food_consumed >= town_stats.total_citizens do
+          # if there's more or equal food to the citizen count
+          {:halt, acc}
+        else
+          max_possible_food = acc |> TownStatistics.getResource(food_type) |> ResourceStatistics.getNextStock()
+
+          food_production_resources =
+            ResourceStatistics.merge(
+              acc
+              |> TownStatistics.getResource(food_type),
+              ResourceStatistics.fromRequires(
+                to_string(food_type),
+                min(round(hungry_citizens / food_amount), max_possible_food)
+              )
+            )
+
+          # 4 bread at 10
+          # 100 hungry citizens
+          # min(10, 4)
+
+          {:cont,
+           acc
+           |> put_in([:resource_stats, food_type], food_production_resources)
+           |> Map.put(:food_consumed, acc.food_consumed + max_possible_food * food_amount)}
+        end
+      end)
+
+    # if town.id == 2, do: IO.inspect(town_stats_after_food.town_stats.resource_stats)
+
+    # returns a %TownStatistics{}
     results_before_overrides =
       Enum.reduce_while(
         # the worst case scenario would be a square of this number, but you'd have to craft the malicious city on purpose.
         1..buildable_type_count_squared,
-        town_stats,
+        town_stats_after_food,
         fn _iter, acc ->
           {cont_or_halt, _, updated_acc} =
             Enum.reduce_while(
@@ -286,17 +330,31 @@ defmodule MayorGame.CityHelpers do
     town_preloaded = unfold_town_citizens(town, world.day)
 
     # ok this does add to the consumption
-    # fromRequires adds to the consumption
+    # fromRequires adds to the consumption, but not the stock (I think)
+
+    # ok this is total citizen count
+    # so try to generate food
+    # loop through food categories
+    # generate food (integer variable) until it hits the count
+    # along the way, need to add to the consumption field for each food category
+    # and keep that in town_stats struct
+    # but I think I need to do this earlier in town_stats. Doesn't get returned from this function
 
     # IO.inspect(
     #   ResourceStatistics.merge(
     #     town_stats
     #     |> TownStatistics.getResource(:food),
-    #     ResourceStatistics.fromRequires(:food, 20)
+    #     ResourceStatistics.fromRequires("food", 20)
     #   ),
     #   label: "after_mrge"
     # )
 
+    # IO.inspect(
+    #   town_stats
+    #   |> TownStatistics.getResource(:food)
+    #   |> ResourceStatistics.getNextStock(),
+    #   label: "getNextStock"
+    # )
     # getNextStock will get the total, including production and consumption
     # so if getNextStock > 0, there's still some food
 
@@ -347,11 +405,6 @@ defmodule MayorGame.CityHelpers do
       else
         floor(length(working_citizens) * 0.05)
       end
-
-    # I could do aggregate deaths by hunger here just as a count
-    # but then it wouldn't drain correctly
-    # I think? I guess I could just adjust each food resource from high to low
-    # I think I'll know how much food is required (basically citizen count)
 
     # start random here, exclude live view from calling this. UI does not need to play gacha, that's server's job
     # might be worthwhile to split the above into calculate_city_stats, so the UI has access to
@@ -443,6 +496,8 @@ defmodule MayorGame.CityHelpers do
     # 2. Take <aggregate_deaths_by_pollution> members from the list. These are <polluted_citizens>, they will be eliminated so no other processing is done with them
     {polluted_citizens, unpolluted_citizens} = scrambled_working_citizens |> Enum.split(aggregate_deaths_by_pollution)
 
+    {fed_citizens, starved_citizens} = unpolluted_citizens |> Enum.split(town_stats.food_consumed)
+
     unpolluted_citizens_by_level = unpolluted_citizens |> Enum.group_by(& &1["education"])
 
     # apply education
@@ -471,6 +526,17 @@ defmodule MayorGame.CityHelpers do
       unpolluted_citizens_after_education
       |> Enum.sort_by(& &1["education"], :asc)
       |> Enum.split(max(0, -excess_housing))
+
+    # ok I could do the same thing here by the total amount of food
+    # I think I have a path here
+    # generate food until it meets citizen count
+    # probably should put food before housing and pollution
+    # oh this is a bit different because… should lack of food just kill them immediately? like pollution? Or could they move for food?
+    # if kills immediately, shoudl go before unhoused filter
+    # {unhoused_citizens, housed_citizens} =
+    #   unpolluted_citizens_after_education
+    #   |> Enum.sort_by(& &1["education"], :asc)
+    #   |> Enum.split(max(0, -excess_housing))
 
     # 4. Group the rest by education
     housed_citizens_by_level = housed_citizens |> Enum.group_by(& &1["education"])
@@ -530,6 +596,7 @@ defmodule MayorGame.CityHelpers do
       aggregate_births: aggregate_births,
       aggregate_deaths_by_age: aggregate_deaths_by_age,
       aggregate_deaths_by_pollution: aggregate_deaths_by_pollution,
+      aggregate_deaths_by_starvation: length(starved_citizens),
       housing_left: excess_housing - aggregate_births,
       staying_citizens: staying_citizens,
       migrating_citizens_due_to_tax: migrating_by_tax_citizens,

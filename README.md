@@ -73,7 +73,7 @@ world = MayorGame.City.get_world(1)
 MayorGame.City.update_world(world, %{pollution: 1000000})
 city = MayorGame.City.get_town_by_title!("hi21")
 city = MayorGame.City.get_town_by_title!("wat")
-MayorGame.City.update_town(city, %{steel: 1000})
+MayorGame.City.update_town(city, %{rock_yards: 10})
 MayorGame.Auth.update_user(user, %{email_confirmation_token: "watsjjshjkfdjskal"})
 
 To update all:

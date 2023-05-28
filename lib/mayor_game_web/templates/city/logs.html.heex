@@ -318,6 +318,26 @@
           </div>
         <% end %>
       </div>
+      <!-- STARVATION DEATHS -->
+      <div class="flex flex-row items-center justify-between gap-2 py-1">
+        <div class="group relative inline-block">
+          <h3 class="text-l first-letter:uppercase decoration-1	underline underline-offset-4 cursor-help decoration-neutral-800/40 decoration-dotted	">
+            Starvation deaths
+          </h3>
+          <div class="tooltip w-40">
+            How many citizens have died from starvation
+          </div>
+        </div>
+        <%= if !is_nil(@city.logs_deaths_starvation) do %>
+          <div>
+            <%= Number.SI.number_to_si(
+              @city.logs_deaths_starvation,
+              precision: 3,
+              trim: true
+            ) %>
+          </div>
+        <% end %>
+      </div>
       <!-- AGE DEATHS -->
       <div class="flex flex-row items-center justify-between gap-2 py-1">
         <div class="group relative inline-block">

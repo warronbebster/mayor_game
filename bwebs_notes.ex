@@ -7,13 +7,11 @@
 # fly volumes list --app mayorgame-db gets volumes from the db project thingy
 
 
-
 #TODO
 # do some optimization to update_city_by_title, see if calculator and migrator can just send changes instead of having the city_live server recalculate it every time
+# move logs to a has_many relationship from cities
 
-# factions — allow people to select a specific color / faction to display
-# maybe if you have a certain building, you can create a faction
-# flow some more calculations for optimization
+
 
 # prevent exchange?
 # add ability to turn a number of buildings off
@@ -21,16 +19,19 @@
 
 # Just like the real world, make all-out war a last resort. Introduce trade treaties and sanctions as a way to coerce different cities, without directly attacking them.
 # Introduce faction rules so that players can coordinate sharing resources or coordinate combat as a group.
+# maybe if you have a certain building, you can create a faction
 # build tabs in the city interface
-# add date logs for attacks
+# add date logs for attacks (maybe trades) (maybe make those logs arrays)
 
 # add crime (random deaths)
   # also based on jobless people
   # police stations
   # add job specialization (police, scientist, etc)
 # maybe make pubsub for each city when it's opened to subscribe to updates from other cities attacking u?
+
 # add food
 # add building requirements
+# replace "treasury" with "money"
 
 # potentially use list.keysort instead of sort_by for perf reasons
 

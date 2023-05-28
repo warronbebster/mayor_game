@@ -33,6 +33,7 @@ defmodule MayorGame.City.Town do
     :logs_deaths_housing,
     :logs_deaths_age,
     :logs_deaths_pollution,
+    :logs_deaths_starvation,
     :logs_attacks,
     :logs_immigration,
     :logs_emigration_jobs,
@@ -79,6 +80,7 @@ defmodule MayorGame.City.Town do
             logs_market_sales: map,
             logs_market_purchases: map,
             logs_deaths_pollution: integer,
+            logs_deaths_starvation: integer,
             logs_deaths_age: integer,
             logs_deaths_housing: integer,
             logs_deaths_attacks: integer,
@@ -246,6 +248,7 @@ defmodule MayorGame.City.Town do
     field :logs_market_sales, :map, default: %{}
     field :logs_market_purchases, :map, default: %{}
     field :logs_deaths_pollution, :integer, default: 0
+    field :logs_deaths_starvation, :integer, default: 0
     field :logs_deaths_age, :integer, default: 0
     field :logs_deaths_housing, :integer, default: 0
     field :logs_deaths_attacks, :integer, default: 0
@@ -351,6 +354,7 @@ defmodule MayorGame.City.Town do
       :logs_attacks,
       :logs_edu,
       :logs_deaths_pollution,
+      :logs_deaths_starvation,
       :logs_deaths_age,
       :logs_deaths_housing,
       :logs_deaths_attacks,
@@ -417,6 +421,7 @@ defmodule MayorGame.City.Town do
         :logs_attacks,
         :logs_edu,
         :logs_deaths_pollution,
+        :logs_deaths_starvation,
         :logs_deaths_age,
         :logs_deaths_housing,
         :logs_deaths_attacks,

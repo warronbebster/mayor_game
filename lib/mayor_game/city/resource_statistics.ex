@@ -179,9 +179,9 @@ defmodule MayorGame.City.ResourceStatistics do
     if is_nil(stat.storage) do
       Number.SI.number_to_si(stat.stock + additive, precision: 3, trim: true)
     else
-      Number.SI.number_to_si(stat.stock + additive, precision: 3, trim: true) <>
+      Number.SI.number_to_si(stat.stock + additive, precision: 2, trim: true) <>
         "/" <>
-        Number.SI.number_to_si(stat.storage, precision: 3, trim: true)
+        Number.SI.number_to_si(stat.storage, precision: 2, trim: true)
     end
   end
 
