@@ -56,7 +56,7 @@ defmodule MayorGame.CityHelpers do
     # need an array of food types to iterate through
 
     # food_resources = [:food, :fish, :meat, :bread, :produce, :rice, :grapes]
-    food_resources = [food: 100, fish: 20, meat: 50, bread: 10, produce: 10, rice: 20, grapes: 2]
+    food_resources = [food: 1000, fish: 200, meat: 500, bread: 100, produce: 100, rice: 200, grapes: 20]
 
     # returns a town_stats with food_consumed and actual resources consumed
 
