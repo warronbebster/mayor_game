@@ -233,8 +233,14 @@ defmodule MayorGame.MarketHelpers do
 
                 to_set = [logs_market_sales: new_sales_logs, logs_market_purchases: new_purchases_logs]
 
-                from(t in Town, where: [id: ^city_id])
-                |> Repo.update_all(inc: to_inc, set: to_set)
+                try do
+                  from(t in Town, where: [id: ^city_id])
+                  |> Repo.update_all(inc: to_inc, set: to_set)
+                rescue
+                  e in Postgrex.Error ->
+                    IO.inspect(e)
+                    IO.inspect(leftovers_by_id[city_id].title <> " error in markets")
+                end
               end)
             end)
           end)

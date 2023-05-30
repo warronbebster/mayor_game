@@ -97,36 +97,45 @@ defmodule MayorGame.CityCalculator do
       Repo.checkout(
         fn ->
           # town_ids = Enum.map(chunk, fn city -> city.id end)
+
           Enum.each(chunk, fn city ->
-            from(t in Town,
-              where: t.id == ^city.id,
-              update: [
-                inc:
-                  ^(Enum.map(
-                      ResourceStatistics.resource_list(),
-                      &{&1,
-                       city
-                       |> TownStatistics.getResource(&1)
-                       |> ResourceStatistics.getNetProduction()}
-                    )
-                    |> Keyword.merge(
-                      treasury:
-                        city
-                        |> TownStatistics.getResource(:money)
-                        |> ResourceStatistics.getNetProduction()
-                    )),
-                # logs—————————
-                # ],
-                set: [
-                  pollution:
-                    ^(city
-                      |> TownStatistics.getResource(:pollution)
-                      |> ResourceStatistics.getNetProduction())
+            try do
+              from(t in Town,
+                where: t.id == ^city.id,
+                update: [
+                  inc:
+                    ^(Enum.map(
+                        ResourceStatistics.resource_list(),
+                        &{&1,
+                         city
+                         |> TownStatistics.getResource(&1)
+                         |> ResourceStatistics.getNetProduction()}
+                      )
+                      |> Keyword.merge(
+                        treasury:
+                          city
+                          |> TownStatistics.getResource(:money)
+                          |> ResourceStatistics.getNetProduction()
+                      )),
+                  # logs—————————
+                  # ],
+                  set: [
+                    pollution:
+                      ^(city
+                        |> TownStatistics.getResource(:pollution)
+                        |> ResourceStatistics.getNetProduction())
+                  ]
                 ]
-              ]
-            )
-            |> Repo.update_all([])
+              )
+              |> Repo.update_all([])
+            rescue
+              e in Postgrex.Error ->
+                IO.inspect(e)
+                IO.inspect(city.title <> " error in city_calculator")
+            end
           end)
+
+          # ^ end of Each function
         end,
         timeout: 6_000_000
       )

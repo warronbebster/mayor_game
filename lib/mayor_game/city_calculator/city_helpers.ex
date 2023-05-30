@@ -96,8 +96,6 @@ defmodule MayorGame.CityHelpers do
         end
       end)
 
-    # if town.id == 2, do: IO.inspect(town_stats_after_food.town_stats.resource_stats)
-
     # returns a %TownStatistics{}
     results_before_overrides =
       Enum.reduce_while(

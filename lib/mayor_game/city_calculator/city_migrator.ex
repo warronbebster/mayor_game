@@ -69,7 +69,7 @@ defmodule MayorGame.CityMigrator do
       cities_list = Enum.shuffle(cities)
 
       time_to_learn = if in_dev, do: rem(migration_tick, 5) == 0, else: rem(migration_tick, 100) == 0
-      if time_to_learn, do: IO.inspect("learning time")
+      # if time_to_learn, do: IO.inspect("learning time")
 
       leftovers =
         cities_list
@@ -869,7 +869,6 @@ defmodule MayorGame.CityMigrator do
 
       # filter updated_citizens to remove jas_job and town_id before going in the DB
 
-      # IO.inspect(updated_citizens_by_id_7)
       # ok this has all the ids I'd expect
 
       updated_citizens_by_id_7
@@ -949,10 +948,6 @@ defmodule MayorGame.CityMigrator do
 
               unhoused_deaths = if Map.has_key?(unhoused_deaths, id), do: unhoused_deaths[id], else: 0
               compress_blob = Citizens.compress_citizen_blob(updated_citizens, world.day)
-
-              # IO.inspect(length(updated_citizens),
-              #   label: slotted_cities_by_id[id].city.title <> " length after migrator "
-              # )
 
               # if id == 2 do
               # log deaths
