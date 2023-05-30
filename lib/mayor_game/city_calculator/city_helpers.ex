@@ -70,6 +70,11 @@ defmodule MayorGame.CityHelpers do
         else
           max_possible_food = acc |> TownStatistics.getResource(food_type) |> ResourceStatistics.getNextStock()
 
+          max_possible_food =
+            min(max_possible_food, acc |> TownStatistics.getResource(food_type) |> ResourceStatistics.getStorage())
+
+          # IO.inspect(max_possible_food, label: town.title <> " max_possible_food " <> to_string(food_type))
+
           food_production_resources =
             ResourceStatistics.merge(
               acc
