@@ -43,6 +43,10 @@ defmodule MayorGame.MarketHelpers do
               false
             else
               # replace this with getNextStock
+              IO.inspect(TownStatistics.getResource(leftovers_by_id[market.town_id], resource),
+                label: leftovers_by_id[market.town_id].title
+              )
+
               TownStatistics.getResource(leftovers_by_id[market.town_id], resource) |> ResourceStatistics.getNextStock() >
                 0
             end
