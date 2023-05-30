@@ -90,8 +90,6 @@ defmodule MayorGame.CityCalculator do
       |> Enum.map(fn city -> city.pollution end)
       |> Enum.sum()
 
-    MarketHelpers.calculate_market_trades(leftovers |> Enum.map(fn city -> {city.id, city} end) |> Enum.into(%{}))
-
     leftovers
     # |> Enum.sort_by(& &1.id)
     |> Enum.chunk_every(200)
@@ -133,6 +131,8 @@ defmodule MayorGame.CityCalculator do
         timeout: 6_000_000
       )
     end)
+
+    MarketHelpers.calculate_market_trades(leftovers |> Enum.map(fn city -> {city.id, city} end) |> Enum.into(%{}))
 
     # :eprof.stop_profiling()
     # :eprof.analyze()
