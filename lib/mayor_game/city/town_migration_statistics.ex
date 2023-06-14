@@ -17,6 +17,7 @@ defmodule MayorGame.City.TownMigrationStatistics do
     migrating_citizens: [],
     unemployed_citizens: [],
     unhoused_citizens: [],
+    starved_citizens: [],
     polluted_citizens: []
   ]
 
@@ -36,6 +37,7 @@ defmodule MayorGame.City.TownMigrationStatistics do
             migrating_citizens: list(Citizens.t()),
             unemployed_citizens: list(Citizens.t()),
             unhoused_citizens: list(Citizens.t()),
+            starved_citizens: list(Citizens.t()),
             polluted_citizens: list(Citizens.t())
           }
 
@@ -55,6 +57,7 @@ defmodule MayorGame.City.TownMigrationStatistics do
       migrating_citizens: [],
       unemployed_citizens: [],
       unhoused_citizens: [],
+      starved_citizens: [],
       polluted_citizens: []
     }
   end

@@ -16,9 +16,12 @@ defmodule MayorGameWeb.DashboardLive do
 
   # if user is logged in:
   def mount(_params, %{"current_user" => current_user}, socket) do
+    in_dev = Application.get_env(:mayor_game, :env) == :dev
+    day_margin = if in_dev, do: 2000, else: 30
+
     MayorGameWeb.Endpoint.subscribe("cityPubSub")
     {:ok, datetime} = DateTime.now("Etc/UTC")
-    check_date = DateTime.add(datetime, -30, :day) |> DateTime.to_date()
+    check_date = DateTime.add(datetime, -day_margin, :day) |> DateTime.to_date()
 
     world = Repo.get!(World, 1)
     cities_count = MayorGame.Repo.aggregate(City.Town, :count, :id)
@@ -36,21 +39,25 @@ defmodule MayorGameWeb.DashboardLive do
      |> assign(city_count: cities_count)
      |> assign(active_cities_count: active_cities_count)
      |> assign(today: datetime)
+     |> assign(check_date: check_date)
      |> assign(page: 0)
      |> assign(page_length: page_length)
      |> assign(sort_direction: :desc)
      |> assign(sort_by: :citizen_count)
      |> assign(:world, world)
-     |> assign(:cities, get_towns(0, datetime))
+     |> assign(:cities, get_towns(0, check_date))
      |> assign_totals()
      |> assign_attacks()}
   end
 
   # if user is not logged in
   def mount(_params, _session, socket) do
+    in_dev = Application.get_env(:mayor_game, :env) == :dev
+    day_margin = if in_dev, do: 2000, else: 30
+
     MayorGameWeb.Endpoint.subscribe("cityPubSub")
     {:ok, datetime} = DateTime.now("Etc/UTC")
-    check_date = DateTime.add(datetime, -30, :day) |> DateTime.to_date()
+    check_date = DateTime.add(datetime, -day_margin, :day) |> DateTime.to_date()
 
     world = Repo.get!(World, 1)
     cities_count = MayorGame.Repo.aggregate(City.Town, :count, :id)
@@ -64,15 +71,16 @@ defmodule MayorGameWeb.DashboardLive do
 
     {:ok,
      socket
-     |> assign(today: datetime)
      |> assign(city_count: cities_count)
      |> assign(active_cities_count: active_cities_count)
+     |> assign(today: datetime)
+     |> assign(check_date: check_date)
      |> assign(page: 0)
      |> assign(page_length: page_length)
      |> assign(sort_direction: :desc)
      |> assign(sort_by: :citizen_count)
      |> assign(:world, world)
-     |> assign(:cities, get_towns(0, datetime, page_length))
+     |> assign(:cities, get_towns(0, check_date, page_length))
      |> assign_totals()
      |> assign_attacks()}
   end
@@ -138,7 +146,8 @@ defmodule MayorGameWeb.DashboardLive do
       cities: cities,
       sort_by: sort_by,
       sort_direction: sort_direction,
-      today: today
+      today: today,
+      check_date: check_date
     } = socket.assigns
 
     next_page = page + 1
@@ -146,7 +155,7 @@ defmodule MayorGameWeb.DashboardLive do
     {:noreply,
      socket
      |> assign(:page, next_page)
-     |> assign(:cities, cities ++ get_towns(next_page, today, page_length, sort_by, sort_direction))}
+     |> assign(:cities, cities ++ get_towns(next_page, check_date, page_length, sort_by, sort_direction))}
   end
 
   # sort events
@@ -221,10 +230,16 @@ defmodule MayorGameWeb.DashboardLive do
   # end
 
   defp refresh_cities(socket) do
-    %{page: page, page_length: page_length, sort_by: sort_by, sort_direction: sort_direction, today: today} =
-      socket.assigns
+    %{
+      page: page,
+      page_length: page_length,
+      sort_by: sort_by,
+      sort_direction: sort_direction,
+      today: today,
+      check_date: check_date
+    } = socket.assigns
 
-    all_cities_recent = get_towns(0, today, (page + 1) * page_length, sort_by, sort_direction)
+    all_cities_recent = get_towns(0, check_date, (page + 1) * page_length, sort_by, sort_direction)
 
     # use sort_cities to sort
     #  |> Enum.sort_by(& &1.citizen_count, :desc)
@@ -235,7 +250,7 @@ defmodule MayorGameWeb.DashboardLive do
 
   defp assign_totals(socket) do
     date = socket.assigns.today
-    check_date = DateTime.add(date, -30, :day) |> DateTime.to_date()
+    check_date = socket.assigns.check_date
 
     query =
       from(t in Town)
@@ -259,8 +274,7 @@ defmodule MayorGameWeb.DashboardLive do
     |> assign(:attacks, attacks)
   end
 
-  def get_towns(page, date, per_page \\ 50, sort_field \\ :citizen_count, direction \\ :desc) do
-    check_date = DateTime.add(date, -30, :day) |> DateTime.to_date()
+  def get_towns(page, check_date, per_page \\ 50, sort_field \\ :citizen_count, direction \\ :desc) do
     # {:ok, datetime} = NaiveDateTime.new(check_date, ~T[00:00:00])
 
     # eventually can move this to pull out of assigns for effeciency

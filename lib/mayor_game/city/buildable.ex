@@ -214,6 +214,7 @@ defmodule MayorGame.City.Buildable do
         desalination_plants: buildables_flat().desalination_plants
       ],
       farms: [
+        gardens: buildables_flat().gardens,
         rice_farms: buildables_flat().rice_farms,
         wheat_farms: buildables_flat().wheat_farms,
         produce_farms: buildables_flat().produce_farms,
@@ -1233,6 +1234,20 @@ defmodule MayorGame.City.Buildable do
       },
       # FARMS ————————————————————————————————————————————————————————————————————————————————
       # FARMS ————————————————————————————————————————————————————————————————————————————————
+      # GARDENS
+      gardens: %BuildableMetadata{
+        size: 1,
+        category: :farms,
+        level: 4,
+        title: :gardens,
+        price: 1_000,
+        requires: %{
+          area: 1,
+          workers: %{count: 1, level: 0}
+        },
+        produces: %{produce: 1},
+        stores: %{produce: 10}
+      },
       # RICE FARMS
       rice_farms: %BuildableMetadata{
         regions: [:mountain],
@@ -1283,7 +1298,7 @@ defmodule MayorGame.City.Buildable do
           area: 100,
           workers: %{count: 5, level: 0}
         },
-        produces: %{produce: 1},
+        produces: %{produce: 5},
         stores: %{produce: 50}
       },
       # LIVESTOCK FARMS
