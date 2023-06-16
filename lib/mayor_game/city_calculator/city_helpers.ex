@@ -501,7 +501,7 @@ defmodule MayorGame.CityHelpers do
 
     {fed_citizens, starved_citizens} = unpolluted_citizens |> Enum.split(town_stats.food_consumed)
 
-    unpolluted_citizens_by_level = fed_citizens |> Enum.group_by(& &1["education"])
+    unpolluted_citizens_by_level = unpolluted_citizens |> Enum.group_by(& &1["education"])
 
     # apply education
     {unpolluted_citizens_after_education, promoted_citizens_qty} =
