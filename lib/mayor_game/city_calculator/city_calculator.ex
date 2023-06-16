@@ -238,7 +238,7 @@ defmodule MayorGame.CityCalculator do
     )
 
     # recurse, do it again
-    Process.send_after(self(), :tax, if(in_dev, do: 5000, else: 500))
+    Process.send_after(self(), :tax, if(in_dev, do: 5000, else: 5000))
 
     # returns this to whatever calls ?
     {:noreply, %{world: updated_world, buildables_map: buildables_map, in_dev: in_dev}}
