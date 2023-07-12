@@ -1,6 +1,6 @@
 defmodule MayorGame.CityMigrator do
   use GenServer, restart: :permanent
-  alias MayorGame.City.{Town, Citizens, Buildable, TownStatistics, ResourceStatistics}
+  alias MayorGame.City.{Town, Citizens, Buildable, TownStats, ResourceStats}
   alias MayorGame.{City, CityHelpers, Repo, Rules}
   import Ecto.Query
 
@@ -108,7 +108,7 @@ defmodule MayorGame.CityMigrator do
 
           # end
 
-          # combine town and the calculated stats (TownStatistics + TownMigrationStatistics)
+          # combine town and the calculated stats (TownStats + TownMigrationStatistics)
           city |> Map.merge(city_stat) |> Map.merge(leftover)
         end)
 
@@ -130,13 +130,13 @@ defmodule MayorGame.CityMigrator do
       sprawl_max =
         Enum.max(
           Enum.map(leftovers, fn city ->
-            city |> TownStatistics.getResource(:sprawl) |> ResourceStatistics.getNetProduction()
+            city |> TownStats.getResource(:sprawl) |> ResourceStats.getNetProduction()
           end)
         )
 
       pollution_enum =
         Enum.map(leftovers, fn city ->
-          city |> TownStatistics.getResource(:pollution) |> ResourceStatistics.getNetProduction()
+          city |> TownStats.getResource(:pollution) |> ResourceStats.getNetProduction()
         end)
 
       pollution_max = Enum.max(pollution_enum)
@@ -146,27 +146,27 @@ defmodule MayorGame.CityMigrator do
       fun_max =
         Enum.max(
           Enum.map(leftovers, fn city ->
-            city |> TownStatistics.getResource(:fun) |> ResourceStatistics.getNetProduction()
+            city |> TownStats.getResource(:fun) |> ResourceStats.getNetProduction()
           end)
         )
 
       culture_max =
         Enum.max(
           Enum.map(leftovers, fn city ->
-            city |> TownStatistics.getResource(:culture) |> ResourceStatistics.getNetProduction()
+            city |> TownStats.getResource(:culture) |> ResourceStats.getNetProduction()
           end)
         )
 
       crime_max =
         Enum.max(
           Enum.map(leftovers, fn city ->
-            city |> TownStatistics.getResource(:crime) |> ResourceStatistics.getNetProduction()
+            city |> TownStats.getResource(:crime) |> ResourceStats.getNetProduction()
           end)
         )
 
       health_enum =
         Enum.map(leftovers, fn city ->
-          city |> TownStatistics.getResource(:health) |> ResourceStatistics.getNetProduction()
+          city |> TownStats.getResource(:health) |> ResourceStats.getNetProduction()
         end)
 
       health_max = Enum.max(health_enum)
@@ -1043,32 +1043,32 @@ defmodule MayorGame.CityMigrator do
       id: city.id,
       sprawl_normalized:
         zero_check(
-          city |> TownStatistics.getResource(:sprawl) |> ResourceStatistics.getNetProduction(),
+          city |> TownStats.getResource(:sprawl) |> ResourceStats.getNetProduction(),
           max_sprawl
         ),
       pollution_normalized:
         zero_check(
-          city |> TownStatistics.getResource(:pollution) |> ResourceStatistics.getNetProduction(),
+          city |> TownStats.getResource(:pollution) |> ResourceStats.getNetProduction(),
           spread_pollution
         ),
       fun_normalized:
         zero_check(
-          city |> TownStatistics.getResource(:fun) |> ResourceStatistics.getNetProduction(),
+          city |> TownStats.getResource(:fun) |> ResourceStats.getNetProduction(),
           max_fun
         ),
       health_normalized:
         zero_check(
-          city |> TownStatistics.getResource(:health) |> ResourceStatistics.getNetProduction(),
+          city |> TownStats.getResource(:health) |> ResourceStats.getNetProduction(),
           spread_health
         ),
       culture_normalized:
         zero_check(
-          city |> TownStatistics.getResource(:culture) |> ResourceStatistics.getNetProduction(),
+          city |> TownStats.getResource(:culture) |> ResourceStats.getNetProduction(),
           max_culture
         ),
       crime_normalized:
         zero_check(
-          city |> TownStatistics.getResource(:crime) |> ResourceStatistics.getNetProduction(),
+          city |> TownStats.getResource(:crime) |> ResourceStats.getNetProduction(),
           max_crime
         ),
       tax_rates: city.tax_rates

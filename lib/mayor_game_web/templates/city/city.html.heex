@@ -103,6 +103,31 @@
         </div>
       </td>
       <td class="group relative h-4 top_td text-green-600">
+        <div class="flex gap-1 items-center w-full pr-2">
+          <img src="/images/consumption.svg" alt="food capacity" height="12" width="12" class="inline" />
+        </div>
+        <div class="tooltip top-0 left-0 -translate-x-full text-amber-600">
+          Food capacity
+        </div>
+      </td>
+      <td class="group relative h-4 top_td text-red-600">
+        <div class="flex items-center w-full pr-2">
+          <img src="/images/minus.svg" alt="minus" height="12" width="12" class="inline" />
+          <img src="/images/consumption-off.svg" alt="consumed food" height="12" width="12" class="inline" />
+        </div>
+        <div class="tooltip top-0 left-0 w-32 -translate-x-full text-red-600">
+          Daily Food Consumption
+        </div>
+      </td>
+      <td class="group relative h-4 top_td text-green-600">
+        <div class="flex items-center w-full pr-2">
+          <img src="/images/money-fulfilled.svg" alt="total area" height="12" width="12" class="inline" />
+        </div>
+        <div class="tooltip top-0 left-0 -translate-x-full">
+          Money
+        </div>
+      </td>
+      <td class="group relative h-4 top_td text-green-600">
         <div class="flex items-center w-full pr-2">
           <img src="/images/plus.svg" alt="plus" height="12" width="12" class="inline" />
           <img src="/images/money-fulfilled.svg" alt="total area" height="12" width="12" class="inline" />
@@ -120,14 +145,7 @@
           Daily Cost
         </div>
       </td>
-      <td class="group relative h-4 top_td text-green-600">
-        <div class="flex items-center w-full pr-2">
-          <img src="/images/money-fulfilled.svg" alt="total area" height="12" width="12" class="inline" />
-        </div>
-        <div class="tooltip top-0 left-0 -translate-x-full">
-          Money
-        </div>
-      </td>
+
       <td class="group relative h-4 top_td text-yellow-600">
         <div class="flex items-center w-full pr-2">
           <img src="/images/energy.svg" alt="total energy" height="12" width="12" class="inline" />
@@ -188,13 +206,13 @@
     <tr>
       <td class="top_td">
         <span class="text-purple-800">
-          <%= @city_stats |> TownStatistics.getResource(:pollution) |> ResourceStatistics.expressNetProduction_SI() %>/day
+          <%= @city_stats |> TownStats.getResource(:pollution) |> ResourceStats.expressNetProduction_SI() %>/day
         </span>
       </td>
 
       <td class="top_td">
         <span class="text-amber-800">
-          <%= @city_stats |> TownStatistics.getResource(:housing) |> ResourceStatistics.expressAvailableOverSupply_SI() %>
+          <%= @city_stats |> TownStats.getResource(:housing) |> ResourceStats.expressAvailableOverSupply_SI() %>
         </span>
       </td>
       <td class="top_td">
@@ -206,55 +224,65 @@
         </span>
       </td>
       <td class="top_td">
-        <span class="text-green-800">
-          $<%= @city_stats |> TownStatistics.getResource(:money) |> ResourceStatistics.expressProduction_SI() %>
+        <span class="text-amber-800">
+          <%= @city_stats.food_capacity %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-red-800">
-          $<%= @city_stats |> TownStatistics.getResource(:money) |> ResourceStatistics.expressConsumption_SI() %>
+          <%= @city_stats.food_consumed %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-green-800">
           $<%= @city_stats
-          |> TownStatistics.getResource(:money)
-          |> ResourceStatistics.expressStock_SI(-@construction_cost) %>
+          |> TownStats.getResource(:money)
+          |> ResourceStats.expressStock_SI(-@construction_cost) %>
+        </span>
+      </td>
+      <td class="top_td">
+        <span class="text-green-800">
+          $<%= @city_stats |> TownStats.getResource(:money) |> ResourceStats.expressProduction_SI() %>
+        </span>
+      </td>
+      <td class="top_td">
+        <span class="text-red-800">
+          $<%= @city_stats |> TownStats.getResource(:money) |> ResourceStats.expressConsumption_SI() %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-yellow-800">
-          <%= @city_stats |> TownStatistics.getResource(:energy) |> ResourceStatistics.expressAvailableOverSupply_SI() %>
+          <%= @city_stats |> TownStats.getResource(:energy) |> ResourceStats.expressAvailableOverSupply_SI() %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-cyan-800">
-          <%= @city_stats |> TownStatistics.getResource(:area) |> ResourceStatistics.expressAvailableOverSupply_SI() %>
+          <%= @city_stats |> TownStats.getResource(:area) |> ResourceStats.expressAvailableOverSupply_SI() %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-yellow-800">
-          <%= @city_stats |> TownStatistics.getResource(:sprawl) |> ResourceStatistics.expressNetProduction_SI() %>
+          <%= @city_stats |> TownStats.getResource(:sprawl) |> ResourceStats.expressNetProduction_SI() %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-rose-800">
-          <%= @city_stats |> TownStatistics.getResource(:crime) |> ResourceStatistics.expressNetProduction_SI() %>
+          <%= @city_stats |> TownStats.getResource(:crime) |> ResourceStats.expressNetProduction_SI() %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-fuchsia-800">
-          <%= @city_stats |> TownStatistics.getResource(:fun) |> ResourceStatistics.expressNetProduction_SI() %>
+          <%= @city_stats |> TownStats.getResource(:fun) |> ResourceStats.expressNetProduction_SI() %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-blue-800">
-          <%= @city_stats |> TownStatistics.getResource(:culture) |> ResourceStatistics.expressNetProduction_SI() %>
+          <%= @city_stats |> TownStats.getResource(:culture) |> ResourceStats.expressNetProduction_SI() %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-rose-800">
-          <%= @city_stats |> TownStatistics.getResource(:health) |> ResourceStatistics.expressNetProduction_SI() %>
+          <%= @city_stats |> TownStats.getResource(:health) |> ResourceStats.expressNetProduction_SI() %>
         </span>
       </td>
     </tr>
@@ -588,7 +616,7 @@
                 <!-- build & delete buttons -->
                 <div class="flex flex-row ">
                   <%= if @is_user_mayor do %>
-                    <%= if @city_stats |> TownStatistics.getResource(:money) |> ResourceStatistics.getStock(-@construction_cost) > building_stats.price do %>
+                    <%= if @city_stats |> TownStats.getResource(:money) |> ResourceStats.getStock(-@construction_cost) > building_stats.price do %>
                       <%= if is_nil(building_stats.building_reqs) do %>
                         <!-- if no building reqs -->
                         <div class="group relative inline-block">
@@ -609,7 +637,7 @@
                       <% else %>
                         <!-- if there are building reqs -->
                         <div class="group relative inline-block">
-                          <%= if !Enum.any?(building_stats.building_reqs, fn {req_key, req_value} -> TownStatistics.getResource(@city_stats, req_key).stock < req_value end) do %>
+                          <%= if !Enum.any?(building_stats.building_reqs, fn {req_key, req_value} -> TownStats.getResource(@city_stats, req_key).stock < req_value end) do %>
                             <!-- if all requirements are met -->
                             <button
                               class="btn m-0 rounded-none border border-neutral-800/25 leading-none h-6 flex flex-row items-center gap-1"
@@ -635,7 +663,7 @@
                             >
                               $<%= Number.SI.number_to_si(building_stats.price, precision: 3, trim: true) %>
                               <%= for {req_key, req_value} <- building_stats.building_reqs do %>
-                                <%= if TownStatistics.getResource(@city_stats, req_key).stock > req_value do %>
+                                <%= if TownStats.getResource(@city_stats, req_key).stock > req_value do %>
                                   <img
                                     src={"/images/#{to_string(req_key)}-fulfilled.svg"}
                                     alt={"not enough #{to_string(req_key)} to build"}
@@ -658,7 +686,7 @@
                             <span class="font-semibold">Requires:</span>
                             <%= for {req_key, req_value} <- building_stats.building_reqs do %>
                               <div class="flex items-center gap-1">
-                                <%= if TownStatistics.getResource(@city_stats, req_key).stock > req_value do %>
+                                <%= if TownStats.getResource(@city_stats, req_key).stock > req_value do %>
                                   <img
                                     src={"/images/#{to_string(req_key)}-fulfilled.svg"}
                                     alt={"requires #{to_string(req_key)} to purchase"}
@@ -699,7 +727,7 @@
                         <div class="tooltip w-28">not enough money</div>
                       </div>
                     <% end %>
-                    <%= if (@city_stats |> TownStatistics.getBuildable(building_type)).number + (if !is_nil(@construction_count[building_type]) do @construction_count[building_type] else 0 end) > 0 do %>
+                    <%= if (@city_stats |> TownStats.getBuildable(building_type)).number + (if !is_nil(@construction_count[building_type]) do @construction_count[building_type] else 0 end) > 0 do %>
                       <button
                         phx-click="demolish_building"
                         class="btn m-0 rounded-none border border-l-0 border-neutral-800/25 leading-none h-6"
@@ -734,9 +762,9 @@
                     />
                   <% end %>
                   <%= if @current_user && !is_nil(@current_user.town) && !@is_user_mayor && @is_user_verified do %>
-                    <%= if (@city_stats |> TownStatistics.getBuildable(building_type)).number > 0 do %>
+                    <%= if (@city_stats |> TownStats.getBuildable(building_type)).number > 0 do %>
                       <%= if @current_user.town.missiles > 0 do %>
-                        <%= if @city_stats |> TownStatistics.getResource(:shields) |> ResourceStatistics.getStock() == 0 do %>
+                        <%= if @city_stats |> TownStats.getResource(:shields) |> ResourceStats.getStock() == 0 do %>
                           <div class="relative group">
                             <button
                               phx-click="attack_building"
@@ -793,16 +821,16 @@
                 <table border="1" class=" table-fixed border-collapse">
                   <tr>
                     <!-- if no buildings -->
-                    <%= if (@city_stats |> TownStatistics.getBuildable(building_type)).number == 0 && (if !is_nil(@construction_count[building_type]) do @construction_count[building_type] else 0 end) == 0 do %>
+                    <%= if (@city_stats |> TownStats.getBuildable(building_type)).number == 0 && (if !is_nil(@construction_count[building_type]) do @construction_count[building_type] else 0 end) == 0 do %>
                       <td class="cell text-neutral-800/50">0</td>
                     <% else %>
-                      <%= if (@city_stats |> TownStatistics.getBuildable(building_type)).operational > 0 do %>
+                      <%= if (@city_stats |> TownStats.getBuildable(building_type)).operational > 0 do %>
                         <td class="group cell bg-green-100">
                           <div class="flex flex-row items-center gap-x-1 cursor-help">
                             <p class="text-green-700">
                               <%= Number.Delimit.number_to_delimited(
                                 (@city_stats
-                                 |> TownStatistics.getBuildable(building_type)).operational
+                                 |> TownStats.getBuildable(building_type)).operational
                               ) %>
                             </p>
                             <%= for requirement <- @building_requirements do %>
@@ -819,17 +847,17 @@
                           </div>
                         </td>
                       <% end %>
-                      <%= if !is_nil((@city_stats |> TownStatistics.getBuildable(building_type)).deficient_prereq_next) && length((@city_stats |> TownStatistics.getBuildable(building_type)).deficient_prereq_next) > 0 do %>
+                      <%= if !is_nil((@city_stats |> TownStats.getBuildable(building_type)).deficient_prereq_next) && length((@city_stats |> TownStats.getBuildable(building_type)).deficient_prereq_next) > 0 do %>
                         <td class="group cell bg-red-50">
                           <div class="flex flex-row items-center gap-x-1 cursor-help">
                             <p class="text-red-700">
                               <%= Number.Delimit.number_to_delimited(
-                                (@city_stats |> TownStatistics.getBuildable(building_type)).number -
-                                  (@city_stats |> TownStatistics.getBuildable(building_type)).operational
+                                (@city_stats |> TownStats.getBuildable(building_type)).number -
+                                  (@city_stats |> TownStats.getBuildable(building_type)).operational
                               ) %>
                             </p>
                             <%= for requirement <- @building_requirements do %>
-                              <%= if building_stats.requires[String.to_existing_atom(requirement)] != nil && building_stats.requires[String.to_existing_atom(requirement)] > 0 && !Enum.member?((@city_stats |> TownStatistics.getBuildable(building_type)).deficient_prereq_next, String.to_existing_atom(requirement)) do %>
+                              <%= if building_stats.requires[String.to_existing_atom(requirement)] != nil && building_stats.requires[String.to_existing_atom(requirement)] > 0 && !Enum.member?((@city_stats |> TownStats.getBuildable(building_type)).deficient_prereq_next, String.to_existing_atom(requirement)) do %>
                                 <img
                                   src={"/images/#{to_string(requirement)}-fulfilled.svg"}
                                   alt={"has enough #{to_string(requirement)} to operate"}
@@ -837,7 +865,7 @@
                                   width="12"
                                 />
                               <% else %>
-                                <%= if Enum.member?((@city_stats |> TownStatistics.getBuildable(building_type)).deficient_prereq_next, String.to_existing_atom(requirement)) do %>
+                                <%= if Enum.member?((@city_stats |> TownStats.getBuildable(building_type)).deficient_prereq_next, String.to_existing_atom(requirement)) do %>
                                   <img
                                     src={"/images/#{to_string(requirement)}-off.svg"}
                                     alt={"requires #{to_string(requirement)} to operate"}
@@ -850,14 +878,14 @@
 
                             <div class="tooltip w-32 text-red-600">
                               needs
-                              <%= if length((@city_stats |> TownStatistics.getBuildable(building_type)).deficient_prereq_next) > 1 do %>
-                                <%= for operation_reason <- (@city_stats |> TownStatistics.getBuildable(building_type)).deficient_prereq_next do %>
+                              <%= if length((@city_stats |> TownStats.getBuildable(building_type)).deficient_prereq_next) > 1 do %>
+                                <%= for operation_reason <- (@city_stats |> TownStats.getBuildable(building_type)).deficient_prereq_next do %>
                                   <%= operation_reason %>,
                                 <% end %>
                               <% else %>
                                 <%= hd(
                                   (@city_stats
-                                   |> TownStatistics.getBuildable(building_type)).deficient_prereq_next
+                                   |> TownStats.getBuildable(building_type)).deficient_prereq_next
                                 ) %>
                               <% end %>
                               to operate
@@ -1180,8 +1208,8 @@
           <span class=" flex-1" />
           <span>
             <%= @city_stats
-            |> TownStatistics.getResource(resource_type)
-            |> ResourceStatistics.expressStockOverStorage_SI() %>
+            |> TownStats.getResource(resource_type)
+            |> ResourceStats.expressStockOverStorage_SI() %>
           </span>
         </div>
       <% end %>

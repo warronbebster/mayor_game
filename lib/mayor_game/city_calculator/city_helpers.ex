@@ -3,9 +3,9 @@ defmodule MayorGame.CityHelpers do
     Town,
     World,
     Citizens,
-    ResourceStatistics,
+    ResourceStats,
     BuildableStatistics,
-    TownStatistics,
+    TownStats,
     TownMigrationStatistics
   }
 
@@ -24,7 +24,7 @@ defmodule MayorGame.CityHelpers do
   @doc """
     takes a %Town{} struct and %World{} struct
 
-    returns a MayorGame.City.TownStatistics:
+    returns a MayorGame.City.TownStats:
     ```
   """
   def calculate_city_stats(
@@ -38,7 +38,7 @@ defmodule MayorGame.CityHelpers do
       ) do
     town_preloaded = unfold_town_citizens(town, world.day)
 
-    town_stats = TownStatistics.fromTown(town_preloaded, world)
+    town_stats = TownStats.fromTown(town_preloaded, world)
 
     # ok I do get the count here from town_stats.total_citizens
 
@@ -60,43 +60,63 @@ defmodule MayorGame.CityHelpers do
 
     # returns a town_stats with food_consumed and actual resources consumed
 
+    if town.id == 2 do
+      IO.inspect(ResourceStats.getNextStock(town_stats.resource_stats.produce), label: "before")
+    end
+
+    # for each type of food
+
     town_stats_after_food =
-      Enum.reduce_while(food_resources, town_stats, fn {food_type, food_amount}, acc ->
+      Enum.reduce(food_resources, town_stats, fn {food_type, food_amount}, acc ->
         hungry_citizens = town_stats.total_citizens - acc.food_consumed
 
-        if acc.food_consumed >= town_stats.total_citizens do
-          # if there's more or equal food to the citizen count
-          {:halt, acc}
-        else
-          max_possible_food = acc |> TownStatistics.getResource(food_type) |> ResourceStatistics.getNextStock()
+        max_possible_consumption = acc |> TownStats.getResource(food_type) |> ResourceStats.getNextStock()
 
-          max_possible_food =
-            min(max_possible_food, acc |> TownStatistics.getResource(food_type) |> ResourceStatistics.getStorage())
+        # max_possible_food =
+        #   min(max_possible_food, acc |> TownStats.getResource(food_type) |> ResourceStats.getStorage())
 
-          # IO.inspect(max_possible_food, label: town.title <> " max_possible_food " <> to_string(food_type))
+        # IO.inspect(max_possible_food, label: town.title <> " max_possible_food " <> to_string(food_type))
 
-          food_production_resources =
-            ResourceStatistics.merge(
-              acc
-              |> TownStatistics.getResource(food_type),
-              ResourceStatistics.fromRequires(
-                to_string(food_type),
-                min(round(hungry_citizens / food_amount), max_possible_food)
-              )
-            )
+        consumed_resources = Float.ceil(hungry_citizens / food_amount) |> min(max_possible_consumption) |> round()
 
-          # 4 bread at 10
-          # 100 hungry citizens
-          # min(10, 4)
+        food_production_resources =
+          ResourceStats.merge(
+            acc
+            |> TownStats.getResource(food_type),
+            ResourceStats.fromRequires(to_string(food_type), consumed_resources)
+          )
 
-          {:cont,
-           acc
-           |> put_in([:resource_stats, food_type], food_production_resources)
-           |> Map.put(:food_consumed, acc.food_consumed + max_possible_food * food_amount)}
+        if town.id == 2 do
+          IO.inspect(hungry_citizens, label: "hungry_citizens")
+          IO.inspect(consumed_resources, label: "consumed_resources")
+
+          IO.inspect(max_possible_consumption,
+            label: town.title <> " max_possible_consumption " <> to_string(food_type)
+          )
+
+          IO.inspect(food_production_resources, label: "food_production_resources")
         end
+
+        # 4 bread at 10
+        # 100 hungry citizens
+        # min(10, 4)
+
+        acc
+        |> put_in([:resource_stats, food_type], food_production_resources)
+        |> Map.put(:food_consumed, acc.food_consumed + consumed_resources * food_amount)
+        |> Map.put(:food_capacity, acc.food_capacity + max_possible_consumption * food_amount)
+
+        # end
       end)
 
-    # returns a %TownStatistics{}
+    if town.id == 2 do
+      IO.inspect(ResourceStats.getNextStock(town_stats_after_food.resource_stats.produce), label: "after")
+      IO.inspect(town_stats_after_food.food_consumed, label: "food_consumed")
+      IO.inspect(town_stats_after_food.food_capacity, label: "food_capacity")
+      # ok here's the after
+    end
+
+    # returns a %TownStats{}
     results_before_overrides =
       Enum.reduce_while(
         # the worst case scenario would be a square of this number, but you'd have to craft the malicious city on purpose.
@@ -145,13 +165,13 @@ defmodule MayorGame.CityHelpers do
 
     # missiles_cap =
     #   results_before_overrides
-    #   |> TownStatistics.getResource(:missiles)
-    #   |> ResourceStatistics.getStorage()
+    #   |> TownStats.getResource(:missiles)
+    #   |> ResourceStats.getStorage()
 
     # shields_cap =
     #   results_before_overrides
-    #   |> TownStatistics.getResource(:shields)
-    #   |> ResourceStatistics.getStorage()
+    #   |> TownStats.getResource(:shields)
+    #   |> ResourceStats.getStorage()
 
     # adjusted_missiles_cap =
     #   if is_nil(missiles_cap) do
@@ -174,9 +194,9 @@ defmodule MayorGame.CityHelpers do
         |> Map.merge(
           %{
             # citizens occupy housing
-            :housing => ResourceStatistics.fromRequires(:housing, town_stats.total_citizens)
+            :housing => ResourceStats.fromRequires(:housing, town_stats.total_citizens)
           },
-          fn _k, v1, v2 -> ResourceStatistics.merge(v1, v2) end
+          fn _k, v1, v2 -> ResourceStats.merge(v1, v2) end
         )
         |> Enum.map(
           # apply capacities
@@ -197,9 +217,9 @@ defmodule MayorGame.CityHelpers do
   end
 
   @doc """
-    takes a %TownStatistics{} struct
+    takes a %TownStats{} struct
 
-    returns a MayorGame.City.TownStatistics:
+    returns a MayorGame.City.TownStats:
     ```
   """
   def calculate_city_stats_with_drops(
@@ -253,7 +273,7 @@ defmodule MayorGame.CityHelpers do
                 end
               end)
 
-            {atom, ResourceStatistics.merge(r, %ResourceStatistics{:production => drops})}
+            {atom, ResourceStats.merge(r, %ResourceStats{:production => drops})}
           end
         end)
         |> Enum.into(%{})
@@ -263,27 +283,17 @@ defmodule MayorGame.CityHelpers do
     # this is not ideal; a better way should be sought after
     missiles_cap =
       results_before_overrides
-      |> TownStatistics.getResource(:missiles)
-      |> ResourceStatistics.getStorage()
+      |> TownStats.getResource(:missiles)
+      |> ResourceStats.getStorage()
 
     shields_cap =
       results_before_overrides
-      |> TownStatistics.getResource(:shields)
-      |> ResourceStatistics.getStorage()
+      |> TownStats.getResource(:shields)
+      |> ResourceStats.getStorage()
 
-    adjusted_missiles_cap =
-      if is_nil(missiles_cap) do
-        50
-      else
-        max(50, missiles_cap)
-      end
+    adjusted_missiles_cap = if is_nil(missiles_cap), do: 50, else: max(50, missiles_cap)
 
-    adjusted_shields_cap =
-      if is_nil(shields_cap) do
-        50
-      else
-        max(50, shields_cap)
-      end
+    adjusted_shields_cap = if is_nil(shields_cap), do: 50, else: max(50, shields_cap)
 
     results =
       results_before_overrides
@@ -315,14 +325,14 @@ defmodule MayorGame.CityHelpers do
   end
 
   @doc """
-    takes a %TownStatistics{} struct
+    takes a %TownStats{} struct
 
     returns a MayorGame.City.TownMigrationStatistics:
     ```
   """
   def calculate_citizen_stats(
         %Town{} = town,
-        %TownStatistics{} = town_stats,
+        %TownStats{} = town_stats,
         %World{} = world,
         pollution_ceiling,
         _season,
@@ -344,18 +354,18 @@ defmodule MayorGame.CityHelpers do
     # but I think I need to do this earlier in town_stats. Doesn't get returned from this function
 
     # IO.inspect(
-    #   ResourceStatistics.merge(
+    #   ResourceStats.merge(
     #     town_stats
-    #     |> TownStatistics.getResource(:food),
-    #     ResourceStatistics.fromRequires("food", 20)
+    #     |> TownStats.getResource(:food),
+    #     ResourceStats.fromRequires("food", 20)
     #   ),
     #   label: "after_mrge"
     # )
 
     # IO.inspect(
     #   town_stats
-    #   |> TownStatistics.getResource(:food)
-    #   |> ResourceStatistics.getNextStock(),
+    #   |> TownStats.getResource(:food)
+    #   |> ResourceStats.getNextStock(),
     #   label: "getNextStock"
     # )
     # getNextStock will get the total, including production and consumption
@@ -383,7 +393,7 @@ defmodule MayorGame.CityHelpers do
     # each citizen has a {health}% chance to reproducing, up to a minimum of 5% and maximum of 100%
     # the total reproduction rate cannot exceed the number of remaining housing
     # we can be guaranteed town_stats.resource_stats.housing exists due to the {# citizens occupy housing} block. This might change in the future
-    excess_housing = ResourceStatistics.getNetProduction(town_stats.resource_stats.housing)
+    excess_housing = ResourceStats.getNetProduction(town_stats.resource_stats.housing)
 
     aggregate_births =
       round(
@@ -391,8 +401,8 @@ defmodule MayorGame.CityHelpers do
           excess_housing,
           reproductive_citizen_count *
             (town_stats
-             |> TownStatistics.getResource(:health)
-             |> ResourceStatistics.getNetProduction()
+             |> TownStats.getResource(:health)
+             |> ResourceStats.getNetProduction()
              |> min(2.0)
              |> max(0.1))
         )
@@ -429,32 +439,32 @@ defmodule MayorGame.CityHelpers do
     # education (not education_lvl_1) are distributed randomly
     edu_generic =
       town_stats
-      |> TownStatistics.getResource(:education)
-      |> ResourceStatistics.getNetProduction()
+      |> TownStats.getResource(:education)
+      |> ResourceStats.getNetProduction()
 
     edu_promotions =
       if edu_generic == 0 do
         %{
           0 =>
             town_stats
-            |> TownStatistics.getResource(:education_lvl_1)
-            |> ResourceStatistics.getNetProduction(),
+            |> TownStats.getResource(:education_lvl_1)
+            |> ResourceStats.getNetProduction(),
           1 =>
             town_stats
-            |> TownStatistics.getResource(:education_lvl_2)
-            |> ResourceStatistics.getNetProduction(),
+            |> TownStats.getResource(:education_lvl_2)
+            |> ResourceStats.getNetProduction(),
           2 =>
             town_stats
-            |> TownStatistics.getResource(:education_lvl_3)
-            |> ResourceStatistics.getNetProduction(),
+            |> TownStats.getResource(:education_lvl_3)
+            |> ResourceStats.getNetProduction(),
           3 =>
             town_stats
-            |> TownStatistics.getResource(:education_lvl_4)
-            |> ResourceStatistics.getNetProduction(),
+            |> TownStats.getResource(:education_lvl_4)
+            |> ResourceStats.getNetProduction(),
           4 =>
             town_stats
-            |> TownStatistics.getResource(:education_lvl_5)
-            |> ResourceStatistics.getNetProduction(),
+            |> TownStats.getResource(:education_lvl_5)
+            |> ResourceStats.getNetProduction(),
           5 => 0
         }
       else
@@ -471,24 +481,24 @@ defmodule MayorGame.CityHelpers do
         %{
           0 =>
             (town_stats
-             |> TownStatistics.getResource(:education_lvl_1)
-             |> ResourceStatistics.getNetProduction()) + round(rand_5[0] * edu_generic / rand_sum),
+             |> TownStats.getResource(:education_lvl_1)
+             |> ResourceStats.getNetProduction()) + round(rand_5[0] * edu_generic / rand_sum),
           1 =>
             (town_stats
-             |> TownStatistics.getResource(:education_lvl_2)
-             |> ResourceStatistics.getNetProduction()) + round(rand_5[1] * edu_generic / rand_sum),
+             |> TownStats.getResource(:education_lvl_2)
+             |> ResourceStats.getNetProduction()) + round(rand_5[1] * edu_generic / rand_sum),
           2 =>
             (town_stats
-             |> TownStatistics.getResource(:education_lvl_3)
-             |> ResourceStatistics.getNetProduction()) + round(rand_5[2] * edu_generic / rand_sum),
+             |> TownStats.getResource(:education_lvl_3)
+             |> ResourceStats.getNetProduction()) + round(rand_5[2] * edu_generic / rand_sum),
           3 =>
             (town_stats
-             |> TownStatistics.getResource(:education_lvl_4)
-             |> ResourceStatistics.getNetProduction()) + round(rand_5[3] * edu_generic / rand_sum),
+             |> TownStats.getResource(:education_lvl_4)
+             |> ResourceStats.getNetProduction()) + round(rand_5[3] * edu_generic / rand_sum),
           4 =>
             (town_stats
-             |> TownStatistics.getResource(:education_lvl_5)
-             |> ResourceStatistics.getNetProduction()) + round(rand_5[4] * edu_generic / rand_sum),
+             |> TownStats.getResource(:education_lvl_5)
+             |> ResourceStats.getNetProduction()) + round(rand_5[4] * edu_generic / rand_sum),
           5 => 0
         }
       end
@@ -501,7 +511,8 @@ defmodule MayorGame.CityHelpers do
 
     {fed_citizens, starved_citizens} = unpolluted_citizens |> Enum.split(town_stats.food_consumed)
 
-    unpolluted_citizens_by_level = unpolluted_citizens |> Enum.group_by(& &1["education"])
+    # add to fed citizens once I limit housing by food amount
+    unpolluted_citizens_by_level = fed_citizens |> Enum.group_by(& &1["education"])
 
     # apply education
     {unpolluted_citizens_after_education, promoted_citizens_qty} =
@@ -600,7 +611,8 @@ defmodule MayorGame.CityHelpers do
       aggregate_deaths_by_age: aggregate_deaths_by_age,
       aggregate_deaths_by_pollution: aggregate_deaths_by_pollution,
       aggregate_deaths_by_starvation: length(starved_citizens),
-      housing_left: excess_housing - aggregate_births,
+      housing_left: (excess_housing - aggregate_births) |> min(town_stats.food_capacity),
+      # ^ could just modulate housing_left with if there are any starved citizens, there's no food
       staying_citizens: staying_citizens,
       migrating_citizens_due_to_tax: migrating_by_tax_citizens,
       migrating_citizens: migrating_citizens,
@@ -620,8 +632,8 @@ defmodule MayorGame.CityHelpers do
       else: production_map |> multiply(multiplier_map, region, season)
   end
 
-  @spec render_production_supply(map() | nil, map() | nil, TownStatistics.t(), integer) :: %{
-          String.t() => ResourceStatistics.t()
+  @spec render_production_supply(map() | nil, map() | nil, TownStats.t(), integer) :: %{
+          String.t() => ResourceStats.t()
         }
   def render_production_supply(production_map, multiplier_map, town, multiple \\ 1) do
     if is_nil(production_map) do
@@ -649,14 +661,14 @@ defmodule MayorGame.CityHelpers do
             true -> []
           end
 
-        {k, ResourceStatistics.fromProduces(k, value * multiple, nil, droplist)}
+        {k, ResourceStats.fromProduces(k, value * multiple, nil, droplist)}
       end)
       |> Enum.into(%{})
     end
   end
 
-  @spec render_production_store(map() | nil, map() | nil, TownStatistics.t(), integer) :: %{
-          String.t() => ResourceStatistics.t()
+  @spec render_production_store(map() | nil, map() | nil, TownStats.t(), integer) :: %{
+          String.t() => ResourceStats.t()
         }
   def render_production_store(production_map, multiplier_map, town, multiple \\ 1) do
     if is_nil(production_map) do
@@ -673,7 +685,7 @@ defmodule MayorGame.CityHelpers do
           end
 
         {k,
-         ResourceStatistics.fromProduces(
+         ResourceStats.fromProduces(
            k,
            0,
            if is_nil(value) do
@@ -688,8 +700,8 @@ defmodule MayorGame.CityHelpers do
     end
   end
 
-  @spec render_production_consumption(map() | nil, map() | nil, TownStatistics.t(), integer) :: %{
-          String.t() => ResourceStatistics.t()
+  @spec render_production_consumption(map() | nil, map() | nil, TownStats.t(), integer) :: %{
+          String.t() => ResourceStats.t()
         }
   def render_production_consumption(production_map, multiplier_map, town, multiple \\ 1) do
     if is_nil(production_map) do
@@ -708,7 +720,7 @@ defmodule MayorGame.CityHelpers do
             true -> 0
           end
 
-        {k, ResourceStatistics.fromRequires(k, value * multiple, nil)}
+        {k, ResourceStats.fromRequires(k, value * multiple, nil)}
       end)
       |> Enum.into(%{})
     end
@@ -762,8 +774,8 @@ defmodule MayorGame.CityHelpers do
 
   # the first list in the tuple indicates what is produced. This will be used to determine if the loop should reset to its start of the sorted_buildables list
   # the second list in the tuple indicates what is prevents all buildables from being activated. This will be used to determine if the loop should reset to its start of the sorted_buildables list
-  @spec fill_workers(Town.t(), TownStatistics.t(), BuildableMetadata.t()) ::
-          {integer, list(), list(), TownStatistics.t()}
+  @spec fill_workers(Town.t(), TownStats.t(), BuildableMetadata.t()) ::
+          {integer, list(), list(), TownStats.t()}
   def fill_workers(town, town_stats, buildable) do
     buildable_count =
       if Map.has_key?(town_stats.buildable_stats, buildable.title) do
@@ -806,7 +818,7 @@ defmodule MayorGame.CityHelpers do
 
         new_supply =
           Map.merge(production, town_stats.resource_stats, fn _k, v1, v2 ->
-            ResourceStatistics.merge(v1, v2)
+            ResourceStats.merge(v1, v2)
           end)
 
         {
@@ -890,7 +902,7 @@ defmodule MayorGame.CityHelpers do
         # calculate tax // # this can be precalculated
         tax_earned =
           if post_employment_operation_stats.fulfilled_count > 0 do
-            ResourceStatistics.fromProduces(
+            ResourceStats.fromProduces(
               :money,
               if !Map.has_key?(buildable.requires, :workers) do
                 0
@@ -905,11 +917,11 @@ defmodule MayorGame.CityHelpers do
               nil
             )
           else
-            ResourceStatistics.fromProduces(:money, 0, nil)
+            ResourceStats.fromProduces(:money, 0, nil)
           end
 
         # update production and consumption
-        # %{String.t() => ResourceStatistics.t()}
+        # %{String.t() => ResourceStats.t()}
         production =
           render_production_supply(
             buildable.produces,
@@ -918,7 +930,7 @@ defmodule MayorGame.CityHelpers do
             post_employment_operation_stats.fulfilled_count
           )
           |> Map.merge(%{:money => tax_earned}, fn _k, v1, v2 ->
-            ResourceStatistics.merge(v1, v2)
+            ResourceStats.merge(v1, v2)
           end)
 
         consumption =
@@ -938,12 +950,12 @@ defmodule MayorGame.CityHelpers do
           )
 
         change =
-          Map.merge(production, consumption, fn _k, v1, v2 -> ResourceStatistics.merge(v1, v2) end)
-          |> Map.merge(storage, fn _k, v1, v2 -> ResourceStatistics.merge(v1, v2) end)
+          Map.merge(production, consumption, fn _k, v1, v2 -> ResourceStats.merge(v1, v2) end)
+          |> Map.merge(storage, fn _k, v1, v2 -> ResourceStats.merge(v1, v2) end)
 
         new_supply =
           Map.merge(town_stats.resource_stats, change, fn _k, v1, v2 ->
-            ResourceStatistics.merge(v1, v2)
+            ResourceStats.merge(v1, v2)
           end)
 
         new_buildable =
@@ -963,7 +975,7 @@ defmodule MayorGame.CityHelpers do
               deficient_prereq_all: post_employment_operation_stats.deficient_prereq_all,
               resource:
                 town_stats.buildable_stats[buildable.title].resource
-                |> Map.merge(change, fn _k, v1, v2 -> ResourceStatistics.merge(v1, v2) end)
+                |> Map.merge(change, fn _k, v1, v2 -> ResourceStats.merge(v1, v2) end)
             }
           else
             %BuildableStatistics{
@@ -1016,7 +1028,7 @@ defmodule MayorGame.CityHelpers do
     deficient_prereq_all: Reqs not met to fulfill all instances of the building
   }
   """
-  @spec check_maximum_and_reqs(%{String.t() => ResourceStatistics.t()}, %{}, integer) :: %{
+  @spec check_maximum_and_reqs(%{String.t() => ResourceStats.t()}, %{}, integer) :: %{
           fulfilled_count: integer,
           deficient_prereq_next: list(String.t()),
           deficient_prereq_all: list(String.t())

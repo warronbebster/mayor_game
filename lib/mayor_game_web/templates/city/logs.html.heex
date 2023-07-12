@@ -171,13 +171,13 @@
     <tr>
       <td class="top_td">
         <span class="text-purple-800">
-          <%= @city_stats |> TownStatistics.getResource(:pollution) |> ResourceStatistics.expressNetProduction_SI() %>/day
+          <%= @city_stats |> TownStats.getResource(:pollution) |> ResourceStats.expressNetProduction_SI() %>/day
         </span>
       </td>
 
       <td class="top_td">
         <span class="text-amber-800">
-          <%= @city_stats |> TownStatistics.getResource(:housing) |> ResourceStatistics.expressAvailableOverSupply_SI() %>
+          <%= @city_stats |> TownStats.getResource(:housing) |> ResourceStats.expressAvailableOverSupply_SI() %>
         </span>
       </td>
       <td class="top_td">
@@ -190,54 +190,54 @@
       </td>
       <td class="top_td">
         <span class="text-green-800">
-          $<%= @city_stats |> TownStatistics.getResource(:money) |> ResourceStatistics.expressProduction_SI() %>
+          $<%= @city_stats |> TownStats.getResource(:money) |> ResourceStats.expressProduction_SI() %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-red-800">
-          $<%= @city_stats |> TownStatistics.getResource(:money) |> ResourceStatistics.expressConsumption_SI() %>
+          $<%= @city_stats |> TownStats.getResource(:money) |> ResourceStats.expressConsumption_SI() %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-green-800">
           $<%= @city_stats
-          |> TownStatistics.getResource(:money)
-          |> ResourceStatistics.expressStock_SI(-@construction_cost) %>
+          |> TownStats.getResource(:money)
+          |> ResourceStats.expressStock_SI(-@construction_cost) %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-yellow-800">
-          <%= @city_stats |> TownStatistics.getResource(:energy) |> ResourceStatistics.expressAvailableOverSupply_SI() %>
+          <%= @city_stats |> TownStats.getResource(:energy) |> ResourceStats.expressAvailableOverSupply_SI() %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-cyan-800">
-          <%= @city_stats |> TownStatistics.getResource(:area) |> ResourceStatistics.expressAvailableOverSupply_SI() %>
+          <%= @city_stats |> TownStats.getResource(:area) |> ResourceStats.expressAvailableOverSupply_SI() %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-yellow-800">
-          <%= @city_stats |> TownStatistics.getResource(:sprawl) |> ResourceStatistics.expressNetProduction_SI() %>
+          <%= @city_stats |> TownStats.getResource(:sprawl) |> ResourceStats.expressNetProduction_SI() %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-rose-800">
-          <%= @city_stats |> TownStatistics.getResource(:crime) |> ResourceStatistics.expressNetProduction_SI() %>
+          <%= @city_stats |> TownStats.getResource(:crime) |> ResourceStats.expressNetProduction_SI() %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-fuchsia-800">
-          <%= @city_stats |> TownStatistics.getResource(:fun) |> ResourceStatistics.expressNetProduction_SI() %>
+          <%= @city_stats |> TownStats.getResource(:fun) |> ResourceStats.expressNetProduction_SI() %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-blue-800">
-          <%= @city_stats |> TownStatistics.getResource(:culture) |> ResourceStatistics.expressNetProduction_SI() %>
+          <%= @city_stats |> TownStats.getResource(:culture) |> ResourceStats.expressNetProduction_SI() %>
         </span>
       </td>
       <td class="top_td">
         <span class="text-rose-800">
-          <%= @city_stats |> TownStatistics.getResource(:health) |> ResourceStatistics.expressNetProduction_SI() %>
+          <%= @city_stats |> TownStats.getResource(:health) |> ResourceStats.expressNetProduction_SI() %>
         </span>
       </td>
     </tr>

@@ -5,7 +5,7 @@ defmodule MayorGameWeb.MarketLive do
   use Phoenix.LiveView, container: {:div, class: "liveview-container"}
   use Phoenix.HTML
 
-  alias MayorGame.City.{ResourceStatistics}
+  alias MayorGame.City.{ResourceStats}
   alias MayorGame.{City, Repo, Market, Bid}
 
   import Ecto.Query, warn: false
@@ -25,7 +25,7 @@ defmodule MayorGameWeb.MarketLive do
     # world = Repo.get!(MayorGame.City.World, 1)
     in_dev = Application.get_env(:mayor_game, :env) == :dev
 
-    resource_types = ResourceStatistics.resource_kw_list() |> Keyword.drop([:shields])
+    resource_types = ResourceStats.resource_kw_list() |> Keyword.drop([:shields])
 
     # production_categories = [:energy, :area, :housing]
 

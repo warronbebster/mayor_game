@@ -8,11 +8,9 @@
 
 
 #TODO
-# do some optimization to update_city_by_title, see if calculator and migrator can just send changes instead of having the city_live server recalculate it every time
+
 # move logs to a has_many relationship from cities
-
-
-
+# add non-db logs that are just passed through the liveview channel for live logging
 # prevent exchange?
 # add ability to turn a number of buildings off
 # maybe you can choose to open up to migration/trade, you can do everything in your own city (north korea style) but won't get any talented people moving
@@ -30,6 +28,8 @@
 # maybe make pubsub for each city when it's opened to subscribe to updates from other cities attacking u?
 
 # add food
+# require cities to have food when a citizen moves there
+
 # add building requirements
 # replace "treasury" with "money"
 

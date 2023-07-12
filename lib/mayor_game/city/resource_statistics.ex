@@ -1,7 +1,7 @@
-defmodule MayorGame.City.ResourceStatistics do
+defmodule MayorGame.City.ResourceStats do
   alias __MODULE__
   use Accessible
-  alias MayorGame.City.{TownStatistics}
+  alias MayorGame.City.{TownStats}
   # education, unlike all other resources, uses a map
   # this can complicate things quite a bit. We can make this struct work with maps but it may occur expensive checks for all resources, for the benefit of one resource
   # for now, we split it to education_lvl_1, education_lvl_2 etc. And reserve a special education resource for libraries for random drop across all levels
@@ -18,9 +18,9 @@ defmodule MayorGame.City.ResourceStatistics do
   # fn _rng, _number_of_instances -> drop_amount
   # fn _rng, _number_of_instances, _city -> drop_amount
   @type dropfunction ::
-          (number, integer -> integer) | (number, integer, TownStatistics.t() -> integer) | nil
+          (number, integer -> integer) | (number, integer, TownStats.t() -> integer) | nil
 
-  @type t :: %ResourceStatistics{
+  @type t :: %ResourceStats{
           title: String.t(),
           stock: integer,
           storage: integer | nil,
@@ -29,9 +29,9 @@ defmodule MayorGame.City.ResourceStatistics do
           droplist: list({integer, dropfunction})
         }
 
-  @spec merge(ResourceStatistics.t(), ResourceStatistics.t(), integer) :: ResourceStatistics.t()
+  @spec merge(ResourceStats.t(), ResourceStats.t(), integer) :: ResourceStats.t()
   def merge(source, child, quantity \\ 1) do
-    %ResourceStatistics{
+    %ResourceStats{
       title: source.title,
       stock: source.stock + child.stock * quantity,
       storage:
@@ -64,9 +64,9 @@ defmodule MayorGame.City.ResourceStatistics do
     }
   end
 
-  @spec multiply(ResourceStatistics.t(), integer) :: ResourceStatistics.t()
+  @spec multiply(ResourceStats.t(), integer) :: ResourceStats.t()
   def multiply(source, quantity \\ 1) do
-    %ResourceStatistics{
+    %ResourceStats{
       title: source.title,
       stock: source.stock * quantity,
       storage:
@@ -82,9 +82,9 @@ defmodule MayorGame.City.ResourceStatistics do
   end
 
   @spec fromProduces(String.t(), integer, integer | nil, list({integer, dropfunction})) ::
-          ResourceStatistics.t()
+          ResourceStats.t()
   def fromProduces(title, value, storage \\ nil, droplist \\ []) do
-    %ResourceStatistics{
+    %ResourceStats{
       title: title,
       stock: 0,
       storage: storage,
@@ -112,9 +112,9 @@ defmodule MayorGame.City.ResourceStatistics do
   @doc """
    I think this creates a new statistic from what's required, which then you can merge with the existing resource statistic
   """
-  @spec fromRequires(String.t(), integer, integer | nil) :: ResourceStatistics.t()
+  @spec fromRequires(String.t(), integer, integer | nil) :: ResourceStats.t()
   def fromRequires(title, value, storage \\ nil) do
-    %ResourceStatistics{
+    %ResourceStats{
       title: title,
       stock: 0,
       storage:
@@ -139,42 +139,43 @@ defmodule MayorGame.City.ResourceStatistics do
     }
   end
 
-  @spec getStock(ResourceStatistics.t(), integer) :: integer
+  @spec getStock(ResourceStats.t(), integer) :: integer
   def getStock(stat, additive \\ 0) do
     stat.stock + additive
   end
 
-  @spec getStorage(ResourceStatistics.t()) :: integer | nil
+  @spec getStorage(ResourceStats.t()) :: integer | nil
   def getStorage(stat) do
     stat.storage
   end
 
-  @spec getProduction(ResourceStatistics.t()) :: integer
+  @spec getProduction(ResourceStats.t()) :: integer
   def getProduction(stat) do
     stat.production
   end
 
-  @spec getConsumption(ResourceStatistics.t()) :: integer
+  @spec getConsumption(ResourceStats.t()) :: integer
   def getConsumption(stat) do
     stat.consumption
   end
 
-  @spec getNextStock(ResourceStatistics.t()) :: integer
+  @spec getNextStock(ResourceStats.t()) :: integer
   def getNextStock(stat) do
+    # min(getStock(stat) + getNetProduction(stat), stat.storage)
     getStock(stat) + getNetProduction(stat)
   end
 
-  @spec getNetProduction(ResourceStatistics.t()) :: integer
+  @spec getNetProduction(ResourceStats.t()) :: integer
   def getNetProduction(stat) do
     stat.production - stat.consumption
   end
 
-  @spec expressStock_SI(ResourceStatistics.t(), integer) :: String.t()
+  @spec expressStock_SI(ResourceStats.t(), integer) :: String.t()
   def expressStock_SI(stat, additive \\ 0) do
     Number.SI.number_to_si(stat.stock + additive, precision: 3, trim: true)
   end
 
-  @spec expressStockOverStorage_SI(ResourceStatistics.t(), integer) :: String.t()
+  @spec expressStockOverStorage_SI(ResourceStats.t(), integer) :: String.t()
   def expressStockOverStorage_SI(stat, additive \\ 0) do
     if is_nil(stat.storage) do
       Number.SI.number_to_si(stat.stock + additive, precision: 3, trim: true)
@@ -185,34 +186,34 @@ defmodule MayorGame.City.ResourceStatistics do
     end
   end
 
-  @spec expressProduction_SI(ResourceStatistics.t()) :: String.t()
+  @spec expressProduction_SI(ResourceStats.t()) :: String.t()
   def expressProduction_SI(stat) do
     Number.SI.number_to_si(stat.production, precision: 3, trim: true)
   end
 
-  @spec expressConsumption_SI(ResourceStatistics.t()) :: String.t()
+  @spec expressConsumption_SI(ResourceStats.t()) :: String.t()
   def expressConsumption_SI(stat) do
     Number.SI.number_to_si(stat.consumption, precision: 3, trim: true)
   end
 
-  @spec expressNetProduction_SI(ResourceStatistics.t()) :: String.t()
+  @spec expressNetProduction_SI(ResourceStats.t()) :: String.t()
   def expressNetProduction_SI(stat) do
     Number.SI.number_to_si(getNetProduction(stat), precision: 3, trim: true)
   end
 
-  @spec expressAvailableOverSupply_SI(ResourceStatistics.t()) :: String.t()
+  @spec expressAvailableOverSupply_SI(ResourceStats.t()) :: String.t()
   def expressAvailableOverSupply_SI(stat) do
     Number.SI.number_to_si(getNetProduction(stat), precision: 3, trim: true) <>
       "/" <>
       Number.SI.number_to_si(stat.production, precision: 3, trim: true)
   end
 
-  @spec expressStock_delimited(ResourceStatistics.t(), integer) :: String.t()
+  @spec expressStock_delimited(ResourceStats.t(), integer) :: String.t()
   def expressStock_delimited(stat, additive \\ 0) do
     Number.Delimit.number_to_delimited(stat.stock + additive)
   end
 
-  @spec expressStockOverStorage_delimited(ResourceStatistics.t(), integer) :: String.t()
+  @spec expressStockOverStorage_delimited(ResourceStats.t(), integer) :: String.t()
   def expressStockOverStorage_delimited(stat, additive \\ 0) do
     if is_nil(stat.storage) do
       Number.Delimit.number_to_delimited(stat.stock + additive)
@@ -223,12 +224,12 @@ defmodule MayorGame.City.ResourceStatistics do
     end
   end
 
-  @spec expressNetProduction_delimited(ResourceStatistics.t()) :: String.t()
+  @spec expressNetProduction_delimited(ResourceStats.t()) :: String.t()
   def expressNetProduction_delimited(stat) do
     Number.Delimit.number_to_delimited(getNetProduction(stat))
   end
 
-  @spec expressAvailableOverSupply_delimited(ResourceStatistics.t()) :: String.t()
+  @spec expressAvailableOverSupply_delimited(ResourceStats.t()) :: String.t()
   def expressAvailableOverSupply_delimited(stat) do
     Number.Delimit.number_to_delimited(getNetProduction(stat)) <>
       "/" <> Number.Delimit.number_to_delimited(stat.production)

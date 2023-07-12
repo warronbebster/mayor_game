@@ -1,7 +1,7 @@
 defmodule MayorGame.CityCalculator do
   use GenServer, restart: :permanent
   alias MayorGame.CityCombat
-  alias MayorGame.City.{Town, Buildable, OngoingAttacks, TownStatistics, ResourceStatistics}
+  alias MayorGame.City.{Town, Buildable, OngoingAttacks, TownStats, ResourceStats}
   alias MayorGame.{City, CityHelpers, MarketHelpers, Repo, Rules}
   import Ecto.Query
 
@@ -92,7 +92,7 @@ defmodule MayorGame.CityCalculator do
 
     leftovers
     # |> Enum.sort_by(& &1.id)
-    |> Enum.chunk_every(200)
+    |> Enum.chunk_every(100)
     |> Enum.each(fn chunk ->
       Repo.checkout(
         fn ->
@@ -105,25 +105,29 @@ defmodule MayorGame.CityCalculator do
                 update: [
                   inc:
                     ^(Enum.map(
-                        ResourceStatistics.resource_list(),
+                        ResourceStats.resource_list(),
                         &{&1,
                          city
-                         |> TownStatistics.getResource(&1)
-                         |> ResourceStatistics.getNetProduction()}
+                         |> TownStats.getResource(&1)
+                         |> ResourceStats.getNetProduction()
+                         |> max(1 - (city |> TownStats.getResource(&1) |> ResourceStats.getStock()))}
+                        # ^ prevent incrementing down into negatives to avoid PG error
                       )
                       |> Keyword.merge(
                         treasury:
                           city
-                          |> TownStatistics.getResource(:money)
-                          |> ResourceStatistics.getNetProduction()
+                          |> TownStats.getResource(:money)
+                          |> ResourceStats.getNetProduction()
+                          |> max(1 - city.treasury)
+                        # ^ prevent incrementing down into negatives to avoid PG error
                       )),
                   # logs—————————
                   # ],
                   set: [
                     pollution:
                       ^(city
-                        |> TownStatistics.getResource(:pollution)
-                        |> ResourceStatistics.getNetProduction())
+                        |> TownStats.getResource(:pollution)
+                        |> ResourceStats.getNetProduction())
                   ]
                 ]
               )
@@ -156,10 +160,10 @@ defmodule MayorGame.CityCalculator do
     valid_attackers =
       leftovers
       |> Enum.filter(fn city ->
-        city |> TownStatistics.getResource(:daily_strikes) |> ResourceStatistics.getNetProduction() > 0
+        city |> TownStats.getResource(:daily_strikes) |> ResourceStats.getNetProduction() > 0
       end)
       |> Map.new(fn city ->
-        {city.id, city |> TownStatistics.getResource(:daily_strikes) |> ResourceStatistics.getNetProduction()}
+        {city.id, city |> TownStats.getResource(:daily_strikes) |> ResourceStats.getNetProduction()}
       end)
 
     Enum.reduce(attacks, valid_attackers, fn attack, acc ->

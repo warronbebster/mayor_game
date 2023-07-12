@@ -1,6 +1,6 @@
-defmodule MayorGame.City.TownStatistics do
+defmodule MayorGame.City.TownStats do
   alias __MODULE__
-  alias MayorGame.City.{ResourceStatistics, BuildableStatistics}
+  alias MayorGame.City.{ResourceStats, BuildableStatistics}
   alias MayorGame.Rules
   use Accessible
 
@@ -22,11 +22,12 @@ defmodule MayorGame.City.TownStatistics do
     :employed_citizen_count_by_level,
     :resource_stats,
     :buildable_stats,
+    :food_capacity,
     :food_consumed
   ]
 
   @type t ::
-          %TownStatistics{
+          %TownStats{
             # City
             id: integer | nil,
             title: String.t(),
@@ -53,14 +54,17 @@ defmodule MayorGame.City.TownStatistics do
             employed_citizen_count_by_level: %{integer => integer},
 
             # changes
-            resource_stats: %{atom => ResourceStatistics.t()},
+            resource_stats: %{atom => ResourceStats.t()},
             buildable_stats: %{atom => BuildableStatistics.t()},
+
+            # food
+            food_capacity: integer,
             food_consumed: integer
           }
 
-  @spec fromTown(Town.t(), World.t()) :: TownStatistics.t()
+  @spec fromTown(Town.t(), World.t()) :: TownStats.t()
   def fromTown(town, world) do
-    %TownStatistics{
+    %TownStats{
       id: town.id,
       title: town.title,
       region: town.region,
@@ -77,10 +81,10 @@ defmodule MayorGame.City.TownStatistics do
       citizen_count_by_level: Enum.frequencies_by(town.citizens_blob, & &1["education"]),
       employed_citizen_count_by_level: %{},
       resource_stats:
-        ResourceStatistics.resource_list()
+        ResourceStats.resource_list()
         |> Enum.map(
           &{&1,
-           %ResourceStatistics{
+           %ResourceStats{
              title: to_string(&1),
              stock: town[&1],
              storage: 50,
@@ -89,70 +93,70 @@ defmodule MayorGame.City.TownStatistics do
            }}
         )
         |> Enum.into(%{
-          money: %ResourceStatistics{
+          money: %ResourceStats{
             title: "money",
             stock: town.treasury,
             storage: nil,
             production: 0,
             consumption: 0
           },
-          pollution: %ResourceStatistics{
+          pollution: %ResourceStats{
             title: "pollution",
             stock: 0,
             storage: nil,
             production: 0,
             consumption: 0
           },
-          energy: %ResourceStatistics{
+          energy: %ResourceStats{
             title: "energy",
             stock: 0,
             storage: nil,
             production: 0,
             consumption: 0
           },
-          area: %ResourceStatistics{
+          area: %ResourceStats{
             title: "area",
             stock: 0,
             storage: nil,
             production: 0,
             consumption: 0
           },
-          housing: %ResourceStatistics{
+          housing: %ResourceStats{
             title: "housing",
             stock: 0,
             storage: nil,
             production: 0,
             consumption: 0
           },
-          health: %ResourceStatistics{
+          health: %ResourceStats{
             title: "health",
             stock: 0,
             storage: nil,
             production: 0,
             consumption: 0
           },
-          fun: %ResourceStatistics{
+          fun: %ResourceStats{
             title: "fun",
             stock: 0,
             storage: nil,
             production: 0,
             consumption: 0
           },
-          sprawl: %ResourceStatistics{
+          sprawl: %ResourceStats{
             title: "sprawl",
             stock: 0,
             storage: nil,
             production: 0,
             consumption: 0
           },
-          culture: %ResourceStatistics{
+          culture: %ResourceStats{
             title: "culture",
             stock: 0,
             storage: nil,
             production: 0,
             consumption: 0
           },
-          crime: %ResourceStatistics{
+          crime: %ResourceStats{
             title: "crime",
             stock: 0,
             storage: nil,
@@ -161,17 +165,18 @@ defmodule MayorGame.City.TownStatistics do
           }
         }),
       buildable_stats: %{},
+      food_capacity: 0,
       food_consumed: 0
     }
   end
 
-  @spec getResource(TownStatistics.t(), atom) :: ResourceStatistics.t()
+  @spec getResource(TownStats.t(), atom) :: ResourceStats.t()
   def getResource(town_stats, resource) do
     # fetch the resource stat from this struct. If it is not found, return an empty one
-    Map.get(town_stats.resource_stats, resource, %MayorGame.City.ResourceStatistics{})
+    Map.get(town_stats.resource_stats, resource, %MayorGame.City.ResourceStats{})
   end
 
-  @spec getBuildable(TownStatistics.t(), atom) :: BuildableStatistics.t()
+  @spec getBuildable(TownStats.t(), atom) :: BuildableStatistics.t()
   def getBuildable(town_stats, buildable) do
     # fetch the buildable stat from this struct. If it is not found, return an empty one
     Map.get(town_stats.buildable_stats, buildable, %MayorGame.City.BuildableStatistics{})

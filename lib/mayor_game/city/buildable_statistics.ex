@@ -23,6 +23,6 @@ defmodule MayorGame.City.BuildableStatistics do
           workers_by_level: %{integer => integer},
           deficient_prereq_next: list(atom),
           deficient_prereq_all: list(atom),
-          resource: %{atom => ResourceStatistics.t()}
+          resource: %{atom => ResourceStats.t()}
         }
 end

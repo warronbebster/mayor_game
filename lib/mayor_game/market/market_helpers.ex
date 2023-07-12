@@ -1,8 +1,8 @@
 defmodule MayorGame.MarketHelpers do
   alias MayorGame.City.{
     Town,
-    ResourceStatistics,
-    TownStatistics,
+    ResourceStats,
+    TownStats,
     OngoingSanctions
   }
 
@@ -43,11 +43,11 @@ defmodule MayorGame.MarketHelpers do
               false
             else
               # replace this with getNextStock
-              # IO.inspect(TownStatistics.getResource(leftovers_by_id[market.town_id], resource),
+              # IO.inspect(TownStats.getResource(leftovers_by_id[market.town_id], resource),
               #   label: leftovers_by_id[market.town_id].title
               # )
 
-              TownStatistics.getResource(leftovers_by_id[market.town_id], resource) |> ResourceStatistics.getNextStock() >
+              TownStats.getResource(leftovers_by_id[market.town_id], resource) |> ResourceStats.getNextStock() >
                 0
             end
           end)
@@ -55,7 +55,7 @@ defmodule MayorGame.MarketHelpers do
           |> Enum.map(fn market ->
             # actually here you want to sell the resources for the leftover cities
             available_resources =
-              TownStatistics.getResource(leftovers_by_id[market.town_id], resource) |> ResourceStatistics.getNextStock()
+              TownStats.getResource(leftovers_by_id[market.town_id], resource) |> ResourceStats.getNextStock()
 
             if market.sell_excess && available_resources > 0 do
               market |> Map.put(:amount_to_sell, available_resources)
@@ -71,10 +71,10 @@ defmodule MayorGame.MarketHelpers do
             if is_nil(leftovers_by_id[bid.town_id]) do
               false
             else
-              resources = leftovers_by_id[bid.town_id] |> TownStatistics.getResource(resource)
+              resources = leftovers_by_id[bid.town_id] |> TownStats.getResource(resource)
 
-              ResourceStatistics.getStorage(resources) - ResourceStatistics.getNextStock(resources) +
-                ResourceStatistics.getNetProduction(resources) >= bid.amount
+              ResourceStats.getStorage(resources) - ResourceStats.getNextStock(resources) +
+                ResourceStats.getNetProduction(resources) >= bid.amount
             end
           end)
 
@@ -104,7 +104,7 @@ defmodule MayorGame.MarketHelpers do
                 else
                   paid_price = round((bid.max_price + hd(acc.markets).min_price) / 2)
 
-                  town_money_stats = leftovers_by_id[bid.town_id] |> TownStatistics.getResource(:money)
+                  town_money_stats = leftovers_by_id[bid.town_id] |> TownStats.getResource(:money)
 
                   sanction_match =
                     Enum.any?(sanctions, fn s ->
@@ -118,7 +118,7 @@ defmodule MayorGame.MarketHelpers do
                     :cont,
                     #  if there's enough money to cover the whole bid
                     #  and the bid price lines up
-                    if ResourceStatistics.getNextStock(town_money_stats) >= bid.amount * paid_price &&
+                    if ResourceStats.getNextStock(town_money_stats) >= bid.amount * paid_price &&
                          bid.max_price >= hd(acc.markets).min_price &&
                          !sanction_match do
                       Enum.reduce_while(acc.markets, Map.put_new(acc, :bid_amount, bid.amount), fn market, acc2 ->

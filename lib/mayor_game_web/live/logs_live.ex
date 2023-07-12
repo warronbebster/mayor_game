@@ -6,7 +6,7 @@ defmodule MayorGameWeb.LogsLive do
   use Phoenix.HTML
 
   alias MayorGame.{City, Repo, Rules, CityHelpers}
-  alias MayorGame.City.{Buildable, ResourceStatistics}
+  alias MayorGame.City.{Buildable, ResourceStats}
 
   import Ecto.Query, warn: false
 
@@ -26,7 +26,7 @@ defmodule MayorGameWeb.LogsLive do
     world = Repo.get!(MayorGame.City.World, 1)
     in_dev = Application.get_env(:mayor_game, :env) == :dev
 
-    resource_types = ResourceStatistics.resource_kw_list()
+    resource_types = ResourceStats.resource_kw_list()
 
     subtotal_types =
       ([
