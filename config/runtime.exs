@@ -43,7 +43,7 @@ if config_env() == :prod do
     url: database_url,
     pool_size: String.to_integer(System.get_env("POOL_SIZE") || "35"),
     timeout: 500_000,
-    socket_options: maybe_ipv6,
+    socket_options: [:inet6],
     queue_target: 30_000,
     queue_interval: 40_000
 
@@ -59,7 +59,7 @@ if config_env() == :prod do
       You can generate one by calling: mix phx.gen.secret
       """
 
-  host = System.get_env("PHX_HOST") || "https://fragile.city"
+  host = System.get_env("PHX_HOST") || "https://mayorgame-production.up.railway.app"
   port = String.to_integer(System.get_env("PORT") || "4000")
 
   mail_secret =
@@ -78,7 +78,7 @@ if config_env() == :prod do
       ip: {0, 0, 0, 0, 0, 0, 0, 0},
       port: port
     ],
-    check_origin: :conn,
+    check_origin: [:conn],
     secret_key_base: secret_key_base
 
   config :mayor_game, MayorGameWeb.Pow.Mailer,
