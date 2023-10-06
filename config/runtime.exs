@@ -78,7 +78,7 @@ if config_env() == :prod do
       ip: {0, 0, 0, 0, 0, 0, 0, 0},
       port: port
     ],
-    check_origin: [:conn],
+    check_origin: ["//railway.app", "//railway.internal"],
     secret_key_base: secret_key_base
 
   config :mayor_game, MayorGameWeb.Pow.Mailer,
