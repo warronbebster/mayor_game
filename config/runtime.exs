@@ -36,14 +36,14 @@ if config_env() == :prod do
 
   IO.puts("Database URL: #{database_url}")
 
-  maybe_ipv6 = if System.get_env("ECTO_IPV6"), do: [:inet6], else: []
+  maybe_ipv6 = if System.get_env("ECTO_IPV6"), do: [:inet6_tcp], else: []
 
   config :mayor_game, MayorGame.Repo,
     # ssl: true,
     url: database_url,
     pool_size: String.to_integer(System.get_env("POOL_SIZE") || "35"),
     timeout: 500_000,
-    socket_options: [:inet6],
+    socket_options: maybe_ipv6,
     queue_target: 30_000,
     queue_interval: 40_000
 
