@@ -36,7 +36,7 @@ if config_env() == :prod do
 
   IO.puts("Database URL: #{database_url}")
 
-  maybe_ipv6 = if System.get_env("ECTO_IPV6"), do: [:inet6_tcp], else: []
+  maybe_ipv6 = if System.get_env("ECTO_IPV6"), do: [:inet6], else: []
 
   config :mayor_game, MayorGame.Repo,
     # ssl: true,
@@ -59,7 +59,7 @@ if config_env() == :prod do
       You can generate one by calling: mix phx.gen.secret
       """
 
-  host = System.get_env("PHX_HOST") || "https://mayorgame-production.up.railway.app"
+  host = System.get_env("PHX_HOST") || "http://mayorgame-production.up.railway.app"
   port = String.to_integer(System.get_env("PORT") || "4000")
 
   mail_secret =
