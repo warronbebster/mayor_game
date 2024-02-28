@@ -73,18 +73,35 @@ world = MayorGame.City.get_world(1)
 MayorGame.City.update_world(world, %{pollution: 1000000})
 city = MayorGame.City.get_town_by_title!("hi21")
 city = MayorGame.City.get_town_by_title!("wat")
-MayorGame.City.update_town(city, %{water: 10})
+MayorGame.City.update_town(city, %{rock_yards: 10})
+MayorGame.Auth.update_user(user, %{email_confirmation_token: "watsjjshjkfdjskal"})
 
 To update all:
+import Ecto.Query
+from(t in MayorGame.City.OngoingAttacks)|> MayorGame.Repo.delete_all([])
 
-from(t in MayorGame.City.Town, where: t.id > 0, update: [set: [logs_deaths_housing: 0]])|> MayorGame.Repo.update_all([])
+from(t in MayorGame.City.Town, update: [set: [logs_deaths_housing: 0]])|> MayorGame.Repo.update_all([])
 from(t in MayorGame.City.Town, where: t.treasury < 0, update: [set: [treasury: 0]])|> MayorGame.Repo.update_all([])
+
+reset login dates for dev:
+date = Date.utc_today()
+from(t in MayorGame.City.Town, update: [set: [last_login: ^date]])|> MayorGame.Repo.update_all([])
+
+from(u in MayorGame.Auth.User, where: u.id == 2115, update: [set: [unconfirmed_email: nil, confirmed_at: ]])|> MayorGame.Repo.update_all([])
+from(u in MayorGame.Auth.User, where: u.id == 2115, update: [set: [is_alt: true]])|> MayorGame.Repo.update_all([])
+from(u in MayorGame.Auth.User, update: [set: [is_alt: false]])|> MayorGame.Repo.update_all([])
 
 alias MayorGame.City.Buildable
 import Ecto.Query
 for buildable <- MayorGame.City.Buildable.buildables_list() do
 from(t in MayorGame.City.Town, where: field(t, ^buildable) < 0) |> MayorGame.Repo.update_all(set: [{buildable, 0}])
 end
+
+banning alts:
+alt_ids = [MayorGame.City.get_town_by_title!("Apokalypse").user_id | alt_ids]
+from(u in MayorGame.Auth.User, where: u.id in ^ alt_ids, update: [set: [is_alt: true]])|> MayorGame.Repo.update_all([])
+
+https://fly.io/phoenix-files/backfilling-data/#bad
 
 ```
 
@@ -106,6 +123,8 @@ see db machine details
 
 scaling fly postgres
 https://fly.io/docs/postgres/managing/scaling/
+
+migrations are in `app/bin/ma
 
 ## Learn more
 

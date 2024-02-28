@@ -18,7 +18,8 @@ defmodule MayorGame.City.Town do
 
   use Ecto.Schema
   import Ecto.Changeset
-  alias MayorGame.City.{Buildable, OngoingAttacks, Town}
+  alias MayorGame.City.{Buildable, OngoingAttacks, OngoingSanctions, Market}
+  alias MayorGame.Market.{Bid}
   use Accessible
 
   @timestamps_opts [type: :utc_datetime]
@@ -32,6 +33,7 @@ defmodule MayorGame.City.Town do
     :logs_deaths_housing,
     :logs_deaths_age,
     :logs_deaths_pollution,
+    :logs_deaths_starvation,
     :logs_attacks,
     :logs_immigration,
     :logs_emigration_jobs,
@@ -40,7 +42,7 @@ defmodule MayorGame.City.Town do
   ]
 
   # don't print these on inspect
-  @derive {Inspect, except: [:citizens_blob, :priorities] ++ Buildable.buildables_list() ++ logs_types}
+  @derive {Inspect, except: [:priorities, :citizens_compressed] ++ Buildable.buildables_list() ++ logs_types}
 
   @typedoc """
       Type for %Town{} that's callable with MayorGame.City.Buildable.t()
@@ -60,7 +62,7 @@ defmodule MayorGame.City.Town do
             pollution: integer,
             treasury: integer,
             citizen_count: integer,
-            citizens_blob: list(map),
+            citizens_compressed: map,
             patron: integer,
             contributor: boolean,
             priorities: map,
@@ -75,7 +77,10 @@ defmodule MayorGame.City.Town do
             logs_edu: map,
             logs_sent: map,
             logs_received: map,
+            logs_market_sales: map,
+            logs_market_purchases: map,
             logs_deaths_pollution: integer,
+            logs_deaths_starvation: integer,
             logs_deaths_age: integer,
             logs_deaths_housing: integer,
             logs_deaths_attacks: integer,
@@ -89,14 +94,19 @@ defmodule MayorGame.City.Town do
             gold: integer,
             # ^ unused
             uranium: integer,
+            coal: integer,
             stone: integer,
             fish: integer,
             oil: integer,
+            gas: integer,
+            # ^ unused
             wood: integer,
             salt: integer,
             water: integer,
             lithium: integer,
             microchips: integer,
+            sand: integer,
+            glass: integer,
             # ^ unused
             cows: integer,
             rice: integer,
@@ -105,6 +115,8 @@ defmodule MayorGame.City.Town do
             meat: integer,
             grapes: integer,
             bread: integer,
+            wine: integer,
+            beer: integer,
             food: integer,
 
             # Buildings ————————————————————————————
@@ -115,6 +127,7 @@ defmodule MayorGame.City.Town do
             apartments: integer,
             high_rises: integer,
             megablocks: integer,
+            # transport
             roads: integer,
             highways: integer,
             airports: integer,
@@ -122,6 +135,8 @@ defmodule MayorGame.City.Town do
             subway_lines: integer,
             bike_lanes: integer,
             bikeshare_stations: integer,
+            gas_stations: integer,
+            # energy
             coal_plants: integer,
             natural_gas_plants: integer,
             wind_turbines: integer,
@@ -129,15 +144,18 @@ defmodule MayorGame.City.Town do
             nuclear_plants: integer,
             dams: integer,
             carbon_capture_plants: integer,
+            # civic
             parks: integer,
             campgrounds: integer,
             nature_preserves: integer,
             libraries: integer,
+            # education
             schools: integer,
             middle_schools: integer,
             high_schools: integer,
             universities: integer,
             research_labs: integer,
+            # commercial
             retail_shops: integer,
             factories: integer,
             mines: integer,
@@ -150,11 +168,14 @@ defmodule MayorGame.City.Town do
             arenas: integer,
             zoos: integer,
             aquariums: integer,
+            # medical
             hospitals: integer,
             doctor_offices: integer,
+            # combat
             air_bases: integer,
             defense_bases: integer,
             missile_defense_arrays: integer,
+            # storage
             wood_warehouses: integer,
             fish_tanks: integer,
             lithium_vats: integer,
@@ -185,10 +206,14 @@ defmodule MayorGame.City.Town do
     field(:wood, :integer)
     field(:fish, :integer)
     field(:oil, :integer)
+    field(:gas, :integer)
+    field(:coal, :integer)
     field(:salt, :integer)
     field(:water, :integer)
     field(:lithium, :integer)
     field(:microchips, :integer)
+    field(:sand, :integer)
+    field(:glass, :integer)
     field(:cows, :integer)
     field(:rice, :integer)
     field(:wheat, :integer)
@@ -197,11 +222,14 @@ defmodule MayorGame.City.Town do
     field(:bread, :integer)
     field(:grapes, :integer)
     field(:food, :integer)
+    field(:wine, :integer)
+    field(:beer, :integer)
 
     field(:patron, :integer)
     field(:contributor, :boolean)
     field(:retaliate, :boolean)
-    field :citizens_blob, {:array, :map}, null: false, default: []
+    field :citizens_compressed, :map, null: false, default: %{}
+    field :last_login, :date
     field :priorities, :map, null: false, default: Buildable.buildables_default_priorities()
 
     # this corresponds to an elixir list
@@ -217,7 +245,10 @@ defmodule MayorGame.City.Town do
     field :logs_edu, :map, default: %{}
     field :logs_sent, :map, default: %{}
     field :logs_received, :map, default: %{}
+    field :logs_market_sales, :map, default: %{}
+    field :logs_market_purchases, :map, default: %{}
     field :logs_deaths_pollution, :integer, default: 0
+    field :logs_deaths_starvation, :integer, default: 0
     field :logs_deaths_age, :integer, default: 0
     field :logs_deaths_housing, :integer, default: 0
     field :logs_deaths_attacks, :integer, default: 0
@@ -225,10 +256,19 @@ defmodule MayorGame.City.Town do
 
     # outline relationship between city and citizens
 
-    has_many :attacks_sent, OngoingAttacks, foreign_key: :attacking_id
-    has_many :attacks_recieved, OngoingAttacks, foreign_key: :attacked_id
+    has_many :attacks_sent, OngoingAttacks, foreign_key: :attacking_id, on_delete: :delete_all
+    has_many :attacks_recieved, OngoingAttacks, foreign_key: :attacked_id, on_delete: :delete_all
     has_many :attacking, through: [:attacks_sent, :attacked]
     has_many :attacked, through: [:attacks_recieved, :attacking]
+
+    has_many :sanctions_sent, OngoingSanctions, foreign_key: :sanctioning_id, on_delete: :delete_all
+    has_many :sanctions_recieved, OngoingSanctions, foreign_key: :sanctioned_id, on_delete: :delete_all
+    has_many :sanctioning, through: [:sanctions_sent, :sanctioned]
+    has_many :sanctioned, through: [:sanctions_recieved, :sanctioning]
+
+    # markets
+    has_many :markets, Market, on_delete: :delete_all
+    has_many :bids, Bid, on_delete: :delete_all
 
     # buildable schema
     for buildable <- Buildable.buildables_list() do
@@ -258,6 +298,76 @@ defmodule MayorGame.City.Town do
     ]
   end
 
+  def traits_minus_blob do
+    [
+      :id,
+      :title,
+      :pollution,
+      :citizen_count,
+      :treasury,
+      :region,
+      :climate,
+      :user_id,
+      :tax_rates,
+      # resources
+      :missiles,
+      :shields,
+      # resources
+      :steel,
+      :stone,
+      :sulfur,
+      :gold,
+      :coal,
+      :uranium,
+      :water,
+      :salt,
+      :fish,
+      :oil,
+      :wood,
+      :stone,
+      :lithium,
+      :sand,
+      :glass,
+      :food,
+      :cows,
+      :rice,
+      :meat,
+      :grapes,
+      :produce,
+      :wheat,
+      :bread,
+      :beer,
+      :wine,
+      :gas,
+
+      # —————————————
+      :patron,
+      :contributor,
+      :citizens_compressed,
+      :last_login,
+
+      # logs
+      :logs_emigration_housing,
+      :logs_emigration_taxes,
+      :logs_emigration_jobs,
+      :logs_immigration,
+      :logs_attacks,
+      :logs_edu,
+      :logs_deaths_pollution,
+      :logs_deaths_starvation,
+      :logs_deaths_age,
+      :logs_deaths_housing,
+      :logs_deaths_attacks,
+      :logs_market_purchases,
+      :logs_market_sales,
+      :logs_births,
+      :logs_sent,
+      :logs_received,
+      :priorities,
+      :retaliate
+    ] ++ Buildable.buildables_list()
+  end
+
   @doc false
   def changeset(%MayorGame.City.Town{} = town, attrs) do
     town
@@ -285,14 +395,25 @@ defmodule MayorGame.City.Town do
         :salt,
         :fish,
         :oil,
+        :gas,
         :wood,
         :stone,
         :lithium,
+        :food,
+        :cows,
+        :rice,
+        :meat,
+        :grapes,
+        :wheat,
+        :bread,
 
         # —————————————
         :patron,
         :contributor,
-        :citizens_blob,
+        :citizens_compressed,
+        :last_login,
+
+        # logs
         :logs_emigration_housing,
         :logs_emigration_taxes,
         :logs_emigration_jobs,
@@ -300,11 +421,14 @@ defmodule MayorGame.City.Town do
         :logs_attacks,
         :logs_edu,
         :logs_deaths_pollution,
+        :logs_deaths_starvation,
         :logs_deaths_age,
         :logs_deaths_housing,
         :logs_deaths_attacks,
         :logs_births,
         :logs_sent,
+        :logs_received,
+        :logs_market_purchases,
         :logs_received,
         :priorities,
         :retaliate

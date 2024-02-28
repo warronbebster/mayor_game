@@ -17,6 +17,15 @@
   <%= text_input f, Pow.Ecto.Schema.user_id_field(@changeset) %>
   <%= error_tag f, Pow.Ecto.Schema.user_id_field(@changeset) %>
 
+  <div>
+    <%= if @changeset.data.email_confirmed_at do %>
+      <p>Email verified.</p>
+    <% else %>
+      <p>Click the link in the confirmation email to verify your email. Still haven't received the email? <%= link("Click here to send again", to: Routes.registration_path(@conn, :resend_confirmation_email), method: :post) %>.</p>
+    <% end %>
+
+  </div>
+
   <%= label f, :nickname %>
   <%= text_input f, :nickname %>
   <%= error_tag f, :nickname %>

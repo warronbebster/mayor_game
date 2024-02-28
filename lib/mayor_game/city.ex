@@ -38,8 +38,45 @@ defmodule MayorGame.City do
       }, ...]
 
   """
-  def list_cities_preload do
-    Repo.all(Town, timeout: 200_000) |> Repo.preload([:user], timeout: 200_000)
+  def list_cities_preload() do
+    # TODO: can I filter here by last_login? that way I don't even have to do the filter in the server
+    from(Town,
+      select: ^Town.traits_minus_blob()
+    )
+    |> Repo.all(timeout: 800_000)
+    |> Repo.preload(:user, timeout: 500_000)
+
+    # Repo.all(Town, timeout: 800_000) |> Repo.preload([:user], timeout: 500_000)
+  end
+
+  @doc """
+  Returns the list of cities with preloads on the cities: preloads :citizens, :user, :details
+
+  ## Examples
+
+      iex> list_cities()
+      [%Town{
+        :citizens: [...],
+        :user: %User{},
+        :details: %details{
+
+        }
+      }, ...]
+
+  """
+  def list_active_cities_preload(datetime, in_dev) do
+    date_range = if in_dev, do: 2000, else: 30
+
+    check_date = DateTime.add(datetime, -date_range, :day) |> DateTime.to_date()
+    # TODO: can I filter here by last_login? that way I don't even have to do the filter in the server
+    from(Town,
+      select: ^Town.traits_minus_blob()
+    )
+    |> where([t], fragment("?::date", t.last_login) >= ^check_date)
+    |> Repo.all(timeout: 800_000)
+    |> Repo.preload(:user, timeout: 500_000)
+
+    # Repo.all(Town, timeout: 800_000) |> Repo.preload([:user], timeout: 500_000)
   end
 
   @doc """
@@ -102,7 +139,7 @@ defmodule MayorGame.City do
         }
       }
       |> Map.merge(buildables_zeroed)
-      |> Map.merge(%{huts: 5, coal_plants: 1, roads: 1})
+      |> Map.merge(%{huts: 5, coal_plants: 1, roads: 1, gardens: 1})
 
     # make sure keys are atoms, helps with input from phoenix forms
     attrsWithAtomKeys =
@@ -211,128 +248,27 @@ defmodule MayorGame.City do
     Town.changeset(town, attrs)
   end
 
-  # ###############################################
-  # CITIZENS CITIZENS CITIZENS CITIZENS CITIZENS CITIZENS
-  # ###############################################
-
   @doc """
-  Returns the list of citizens.
-
-  ## Examples
-
-      iex> list_citizens()
-      [%Citizens{}, ...]
+  Returns a tuple of changes from the repo
 
   """
-  def list_citizens do
-    Repo.all(Citizens)
-  end
+  def add_citizens(%Town{} = town, day) do
+    updated_compressed_citizens =
+      town.citizens_compressed
+      |> Map.merge(
+        %{"100" => [%{"birthday" => Citizens.round100(day), "education" => 0, "preferences" => :rand.uniform(11)}]},
+        fn _k, v1, v2 -> v1 ++ v2 end
+      )
 
-  def list_citizens_preload do
-    Repo.all(Citizens) |> Repo.preload([:town])
-  end
-
-  @doc """
-  Gets a single citizens.
-
-  Raises `Ecto.NoResultsError` if the Citizens does not exist.
-
-  ## Examples
-
-      iex> get_citizens!(123)
-      %Citizens{}
-
-      iex> get_citizens!(456)
-      ** (Ecto.NoResultsError)
-
-  """
-  def get_citizens!(id), do: Repo.get!(Citizens, id)
-
-  @doc """
-  Creates a citizens.
-
-  ## Examples
-
-      iex> create_citizens(%{field: value})
-      {:ok, %Citizens{}}
-
-      iex> create_citizens(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def create_citizens(attrs \\ %{}) do
-    # this makes a map with random values that add up to 1
-    decision_factors = Enum.shuffle([:tax_rates, :sprawl, :fun, :health, :pollution])
-
-    random_preferences =
-      Enum.reduce(decision_factors, %{preference_map: %{}, room_taken: 0}, fn x, acc ->
-        value =
-          if x == List.last(decision_factors),
-            do: (1 - acc.room_taken) |> Float.round(2),
-            else: (:rand.uniform() * (1 - acc.room_taken)) |> Float.round(2)
-
-        %{
-          preference_map: Map.put(acc.preference_map, to_string(x), value),
-          room_taken: acc.room_taken + value
-        }
-      end)
-
-    # add new attribute if not set
-    attrs_plus_preferences =
-      attrs
-      |> Map.put_new(:name, Faker.Person.name())
-      |> Map.put(:preferences, random_preferences.preference_map)
-
-    %Citizens{}
-    |> Citizens.changeset(attrs_plus_preferences)
-    |> Repo.insert()
-  end
-
-  @doc """
-  Updates a citizens.
-
-  ## Examples
-
-      iex> update_citizens(citizens, %{field: new_value})
-      {:ok, %Citizens{}}
-
-      iex> update_citizens(citizens, %{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def update_citizens(%Citizens{} = citizens, attrs) do
-    citizens
-    |> Citizens.changeset(attrs)
-    |> Repo.update()
-  end
-
-  @doc """
-  Deletes a citizens.
-
-  ## Examples
-
-      iex> delete_citizens(citizens)
-      {:ok, %Citizens{}}
-
-      iex> delete_citizens(citizens)
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def delete_citizens(%Citizens{} = citizens) do
-    Repo.delete(citizens)
-  end
-
-  @doc """
-  Returns an `%Ecto.Changeset{}` for tracking citizens changes.
-
-  ## Examples
-
-      iex> change_citizens(citizens)
-      %Ecto.Changeset{data: %Citizens{}}
-
-  """
-  def change_citizens(%Citizens{} = citizens, attrs \\ %{}) do
-    Citizens.changeset(citizens, attrs)
+    from(t in Town,
+      where: t.id == ^town.id,
+      update: [
+        set: [
+          citizens_compressed: ^updated_compressed_citizens
+        ]
+      ]
+    )
+    |> Repo.update_all([])
   end
 
   # ###############################################
@@ -409,47 +345,46 @@ defmodule MayorGame.City do
       {:ok, %Details{}}
 
   """
-  def demolish_buildable(%Town{} = city, {ledger_buildable, _ledger_cost}, buildable_to_demolish) do
+  def demolish_buildable(%Town{} = city, {_ledger_buildable, _ledger_cost}, buildable_to_demolish, buildable_count) do
     # city is unchanged, use the ledger to hold the accumlated construction and cost prior to UI refresh
-    buildable_count = city[buildable_to_demolish]
 
-    buildable_pending =
-      if !is_nil(ledger_buildable[buildable_to_demolish]) do
-        ledger_buildable[buildable_to_demolish]
-      else
-        0
-      end
+    # buildable_pending =
+    #   if !is_nil(ledger_buildable[buildable_to_demolish]) do
+    #     ledger_buildable[buildable_to_demolish]
+    #   else
+    #     0
+    #   end
 
-    city_attrs = %{buildable_to_demolish => city[buildable_to_demolish] + buildable_pending - 1}
+    # city_attrs = %{buildable_to_demolish => city[buildable_to_demolish] + buildable_pending - 1}
 
-    refund_city =
-      city
-      |> Town.changeset(city_attrs)
-      |> Ecto.Changeset.validate_number(buildable_to_demolish, greater_than_or_equal_to: 0)
-      |> Repo.update()
+    # refund_city =
+    #   city
+    #   |> Town.changeset(city_attrs)
+    #   |> Ecto.Changeset.validate_number(buildable_to_demolish, greater_than_or_equal_to: 0)
+    #   |> Repo.update()
 
     refund_price =
       round(
         Rules.building_price(
           Buildable.buildables_flat()[buildable_to_demolish].price,
-          buildable_count
+          buildable_count - 1
         ) / 2
       )
 
-    case refund_city do
-      {:ok, _result} ->
-        from(t in Town,
-          where: [id: ^city.id]
-        )
-        |> Repo.update_all(inc: [{:treasury, refund_price}])
+    # case refund_city do
+    #   {:ok, _result} ->
+    from(t in Town,
+      where: [id: ^city.id]
+    )
+    |> Repo.update_all(inc: [{:treasury, refund_price}, {buildable_to_demolish, -1}])
 
-      {:error, err} ->
-        Logger.error(inspect(err))
-        {:error, err}
+    # {:error, err} ->
+    #   Logger.error(inspect(err))
+    #   {:error, err}
 
-      _ ->
-        nil
-    end
+    # _ ->
+    #   nil
+    # end
   end
 
   # WORLD

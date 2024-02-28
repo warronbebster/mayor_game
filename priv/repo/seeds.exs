@@ -11,7 +11,7 @@
 # and so on) as they will fail if something goes wrong.
 
 # make random city name so it doesn't run into dupe problem
-randomString = :crypto.strong_rand_bytes(4) |> Base.encode64() |> binary_part(0, 4)
+randomString = :crypto.strong_rand_bytes(32) |> Base.encode64(padding: false) |> binary_part(0, 4)
 cityName = String.replace(randomString, "/", "a") <> "ville"
 
 alias MayorGame.Auth.User
@@ -50,6 +50,7 @@ Auth.create_user(%{
     user_id: madeUser_id
   })
 
+
 # citizens don't get their own table anymore
 # {:ok, %Citizens{}} =
 #   City.create_citizens(%{
@@ -60,3 +61,4 @@ Auth.create_user(%{
 #     :has_car => false,
 #     :last_moved => 0
 #   })
+

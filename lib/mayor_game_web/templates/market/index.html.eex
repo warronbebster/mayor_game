@@ -1,0 +1,6 @@
+<%# if a user is logged in %>
+<%= if @current_user do %>
+  <%= live_render(@conn,
+                  MayorGameWeb.MarketLive,
+                  session: %{"current_user" => @current_user}) %>
+<% end %>

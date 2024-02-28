@@ -24,7 +24,7 @@ defmodule MayorGame.City.Buildable do
   schema "buildable" do
     # has an id built-in?
     # what are the upgrades the buildable currently possesses
-    belongs_to(:details, MayorGame.City.Details)
+    # belongs_to(:details, MayorGame.City.Details)
 
     timestamps()
 
@@ -171,7 +171,8 @@ defmodule MayorGame.City.Buildable do
         bus_lines: buildables_flat().bus_lines,
         subway_lines: buildables_flat().subway_lines,
         bike_lanes: buildables_flat().bike_lanes,
-        bikeshare_stations: buildables_flat().bikeshare_stations
+        bikeshare_stations: buildables_flat().bikeshare_stations,
+        gas_stations: buildables_flat().gas_stations
       ],
       housing: [
         huts: buildables_flat().huts,
@@ -213,6 +214,7 @@ defmodule MayorGame.City.Buildable do
         desalination_plants: buildables_flat().desalination_plants
       ],
       farms: [
+        gardens: buildables_flat().gardens,
         rice_farms: buildables_flat().rice_farms,
         wheat_farms: buildables_flat().wheat_farms,
         produce_farms: buildables_flat().produce_farms,
@@ -225,7 +227,10 @@ defmodule MayorGame.City.Buildable do
         grocery_stores: buildables_flat().grocery_stores,
         farmers_markets: buildables_flat().farmers_markets,
         butchers: buildables_flat().butchers,
-        bakeries: buildables_flat().bakeries
+        bakeries: buildables_flat().bakeries,
+        wineries: buildables_flat().wineries,
+        breweries: buildables_flat().breweries,
+        bars: buildables_flat().bars
       ],
       civic: [
         parks: buildables_flat().parks,
@@ -242,6 +247,7 @@ defmodule MayorGame.City.Buildable do
       entertainment: [
         theatres: buildables_flat().theatres,
         arenas: buildables_flat().arenas,
+        galleries: buildables_flat().galleries,
         zoos: buildables_flat().zoos,
         aquariums: buildables_flat().aquariums
       ],
@@ -338,12 +344,14 @@ defmodule MayorGame.City.Buildable do
         level: 0,
         title: :single_family_homes,
         price: 100,
+        building_reqs: %{wood: 10},
         requires: %{
           area: 1,
           energy: 12
         },
         produces: %{
           housing: 2,
+          pollution: 2,
           sprawl: 5
         }
       },
@@ -354,12 +362,14 @@ defmodule MayorGame.City.Buildable do
         level: 0,
         title: :multi_family_homes,
         price: 200,
+        building_reqs: %{wood: 20},
         requires: %{
           area: 1,
           energy: 18
         },
         produces: %{
           housing: 6,
+          pollution: 5,
           sprawl: 3
         }
       },
@@ -370,13 +380,15 @@ defmodule MayorGame.City.Buildable do
         level: 0,
         title: :homeless_shelters,
         price: 100,
+        building_reqs: %{wood: 10},
         requires: %{
           area: 5,
           money: 100,
           energy: 70
         },
         produces: %{
-          housing: 20
+          housing: 20,
+          sprawl: 1
         }
       },
       # apartments ————————————————————————————————————
@@ -386,12 +398,14 @@ defmodule MayorGame.City.Buildable do
         level: 0,
         title: :apartments,
         price: 800,
+        building_reqs: %{steel: 10},
         requires: %{
           area: 10,
           energy: 90
         },
         produces: %{
-          housing: 20
+          housing: 20,
+          pollution: 15
         }
       },
       # micro apartments ————————————————————————————————————
@@ -401,12 +415,14 @@ defmodule MayorGame.City.Buildable do
         level: 0,
         title: :micro_apartments,
         price: 1_300,
+        building_reqs: %{steel: 5},
         requires: %{
           area: 5,
           energy: 50
         },
         produces: %{
-          housing: 20
+          housing: 20,
+          pollution: 12
         }
       },
       # high rises ————————————————————————————————————
@@ -416,13 +432,14 @@ defmodule MayorGame.City.Buildable do
         level: 0,
         title: :high_rises,
         price: 6_000,
+        building_reqs: %{steel: 20},
         requires: %{
-          area: 2,
+          area: 20,
           energy: 150
         },
         produces: %{
           housing: 100,
-          pollution: 10
+          pollution: 50
         }
       },
       # Megablocks ————————————————————————————————————
@@ -431,14 +448,15 @@ defmodule MayorGame.City.Buildable do
         category: :housing,
         level: 0,
         title: :megablocks,
-        price: 5_000_000,
+        price: 50_000,
+        building_reqs: %{steel: 50},
         requires: %{
           area: 100,
-          energy: 2000
+          energy: 500
         },
         produces: %{
-          housing: 3000,
-          pollution: 50
+          housing: 500,
+          pollution: 100
         }
       },
       # TRANSIT ——————————————————————————————————————————————————————————————————————————————
@@ -581,6 +599,28 @@ defmodule MayorGame.City.Buildable do
           area: 10
         }
       },
+      # GAS STATIONS ————————————————————————————————————
+      gas_stations: %BuildableMetadata{
+        size: 1,
+        category: :transit,
+        level: 0,
+        title: :gas_stations,
+        price: 1000,
+        requires: %{
+          area: 2,
+          money: 10,
+          energy: 10,
+          oil: 1,
+          workers: %{count: 5, level: 0}
+        },
+        produces: %{
+          gas: 10,
+          pollution: 1
+        },
+        stores: %{
+          gas: 100
+        }
+      },
       # ENERGY ————————————————————————————————————————————————————————————————————————
       # ENERGY ————————————————————————————————————————————————————————————————————————
       # Coal Plants ————————————————————————————————————
@@ -598,6 +638,7 @@ defmodule MayorGame.City.Buildable do
           }
         },
         requires: %{
+          # coal: 1,
           area: 5,
           money: 10,
           workers: %{count: 5, level: 0}
@@ -897,7 +938,7 @@ defmodule MayorGame.City.Buildable do
         },
         # fn _rng, _number_of_instances -> drop_amount
         produces: %{
-          education: fn rng, number_of_buildables ->
+          education: fn _rng, number_of_buildables ->
             # low-luck calculation at 5% chance, so rng needs only be used once
             Utility.dice_roll(number_of_buildables, 0.05)
           end,
@@ -1010,14 +1051,18 @@ defmodule MayorGame.City.Buildable do
           health: -5,
           pollution: 10,
           sulfur: 1,
+          coal: 1,
           # fn _rng, _number_of_instances -> drop_amount
-          uranium: fn rng, number_of_buildables ->
+          uranium: fn _rng, number_of_buildables ->
+            # low-luck calculation at 0.1% chance, so rng needs only be used once
+            Utility.dice_roll(number_of_buildables, 0.001)
+          end,
+          gold: fn _rng, number_of_buildables ->
             # low-luck calculation at 0.1% chance, so rng needs only be used once
             Utility.dice_roll(number_of_buildables, 0.001)
           end
-          # gold: 1,
         },
-        stores: %{sulfur: 1000}
+        stores: %{sulfur: 1000, uranium: 100, gold: 100, coal: 100}
       },
       # LUMBER YARDS ————————————————————————————————————
       lumber_yards: %BuildableMetadata{
@@ -1046,7 +1091,7 @@ defmodule MayorGame.City.Buildable do
         price: 50_000,
         requires: %{
           money: 250,
-          energy: 100,
+          energy: 10,
           area: 5,
           workers: %{count: 10, level: 2}
         },
@@ -1065,7 +1110,7 @@ defmodule MayorGame.City.Buildable do
         requires: %{
           money: 1000,
           energy: 5000,
-          area: 100,
+          area: 50,
           workers: %{count: 20, level: 4}
         },
         produces: %{
@@ -1086,7 +1131,7 @@ defmodule MayorGame.City.Buildable do
         requires: %{
           money: 1000,
           energy: 3000,
-          area: 100,
+          area: 10,
           workers: %{count: 20, level: 1}
         },
         produces: %{
@@ -1103,11 +1148,11 @@ defmodule MayorGame.City.Buildable do
         category: :resources,
         level: 4,
         title: :lithium_mines,
-        price: 30_000_000,
+        price: 3_000_000,
         requires: %{
           money: 1000,
           energy: 5000,
-          area: 100,
+          area: 10,
           workers: %{count: 20, level: 4}
         },
         produces: %{
@@ -1124,7 +1169,7 @@ defmodule MayorGame.City.Buildable do
         category: :resources,
         level: 4,
         title: :reservoirs,
-        price: 3_000_000,
+        price: 300_000,
         requires: %{
           money: 100,
           energy: 100,
@@ -1143,7 +1188,7 @@ defmodule MayorGame.City.Buildable do
         category: :resources,
         level: 4,
         title: :salt_farms,
-        price: 2_000_000,
+        price: 200_000,
         requires: %{
           money: 1000,
           energy: 500,
@@ -1160,7 +1205,7 @@ defmodule MayorGame.City.Buildable do
         category: :resources,
         level: 4,
         title: :quarries,
-        price: 2_000_000,
+        price: 200_000,
         requires: %{
           money: 1000,
           energy: 500,
@@ -1189,6 +1234,20 @@ defmodule MayorGame.City.Buildable do
       },
       # FARMS ————————————————————————————————————————————————————————————————————————————————
       # FARMS ————————————————————————————————————————————————————————————————————————————————
+      # GARDENS
+      gardens: %BuildableMetadata{
+        size: 1,
+        category: :farms,
+        level: 4,
+        title: :gardens,
+        price: 1_000,
+        requires: %{
+          area: 1,
+          workers: %{count: 1, level: 0}
+        },
+        produces: %{produce: 1},
+        stores: %{produce: 10}
+      },
       # RICE FARMS
       rice_farms: %BuildableMetadata{
         regions: [:mountain],
@@ -1196,10 +1255,10 @@ defmodule MayorGame.City.Buildable do
         category: :farms,
         level: 4,
         title: :rice_farms,
-        price: 1_000_000,
+        price: 100_000,
         requires: %{
           money: 10,
-          water: 20,
+          water: 5,
           energy: 10,
           area: 100,
           workers: %{count: 5, level: 0}
@@ -1214,7 +1273,7 @@ defmodule MayorGame.City.Buildable do
         category: :farms,
         level: 4,
         title: :wheat_farms,
-        price: 1_000_000,
+        price: 100_000,
         requires: %{
           money: 10,
           water: 5,
@@ -1231,7 +1290,7 @@ defmodule MayorGame.City.Buildable do
         category: :farms,
         level: 4,
         title: :produce_farms,
-        price: 1_000_000,
+        price: 200_000,
         requires: %{
           money: 10,
           water: 5,
@@ -1239,7 +1298,7 @@ defmodule MayorGame.City.Buildable do
           area: 100,
           workers: %{count: 5, level: 0}
         },
-        produces: %{produce: 1},
+        produces: %{produce: 5},
         stores: %{produce: 50}
       },
       # LIVESTOCK FARMS
@@ -1248,7 +1307,7 @@ defmodule MayorGame.City.Buildable do
         category: :farms,
         level: 4,
         title: :livestock_farms,
-        price: 1_000_000,
+        price: 300_000,
         requires: %{
           money: 10,
           water: 10,
@@ -1266,7 +1325,7 @@ defmodule MayorGame.City.Buildable do
         category: :farms,
         level: 4,
         title: :vineyards,
-        price: 1_000_000,
+        price: 500_000,
         requires: %{
           money: 10,
           water: 10,
@@ -1285,7 +1344,7 @@ defmodule MayorGame.City.Buildable do
         category: :food,
         level: 4,
         title: :bakeries,
-        price: 400_000,
+        price: 40_000,
         requires: %{
           money: 10,
           wheat: 5,
@@ -1304,17 +1363,17 @@ defmodule MayorGame.City.Buildable do
         category: :food,
         level: 4,
         title: :sushi_restaurants,
-        price: 700_000,
+        price: 70_000,
         requires: %{
           money: 10,
-          water: 5,
-          rice: 5,
-          fish: 5,
+          water: 1,
+          rice: 1,
+          fish: 1,
           energy: 50,
           area: 2,
           workers: %{count: 5, level: 3}
         },
-        produces: %{food: 5, culture: 1},
+        produces: %{food: 10, culture: 1},
         stores: %{food: 25}
       },
       # FARMERS MARKETS
@@ -1323,14 +1382,13 @@ defmodule MayorGame.City.Buildable do
         category: :food,
         level: 4,
         title: :farmers_markets,
-        price: 200_000,
+        price: 20_000,
         requires: %{
           produce: 5,
-          health: 5,
           area: 5,
           workers: %{count: 5, level: 2}
         },
-        produces: %{food: 25},
+        produces: %{food: 50, health: 5},
         stores: %{food: 50}
       },
       # DELIS
@@ -1339,35 +1397,36 @@ defmodule MayorGame.City.Buildable do
         category: :food,
         level: 4,
         title: :delis,
-        price: 200_000,
+        price: 2000,
         requires: %{
           money: 10,
-          bread: 5,
-          meat: 5,
+          bread: 1,
+          meat: 1,
           energy: 10,
-          area: 5,
+          area: 2,
           workers: %{count: 5, level: 1}
         },
         produces: %{food: 25},
-        stores: %{food: 25}
+        stores: %{food: 50}
       },
       # GROCERY STORES
       grocery_stores: %BuildableMetadata{
-        size: 2,
+        size: 5,
         category: :food,
         level: 4,
         title: :grocery_stores,
-        price: 400_000,
+        price: 40000,
         requires: %{
-          money: 10,
-          bread: 5,
-          water: 5,
-          rice: 5,
-          meat: 5,
-          produce: 5,
+          money: 100,
           area: 5,
           energy: 10,
-          workers: %{count: 15, level: 1}
+          workers: %{count: 15, level: 1},
+          bread: 5,
+          water: 1,
+          fish: 1,
+          rice: 5,
+          meat: 1,
+          produce: 1
         },
         produces: %{food: 100},
         stores: %{food: 1000}
@@ -1378,15 +1437,65 @@ defmodule MayorGame.City.Buildable do
         category: :food,
         level: 4,
         title: :butchers,
-        price: 200_000,
+        price: 5000,
         requires: %{
-          cows: 5,
+          cows: 1,
           area: 2,
           energy: 5,
-          workers: %{count: 3, level: 2}
+          workers: %{count: 2, level: 2}
         },
         produces: %{meat: 10},
         stores: %{meat: 50}
+      },
+      # BREWERIES
+      breweries: %BuildableMetadata{
+        size: 4,
+        category: :food,
+        level: 4,
+        title: :breweries,
+        price: 5000,
+        requires: %{
+          wheat: 1,
+          water: 1,
+          area: 2,
+          energy: 10,
+          workers: %{count: 5, level: 2}
+        },
+        produces: %{beer: 1},
+        stores: %{beer: 50}
+      },
+      # WINERIES
+      wineries: %BuildableMetadata{
+        size: 4,
+        category: :food,
+        level: 4,
+        title: :wineries,
+        price: 5000,
+        requires: %{
+          grapes: 1,
+          water: 1,
+          area: 2,
+          energy: 10,
+          workers: %{count: 5, level: 2}
+        },
+        produces: %{wine: 1},
+        stores: %{wine: 50}
+      },
+      # BARS
+      bars: %BuildableMetadata{
+        size: 2,
+        category: :food,
+        level: 4,
+        title: :bars,
+        price: 2000,
+        requires: %{
+          beer: 1,
+          wine: 1,
+          area: 2,
+          energy: 5,
+          workers: %{count: 2, level: 1}
+        },
+        produces: %{fun: 10, crime: 1}
       },
       # BUSINESS ——————————————————————————————————————————————————————————————————————————————————————————————————————————
       # BUSINESS ——————————————————————————————————————————————————————————————————————————————————————————————————————————
@@ -1410,7 +1519,7 @@ defmodule MayorGame.City.Buildable do
         category: :commerce,
         level: 0,
         title: :factories,
-        price: 5000,
+        price: 50000,
         requires: %{
           money: 50,
           energy: 1900,
@@ -1496,13 +1605,31 @@ defmodule MayorGame.City.Buildable do
           fun: 10
         }
       },
+      # GALLERIES ————————————————————————————————————
+      galleries: %BuildableMetadata{
+        size: 5,
+        category: :entertainment,
+        level: 0,
+        title: :galleries,
+        price: 2_000,
+        requires: %{
+          money: 10,
+          energy: 10,
+          area: 2,
+          workers: %{count: 3, level: 4}
+        },
+        produces: %{
+          fun: 1,
+          culture: 5
+        }
+      },
       # ZOOS ————————————————————————————————————
       zoos: %BuildableMetadata{
         size: 3,
         category: :entertainment,
         level: 0,
         title: :zoos,
-        price: 2_500,
+        price: 25_000,
         multipliers: %{
           region: %{
             energy: %{
@@ -1690,7 +1817,7 @@ defmodule MayorGame.City.Buildable do
           shields: 1
         },
         stores: %{
-          shields: 100
+          shields: 250
         }
       },
       # MISSILE DEFENSE ARRAY ————————————————————————————————————
@@ -1705,12 +1832,12 @@ defmodule MayorGame.City.Buildable do
           money: 5000,
           steel: 100,
           sulfur: 20,
-          energy: 10000,
-          area: 2000,
+          energy: 5000,
+          area: 200,
           workers: %{count: 20, level: 5}
         },
         stores: %{
-          shields: 200
+          shields: 1000
         }
       },
       # STORAGE ——————————————————————————————————————————————————
@@ -1721,7 +1848,7 @@ defmodule MayorGame.City.Buildable do
         category: :storage,
         level: 2,
         title: :wood_warehouses,
-        price: 80000,
+        price: 5000,
         building_reqs: %{steel: 100},
         requires: %{area: 10},
         stores: %{wood: 100}
@@ -1731,9 +1858,9 @@ defmodule MayorGame.City.Buildable do
         category: :storage,
         level: 2,
         title: :fish_tanks,
-        price: 80000,
+        price: 5000,
         building_reqs: %{steel: 100, water: 100},
-        requires: %{area: 10},
+        requires: %{area: 5},
         stores: %{fish: 1000}
       },
       lithium_vats: %BuildableMetadata{
@@ -1741,9 +1868,9 @@ defmodule MayorGame.City.Buildable do
         category: :storage,
         level: 2,
         title: :lithium_vats,
-        price: 80000,
+        price: 10_000,
         building_reqs: %{steel: 100},
-        requires: %{area: 10},
+        requires: %{area: 5},
         stores: %{lithium: 1000}
       },
       salt_sheds: %BuildableMetadata{
@@ -1751,7 +1878,7 @@ defmodule MayorGame.City.Buildable do
         category: :storage,
         level: 2,
         title: :salt_sheds,
-        price: 80000,
+        price: 5000,
         building_reqs: %{steel: 100},
         requires: %{area: 10},
         stores: %{salt: 100}
@@ -1761,9 +1888,9 @@ defmodule MayorGame.City.Buildable do
         category: :storage,
         level: 2,
         title: :rock_yards,
-        price: 80000,
+        price: 5000,
         building_reqs: %{steel: 100},
-        requires: %{area: 10},
+        requires: %{area: 20},
         stores: %{stone: 100}
       },
       water_tanks: %BuildableMetadata{
@@ -1771,7 +1898,7 @@ defmodule MayorGame.City.Buildable do
         category: :storage,
         level: 2,
         title: :water_tanks,
-        price: 80000,
+        price: 5000,
         building_reqs: %{steel: 100},
         requires: %{area: 10},
         stores: %{water: 100}
@@ -1781,7 +1908,7 @@ defmodule MayorGame.City.Buildable do
         category: :storage,
         level: 2,
         title: :cow_pens,
-        price: 80000,
+        price: 50000,
         building_reqs: %{steel: 100},
         requires: %{area: 10},
         stores: %{cows: 100}
@@ -1791,7 +1918,7 @@ defmodule MayorGame.City.Buildable do
         category: :storage,
         level: 2,
         title: :silos,
-        price: 80000,
+        price: 50000,
         building_reqs: %{steel: 100},
         requires: %{area: 10},
         stores: %{rice: 100, wheat: 100}
@@ -1804,7 +1931,7 @@ defmodule MayorGame.City.Buildable do
         price: 80000,
         building_reqs: %{steel: 100},
         requires: %{area: 10, energy: 10, workers: %{count: 5, level: 0}},
-        stores: %{bread: 100, grapes: 100, produce: 100, meat: 100}
+        stores: %{bread: 500, grapes: 500, produce: 500, meat: 500}
       }
     }
   end

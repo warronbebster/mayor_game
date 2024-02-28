@@ -1,8 +1,8 @@
 defmodule MayorGame.CityCalculator do
   use GenServer, restart: :permanent
   alias MayorGame.CityCombat
-  alias MayorGame.City.{Town, Buildable, OngoingAttacks, TownStatistics, ResourceStatistics}
-  alias MayorGame.{City, CityHelpers, Repo, Rules}
+  alias MayorGame.City.{Town, Buildable, OngoingAttacks, TownStats, ResourceStats}
+  alias MayorGame.{City, CityHelpers, MarketHelpers, Repo, Rules}
   import Ecto.Query
 
   def start_link(initial_val) do
@@ -52,15 +52,11 @@ defmodule MayorGame.CityCalculator do
     # profiling
     {:ok, datetime_pre} = DateTime.now("Etc/UTC")
 
+    # :eprof.start_profiling([self()])
+
     # filter obviously ghost cities
     # add pollution check. It is possible to trick this check with a city reset, and by building road and park without building housing
-    cities =
-      City.list_cities_preload()
-      |> Enum.filter(fn city ->
-        city.huts > 0 || city.single_family_homes > 0 || city.apartments > 0 ||
-          city.homeless_shelters > 0 || city.micro_apartments > 0 || city.high_rises > 0 ||
-          city.megablocks > 0 || city.pollution != 0
-      end)
+    cities = CityHelpers.prepare_cities(datetime_pre, world.day, in_dev)
 
     # should we tie pollution effect to RNG?
     pollution_ceiling = 2_000_000_000 * Random.gammavariate(7.5, 1)
@@ -96,158 +92,63 @@ defmodule MayorGame.CityCalculator do
 
     leftovers
     # |> Enum.sort_by(& &1.id)
-    |> Enum.chunk_every(200)
+    |> Enum.chunk_every(100)
     |> Enum.each(fn chunk ->
       Repo.checkout(
         fn ->
           # town_ids = Enum.map(chunk, fn city -> city.id end)
+
           Enum.each(chunk, fn city ->
-            from(t in Town,
-              where: t.id == ^city.id,
-              update: [
-                inc: [
-                  treasury:
-                    ^(city
-                      |> TownStatistics.getResource(:money)
-                      |> ResourceStatistics.getNetProduction()),
-                  missiles:
-                    ^(city
-                      |> TownStatistics.getResource(:missiles)
-                      |> ResourceStatistics.getNetProduction()),
-                  shields:
-                    ^(city
-                      |> TownStatistics.getResource(:shields)
-                      |> ResourceStatistics.getNetProduction()),
-                  steel:
-                    ^(city
-                      |> TownStatistics.getResource(:steel)
-                      |> ResourceStatistics.getNetProduction()),
-                  sulfur:
-                    ^(city
-                      |> TownStatistics.getResource(:sulfur)
-                      |> ResourceStatistics.getNetProduction()),
-                  gold:
-                    ^(city
-                      |> TownStatistics.getResource(:gold)
-                      |> ResourceStatistics.getNetProduction()),
-                  uranium:
-                    ^(city
-                      |> TownStatistics.getResource(:uranium)
-                      |> ResourceStatistics.getNetProduction()),
-                  stone:
-                    ^(city
-                      |> TownStatistics.getResource(:stone)
-                      |> ResourceStatistics.getNetProduction()),
-                  wood:
-                    ^(city
-                      |> TownStatistics.getResource(:wood)
-                      |> ResourceStatistics.getNetProduction()),
-                  fish:
-                    ^(city
-                      |> TownStatistics.getResource(:fish)
-                      |> ResourceStatistics.getNetProduction()),
-                  oil:
-                    ^(city
-                      |> TownStatistics.getResource(:oil)
-                      |> ResourceStatistics.getNetProduction()),
-                  salt:
-                    ^(city
-                      |> TownStatistics.getResource(:salt)
-                      |> ResourceStatistics.getNetProduction()),
-                  lithium:
-                    ^(city
-                      |> TownStatistics.getResource(:lithium)
-                      |> ResourceStatistics.getNetProduction()),
-                  water:
-                    ^(city
-                      |> TownStatistics.getResource(:water)
-                      |> ResourceStatistics.getNetProduction()),
-                  cows:
-                    ^(city
-                      |> TownStatistics.getResource(:cows)
-                      |> ResourceStatistics.getNetProduction()),
-                  produce:
-                    ^(city
-                      |> TownStatistics.getResource(:produce)
-                      |> ResourceStatistics.getNetProduction()),
-                  rice:
-                    ^(city
-                      |> TownStatistics.getResource(:rice)
-                      |> ResourceStatistics.getNetProduction()),
-                  food:
-                    ^(city
-                      |> TownStatistics.getResource(:food)
-                      |> ResourceStatistics.getNetProduction()),
-                  grapes:
-                    ^(city
-                      |> TownStatistics.getResource(:grapes)
-                      |> ResourceStatistics.getNetProduction()),
-                  bread:
-                    ^(city
-                      |> TownStatistics.getResource(:bread)
-                      |> ResourceStatistics.getNetProduction()),
-                  wheat:
-                    ^(city
-                      |> TownStatistics.getResource(:wheat)
-                      |> ResourceStatistics.getNetProduction()),
-                  meat:
-                    ^(city
-                      |> TownStatistics.getResource(:meat)
-                      |> ResourceStatistics.getNetProduction())
-                  # logs—————————
-                ],
-                set: [
-                  pollution:
-                    ^(city
-                      |> TownStatistics.getResource(:pollution)
-                      |> ResourceStatistics.getNetProduction())
-                ]
-              ]
-            )
-            |> Repo.update_all([])
-
-            ### Potential data conflict with migrator updates?
-            ### maybe move this to migrator instead
-            if city.total_citizens < 100 do
-              updated_citizens =
-                Enum.map(1..:rand.uniform(3), fn _citizen ->
-                  %{
-                    "age" => 0,
-                    "town_id" => city.id,
-                    "education" => 0,
-                    "last_moved" => db_world.day,
-                    "preferences" => :rand.uniform(11)
-                  }
-                end)
-
-              citizens =
-                [updated_citizens | city.citizens_blob]
-                |> List.flatten()
-                |> Enum.take(
-                  city
-                  |> TownStatistics.getResource(:housing)
-                  |> ResourceStatistics.getProduction()
-                )
-
+            try do
               from(t in Town,
                 where: t.id == ^city.id,
                 update: [
+                  inc:
+                    ^(Enum.map(
+                        ResourceStats.resource_list(),
+                        &{&1,
+                         city
+                         |> TownStats.getResource(&1)
+                         |> ResourceStats.getNetProduction()
+                         |> max(1 - (city |> TownStats.getResource(&1) |> ResourceStats.getStock()))}
+                        # ^ prevent incrementing down into negatives to avoid PG error
+                      )
+                      |> Keyword.merge(
+                        treasury:
+                          city
+                          |> TownStats.getResource(:money)
+                          |> ResourceStats.getNetProduction()
+                          |> max(1 - city.treasury)
+                        # ^ prevent incrementing down into negatives to avoid PG error
+                      )),
+                  # logs—————————
+                  # ],
                   set: [
-                    citizens_blob: ^citizens,
-                    citizen_count: ^city.total_citizens
+                    pollution:
+                      ^(city
+                        |> TownStats.getResource(:pollution)
+                        |> ResourceStats.getNetProduction())
                   ]
                 ]
               )
               |> Repo.update_all([])
+            rescue
+              e in Postgrex.Error ->
+                IO.inspect(e)
+                IO.inspect(city.title <> " error in city_calculator")
             end
-
-            # also update logs here for old deaths
-            # and pollution deaths
           end)
+
+          # ^ end of Each function
         end,
         timeout: 6_000_000
       )
     end)
+
+    MarketHelpers.calculate_market_trades(leftovers |> Enum.map(fn city -> {city.id, city} end) |> Enum.into(%{}))
+
+    # :eprof.stop_profiling()
+    # :eprof.analyze()
 
     # maybe do combat here?
     # based on all the ongoing_attacks?
@@ -259,10 +160,10 @@ defmodule MayorGame.CityCalculator do
     valid_attackers =
       leftovers
       |> Enum.filter(fn city ->
-        city |> TownStatistics.getResource(:daily_strikes) |> ResourceStatistics.getNetProduction() > 0
+        city |> TownStats.getResource(:daily_strikes) |> ResourceStats.getNetProduction() > 0
       end)
       |> Map.new(fn city ->
-        {city.id, city |> TownStatistics.getResource(:daily_strikes) |> ResourceStatistics.getNetProduction()}
+        {city.id, city |> TownStats.getResource(:daily_strikes) |> ResourceStats.getNetProduction()}
       end)
 
     Enum.reduce(attacks, valid_attackers, fn attack, acc ->
@@ -316,6 +217,17 @@ defmodule MayorGame.CityCalculator do
       updated_world
     )
 
+    # for each city
+    # ok this could be kinda weird, buuut i could like send a request when every liveview opens
+    # to the pubsub channel,
+    # ah shit but this doesn't account for disconnects
+    # okk
+    # MayorGameWeb.Endpoint.broadcast!(
+    #   "cityPubSub",
+    #   "ping",
+    #   updated_world
+    # )
+
     # profiling
     {:ok, datetime_post} = DateTime.now("Etc/UTC")
 
@@ -330,7 +242,7 @@ defmodule MayorGame.CityCalculator do
     )
 
     # recurse, do it again
-    Process.send_after(self(), :tax, if(in_dev, do: 5000, else: 500))
+    Process.send_after(self(), :tax, if(in_dev, do: 5000, else: 5000))
 
     # returns this to whatever calls ?
     {:noreply, %{world: updated_world, buildables_map: buildables_map, in_dev: in_dev}}

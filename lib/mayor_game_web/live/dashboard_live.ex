@@ -1,9 +1,8 @@
 defmodule MayorGameWeb.DashboardLive do
   require Logger
   import Ecto.Query
-  alias MayorGame.City.OngoingAttacks
-  alias MayorGame.City.{Town, World}
-  alias MayorGame.Repo
+  alias MayorGame.{City, Repo}
+  alias MayorGame.City.{Town, World, OngoingAttacks}
 
   use Phoenix.LiveView, container: {:div, class: "liveview-container"}
   # don't need this because you get it in DashboardView?
@@ -17,26 +16,76 @@ defmodule MayorGameWeb.DashboardLive do
 
   # if user is logged in:
   def mount(_params, %{"current_user" => current_user}, socket) do
+    in_dev = Application.get_env(:mayor_game, :env) == :dev
+    day_margin = if in_dev, do: 2000, else: 30
+
     MayorGameWeb.Endpoint.subscribe("cityPubSub")
+    {:ok, datetime} = DateTime.now("Etc/UTC")
+    check_date = DateTime.add(datetime, -day_margin, :day) |> DateTime.to_date()
+
+    world = Repo.get!(World, 1)
+    cities_count = MayorGame.Repo.aggregate(City.Town, :count, :id)
+
+    active_cities_count =
+      from(t in Town)
+      |> where([t], fragment("?::date", t.last_login) >= ^check_date)
+      |> MayorGame.Repo.aggregate(:count, :id)
+
+    page_length = 50
 
     {:ok,
      socket
      |> assign(current_user: current_user |> Repo.preload(:town))
-     |> assign_cities()
+     |> assign(city_count: cities_count)
+     |> assign(active_cities_count: active_cities_count)
+     |> assign(today: datetime)
+     |> assign(check_date: check_date)
+     |> assign(page: 0)
+     |> assign(page_length: page_length)
+     |> assign(sort_direction: :desc)
+     |> assign(sort_by: :citizen_count)
+     |> assign(:world, world)
+     |> assign(:cities, get_towns(0, check_date))
+     |> assign_totals()
      |> assign_attacks()}
   end
 
   # if user is not logged in
   def mount(_params, _session, socket) do
+    in_dev = Application.get_env(:mayor_game, :env) == :dev
+    day_margin = if in_dev, do: 2000, else: 30
+
     MayorGameWeb.Endpoint.subscribe("cityPubSub")
+    {:ok, datetime} = DateTime.now("Etc/UTC")
+    check_date = DateTime.add(datetime, -day_margin, :day) |> DateTime.to_date()
+
+    world = Repo.get!(World, 1)
+    cities_count = MayorGame.Repo.aggregate(City.Town, :count, :id)
+
+    active_cities_count =
+      from(t in Town)
+      |> where([t], fragment("?::date", t.last_login) >= ^check_date)
+      |> MayorGame.Repo.aggregate(:count, :id)
+
+    page_length = 50
 
     {:ok,
      socket
-     |> assign_cities()
+     |> assign(city_count: cities_count)
+     |> assign(active_cities_count: active_cities_count)
+     |> assign(today: datetime)
+     |> assign(check_date: check_date)
+     |> assign(page: 0)
+     |> assign(page_length: page_length)
+     |> assign(sort_direction: :desc)
+     |> assign(sort_by: :citizen_count)
+     |> assign(:world, world)
+     |> assign(:cities, get_towns(0, check_date, page_length))
+     |> assign_totals()
      |> assign_attacks()}
   end
 
-  def handle_info(%{event: "ping", payload: _world}, socket) do
+  def handle_info(%{event: "ping", payload: world}, socket) do
     if Map.has_key?(socket.assigns, :current_user) do
       {:noreply,
        socket
@@ -45,13 +94,15 @@ defmodule MayorGameWeb.DashboardLive do
            MayorGame.Auth.get_user!(socket.assigns.current_user.id)
            |> Repo.preload(:town)
        )
-       |> assign_cities()
-       |> assign_attacks()}
+       |> assign_totals()
+       |> assign_attacks()
+       |> assign(:world, world)}
     else
       {:noreply,
        socket
-       |> assign_cities()
-       |> assign_attacks()}
+       |> assign_totals()
+       |> assign_attacks()
+       |> assign(:world, world)}
     end
   end
 
@@ -64,144 +115,153 @@ defmodule MayorGameWeb.DashboardLive do
            MayorGame.Auth.get_user!(socket.assigns.current_user.id)
            |> Repo.preload(:town)
        )
-       |> assign_cities()
-       |> assign_attacks()}
+       |> refresh_cities()
+       |> assign_totals()}
     else
       {:noreply,
        socket
-       |> assign_cities()
-       |> assign_attacks()}
+       |> refresh_cities()
+       |> assign_totals()}
     end
   end
 
   # this handles different events
-  def handle_event(
-        "add_citizen",
-        %{"name" => content, "userid" => user_id, "city_id" => city_id},
-        # pull these variables out of the socket
-        assigns = socket
-      ) do
-    # IO.inspect(get_user(socket, session))
-
+  def handle_event("add_citizen", %{"city_id" => city_id}, socket) do
     if socket.assigns.current_user.id == 1 do
-      new_citizen = %{
-        "town_id" => city_id,
-        "age" => 0,
-        "education" => 0,
-        "has_job" => false,
-        "last_moved" => socket.assigns.world.day,
-        "preferences" => :rand.uniform(6)
-      }
-
-      from(t in Town,
-        where: t.id == ^city_id,
-        update: [
-          push: [
-            citizens_blob: ^new_citizen
-          ]
-        ]
-      )
-      |> Repo.update_all([])
+      town = City.get_town!(city_id)
+      City.add_citizens(town, socket.assigns.world.day)
     end
 
-    {:noreply, socket |> assign_cities()}
+    {:noreply, socket |> refresh_cities()}
+  end
+
+  def handle_event(
+        "load_more",
+        _value,
+        socket
+      ) do
+    %{
+      page: page,
+      page_length: page_length,
+      cities: cities,
+      sort_by: sort_by,
+      sort_direction: sort_direction,
+      today: today,
+      check_date: check_date
+    } = socket.assigns
+
+    next_page = page + 1
+
+    {:noreply,
+     socket
+     |> assign(:page, next_page)
+     |> assign(:cities, cities ++ get_towns(next_page, check_date, page_length, sort_by, sort_direction))}
   end
 
   # sort events
   # no need to call assign_cities as the city list has already been retrieved
-  def handle_event(
-        "sort_by_name",
-        _value,
-        assigns = socket
-      ) do
+  def handle_event("sort_by_name", _value, socket) do
     {:noreply,
      socket
-     |> assign(:sort, "name")
-     |> sort_cities()}
+     |> assign(:sort_by, :title)
+     |> refresh_cities()}
   end
 
-  def handle_event(
-        "sort_by_age",
-        _value,
-        assigns = socket
-      ) do
+  def handle_event("sort_by_age", _value, socket) do
     {:noreply,
      socket
-     |> assign(:sort, "age")
-     |> sort_cities()}
+     |> assign(:sort_by, :id)
+     |> refresh_cities()}
   end
 
-  def handle_event(
-        "sort_by_population",
-        _value,
-        assigns = socket
-      ) do
+  def handle_event("sort_by_population", _value, socket) do
     {:noreply,
      socket
-     |> assign(:sort, "population")
-     |> sort_cities()}
+     |> assign(:sort_by, :citizen_count)
+     |> refresh_cities()}
   end
 
   def handle_event(
         "sort_by_pollution",
         _value,
-        assigns = socket
+        socket
       ) do
     {:noreply,
      socket
-     |> assign(:sort, "pollution")
-     |> sort_cities()}
+     |> assign(:sort_by, :pollution)
+     |> refresh_cities()}
+  end
+
+  def handle_event(
+        "switch_order",
+        _value,
+        socket
+      ) do
+    direction = if socket.assigns.sort_direction == :desc, do: :asc, else: :desc
+
+    {:noreply,
+     socket
+     |> assign(:sort_direction, direction)
+     |> refresh_cities()}
   end
 
   # Sort cities here
-  defp sort_cities(socket) do
-    sorted_cities =
-      if Map.has_key?(socket.assigns, :sort),
-        do:
-          (case socket.assigns.sort do
-             "name" ->
-               socket.assigns.cities |> Enum.sort_by(&(&1.title |> String.downcase()), :asc)
+  # defp sort_cities(socket) do
+  #   sorted_cities =
+  #     if Map.has_key?(socket.assigns, :sort),
+  #       do:
+  #         (case socket.assigns.sort do
+  #            "name" ->
+  #              socket.assigns.cities |> Enum.sort_by(&(&1.title |> String.downcase()), :asc)
 
-             "pollution" ->
-               socket.assigns.cities |> Enum.sort_by(& &1.pollution, :desc)
+  #            "pollution" ->
+  #              socket.assigns.cities |> Enum.sort_by(& &1.pollution, :desc)
 
-             "age" ->
-               socket.assigns.cities |> Enum.sort_by(& &1.id, :desc)
+  #            "age" ->
+  #              socket.assigns.cities |> Enum.sort_by(& &1.id, :desc)
 
-             _ ->
-               socket.assigns.cities |> Enum.sort_by(& &1.citizen_count, :desc)
-           end),
-        else: socket.assigns.cities |> Enum.sort_by(& &1.citizen_count, :desc)
+  #            _ ->
+  #              socket.assigns.cities |> Enum.sort_by(& &1.citizen_count, :desc)
+  #          end),
+  #       else: socket.assigns.cities |> Enum.sort_by(& &1.citizen_count, :desc)
 
-    socket
-    |> assign(:cities, sorted_cities)
-  end
+  #   socket
+  #   |> assign(:cities, sorted_cities)
+  # end
 
-  # Assign all cities as the cities list. Maybe I should figure out a way to only show cities for that user.
-  # at some point should sort by number of citizens
-  defp assign_cities(socket) do
-    # cities_count = MayorGame.Repo.aggregate(City.Town, :count, :id)
-    all_cities_recent =
-      from(t in Town,
-        select: [:citizen_count, :pollution, :id, :title, :user_id, :patron, :contributor]
-      )
-      |> Repo.all()
-      |> Repo.preload(:user)
+  defp refresh_cities(socket) do
+    %{
+      page: page,
+      page_length: page_length,
+      sort_by: sort_by,
+      sort_direction: sort_direction,
+      today: today,
+      check_date: check_date
+    } = socket.assigns
+
+    all_cities_recent = get_towns(0, check_date, (page + 1) * page_length, sort_by, sort_direction)
 
     # use sort_cities to sort
     #  |> Enum.sort_by(& &1.citizen_count, :desc)
 
-    pollution_sum = Enum.sum(Enum.map(all_cities_recent, fn city -> city.pollution end))
-    citizens_sum = Enum.sum(Enum.map(all_cities_recent, fn city -> city.citizen_count end))
-
-    world = Repo.get!(World, 1)
-
     socket
     |> assign(:cities, all_cities_recent)
-    |> assign(:world, world)
+  end
+
+  defp assign_totals(socket) do
+    date = socket.assigns.today
+    check_date = socket.assigns.check_date
+
+    query =
+      from(t in Town)
+      |> where([t], fragment("?::date", t.last_login) >= ^check_date)
+
+    pollution_sum = Repo.aggregate(query, :sum, :pollution)
+    citizens_sum = Repo.aggregate(query, :sum, :citizen_count)
+
+    socket
     |> assign(:pollution_sum, pollution_sum)
     |> assign(:citizens_sum, citizens_sum)
-    |> sort_cities()
   end
 
   defp assign_attacks(socket) do
@@ -212,5 +272,30 @@ defmodule MayorGameWeb.DashboardLive do
 
     socket
     |> assign(:attacks, attacks)
+  end
+
+  def get_towns(page, check_date, per_page \\ 50, sort_field \\ :citizen_count, direction \\ :desc) do
+    # {:ok, datetime} = NaiveDateTime.new(check_date, ~T[00:00:00])
+
+    # eventually can move this to pull out of assigns for effeciency
+
+    # conditions = dynamic([q], Date.diff(t.last_login, datetime) <= -30)
+
+    from(t in Town)
+    |> where([t], fragment("?::date", t.last_login) >= ^check_date)
+    # ok this looks to be working
+    |> select([:citizen_count, :pollution, :id, :user_id, :title, :patron, :contributor, :last_login])
+    |> paginate(page, per_page)
+    |> order_by([{^direction, ^sort_field}])
+    |> Repo.all()
+    |> Repo.preload([:user])
+  end
+
+  def paginate(query, page, per_page) do
+    offset_by = per_page * page
+
+    query
+    |> limit(^per_page)
+    |> offset(^offset_by)
   end
 end

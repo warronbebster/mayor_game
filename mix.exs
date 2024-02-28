@@ -9,7 +9,7 @@ defmodule MayorGame.MixProject do
       version: "0.1.0",
       elixir: "~> 1.12",
       elixirc_paths: elixirc_paths(Mix.env()),
-      compilers: [:phoenix, :gettext] ++ Mix.compilers(),
+      compilers: [:phoenix] ++ Mix.compilers(),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps()
@@ -60,7 +60,8 @@ defmodule MayorGame.MixProject do
       {:pow_postgres_store, "~> 1.0"},
       {:number, "~> 1.0.3"},
       {:flow, "~> 1.0"},
-      {:statistics, "~> 0.6.2"}
+      {:statistics, "~> 0.6.2"},
+      {:ecto_commons, "~> 0.3.3"}
     ]
   end
 

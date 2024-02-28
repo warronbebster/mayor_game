@@ -55,7 +55,6 @@ defmodule MayorGameWeb.CityCreationForm do
 
       {:error, %Ecto.Changeset{} = changeset} ->
         IO.puts("eyyy error")
-        # IO.inspect(changeset)
         {:noreply, assign(socket, :city_changeset, changeset)}
     end
   end
@@ -66,8 +65,7 @@ defmodule MayorGameWeb.CityCreationForm do
         socket
       ) do
     # new changeset from the form changes
-    new_changeset =
-      change_town(%Town{}, Map.put(city_form, "user_id", socket.assigns[:current_user].id))
+    new_changeset = City.change_town(%Town{}, Map.put(city_form, "user_id", socket.assigns[:current_user].id))
 
     # oh do I need to add the stuff from city_form to a changeset here?
 
@@ -84,9 +82,5 @@ defmodule MayorGameWeb.CityCreationForm do
       })
 
     assign(socket, :city_changeset, changeset)
-  end
-
-  defp change_town(%Town{} = town, attrs \\ %{}) do
-    Town.changeset(town, attrs)
   end
 end

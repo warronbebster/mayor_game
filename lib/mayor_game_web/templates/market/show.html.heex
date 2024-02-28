@@ -1,0 +1,160 @@
+<section class="p-4">
+  <%= for {resource_type, color} <- @resource_types do %>
+    <section class="pb-6">
+      <div class={"flex flex-row justify-between gap-2 items-center py-1 leading-none text-#{color}"}>
+        <img
+          src={"/images/#{to_string(resource_type)}.svg"}
+          alt={"total #{resource_type}"}
+          height="12"
+          width="12"
+          class="inline"
+        />
+        <span class="font-medium "><%= resource_type %></span>
+        <hr class="border-neutral-800/25 flex-1" />
+      </div>
+      <div class="flex flex-col md:flex-row gap-4">
+        <!-- sell orders -->
+        <section class="basis-1/2 flex flex-col gap-1">
+          <h2>Sell orders</h2>
+          <%= if !is_nil(@current_user) and @current_user.town.markets |> Enum.map(& &1.resource) |> Enum.member?(to_string(resource_type)) == false and  @current_user.town.bids |> Enum.map(& &1.resource) |> Enum.member?(to_string(resource_type)) == false do %>
+            <%= if @current_user.town[resource_type] > 0 && @is_user_verified do %>
+              <button
+                class="btn m-0 rounded-none border border-neutral-800/25 leading-none h-6 self-start"
+                phx-click="add_market"
+                phx-value-resource={resource_type}
+                phx-throttle="500"
+              >
+                Create
+              </button>
+            <% else %>
+              <button
+                disabled
+                class="opacity-50 btn m-0 rounded-none border border-neutral-800/25 leading-none h-6 self-start"
+                phx-click="add_market"
+                phx-value-resource={resource_type}
+                phx-throttle="500"
+              >
+                No <%= resource_type %> or not verified
+              </button>
+            <% end %>
+          <% end %>
+          <%= if !is_nil @markets[to_string(resource_type)] do %>
+            <%= for market <- Enum.sort_by(@markets[to_string(resource_type)], & &1.min_price, :desc) do %>
+              <div class="border border-neutral-800/10 p-2">
+                <span><a class="underline" href={"/city/#{market.town.title}"}><%= market.town.title %></a></span>
+                <%= if !is_nil(@current_user) and @current_user.town.id == market.town_id or @is_user_admin do %>
+                  Minimum price:
+                  <input
+                    class="btn ml-1 text-sm bg-amber-50 p-[2px] border leading-none w-16 border-neutral-800/25"
+                    step="1"
+                    phx-blur="update_min_price"
+                    type="number"
+                    min="1"
+                    value={market.min_price}
+                    phx-value-market_id={market.id}
+                  /> Sell all available
+                  <input
+                    type="checkbox"
+                    checked={market.sell_excess}
+                    phx-value-market_id={market.id}
+                    phx-click="toggle_market"
+                  />
+
+                  <%= if !market.sell_excess do %>
+                    Amount to sell:
+                    <input
+                      class="btn ml-1 text-sm bg-amber-50 p-[2px] border leading-none w-16 border-neutral-800/25"
+                      step="1"
+                      phx-blur="update_amount_to_sell"
+                      type="number"
+                      min="1"
+                      max="100"
+                      value={market.amount_to_sell}
+                      phx-value-market_id={market.id}
+                    />
+                  <% end %>
+                  <button
+                    class="btn m-0 rounded-none border border-neutral-800/25 leading-none h-6 self-start"
+                    phx-click="remove_market"
+                    phx-value-market_id={market.id}
+                    phx-throttle="500"
+                  >
+                    Remove
+                  </button>
+                <% else %>
+                  <!-- if not owner of market -->
+                        minimum price:
+                  <span><%= market.min_price %></span>
+
+                  <%= if !market.sell_excess do %>
+                    amount to sell: <span><%= market.amount_to_sell %></span>
+                  <% else %>
+                    <span>selling all available</span>
+                  <% end %>
+                <% end %>
+              </div>
+            <% end %>
+          <% end %>
+        </section>
+        <!-- ^end sell orders section -->
+    <!-- ————————————————————————————————————————————————————————————————————————— -->
+    <!-- bids section -->
+        <section class="basis-1/2 flex flex-col gap-1">
+          <h2>Buy orders</h2>
+          <%= if !is_nil(@current_user) and 
+          @current_user.town.markets |> Enum.map(& &1.resource) |> Enum.member?(to_string(resource_type)) == false and 
+          @current_user.town.bids |> Enum.map(& &1.resource) |> Enum.member?(to_string(resource_type)) == false
+          and @is_user_verified do %>
+            <button
+              class="btn m-0 rounded-none border border-neutral-800/25 leading-none h-6 self-start"
+              phx-click="add_bid"
+              phx-value-resource={resource_type}
+              phx-throttle="500"
+            >
+              Create
+            </button>
+          <% end %>
+          <%= if !is_nil @bids[to_string(resource_type)] do %>
+            <%= for bid <- Enum.sort_by(@bids[to_string(resource_type)], & &1.max_price, :desc) do %>
+              <div class="border p-2">
+                <span><a class="underline" href={"/city/#{bid.town.title}"}><%= bid.town.title %></a></span>
+                <%= if !is_nil(@current_user) and @current_user.town.id == bid.town_id or @is_user_admin do %>
+                  <!-- if town owns this bid -->
+                  Price:
+                  <input
+                    class="btn ml-1 text-sm bg-amber-50 p-[2px] border leading-none w-16 border-neutral-800/25"
+                    step="1"
+                    phx-blur="update_max_price"
+                    type="number"
+                    min="1"
+                    value={bid.max_price}
+                    phx-value-bid_id={bid.id}
+                  /> Amount to buy:
+                  <input
+                    class="btn ml-1 text-sm bg-amber-50 p-[2px] border leading-none w-16 border-neutral-800/25"
+                    step="1"
+                    phx-blur="update_amount_to_buy"
+                    type="number"
+                    min="1"
+                    value={bid.amount}
+                    phx-value-bid_id={bid.id}
+                  />
+                  <button
+                    class="btn m-0 rounded-none border border-neutral-800/25 leading-none h-6 self-start"
+                    phx-click="remove_bid"
+                    phx-value-bid_id={bid.id}
+                    phx-throttle="500"
+                  >
+                    Remove
+                  </button>
+                <% else %>
+                  Price: <span><%= bid.max_price %></span> Amount to buy: <span><%= bid.amount %></span>
+                <% end %>
+              </div>
+            <% end %>
+          <% end %>
+        </section>
+      </div>
+    </section>
+  <% end %>
+</section>

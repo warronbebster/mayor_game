@@ -1,12 +1,4 @@
-# society simulator 2021
-
-# TODO:
-
-
-# implement regional differences (check region in generation functions) (done for energy, should do for health & fun)
-# figure out why server sometimes doesn't restart
-
-# FIRST RELEASE DONE
+# fragile.city
 
 # https://community.fly.io/t/need-help-with-postgresql/3971
 # https://community.fly.io/t/increase-diskspace-for-postgresql/8964
@@ -14,51 +6,38 @@
 # fly postgres connect -a mayorgame-db connects to prod DB
 # fly volumes list --app mayorgame-db gets volumes from the db project thingy
 
-# flow some more calculations for optimization
+
+#TODO
+
+# move logs to a has_many relationship from cities
+# add non-db logs that are just passed through the liveview channel for live logging
+# prevent exchange?
+# add ability to turn a number of buildings off
+# maybe you can choose to open up to migration/trade, you can do everything in your own city (north korea style) but won't get any talented people moving
+
+# Just like the real world, make all-out war a last resort. Introduce trade treaties and sanctions as a way to coerce different cities, without directly attacking them.
+# Introduce faction rules so that players can coordinate sharing resources or coordinate combat as a group.
+# maybe if you have a certain building, you can create a faction
+# build tabs in the city interface
+# add date logs for attacks (maybe trades) (maybe make those logs arrays)
+
 # add crime (random deaths)
-# add homeless people
-# add job specialization (police, etc)
+  # also based on jobless people
+  # police stations
+  # add job specialization (police, scientist, etc)
 # maybe make pubsub for each city when it's opened to subscribe to updates from other cities attacking u?
-# consider separating money/resource generation ticks from citizen movement ticks?
-# ^ Do this with an entirely seperate process
-# switch most logs to just counts: births, deaths for different reasons. Some can be text: moved_to, moved_from, attacks
-# potentially switch city representation of cities to a count for each type of citizen? would this… make sense? For each citizen that "looks" would it just grab a random citizen from the DB?
-# have libraries randomly add some education
-# make updates atomic
+
+# add food
+# require cities to have food when a citizen moves there
+
+# add building requirements
+# replace "treasury" with "money"
+
 # potentially use list.keysort instead of sort_by for perf reasons
-# could just save a set of pre-defined preference maps and each "citizen" could reference them
-# that would mean just having a "class" perhaps for citizenSegments
-# I should do that. The only thing stopping it is discrete age. Maybe I just capture the "origin date" for an entire class
-# spread workers over buildables instead of only filling one type first
-# batch citizen counts. make age way broader
+
 # don't need to actually encode city buildables as full maps, i think operating count is enough. maybe the only point is for job gen?
 # ok day ticks aren't that much longer than move ticks now that some cities are filtered out. Either need to make resource ticks much faster or combine again
 # on purchases, actually check requirements and enforce them before sending building back
-# add "building" state to buildings you just built
-
-logs:
-move-outs by reason
-- level
-- city moved to
-
-move-ins
-- level
-- city from
-
-educations per level
-
-deaths
--pollution
--age
--housing
-
-births
-
-attacks
-- shields
-- which city
-- which building
-
 
 
 
@@ -66,23 +45,15 @@ attacks
 
 
 ### nice to have —————————————————————————————————————
-# fix taxes so you can't get money from non active-workers
-# ^ did I do this? I think so
+
 # just pass the whole city through
 
-#
-# add script to randomly add citizens sometimes
 # clean db writes out of buildable resets
 # consolidate job calculations
-
-# add grocery stores? farmers markets? farms?
 
 # add general "policy" options that aren't buildings
 # (speed limits — increase sprawl, increase health)
 # (bike lanes?)
-
-# maybe add global limits for amount of cities… artificial scarcity?
-# 1000 possible cities?
 
 # error handling/routing for wrong urls — route back to home
 
