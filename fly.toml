@@ -14,6 +14,10 @@ kill_timeout = "5s"
 [deploy]
   release_command = "/app/bin/migrate"
 
+[[vm]]
+  size = "shared-cpu-4x"
+  memory = "2gb"
+
 [env]
   PHX_HOST = "fragile.city"
   PORT = "8080"
