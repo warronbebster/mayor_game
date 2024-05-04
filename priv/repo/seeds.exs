@@ -15,7 +15,7 @@ randomString = :crypto.strong_rand_bytes(32) |> Base.encode64(padding: false) |>
 cityName = String.replace(randomString, "/", "a") <> "ville"
 
 alias MayorGame.Auth.User
-alias MayorGame.City.{Town, Citizens}
+alias MayorGame.City.{Town}
 alias MayorGame.{Auth, City}
 
 # {:ok, %World{}} = City.create_world(%{day: 0, pollution: 0})
@@ -51,11 +51,11 @@ Auth.create_user(%{
   })
 
 # create citizens
-{:ok, %Citizens{}} =
-  City.create_citizens(%{
-    "town_id" => madeTown_id,
-    "age" => 0,
-    "has_job" => false,
-    "education" => 0,
-    "has_car" => false
-  })
+# {:ok, %Citizens{}} =
+#   City.create_citizens(%{
+#     "town_id" => madeTown_id,
+#     "age" => 0,
+#     "has_job" => false,
+#     "education" => 0,
+#     "has_car" => false
+#   })

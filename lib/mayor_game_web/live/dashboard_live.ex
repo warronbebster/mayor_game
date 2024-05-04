@@ -17,11 +17,11 @@ defmodule MayorGameWeb.DashboardLive do
   # if user is logged in:
   def mount(_params, %{"current_user" => current_user}, socket) do
     in_dev = Application.get_env(:mayor_game, :env) == :dev
-    day_margin = if in_dev, do: 2000, else: 30
+    day_margin = if in_dev, do: 20_592_000, else: 2_592_000
 
     MayorGameWeb.Endpoint.subscribe("cityPubSub")
     {:ok, datetime} = DateTime.now("Etc/UTC")
-    check_date = DateTime.add(datetime, -day_margin, :day) |> DateTime.to_date()
+    check_date = DateTime.add(datetime, -day_margin, :second) |> DateTime.to_date()
 
     world = Repo.get!(World, 1)
     cities_count = MayorGame.Repo.aggregate(City.Town, :count, :id)
@@ -53,11 +53,11 @@ defmodule MayorGameWeb.DashboardLive do
   # if user is not logged in
   def mount(_params, _session, socket) do
     in_dev = Application.get_env(:mayor_game, :env) == :dev
-    day_margin = if in_dev, do: 2000, else: 30
+    day_margin = if in_dev, do: 20_592_000, else: 2_592_000
 
     MayorGameWeb.Endpoint.subscribe("cityPubSub")
     {:ok, datetime} = DateTime.now("Etc/UTC")
-    check_date = DateTime.add(datetime, -day_margin, :day) |> DateTime.to_date()
+    check_date = DateTime.add(datetime, -day_margin, :second) |> DateTime.to_date()
 
     world = Repo.get!(World, 1)
     cities_count = MayorGame.Repo.aggregate(City.Town, :count, :id)

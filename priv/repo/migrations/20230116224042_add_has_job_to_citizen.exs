@@ -1,4 +1,4 @@
-defmodule MayorGame.Repo.Migrations.AddPollutionToTownDb do
+defmodule MayorGame.Repo.Migrations.AddHasJobToCitizen do
   use Ecto.Migration
 
   def change do

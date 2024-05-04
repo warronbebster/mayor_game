@@ -17,7 +17,7 @@ defmodule MayorGame.Bid do
   end
 
   def list_valid_bids(date) do
-    check_date = DateTime.add(date, -30, :day) |> DateTime.to_date()
+    check_date = DateTime.add(date, -2_592_000, :second) |> DateTime.to_date()
 
     Repo.all(Bid)
     |> Repo.preload(

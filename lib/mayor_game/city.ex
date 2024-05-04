@@ -65,9 +65,9 @@ defmodule MayorGame.City do
 
   """
   def list_active_cities_preload(datetime, in_dev) do
-    date_range = if in_dev, do: 2000, else: 30
+    date_range = if in_dev, do: 20_592_000, else: 2_592_000
 
-    check_date = DateTime.add(datetime, -date_range, :day) |> DateTime.to_date()
+    check_date = DateTime.add(datetime, -date_range, :second) |> DateTime.to_date()
     # TODO: can I filter here by last_login? that way I don't even have to do the filter in the server
     from(Town,
       select: ^Town.traits_minus_blob()

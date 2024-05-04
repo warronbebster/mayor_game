@@ -1946,7 +1946,7 @@ defmodule MayorGame.City.Buildable do
   end
 
   @doc """
-  an ordered list of buildabels to build generatives every day
+  an ordered list of buildables to build generatives every day
   """
   def buildables_ordered do
     needs_nothing =

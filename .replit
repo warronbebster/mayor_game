@@ -1,0 +1,26 @@
+run = ["iex", "-S", "mix", "phx.server"]
+
+entrypoint = "lib/phoenix_app_web/controllers/page_controller.ex"
+
+hidden = [".mix", ".hex", ".elixir_ls"]
+
+[nix]
+channel = "stable-23_11"
+
+[languages.elixir]
+pattern = "**/{*.exs,*.ex}"
+
+[languages.elixir.languageServer]
+start = ["elixir-ls", "elixir_ls"]
+
+[env]
+LC_ALL = "en_US.UTF-8"
+HEX_HOME = "/home/runner/${REPL_SLUG}/.hex"
+MIX_HOME = "/home/runner/${REPL_SLUG}/.mix"
+
+[deployment]
+run = ["mix", "phx.server"]
+
+[[ports]]
+localPort = 4000
+externalPort = 80
