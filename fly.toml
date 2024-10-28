@@ -15,7 +15,7 @@ kill_timeout = "5s"
   release_command = "/app/bin/migrate"
 
 [[vm]]
-  size = "shared-cpu-4x"
+  size = "performance-cpu-4x"
   memory = "2gb"
 
 [env]
@@ -45,7 +45,3 @@ kill_timeout = "5s"
     timeout = "2s"
     grace_period = "1s"
     restart_limit = 0
-
-  [[vm]]
-    memory = "4gb"
-    size = "shared-cpu-4x"
