@@ -16,7 +16,7 @@ kill_timeout = "5s"
 
 [[vm]]
   size = "performance-2x"
-  memory = "2gb"
+  memory = "4gb"
 
 [env]
   PHX_HOST = "fragile.city"
