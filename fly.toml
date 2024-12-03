@@ -15,8 +15,8 @@ kill_timeout = "5s"
   release_command = "/app/bin/migrate"
 
 [[vm]]
-  size = "performance-2x"
-  memory = "4gb"
+  size = "performance-1x"
+  memory = "2gb"
 
 [env]
   PHX_HOST = "fragile.city"
