@@ -1,9 +1,6 @@
 defmodule MayorGameWeb.RegistrationController do
   use MayorGameWeb, :controller
 
-  alias Ecto.Changeset
-  alias MayorGame.Repo
-
   def resend_confirmation_email(conn, _params) do
     user = Pow.Plug.current_user(conn)
 
@@ -23,32 +20,49 @@ defmodule MayorGameWeb.RegistrationController do
   end
 
   defp send_confirmation_email(conn) do
-    current_user = Pow.Plug.current_user(conn)
+    user =
+      if is_nil(Pow.Plug.current_user(conn).email_confirmation_token) do
+        # config = Pow.Plug.fetch_config(conn)
+        # IO.inspect(config, label: "config")
+        # updated_conn = Pow.Plug.change_user(conn, %{unconfirmed_email: Pow.Plug.current_user(conn).email})
+        # IO.inspect(updated_conn, label: "updated_conn")
 
-    case ensure_confirmation_token(current_user) do
-      {:ok, user} ->
-        PowEmailConfirmation.Phoenix.ControllerCallbacks.send_confirmation_email(user, conn)
+        # I think this returns a conn
 
-      {:error, _changeset} ->
-        conn
-        |> put_flash(:error, "Could not generate confirmation email. Please try again.")
-        |> redirect(to: Routes.pow_registration_path(conn, :edit))
-    end
-  end
+        Pow.Plug.current_user(conn)
+        |> Map.put(:unconfirmed_email, Pow.Plug.current_user(conn).email)
+        |> Map.put(:email_confirmation_token, "e058202b-cfhe-2422-b1ce-c64a66540249")
 
-  defp ensure_confirmation_token(%{email_confirmation_token: token} = user) when not is_nil(token) do
-    {:ok, user}
-  end
+        # ok so can i just put any random strings here lol
+        # apparently not
+      else
+        Pow.Plug.current_user(conn)
+      end
 
-  defp ensure_confirmation_token(user) do
-    attrs = %{
-      email_confirmation_token: Pow.UUID.generate(),
-      # Some existing users may not have this set; default to current email.
-      unconfirmed_email: user.unconfirmed_email || user.email
-    }
+    # MayorGame.Auth.update_user(Pow.Plug.current_user(conn), %{
+    #   email_confirmation_token: "e058202b-cfhe-2422-b1ce-c64a66540249"
+    # })
+    # |> IO.inspect(label: "updated_user")
 
-    user
-    |> Changeset.change(attrs)
-    |> Repo.update()
+    # assigns = conn.assigns |> Map.put(:current_user, user)
+
+    # conn = Map.put(conn, :assigns, assigns)
+
+    # IO.inspect(conn, label: "conn in send_confirmtaiton_email")
+
+    # secret = derive(conn, salt, key_opts(config))
+    # Plug.Crypto.MessageVerifier.sign(message, secret)
+    # Pow.Plug.MessageVerifier.sign(conn)
+
+    # signing salt: Atom.to_string(__MODULE__)
+
+    # risd token
+    # e210402b-c3b3-4832-b1ce-c64a66540267
+
+    # ok here's where we definitely need the email_confirmation_token in the conn in the user
+    # token = PowEmailConfirmation.Plug.sign_confirmation_token(conn, user)
+    # IO.inspect(token, label: "token")
+
+    PowEmailConfirmation.Phoenix.ControllerCallbacks.send_confirmation_email(user, conn)
   end
 end
