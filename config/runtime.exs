@@ -60,7 +60,7 @@ if config_env() == :prod do
       """
 
   host = System.get_env("PHX_HOST") || "https://fragile.city"
-  port = String.to_integer(System.get_env("PORT") || "4000")
+  port = String.to_integer(System.get_env("PORT") || "5000")
 
   mail_secret =
     System.get_env("MAIL_SECRET") ||
