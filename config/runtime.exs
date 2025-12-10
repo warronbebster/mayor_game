@@ -59,7 +59,14 @@ if config_env() == :prod do
       You can generate one by calling: mix phx.gen.secret
       """
 
-  host = System.get_env("PHX_HOST") || "https://fragile.city"
+  host_with_protocol = System.get_env("PHX_HOST") || "https://fragile.city"
+  # Extract just the hostname, removing protocol if present
+  host =
+    host_with_protocol
+    |> String.replace(~r/^https?:\/\//, "")
+    # Remove any port if present
+    |> String.replace(~r/:.*$/, "")
+
   port = String.to_integer(System.get_env("PORT") || "5000")
 
   mail_secret =
@@ -69,7 +76,7 @@ if config_env() == :prod do
       """
 
   config :mayor_game, MayorGameWeb.Endpoint,
-    url: [host: host, port: 443],
+    url: [host: host, scheme: "https"],
     http: [
       # Enable IPv6 and bind on all interfaces.
       # Set it to  {0, 0, 0, 0, 0, 0, 0, 1} for local network only access.
