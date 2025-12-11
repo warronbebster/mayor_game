@@ -16,7 +16,7 @@ mail_secret =
 # which you should run after static files are built and
 # before starting your production server.
 config :mayor_game, MayorGameWeb.Endpoint,
-  url: [host: System.get_env("RENDER_EXTERNAL_HOSTNAME") || "localhost", port: 80],
+  url: [host: System.get_env("RENDER_EXTERNAL_HOSTNAME") || "fragile.city", scheme: "https"],
   cache_static_manifest: "priv/static/cache_manifest.json",
   force_ssl: [rewrite_on: [:x_forwarded_host, :x_forwarded_port, :x_forwarded_proto]]
 
