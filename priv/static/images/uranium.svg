@@ -1,4 +1,81 @@
-<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M2 2V14C2 18.4183 5.58172 22 10 22H14C18.4183 22 22 18.4183 22 14V2" stroke="#7C3AED" stroke-width="2" stroke-linecap="round"/>
-<path fill-rule="evenodd" clip-rule="evenodd" d="M2 1C2.55228 1 3 1.44772 3 2V14C3 17.866 6.13401 21 10 21H14C17.866 21 21 17.866 21 14V2C21 1.44772 21.4477 1 22 1C22.5523 1 23 1.44772 23 2V14C23 18.9706 18.9706 23 14 23H10C5.02944 23 1 18.9706 1 14V2C1 1.44772 1.44772 1 2 1Z" fill="#7C3AED"/>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="24"
+   height="24"
+   viewBox="0 0 6.3500001 6.3500001"
+   version="1.1"
+   id="svg12694"
+   inkscape:version="1.2.2 (732a01da63, 2022-12-09)"
+   sodipodi:docname="uranium.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview12696"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="14.638496"
+     inkscape:cx="16.941631"
+     inkscape:cy="18.888552"
+     inkscape:window-width="1397"
+     inkscape:window-height="1230"
+     inkscape:window-x="830"
+     inkscape:window-y="38"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs12691">
+    <linearGradient
+       id="linearGradient17751"
+       inkscape:swatch="solid">
+      <stop
+         style="stop-color:#bdcda9;stop-opacity:1;"
+         offset="0"
+         id="stop17749" />
+    </linearGradient>
+  </defs>
+  <g
+     inkscape:label="图层 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       style="fill:none;fill-opacity:1;stroke:#87ce85;stroke-width:0.4;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
+       d="M 1.1026079,2.5650817 2.4053595,2.4689771 2.7684213,3.547485 1.9782279,4.2842869 0.48326698,4.060043 Z"
+       id="path17737" />
+    <path
+       style="fill:none;fill-opacity:1;stroke:#87ce85;stroke-width:0.4;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
+       d="M 2.8133349,4.1861436 3.2511446,3.4493415 4.0093034,3.5668025 4.2228693,4.2502133 3.6035283,5.0937983 2.941474,4.7307365 Z"
+       id="path17743" />
+    <path
+       style="fill:none;stroke:#87ce85;stroke-width:0.4;stroke-linecap:square;stroke-opacity:1;paint-order:fill markers stroke;stroke-dasharray:none"
+       d="M 3.340243,2.3633021 3.9199279,3.1965991 4.8256856,3.4320962 5.477831,2.3633021 4.4996128,1.3307385 Z"
+       id="path2700" />
+    <path
+       style="fill:none;stroke:#87ce85;stroke-width:0.4;stroke-linecap:square;stroke-opacity:1;paint-order:fill markers stroke;stroke-dasharray:none"
+       d="M 1.5830736,2.2546112 2.2533342,1.1858174 3.7750067,1.8741931"
+       id="path2758" />
+    <path
+       style="fill:none;stroke:#87ce85;stroke-width:0.4;stroke-linecap:square;stroke-opacity:1;paint-order:fill markers stroke;stroke-dasharray:none"
+       d="M 2.8330191,3.1422536 3.6300854,2.9611022"
+       id="path2764" />
+    <path
+       style="fill:none;stroke:#87ce85;stroke-width:0.4;stroke-linecap:square;stroke-opacity:1;paint-order:fill markers stroke;stroke-dasharray:none"
+       d="M 2.235219,2.0553445 2.4344859,1.7473869 2.7605584,1.8923082"
+       id="path2776" />
+    <path
+       style="fill:none;stroke:#87ce85;stroke-width:0.4;stroke-linecap:square;stroke-opacity:1;paint-order:fill markers stroke;stroke-dasharray:none"
+       d="M 4.4160452,4.8791478 4.6466137,4.3411552 5.2998901,4.2771088 5.7097892,4.9303851 5.1589872,5.5452338 Z"
+       id="path2798"
+       sodipodi:nodetypes="cccccc" />
+  </g>
 </svg>
