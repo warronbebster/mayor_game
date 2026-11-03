@@ -18,6 +18,9 @@ config :mayor_game, MayorGameWeb.Endpoint,
   http: [port: 4002],
   server: false
 
+# don't run the game loop (MayorGame.CityCalculator) in tests; tests call it directly
+config :mayor_game, start_game_loop: false
+
 # Print only warnings and errors during test
 config :logger, level: :warn
 

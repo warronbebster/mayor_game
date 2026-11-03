@@ -97,11 +97,6 @@ defmodule MayorGameWeb.LogsLive do
     {:noreply, socket |> assign(:world, world) |> update_city_by_title()}
   end
 
-  # this is what gets messages from CityCalculator
-  def handle_info(%{event: "pong", payload: _world}, socket) do
-    {:noreply, socket |> update_city_by_title()}
-  end
-
   # this is just the generic handle_info if nothing else matches
   def handle_info(_assigns, socket) do
     # just update the whole city

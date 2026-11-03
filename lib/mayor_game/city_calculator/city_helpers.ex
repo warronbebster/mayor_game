@@ -15,6 +15,12 @@ defmodule MayorGame.CityHelpers do
 
   import Ecto.Query, warn: false
 
+  @doc """
+  Adds `:citizens_blob` (the list of individual citizens) to a town, unless it's already there
+  (`prepare_cities/3` unfolds every city once per tick).
+  """
+  def unfold_town_citizens(%{citizens_blob: citizens} = town, _day) when is_list(citizens), do: town
+
   def unfold_town_citizens(town, day) do
     unfolded_citizens = town.citizens_compressed |> Citizens.unfold_citizen_blob(day, town.id)
 
@@ -60,10 +66,6 @@ defmodule MayorGame.CityHelpers do
 
     # returns a town_stats with food_consumed and actual resources consumed
 
-    if town.id == 2 do
-      IO.inspect(ResourceStats.getNextStock(town_stats.resource_stats.produce), label: "before")
-    end
-
     # for each type of food
 
     town_stats_after_food =
@@ -86,17 +88,6 @@ defmodule MayorGame.CityHelpers do
             ResourceStats.fromRequires(to_string(food_type), consumed_resources)
           )
 
-        if town.id == 2 do
-          IO.inspect(hungry_citizens, label: "hungry_citizens")
-          IO.inspect(consumed_resources, label: "consumed_resources")
-
-          IO.inspect(max_possible_consumption,
-            label: town.title <> " max_possible_consumption " <> to_string(food_type)
-          )
-
-          IO.inspect(food_production_resources, label: "food_production_resources")
-        end
-
         # 4 bread at 10
         # 100 hungry citizens
         # min(10, 4)
@@ -108,13 +99,6 @@ defmodule MayorGame.CityHelpers do
 
         # end
       end)
-
-    if town.id == 2 do
-      IO.inspect(ResourceStats.getNextStock(town_stats_after_food.resource_stats.produce), label: "after")
-      IO.inspect(town_stats_after_food.food_consumed, label: "food_consumed")
-      IO.inspect(town_stats_after_food.food_capacity, label: "food_capacity")
-      # ok here's the after
-    end
 
     # returns a %TownStats{}
     results_before_overrides =
