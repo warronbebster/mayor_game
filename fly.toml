@@ -15,12 +15,16 @@ kill_timeout = "5s"
   release_command = "/app/bin/migrate"
 
 [[vm]]
-  size = "performance-1x"
+  # shared CPU is ~60% cheaper than performance-1x. If the logs show
+  # "Calculator Tick" times getting long (CPU throttling), raise
+  # TICK_INTERVAL_MS below or go back to size = "performance-1x".
+  size = "shared-cpu-2x"
   memory = "2gb"
 
 [env]
   PHX_HOST = "fragile.city"
   PORT = "8080"
+  TICK_INTERVAL_MS = "10000"
 
 [[services]]
   protocol = "tcp"
