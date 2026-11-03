@@ -27,6 +27,11 @@ if config_env() == :prod do
   # print line in elixir
   IO.puts("Running in production mode")
 
+  # How often the CityCalculator and CityMigrator game loops run.
+  # Longer intervals use less CPU, so the app fits on a cheaper shared-CPU VM.
+  config :mayor_game,
+    tick_interval_ms: String.to_integer(System.get_env("TICK_INTERVAL_MS") || "10000")
+
   database_url =
     System.get_env("DATABASE_URL") ||
       raise """

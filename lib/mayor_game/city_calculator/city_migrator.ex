@@ -36,7 +36,7 @@ defmodule MayorGame.CityMigrator do
 
     # send message :tax to self process after
     # calls `handle_info` function
-    Process.send_after(self(), :tax, 5000)
+    Process.send_after(self(), :tax, Application.get_env(:mayor_game, :tick_interval_ms, 5000))
 
     # returns ok tuple when u start
     {:ok, %{world: game_world, buildables_map: buildables_map, in_dev: in_dev, migration_tick: 0}}
@@ -1020,7 +1020,7 @@ defmodule MayorGame.CityMigrator do
     )
 
     # recurse, do it again
-    Process.send_after(self(), :tax, 5000)
+    Process.send_after(self(), :tax, Application.get_env(:mayor_game, :tick_interval_ms, 5000))
 
     # returns this to whatever calls ?
     {:noreply,
