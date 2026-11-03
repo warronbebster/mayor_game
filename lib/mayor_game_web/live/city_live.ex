@@ -405,6 +405,39 @@ defmodule MayorGameWeb.CityLive do
   end
 
   def handle_event(
+        "update_tax_rates",
+        %{"job_level" => job_level, "value" => value},
+        %{assigns: %{city: city}} = socket
+      ) do
+    with true <- socket.assigns.is_user_mayor && job_level in Map.keys(city.tax_rates),
+         {rate, _} <- Float.parse(value) do
+      updated_tax_rates = Map.put(city.tax_rates, job_level, rate |> max(0.0) |> min(1.0) |> Float.round(2))
+      from(t in Town, where: t.id == ^city.id, update: [set: [tax_rates: ^updated_tax_rates]]) |> Repo.update_all([])
+
+      {:noreply, socket |> assign(city: Map.put(city, :tax_rates, updated_tax_rates))}
+    else
+      _ -> {:noreply, socket}
+    end
+  end
+
+  def handle_event(
+        "update_priorities",
+        %{"building_type" => building_type, "value" => value},
+        %{assigns: %{city: city}} = socket
+      ) do
+    # the game loop turns every priorities key back into an atom, so only accept real buildables
+    with true <- socket.assigns.is_user_mayor && !is_nil(buildable(building_type)),
+         {priority, _} <- Integer.parse(value) do
+      updated_priorities = Map.put(city.priorities, building_type, priority |> max(0) |> min(100))
+      from(t in Town, where: t.id == ^city.id, update: [set: [priorities: ^updated_priorities]]) |> Repo.update_all([])
+
+      {:noreply, socket |> assign(city: Map.put(city, :priorities, updated_priorities))}
+    else
+      _ -> {:noreply, socket}
+    end
+  end
+
+  def handle_event(
         "trade",
         # grab "town" map from response and cast it into city_form
         %{"town" => city_form},
@@ -651,7 +684,7 @@ defmodule MayorGameWeb.CityLive do
         %{},
         %{assigns: %{city: city, is_user_verified: is_user_verified}} = socket
       ) do
-    if is_user_verified do
+    if is_user_verified && socket.assigns.is_user_mayor do
       City.update_town_by_id(city.id, %{retaliate: !city.retaliate})
 
       updated_city = city |> Map.update!(:retaliate, &(!&1))

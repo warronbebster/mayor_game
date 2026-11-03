@@ -63,4 +63,37 @@ defmodule MayorGameWeb.CityLiveTest do
 
     assert Repo.reload!(their_town).parks == their_town.parks
   end
+
+  test "setting your tax rates", %{conn: conn, my_town: my_town} do
+    {:ok, view, _html} = live(conn, "/city/#{my_town.title}")
+
+    render_blur(view, "update_tax_rates", %{"job_level" => "2", "value" => "0.45"})
+    render_blur(view, "update_tax_rates", %{"job_level" => "3", "value" => "7"})
+    render_blur(view, "update_tax_rates", %{"job_level" => "bogus", "value" => "0.5"})
+
+    assert Repo.reload!(my_town).tax_rates == Map.merge(my_town.tax_rates, %{"2" => 0.45, "3" => 1.0})
+  end
+
+  test "setting your building priorities", %{conn: conn, my_town: my_town} do
+    {:ok, view, _html} = live(conn, "/city/#{my_town.title}")
+
+    render_blur(view, "update_priorities", %{"building_type" => "huts", "value" => "3"})
+    # an unknown key would crash the game loop, which turns these keys back into atoms
+    render_blur(view, "update_priorities", %{"building_type" => "not_a_building", "value" => "3"})
+
+    priorities = Repo.reload!(my_town).priorities
+    assert priorities["huts"] == 3
+    refute Map.has_key?(priorities, "not_a_building")
+  end
+
+  test "you can't change someone else's taxes or priorities", %{conn: conn, their_town: their_town} do
+    before = Repo.reload!(their_town)
+    {:ok, view, _html} = live(conn, "/city/#{their_town.title}")
+
+    render_blur(view, "update_tax_rates", %{"job_level" => "2", "value" => "0.99"})
+    render_blur(view, "update_priorities", %{"building_type" => "huts", "value" => "50"})
+    render_click(view, "toggle_retaliate", %{})
+
+    assert Repo.reload!(their_town) == before
+  end
 end
