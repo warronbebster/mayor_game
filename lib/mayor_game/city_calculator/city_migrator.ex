@@ -13,11 +13,13 @@ defmodule MayorGame.CityMigrator do
        their current one by `@home_city_advantage`.
     2. unemployed citizens compete for the remaining job + housing slots at their level
     3. unhoused citizens compete for the remaining job + housing slots at their level
-    4. unhoused citizens still without a slot take any open housing, at any level.
-       Those who don't fit anywhere die (`logs_deaths_housing`).
+    4. unhoused citizens still without a slot take any open housing, at any level, if
+       they like it better than their current city. Those who end up without housing
+       die (`logs_deaths_housing`).
 
-  Within a round, citizens claim slots first-come-first-served, each picking the open
-  city it scores highest (`citizen_score/3`).
+  Within a round, citizens claim slots first-come-first-served, each picking the city with
+  an open slot that they score highest (`citizen_score/3`). Every citizen that goes in comes
+  out either in a city's citizen list or counted in `unhoused_deaths`.
   """
   alias MayorGame.City.{Citizens, Town, TownStats, ResourceStats}
   alias MayorGame.{CityHelpers, Repo}
@@ -71,13 +73,15 @@ defmodule MayorGame.CityMigrator do
       |> Enum.flat_map(& &1.unhoused_citizens)
       |> level_round(slots_left(round_2), scores, :other)
 
+    # employed citizens who stay keep their job and home, unemployed ones keep their home.
+    # unhoused citizens who didn't find a slot in round 3 go on to round 4.
     citizens_by_id =
       citizens_by_id
-      |> settle(round_1)
+      |> settle(choices(round_1))
       |> return_home(left_out(round_1))
-      |> settle(round_2)
+      |> settle(choices(round_2))
       |> return_home(left_out(round_2))
-      |> settle(round_3)
+      |> settle(moves(round_3))
 
     housing_slots =
       housing_slots
@@ -85,9 +89,9 @@ defmodule MayorGame.CityMigrator do
       |> apply_moves(moves(round_2))
       |> apply_moves(moves(round_3))
 
-    # round 4: unhoused citizens who didn't get into round 3 look for housing anywhere
+    # round 4: unhoused citizens still without a slot look for housing anywhere
     {round_4_moves, citizens_by_id, unhoused_deaths} =
-      housing_round(left_out(round_3), housing_slots, scores, citizens_by_id)
+      housing_round(unplaced(round_3) ++ left_out(round_3), housing_slots, scores, citizens_by_id)
 
     %{
       citizens_by_id: citizens_by_id,
@@ -118,14 +122,15 @@ defmodule MayorGame.CityMigrator do
 
       result =
         Enum.reduce(racing, %{choices: [], slots: slots}, fn citizen, acc ->
+          town_id = citizen["town_id"]
           chosen_id = choose_city(citizen, acc.slots, scores, mode)
 
           slots =
-            if mode == :employed do
+            cond do
+              chosen_id == town_id -> acc.slots
               # an employed citizen leaving frees up their old slot
-              acc.slots |> Map.update(chosen_id, 0, &(&1 - 1)) |> Map.update(citizen["town_id"], 0, &(&1 + 1))
-            else
-              acc.slots |> Map.update(chosen_id, 0, &(&1 - 1))
+              mode == :employed -> acc.slots |> Map.update!(chosen_id, &(&1 - 1)) |> Map.update(town_id, 1, &(&1 + 1))
+              true -> Map.update!(acc.slots, chosen_id, &(&1 - 1))
             end
 
           %{choices: [{citizen, chosen_id} | acc.choices], slots: slots}
@@ -135,37 +140,33 @@ defmodule MayorGame.CityMigrator do
     end)
   end
 
-  # :employed citizens may stay in (or pick) their own city, and only move for a meaningfully better one.
-  # everyone else must pick a city other than their own.
+  # Picks the best-scoring city with an open slot, or the citizen's own city if none qualifies.
+  # :employed citizens only move for a city that beats their current one by @home_city_advantage.
+  # :other citizens (unemployed/unhoused) are looking for a slot their own city doesn't have.
   defp choose_city(citizen, slots, scores, mode) do
     town_id = citizen["town_id"]
     citizen_scores = scores[citizen["preferences"]][citizen["education"]]
-    current_city_score = citizen_scores[town_id]
+    min_score = if mode == :employed, do: citizen_scores[town_id] + @home_city_advantage, else: -1
 
     chosen =
       Enum.reduce(slots, %{chosen_id: town_id, top_score: -1}, fn {city_id, count}, acc ->
-        {score, beats_current?} =
-          case mode do
-            :employed ->
-              score = if count > 0, do: citizen_scores[city_id], else: 0
-              {score, score > current_city_score + @home_city_advantage}
+        score = citizen_scores[city_id]
 
-            :other ->
-              {if(count > 0 && city_id != town_id, do: citizen_scores[city_id], else: 0), true}
-          end
-
-        if score > acc.top_score && beats_current?, do: %{chosen_id: city_id, top_score: score}, else: acc
+        if count > 0 && city_id != town_id && score > acc.top_score && score > min_score,
+          do: %{chosen_id: city_id, top_score: score},
+          else: acc
       end)
 
     chosen.chosen_id
   end
 
-  # Unhoused citizens who didn't find a job slot take any city with open housing (if they like it more
-  # than their current one). Citizens beyond the number of open housing slots die.
+  # Unhoused citizens who didn't find a job slot take any city with open housing, if they like it more
+  # than their current one. Whoever ends up without housing dies.
   defp housing_round(citizens, housing_slots, scores, citizens_by_id) do
     open_slots = housing_slots |> Enum.filter(fn {_id, count} -> count > 0 end) |> Map.new()
 
-    {racing, dying} = Enum.split(citizens, housing_slots |> Map.values() |> Enum.sum())
+    # there's no point looking for more slots than there are
+    {racing, no_chance} = Enum.split(citizens, open_slots |> Map.values() |> Enum.sum())
 
     %{choices: choices} =
       Enum.reduce(racing, %{choices: [], slots: open_slots}, fn citizen, acc ->
@@ -174,23 +175,28 @@ defmodule MayorGame.CityMigrator do
 
         chosen =
           Enum.reduce(acc.slots, %{chosen_id: town_id, top_score: citizen_scores[town_id]}, fn {city_id, count}, acc2 ->
-            score = if count > 0, do: citizen_scores[city_id], else: 0
-            if score > acc2.top_score, do: %{chosen_id: city_id, top_score: score}, else: acc2
+            score = citizen_scores[city_id]
+            if count > 0 && score > acc2.top_score, do: %{chosen_id: city_id, top_score: score}, else: acc2
           end)
 
-        slots = acc.slots |> Map.update(chosen.chosen_id, 0, &(&1 - 1)) |> Map.update(town_id, 0, &(&1 + 1))
+        # staying home only works out if a slot opened up there
+        housed? = Map.get(acc.slots, chosen.chosen_id, 0) > 0
+        slots = if housed?, do: Map.update!(acc.slots, chosen.chosen_id, &(&1 - 1)), else: acc.slots
 
-        %{choices: [{citizen, chosen.chosen_id} | acc.choices], slots: slots}
+        %{choices: [{citizen, if(housed?, do: chosen.chosen_id)} | acc.choices], slots: slots}
       end)
 
-    round_moves = Enum.filter(choices, fn {citizen, chosen_id} -> citizen["town_id"] != chosen_id end)
+    {housed, unhoused} = Enum.split_with(choices, fn {_citizen, chosen_id} -> chosen_id end)
+    round_moves = Enum.filter(housed, fn {citizen, chosen_id} -> citizen["town_id"] != chosen_id end)
 
     citizens_by_id =
-      Enum.reduce(round_moves, citizens_by_id, fn {citizen, chosen_id}, acc ->
-        Map.update!(acc, chosen_id, &[citizen | &1])
+      Enum.reduce(housed, citizens_by_id, fn {citizen, chosen_id}, acc ->
+        Map.update!(acc, chosen_id, &[Map.take(citizen, @kept_citizen_keys) | &1])
       end)
 
-    {round_moves, citizens_by_id, Enum.frequencies_by(dying, & &1["town_id"])}
+    deaths = Enum.map(unhoused, fn {citizen, _} -> citizen end) ++ no_chance
+
+    {round_moves, citizens_by_id, Enum.frequencies_by(deaths, & &1["town_id"])}
   end
 
   # ——————————————————————————————————————————————————————————————————————————————————
@@ -221,19 +227,22 @@ defmodule MayorGame.CityMigrator do
 
   defp left_out(round), do: Enum.flat_map(@levels, &round[&1].left_out)
 
-  # {citizen, chosen_city_id} for citizens who chose a city other than their own
-  defp moves(round) do
-    round
-    |> Enum.flat_map(fn {_level, %{choices: choices}} -> choices end)
-    |> Enum.filter(fn {citizen, chosen_id} -> citizen["town_id"] != chosen_id end)
+  # [{citizen, chosen_city_id}] for everyone who took part in a round
+  defp choices(round), do: Enum.flat_map(@levels, &round[&1].choices)
+
+  # choices of citizens who picked a city other than their own
+  defp moves(round),
+    do: round |> choices() |> Enum.filter(fn {citizen, chosen_id} -> citizen["town_id"] != chosen_id end)
+
+  # citizens who took part in a round but found nothing
+  defp unplaced(round) do
+    for {citizen, chosen_id} <- choices(round), citizen["town_id"] == chosen_id, do: citizen
   end
 
-  # put each citizen of a round in the city they chose (which may be their own)
-  defp settle(citizens_by_id, round) do
-    Enum.reduce(@levels, citizens_by_id, fn level, acc ->
-      Enum.reduce(round[level].choices, acc, fn {citizen, chosen_id}, acc2 ->
-        Map.update!(acc2, chosen_id, &[Map.take(citizen, @kept_citizen_keys) | &1])
-      end)
+  # put each citizen in the city they chose (which may be their own)
+  defp settle(citizens_by_id, choices) do
+    Enum.reduce(choices, citizens_by_id, fn {citizen, chosen_id}, acc ->
+      Map.update!(acc, chosen_id, &[Map.take(citizen, @kept_citizen_keys) | &1])
     end)
   end
 
