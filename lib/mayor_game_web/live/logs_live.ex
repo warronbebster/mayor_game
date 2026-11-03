@@ -108,7 +108,7 @@ defmodule MayorGameWeb.LogsLive do
   defp update_city_by_title(%{assigns: %{title: title, world: world}} = socket) do
     # cities_count = MayorGame.Repo.aggregate(City.Town, :count, :id)
 
-    pollution_ceiling = 2_000_000_000 * Random.gammavariate(7.5, 1)
+    pollution_ceiling = Rules.pollution_ceiling()
 
     season = Rules.season_from_day(world.day)
 

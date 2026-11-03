@@ -41,7 +41,7 @@
           <%= if !is_nil @markets[to_string(resource_type)] do %>
             <%= for market <- Enum.sort_by(@markets[to_string(resource_type)], & &1.min_price, :desc) do %>
               <div class="border border-neutral-800/10 p-2">
-                <span><a class="underline" href={"/city/#{market.town.title}"}><%= market.town.title %></a></span>
+                <span><a class="underline" href={city_path(market.town.title)}><%= market.town.title %></a></span>
                 <%= if !is_nil(@current_user) and @current_user.town.id == market.town_id or @is_user_admin do %>
                   Minimum price:
                   <input
@@ -117,7 +117,7 @@
           <%= if !is_nil @bids[to_string(resource_type)] do %>
             <%= for bid <- Enum.sort_by(@bids[to_string(resource_type)], & &1.max_price, :desc) do %>
               <div class="border p-2">
-                <span><a class="underline" href={"/city/#{bid.town.title}"}><%= bid.town.title %></a></span>
+                <span><a class="underline" href={city_path(bid.town.title)}><%= bid.town.title %></a></span>
                 <%= if !is_nil(@current_user) and @current_user.town.id == bid.town_id or @is_user_admin do %>
                   <!-- if town owns this bid -->
                   Price:

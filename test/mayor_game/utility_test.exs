@@ -11,4 +11,15 @@ defmodule MayorGame.UtilityTest do
     assert Enum.all?(rolls, &(is_integer(&1) and &1 in 0..10))
     assert Enum.sum(rolls) > 0
   end
+
+  test "gamma_variate/2 has the gamma distribution's mean and variance" do
+    samples = for _ <- 1..20_000, do: Utility.gamma_variate(7.5, 2)
+    mean = Enum.sum(samples) / length(samples)
+    variance = Enum.sum(Enum.map(samples, &((&1 - mean) ** 2))) / length(samples)
+
+    # mean = shape * scale = 15, variance = shape * scale^2 = 30
+    assert_in_delta mean, 15, 0.3
+    assert_in_delta variance, 30, 2
+    assert Enum.all?(samples, &(&1 > 0))
+  end
 end

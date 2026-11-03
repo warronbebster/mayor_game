@@ -47,8 +47,8 @@ defmodule MayorGameWeb.CityCreationForm do
     case City.create_town(city_form) do
       # if city built successfully
       {:ok, _} ->
-        IO.inspect('city_created')
-        {:noreply, redirect(socket, to: "/city/" <> city_form["title"])}
+        IO.inspect("city_created")
+        {:noreply, redirect(socket, to: MayorGameWeb.Paths.city_path(city_form["title"]))}
 
       # {:error, err} ->
       #   Logger.error(inspect(err))

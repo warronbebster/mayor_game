@@ -65,7 +65,7 @@ defmodule MayorGame.CityCalculator do
     {:ok, now} = DateTime.now("Etc/UTC")
     season = Rules.season_from_day(world.day)
     # should we tie pollution effect to RNG?
-    pollution_ceiling = 2_000_000_000 * Random.gammavariate(7.5, 1)
+    pollution_ceiling = Rules.pollution_ceiling()
     # citizens get educated every 100 days (every 5 in dev)
     time_to_learn = rem(world.day, if(in_dev, do: 5, else: 100)) == 0
 

@@ -53,7 +53,7 @@
       </td>
       <td class="top_td">Citizens</td>
       <td class="top_td">
-        <a class="underline" href={"/city/#{@city.title}/logs"}>Logs</a>
+        <a class="underline" href={city_logs_path(@city.title)}>Logs</a>
       </td>
     </tr>
     <tr>
@@ -374,11 +374,11 @@
           Send Resources
         </h2>
         <.form
-          let={f}
+          :let={f}
           for={@trade_set}
           id="trade-form"
-          phx_submit="trade"
-          phx_change="validate_trade"
+          phx-submit="trade"
+          phx-change="validate_trade"
           phx-throttle="1000"
         >
           <%= number_input(f, :amount,
@@ -430,7 +430,7 @@
         <div class="flex flex-row items-center gap-2">
           <span class="underline">
             <%= link(ongoing_sanctions.sanctioning.title,
-              to: Routes.city_path(@socket, MayorGameWeb.CityLive, ongoing_sanctions.sanctioning.title)
+              to: city_path(ongoing_sanctions.sanctioning.title)
             ) %>
           </span>
           is sanctioning this city
@@ -482,7 +482,7 @@
           <div class="flex flex-row items-center gap-2">
             <span class="underline">
               <%= link(ongoing_attack.attacking.title,
-                to: Routes.city_path(@socket, MayorGameWeb.CityLive, ongoing_attack.attacking.title)
+                to: city_path(ongoing_attack.attacking.title)
               ) %>
             </span>
             is attacking with <%= ongoing_attack.attack_count %> missiles/day

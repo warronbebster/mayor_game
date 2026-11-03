@@ -96,4 +96,18 @@ defmodule MayorGameWeb.CityLiveTest do
 
     assert Repo.reload!(their_town) == before
   end
+
+  test "a city's logs page", %{conn: conn, their_town: their_town} do
+    {:ok, _view, html} = live(conn, "/city/#{their_town.title}/logs")
+    assert html =~ their_town.title
+  end
+
+  test "the dashboard links to your city", %{conn: conn, my_town: my_town} do
+    html = conn |> get("/") |> html_response(200)
+    assert html =~ "/city/#{my_town.title}"
+  end
+
+  test "city titles are encoded in links" do
+    assert MayorGameWeb.Paths.city_path("Tom & Jerry?") == "/city/Tom%20%26%20Jerry%3F"
+  end
 end

@@ -7,7 +7,7 @@ defmodule MayorGame.MixProject do
     [
       app: :mayor_game,
       version: "0.1.0",
-      elixir: "~> 1.12",
+      elixir: "~> 1.18",
       elixirc_paths: elixirc_paths(Mix.env()),
       compilers: [:phoenix] ++ Mix.compilers(),
       start_permanent: Mix.env() == :prod,
@@ -36,33 +36,31 @@ defmodule MayorGame.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
-      {:phoenix, "~> 1.6.6"},
+      {:phoenix, "~> 1.7.21"},
+      {:phoenix_view, "~> 2.0"},
       {:phoenix_ecto, "~> 4.4"},
-      {:ecto_sql, "~> 3.7.1"},
-      {:postgrex, "~> 0.15.13"},
-      {:phoenix_html, "~> 3.2"},
-      {:phoenix_live_reload, "~> 1.3.3", only: :dev},
-      {:phoenix_live_dashboard, "~> 0.6.2"},
-      {:phoenix_live_view, "~> 0.17.8"},
-      {:telemetry_metrics, "~> 0.6.1"},
+      {:ecto_sql, "~> 3.13"},
+      {:postgrex, "~> 0.19"},
+      {:phoenix_html, "~> 3.3"},
+      {:phoenix_live_reload, "~> 1.4", only: :dev},
+      {:phoenix_live_dashboard, "~> 0.8"},
+      {:phoenix_live_view, "~> 1.0"},
+      {:telemetry_metrics, "~> 1.0"},
       {:telemetry_poller, "~> 1.0"},
-      {:gettext, "~> 0.19"},
+      {:gettext, "~> 1.0"},
       {:jason, "~> 1.3"},
-      {:pow, "~> 1.0.26"},
-      {:plug_cowboy, "~> 2.5.2"},
+      {:pow, "~> 1.0.39"},
+      {:plug_cowboy, "~> 2.7"},
       {:accessible, "~> 0.3.0"},
       {:esbuild, "~> 0.4", runtime: Mix.env() == :dev},
       {:tailwind, "~> 0.1", runtime: Mix.env() == :dev},
-      {:random, "~> 0.2.4"},
       {:hackney, "~> 1.9"},
       {:swoosh, "~> 1.9"},
-      {:faker, "~> 0.17"},
       {:pow_postgres_store, "~> 1.0"},
-      {:number, "~> 1.0.3"},
-      {:flow, "~> 1.0"},
-      {:statistics, "~> 0.6.2"},
-      {:ecto_commons, "~> 0.3.3"},
-      {:floki, "~> 0.37.1", only: :test}
+      {:number, "~> 1.0"},
+      {:statistics, "~> 0.6.3"},
+      {:ecto_commons, "~> 0.3.7"},
+      {:lazy_html, ">= 0.1.0", only: :test}
     ]
   end
 

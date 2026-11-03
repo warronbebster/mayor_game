@@ -3,7 +3,7 @@
     <article>
       <h2>Create City</h2>
 
-      <.form let={f} for={@city_changeset} phx_submit="create_city" phx_change="validate">
+      <.form :let={f} for={@city_changeset} phx-submit="create_city" phx-change="validate">
         <%= if @city_changeset.action do %>
           <div class="alert alert-danger">
             uh oh, something's up! <%= @city_changeset.action %>

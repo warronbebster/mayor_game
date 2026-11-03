@@ -51,8 +51,8 @@ defmodule MayorGameWeb.Router do
 
     get "/", PageController, :index
     live "/market", MarketLive
-    live "/city/:title", CityLive, as: :city
-    live "/city/:title/logs", LogsLive, as: :city
+    live "/city/:title", CityLive, :show
+    live "/city/:title/logs", LogsLive, :show
 
     # Line Added
     # Line Added

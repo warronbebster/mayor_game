@@ -228,9 +228,9 @@ defmodule MayorGame.City.Town do
     field(:patron, :integer)
     field(:contributor, :boolean)
     field(:retaliate, :boolean)
-    field :citizens_compressed, :map, null: false, default: %{}
+    field :citizens_compressed, :map, default: %{}
     field :last_login, :date
-    field :priorities, :map, null: false, default: Buildable.buildables_default_priorities()
+    field :priorities, :map, default: Buildable.buildables_default_priorities()
 
     # this corresponds to an elixir list
     field(:tax_rates, :map)

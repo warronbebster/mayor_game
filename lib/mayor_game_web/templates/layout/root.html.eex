@@ -47,7 +47,7 @@
               <li class="hover:underline"><%= link "Sign in", to: Routes.pow_session_path(@conn, :new) %></li>
             <% end %>
             <%= if function_exported?(Routes, :live_dashboard_path, 2) do %>
-              <li class="hover:underline"><%= link "LiveDashboard", to: Routes.live_dashboard_path(@conn, :home) %></li>
+              <li class="hover:underline"><%= link "LiveDashboard", to: "/dashboard" %></li>
             <% end %>
           </ul>
         </nav>

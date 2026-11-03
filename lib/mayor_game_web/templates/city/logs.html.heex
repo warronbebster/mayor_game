@@ -3,7 +3,7 @@
     <tr>
       <td class="top_td">
         <span class="flex flex-row items-center gap-x-1">
-          <a class="underline" href={"/city/#{@city.title}"}><%= @city.title %></a>
+          <a class="underline" href={city_path(@city.title)}><%= @city.title %></a>
 
           <%= if @city.patron > 0 do %>
             <div class="group relative flex flex-row items-center text-amber-600">
@@ -487,7 +487,7 @@
 
         <%= for {city, resource_map} <- @city.logs_sent do %>
           <div class="flex flex-col justify-between gap-2 my-0 leading-none">
-            <span><a class="underline" href={"/city/#{city}"}><%= city %></a></span>
+            <span><a class="underline" href={city_path(city)}><%= city %></a></span>
             <%= for {resource, amount} <- resource_map do %>
               <div class="flex flex-row items-center justify-between gap-2 my-0 leading-none">
                 <span><%= resource %></span>
@@ -518,7 +518,7 @@
 
         <%= for {city, resource_map} <- @city.logs_received do %>
           <div class="flex flex-col justify-between gap-2 my-0 leading-none">
-            <span><a class="underline" href={"/city/#{city}"}><%= city %></a></span>
+            <span><a class="underline" href={city_path(city)}><%= city %></a></span>
             <%= for {resource, amount} <- resource_map do %>
               <div class="flex flex-row items-center justify-between gap-2 my-0 leading-none">
                 <span><%= resource %></span>
