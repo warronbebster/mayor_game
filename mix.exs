@@ -54,7 +54,7 @@ defmodule MayorGame.MixProject do
       {:accessible, "~> 0.3.0"},
       {:esbuild, "~> 0.4", runtime: Mix.env() == :dev},
       {:tailwind, "~> 0.1", runtime: Mix.env() == :dev},
-      {:hackney, "~> 1.9"},
+      {:finch, "~> 0.19"},
       {:swoosh, "~> 1.9"},
       {:pow_postgres_store, "~> 1.0"},
       {:number, "~> 1.0"},

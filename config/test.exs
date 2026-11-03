@@ -24,7 +24,9 @@ config :mayor_game, MayorGameWeb.Endpoint,
 config :mayor_game, start_game_loop: false
 
 # Print only warnings and errors during test
-config :logger, level: :warn
+config :logger, level: :warning
+
+config :mayor_game, MayorGameWeb.Pow.Mailer, adapter: Swoosh.Adapters.Test
 
 # lower iteration for speed
 config :pow, Pow.Ecto.Schema.Password, iterations: 1

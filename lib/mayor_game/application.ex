@@ -13,6 +13,8 @@ defmodule MayorGame.Application do
       MayorGameWeb.Telemetry,
       # Start the PubSub system
       {Phoenix.PubSub, name: MayorGame.PubSub},
+      # HTTP client pool, used by Swoosh to send emails through Resend's API
+      {Finch, name: MayorGame.Finch},
       # Start the Endpoint (http/https)
       MayorGameWeb.Endpoint,
 

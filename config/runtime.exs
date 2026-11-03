@@ -74,12 +74,6 @@ if config_env() == :prod do
 
   port = String.to_integer(System.get_env("PORT") || "5000")
 
-  mail_secret =
-    System.get_env("MAIL_SECRET") ||
-      raise """
-      environment variable MAIL_SECRET is missing.
-      """
-
   config :mayor_game, MayorGameWeb.Endpoint,
     url: [host: host, scheme: "https"],
     http: [
@@ -93,26 +87,15 @@ if config_env() == :prod do
     check_origin: :conn,
     secret_key_base: secret_key_base
 
-  config :mayor_game, MayorGameWeb.Pow.Mailer,
-    adapter: Swoosh.Adapters.Mailjet,
-    api_key: "71dfa3a267a5a221900658d68768d405",
-    secret: mail_secret
+  # Emails (sign-up confirmation, password resets) are sent with Resend: https://resend.com
+  # Set the API key with `fly secrets set RESEND_API_KEY=re_...`.
+  # The sender address's domain must be verified in Resend.
+  case System.get_env("RESEND_API_KEY") do
+    key when key in [nil, ""] ->
+      IO.warn("RESEND_API_KEY is not set: emails will be logged instead of sent")
+      config :mayor_game, MayorGameWeb.Pow.Mailer, adapter: Swoosh.Adapters.Logger, level: :warning
 
-  # ## Configuring the mailer
-  #
-  # In production you need to configure the mailer to use a different adapter.
-  # Also, you may need to configure the Swoosh API client of your choice if you
-  # are not using SMTP. Here is an example of the configuration:
-  #
-  #     config :mayor_game, MayorGame.Mailer,
-  #       adapter: Swoosh.Adapters.Mailgun,
-  #       api_key: System.get_env("MAILGUN_API_KEY"),
-  #       domain: System.get_env("MAILGUN_DOMAIN")
-  #
-  # For this example you need include a HTTP client required by Swoosh API client.
-  # Swoosh supports Hackney and Finch out of the box:
-  #
-  #     config :swoosh, :api_client, Swoosh.ApiClient.Hackney
-  #
-  # See https://hexdocs.pm/swoosh/Swoosh.html#module-installation for details.
+    key ->
+      config :mayor_game, MayorGameWeb.Pow.Mailer, adapter: Swoosh.Adapters.Resend, api_key: key
+  end
 end
