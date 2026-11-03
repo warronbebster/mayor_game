@@ -1,18 +1,16 @@
 import Config
 
-# Configure your database
-
-# /uhhhh commented this out, does it pull from dev.secret.exs?
-
-# config :mayor_game, MayorGame.Repo,
-#   username: "postgres",
-#   password: "postgres",
-#   database: "mayor_game_dev",
-#   hostname: "localhost",
-#   show_sensitive_data_on_connection_error: true,
-#   pool_size: 10,
-#   # this sets dev logging level; set to false, :info, :warn
-#   log: false
+# Configure your database: a local Postgres by default.
+# To use another one, override this in config/dev.secret.exs (imported at the bottom).
+config :mayor_game, MayorGame.Repo,
+  username: "postgres",
+  password: "postgres",
+  database: "mayor_game_dev",
+  hostname: "localhost",
+  show_sensitive_data_on_connection_error: true,
+  pool_size: 10,
+  # this sets dev logging level; set to false, :info, :warn
+  log: false
 
 # For development, we disable any cache and enable
 # debugging and code reloading.
@@ -88,4 +86,6 @@ config :phoenix, :stacktrace_depth, 20
 # Initialize plugs at runtime for faster development compilation
 config :phoenix, :plug_init_mode, :runtime
 
-import_config "dev.secret.exs"
+# Local overrides (e.g. a different database) go in config/dev.secret.exs, which is gitignored.
+# See config/dev.secret.exs.example.
+if File.exists?(Path.join(__DIR__, "dev.secret.exs")), do: import_config("dev.secret.exs")

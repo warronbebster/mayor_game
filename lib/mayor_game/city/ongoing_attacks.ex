@@ -2,8 +2,6 @@ defmodule MayorGame.City.OngoingAttacks do
   use Ecto.Schema
   alias MayorGame.City.Town
 
-  @attrs [:attacking, :attacked, :attack_count]
-
   schema "ongoing_attacks" do
     belongs_to :attacking, Town
     belongs_to :attacked, Town

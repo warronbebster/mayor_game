@@ -125,7 +125,7 @@ defmodule MayorGameWeb.DashboardLive do
       cities: cities,
       sort_by: sort_by,
       sort_direction: sort_direction,
-      today: today,
+      today: _today,
       check_date: check_date
     } = socket.assigns
 
@@ -214,7 +214,7 @@ defmodule MayorGameWeb.DashboardLive do
       page_length: page_length,
       sort_by: sort_by,
       sort_direction: sort_direction,
-      today: today,
+      today: _today,
       check_date: check_date
     } = socket.assigns
 
@@ -228,7 +228,6 @@ defmodule MayorGameWeb.DashboardLive do
   end
 
   defp assign_totals(socket) do
-    date = socket.assigns.today
     check_date = socket.assigns.check_date
 
     query =

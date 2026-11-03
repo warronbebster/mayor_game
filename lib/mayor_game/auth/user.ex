@@ -38,6 +38,5 @@ defmodule MayorGame.Auth.User do
     |> validate_required([:nickname, :email])
     |> unique_constraint(:nickname)
     |> unique_constraint(:email)
-    |> IO.inspect()
   end
 end
