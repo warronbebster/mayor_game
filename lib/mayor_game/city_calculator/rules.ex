@@ -31,6 +31,15 @@ defmodule MayorGame.Rules do
     :math.pow(tax_rate, 7 - level)
   end
 
+  @doc """
+  World pollution above this kills citizens. Random each time (mean 15 billion), so the
+  limit is fuzzy rather than a hard line.
+  """
+  @spec pollution_ceiling() :: float
+  def pollution_ceiling do
+    2_000_000_000 * MayorGame.Utility.gamma_variate(7.5, 1)
+  end
+
   @spec season_from_day(integer) :: atom
   def season_from_day(day) do
     cond do

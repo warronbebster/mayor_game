@@ -270,4 +270,9 @@ defmodule MayorGame.City.ResourceStats do
   def resource_list() do
     Keyword.keys(resource_kw_list())
   end
+
+  @doc "resources that can be sold on the market, as strings"
+  def tradable_resources() do
+    resource_list() |> List.delete(:shields) |> Enum.map(&to_string/1)
+  end
 end

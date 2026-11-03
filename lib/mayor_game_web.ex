@@ -36,14 +36,13 @@ defmodule MayorGameWeb do
 
       # Import convenience functions from controllers
       import Phoenix.Controller,
-        only: [get_flash: 1, get_flash: 2, view_module: 1, view_template: 1]
+        only: [view_module: 1, view_template: 1]
 
       # Include shared imports and aliases for views
       unquote(view_helpers())
 
       # not sure why we only import some of this or whatever
       # import Phoenix.LiveView, only: [live_render: 2, live_render: 3, live_link: 1, live_link: 2]
-      import Phoenix.LiveView.Helpers
     end
   end
 
@@ -60,7 +59,7 @@ defmodule MayorGameWeb do
   def channel do
     quote do
       use Phoenix.Channel
-      import MayorGameWeb.Gettext
+      use Gettext, backend: MayorGameWeb.Gettext
     end
   end
 
@@ -73,12 +72,12 @@ defmodule MayorGameWeb do
       import Phoenix.View
 
       import MayorGameWeb.ErrorHelpers
+      import MayorGameWeb.Paths
       # commented this out cuz why not
       # import MayorGameWeb.Gettext
       alias MayorGameWeb.Router.Helpers, as: Routes
       # import MayorGameWeb.LiveHelpers
       import Phoenix.Component
-      import Phoenix.LiveView.Helpers
     end
   end
 

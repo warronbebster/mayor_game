@@ -31,9 +31,6 @@ defmodule MayorGameWeb.Pow.Mailer do
     |> subject(subject)
     |> html_body(html)
     |> text_body(text)
-    # |> put_provider_option(:template_id, 4_465_570)
-    |> put_provider_option(:template_error_deliver, true)
-    |> put_provider_option(:template_error_reporting, "visualwebster@gmail.com")
   end
 
   @impl true
@@ -52,7 +49,7 @@ defmodule MayorGameWeb.Pow.Mailer do
   end
 
   defp log_warnings({:error, reason}) do
-    Logger.warn("Mailer backend failed with: #{inspect(reason)}")
+    Logger.warning("Mailer backend failed with: #{inspect(reason)}")
   end
 
   defp log_warnings({:ok, response}), do: {:ok, response}

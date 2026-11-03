@@ -4,7 +4,6 @@ defmodule MayorGame.City do
   """
 
   # THIS IS WHAT TALKS TO ECTO
-  require Logger
   import Ecto.Query, warn: false
   alias MayorGame.Repo
   alias MayorGame.City.{Town, Citizens, World, Buildable}
@@ -276,115 +275,40 @@ defmodule MayorGame.City do
   # ###############################################
 
   @doc """
-  purchase 1 of a given building
-  expects (details, :atom of building, pric)
+  Buys 1 of a given building, if the city has enough money and building resources (`building_reqs`).
+  The check and the purchase are one atomic UPDATE, so stale city data can't overspend.
 
-  ## Examples
-
-      iex> purchase_buildable(details, :schools, 300)
-      {:ok, %Details{}}
-
+  Returns `{1, nil}` on success, `{:error, :cannot_afford}` otherwise.
   """
   def purchase_buildable(%Town{} = city, field_to_purchase, purchase_price, building_reqs) do
-    # city is unchanged, use the ledger to hold the accumlated construction and cost prior to UI refresh
+    costs = [{:treasury, purchase_price} | Enum.to_list(building_reqs || %{})]
 
-    params =
-      if is_nil(building_reqs) do
-        %{treasury: city.treasury - purchase_price}
-      else
-        Enum.map(building_reqs, fn {req_key, req_value} ->
-          {req_key, city[req_key] - req_value}
-        end)
-        |> Enum.into(%{treasury: city.treasury - purchase_price})
-      end
+    query =
+      Enum.reduce(costs, from(t in Town, where: t.id == ^city.id), fn {resource, amount}, query ->
+        where(query, [t], field(t, ^resource) >= ^amount)
+      end)
 
-    # ok this is working
-
-    purchase_changeset =
-      city
-      |> Town.changeset(params)
-      |> Ecto.Changeset.validate_number(:treasury, greater_than_or_equal_to: 0)
-
-    purchase_changeset =
-      if !is_nil(building_reqs) do
-        Enum.reduce(building_reqs, purchase_changeset, fn {req_key, _req_value}, acc ->
-          Ecto.Changeset.validate_number(acc, req_key, greater_than_or_equal_to: 0)
-        end)
-      else
-        purchase_changeset
-      end
-
-    decrement =
-      if is_nil(building_reqs) do
-        [{field_to_purchase, 1}, {:treasury, -purchase_price}]
-      else
-        [{field_to_purchase, 1}, {:treasury, -purchase_price}] ++
-          Enum.map(building_reqs, fn {req_key, req_value} -> {req_key, -req_value} end)
-      end
-
-    # map over
-
-    if purchase_changeset.errors == [] do
-      from(t in Town,
-        where: [id: ^city.id]
-      )
-      |> Repo.update_all(inc: decrement)
-    else
-      Logger.error(inspect(purchase_changeset.errors))
-      {:error, purchase_changeset.errors}
+    case Repo.update_all(query, inc: [{field_to_purchase, 1} | Enum.map(costs, fn {k, v} -> {k, -v} end)]) do
+      {1, nil} = result -> result
+      {0, nil} -> {:error, :cannot_afford}
     end
   end
 
   @doc """
-  remove 1 of a given building
-  expects (details, :atom of building, building id)
+  Demolishes 1 of a given building, refunding half its price.
 
-  ## Examples
-
-      iex> demolish_buildable(details, :schools, buildable_id int)
-      {:ok, %Details{}}
-
+  Returns `{1, nil}` on success, `{:error, :nothing_to_demolish}` if the city doesn't have one.
   """
   def demolish_buildable(%Town{} = city, {_ledger_buildable, _ledger_cost}, buildable_to_demolish, buildable_count) do
-    # city is unchanged, use the ledger to hold the accumlated construction and cost prior to UI refresh
-
-    # buildable_pending =
-    #   if !is_nil(ledger_buildable[buildable_to_demolish]) do
-    #     ledger_buildable[buildable_to_demolish]
-    #   else
-    #     0
-    #   end
-
-    # city_attrs = %{buildable_to_demolish => city[buildable_to_demolish] + buildable_pending - 1}
-
-    # refund_city =
-    #   city
-    #   |> Town.changeset(city_attrs)
-    #   |> Ecto.Changeset.validate_number(buildable_to_demolish, greater_than_or_equal_to: 0)
-    #   |> Repo.update()
-
     refund_price =
-      round(
-        Rules.building_price(
-          Buildable.buildables_flat()[buildable_to_demolish].price,
-          buildable_count - 1
-        ) / 2
-      )
+      round(Rules.building_price(Buildable.buildables_flat()[buildable_to_demolish].price, buildable_count - 1) / 2)
 
-    # case refund_city do
-    #   {:ok, _result} ->
-    from(t in Town,
-      where: [id: ^city.id]
-    )
+    from(t in Town, where: t.id == ^city.id and field(t, ^buildable_to_demolish) >= 1)
     |> Repo.update_all(inc: [{:treasury, refund_price}, {buildable_to_demolish, -1}])
-
-    # {:error, err} ->
-    #   Logger.error(inspect(err))
-    #   {:error, err}
-
-    # _ ->
-    #   nil
-    # end
+    |> case do
+      {1, nil} = result -> result
+      {0, nil} -> {:error, :nothing_to_demolish}
+    end
   end
 
   # WORLD

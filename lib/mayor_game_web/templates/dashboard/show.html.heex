@@ -51,7 +51,7 @@
         <div class="flex flex-row items-center space-x-1 pb-6">
           <span class="hover:underline">
             <%= link(@current_user.town.title,
-              to: Routes.city_path(@socket, MayorGameWeb.CityLive, @current_user.town.title)
+              to: city_path(@current_user.town.title)
             ) %>
           </span>
           <hr class="border-neutral-300 flex-1" />
@@ -143,7 +143,7 @@
         }>
           <span class="hover:underline">
             <%= link(city.title,
-              to: Routes.city_path(@socket, MayorGameWeb.CityLive, city.title)
+              to: city_path(city.title)
             ) %>
           </span>
           <%= if city.patron > 0 do %>
@@ -266,7 +266,7 @@
       <div class="flex flex-row items-center space-x-1 ">
         <span class="hover:underline">
           <%= link(attack.attacking.title,
-            to: Routes.city_path(@socket, MayorGameWeb.CityLive, attack.attacking.title)
+            to: city_path(attack.attacking.title)
           ) %>
         </span>
         <img src="/images/might.svg" alt="missiles" height="12" width="12" class="inline" />
@@ -277,7 +277,7 @@
         <hr class="border-neutral-300 flex-1" />
         <span class="hover:underline">
           <%= link(attack.attacked.title,
-            to: Routes.city_path(@socket, MayorGameWeb.CityLive, attack.attacked.title)
+            to: city_path(attack.attacked.title)
           ) %>
         </span>
       </div>

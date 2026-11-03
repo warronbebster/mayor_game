@@ -51,15 +51,11 @@ defmodule MayorGameWeb.Router do
 
     get "/", PageController, :index
     live "/market", MarketLive
-    live "/city/:title", CityLive, as: :city
-    live "/city/:title/logs", LogsLive, as: :city
+    live "/city/:title", CityLive, :show
+    live "/city/:title/logs", LogsLive, :show
 
     # Line Added
-    # resources "/verify-email", VerificationController, singleton: true, only: [:show]
     # Line Added
-    # resources "/confirm-email", ConfirmationController, only: [:show]
-
-    # get "/cities/:town_id/users/:user_id", CityController, :index
   end
 
   # Make city routes protected by requiring authentication
@@ -68,7 +64,6 @@ defmodule MayorGameWeb.Router do
     pipe_through [:browser, :protected]
 
     # don't think we made this yet
-    # resources "/cities", CityController
 
     post "/registration/send-confirmation-email", RegistrationController, :resend_confirmation_email
   end

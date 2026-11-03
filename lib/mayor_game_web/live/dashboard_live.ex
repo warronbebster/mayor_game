@@ -85,44 +85,23 @@ defmodule MayorGameWeb.DashboardLive do
      |> assign_attacks()}
   end
 
+  # sent by MayorGame.CityCalculator at the end of every game tick
   def handle_info(%{event: "ping", payload: world}, socket) do
-    if Map.has_key?(socket.assigns, :current_user) do
-      {:noreply,
-       socket
-       |> assign(
-         current_user:
-           MayorGame.Auth.get_user!(socket.assigns.current_user.id)
-           |> Repo.preload(:town)
-       )
-       |> assign_totals()
-       |> assign_attacks()
-       |> assign(:world, world)}
-    else
-      {:noreply,
-       socket
-       |> assign_totals()
-       |> assign_attacks()
-       |> assign(:world, world)}
-    end
-  end
+    socket =
+      if Map.has_key?(socket.assigns, :current_user) do
+        assign(socket,
+          current_user: MayorGame.Auth.get_user!(socket.assigns.current_user.id) |> Repo.preload(:town)
+        )
+      else
+        socket
+      end
 
-  def handle_info(%{event: "pong", payload: _world}, socket) do
-    if Map.has_key?(socket.assigns, :current_user) do
-      {:noreply,
-       socket
-       |> assign(
-         current_user:
-           MayorGame.Auth.get_user!(socket.assigns.current_user.id)
-           |> Repo.preload(:town)
-       )
-       |> refresh_cities()
-       |> assign_totals()}
-    else
-      {:noreply,
-       socket
-       |> refresh_cities()
-       |> assign_totals()}
-    end
+    {:noreply,
+     socket
+     |> assign(:world, world)
+     |> refresh_cities()
+     |> assign_totals()
+     |> assign_attacks()}
   end
 
   # this handles different events
@@ -146,7 +125,7 @@ defmodule MayorGameWeb.DashboardLive do
       cities: cities,
       sort_by: sort_by,
       sort_direction: sort_direction,
-      today: today,
+      today: _today,
       check_date: check_date
     } = socket.assigns
 
@@ -235,7 +214,7 @@ defmodule MayorGameWeb.DashboardLive do
       page_length: page_length,
       sort_by: sort_by,
       sort_direction: sort_direction,
-      today: today,
+      today: _today,
       check_date: check_date
     } = socket.assigns
 
@@ -249,7 +228,6 @@ defmodule MayorGameWeb.DashboardLive do
   end
 
   defp assign_totals(socket) do
-    date = socket.assigns.today
     check_date = socket.assigns.check_date
 
     query =

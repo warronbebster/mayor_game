@@ -1,11 +1,5 @@
 import Config
 
-mail_secret =
-  System.get_env("MAIL_SECRET") ||
-    raise """
-    environment variable MAIL_SECRET is missing.
-    """
-
 # For production, don't forget to configure the url host
 # to something meaningful, Phoenix uses this information
 # when generating URLs.
@@ -22,13 +16,11 @@ config :mayor_game, MayorGameWeb.Endpoint,
 
 # front_end_email_confirm_url: "https://fragile.city/confirm-email/{token}"
 
-config :mayor_game, MayorGameWeb.Pow.Mailer,
-  adapter: Swoosh.Adapters.Mailjet,
-  api_key: "71dfa3a267a5a221900658d68768d405",
-  secret: mail_secret
+# Swoosh's in-memory mailbox is only for dev
+config :swoosh, local: false
 
 # Do not print debug messages in production
-config :logger, level: :warn
+config :logger, level: :warning
 
 # ## SSL Support
 #

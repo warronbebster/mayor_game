@@ -10,7 +10,9 @@ config :mayor_game, MayorGame.Repo,
   password: "postgres",
   database: "mayor_game_test#{System.get_env("MIX_TEST_PARTITION")}",
   hostname: "localhost",
-  pool: Ecto.Adapters.SQL.Sandbox
+  pool: Ecto.Adapters.SQL.Sandbox,
+  show_sensitive_data_on_connection_error: true,
+  pool_size: 10
 
 # We don't run a server during test. If one is required,
 # you can enable the server option below.
@@ -18,10 +20,13 @@ config :mayor_game, MayorGameWeb.Endpoint,
   http: [port: 4002],
   server: false
 
-# Print only warnings and errors during test
-config :logger, level: :warn
+# don't run the game loop (MayorGame.CityCalculator) in tests; tests call it directly
+config :mayor_game, start_game_loop: false
 
-import_config "test.secret.exs"
+# Print only warnings and errors during test
+config :logger, level: :warning
+
+config :mayor_game, MayorGameWeb.Pow.Mailer, adapter: Swoosh.Adapters.Test
 
 # lower iteration for speed
 config :pow, Pow.Ecto.Schema.Password, iterations: 1

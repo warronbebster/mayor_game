@@ -53,155 +53,75 @@ defmodule MayorGameWeb.MarketLive do
   # ————————————————————————————————————————————————————————————————————————————————————————
   # MARKET CONTROLS ————————————————————————————————————————————————————————————————————————————————————————
   # ————————————————————————————————————————————————————————————————————————————————————————
-  def handle_event(
-        "add_market",
-        %{"resource" => resource},
-        # pull these variables out of the socket
-        %{assigns: %{current_user: current_user, is_user_verified: is_user_verified}} = socket
-      ) do
-    if is_user_verified do
-      Market.create_market(%{resource: resource, town_id: current_user.town.id, min_price: 5, amount_to_sell: 1})
-
-      {:noreply, socket |> get_markets_and_bids() |> update_current_user()}
+  def handle_event("add_market", %{"resource" => resource}, socket) do
+    if socket.assigns.is_user_verified && my_town_id(socket) do
+      Market.create_market(%{resource: resource, town_id: my_town_id(socket), min_price: 5, amount_to_sell: 1})
     end
+
+    {:noreply, socket |> get_markets_and_bids() |> update_current_user()}
   end
 
-  def handle_event("toggle_market", %{"market_id" => market_id}, %{assigns: %{current_user: _current_user}} = socket) do
-    market = Market.get_market(market_id)
-
-    Market.update_market(market, %{sell_excess: !market.sell_excess})
-
-    {:noreply, socket |> get_markets_and_bids()}
+  def handle_event("toggle_market", %{"market_id" => market_id}, socket) do
+    with_own(socket, Repo.get(City.Market, market_id), fn market ->
+      Market.update_market(market, %{sell_excess: !market.sell_excess})
+    end)
   end
 
-  def handle_event(
-        "remove_market",
-        %{"market_id" => market_id},
-        # pull these variables out of the socket
-        %{assigns: %{current_user: current_user}} = socket
-      ) do
-    from(m in City.Market, where: m.id == ^market_id)
-    |> Repo.delete_all([])
-
-    {:noreply, socket |> get_markets_and_bids()}
+  def handle_event("remove_market", %{"market_id" => market_id}, socket) do
+    with_own(socket, Repo.get(City.Market, market_id), &Repo.delete/1)
   end
 
-  def handle_event(
-        "update_amount_to_sell",
-        %{"market_id" => market_id, "value" => updated_value},
-        %{assigns: %{current_user: current_user}} = socket
-      ) do
-    updated_value_int = Integer.parse(updated_value)
-
-    if updated_value_int != :error do
-      updated_value_constrained = elem(updated_value_int, 0) |> max(1)
-
-      # if socket.assigns.current_user.id == city.user_id do
-      # check if user is mayor here?
-      from(m in City.Market,
-        where: m.id == ^market_id,
-        update: [
-          set: [
-            amount_to_sell: ^updated_value_constrained
-          ]
-        ]
-      )
-      |> Repo.update_all([])
-
-      {:noreply, socket |> get_markets_and_bids()}
-    end
+  def handle_event("update_amount_to_sell", %{"market_id" => market_id, "value" => value}, socket) do
+    with_own(socket, Repo.get(City.Market, market_id), fn market ->
+      with {amount, _} <- Integer.parse(value), do: Market.update_market(market, %{amount_to_sell: max(amount, 1)})
+    end)
   end
 
-  def handle_event(
-        "update_min_price",
-        %{"market_id" => market_id, "value" => updated_value},
-        %{assigns: %{current_user: current_user}} = socket
-      ) do
-    updated_value_int = Integer.parse(updated_value)
-
-    if updated_value_int != :error do
-      updated_value_constrained = elem(updated_value_int, 0) |> max(1)
-
-      from(m in City.Market,
-        where: m.id == ^market_id,
-        update: [
-          set: [
-            min_price: ^updated_value_constrained
-          ]
-        ]
-      )
-      |> Repo.update_all([])
-
-      {:noreply, socket |> get_markets_and_bids()}
-    end
+  def handle_event("update_min_price", %{"market_id" => market_id, "value" => value}, socket) do
+    with_own(socket, Repo.get(City.Market, market_id), fn market ->
+      with {price, _} <- Integer.parse(value), do: Market.update_market(market, %{min_price: max(price, 1)})
+    end)
   end
 
   # ————————————————————————————————————————————————————————————————————————————————————————
   # BID CONTROLS ————————————————————————————————————————————————————————————————————————————————————————
   # ————————————————————————————————————————————————————————————————————————————————————————
-  def handle_event(
-        "add_bid",
-        %{"resource" => resource},
-        # pull these variables out of the socket
-        %{assigns: %{current_user: current_user, is_user_verified: is_user_verified}} = socket
-      ) do
-    if is_user_verified do
-      Bid.create_bid(%{resource: resource, town_id: current_user.town.id, max_price: 5})
 
-      {:noreply, socket |> get_markets_and_bids() |> update_current_user()}
+  def handle_event("add_bid", %{"resource" => resource}, socket) do
+    if socket.assigns.is_user_verified && my_town_id(socket) do
+      Bid.create_bid(%{resource: resource, town_id: my_town_id(socket), max_price: 5})
     end
+
+    {:noreply, socket |> get_markets_and_bids() |> update_current_user()}
   end
 
-  def handle_event(
-        "update_max_price",
-        %{"bid_id" => bid_id, "value" => updated_value},
-        %{assigns: %{current_user: current_user}} = socket
-      ) do
-    updated_value_int = Integer.parse(updated_value)
-
-    bid = Bid.get_bid(bid_id)
-
-    if updated_value_int != :error && (current_user.town.id == bid.town_id || socket.assigns.is_user_admin) do
-      updated_value_constrained = elem(updated_value_int, 0) |> max(1)
-
-      Bid.update_bid(bid, %{max_price: updated_value_constrained})
-
-      {:noreply, socket |> get_markets_and_bids()}
-    end
+  def handle_event("update_max_price", %{"bid_id" => bid_id, "value" => value}, socket) do
+    with_own(socket, Repo.get(MayorGame.Market.Bid, bid_id), fn bid ->
+      with {price, _} <- Integer.parse(value), do: Bid.update_bid(bid, %{max_price: max(price, 1)})
+    end)
   end
 
-  def handle_event(
-        "update_amount_to_buy",
-        %{"bid_id" => bid_id, "value" => updated_value},
-        %{assigns: %{current_user: current_user}} = socket
-      ) do
-    updated_value_int = Integer.parse(updated_value)
-
-    bid = Bid.get_bid(bid_id)
-
-    if updated_value_int != :error && current_user.town.id == bid.town_id do
-      updated_value_constrained = elem(updated_value_int, 0) |> max(1)
-
-      Bid.update_bid(bid, %{amount: updated_value_constrained})
-
-      {:noreply, socket |> get_markets_and_bids()}
-    end
+  def handle_event("update_amount_to_buy", %{"bid_id" => bid_id, "value" => value}, socket) do
+    with_own(socket, Repo.get(MayorGame.Market.Bid, bid_id), fn bid ->
+      with {amount, _} <- Integer.parse(value), do: Bid.update_bid(bid, %{amount: max(amount, 1)})
+    end)
   end
 
-  def handle_event(
-        "remove_bid",
-        %{"bid_id" => bid_id},
-        # pull these variables out of the socket
-        %{assigns: %{current_user: current_user}} = socket
-      ) do
-    bid = Bid.get_bid(bid_id)
+  def handle_event("remove_bid", %{"bid_id" => bid_id}, socket) do
+    with_own(socket, Repo.get(MayorGame.Market.Bid, bid_id), &Bid.delete_bid/1)
+  end
 
-    if current_user.town.id == bid.town_id do
-      Bid.delete_bid(bid)
+  # runs `fun` on a market or bid only if it belongs to the current user's town (or they're an admin)
+  defp with_own(socket, market_or_bid, fun) do
+    if market_or_bid && (market_or_bid.town_id == my_town_id(socket) || socket.assigns.is_user_admin) do
+      fun.(market_or_bid)
     end
 
     {:noreply, socket |> get_markets_and_bids()}
   end
+
+  defp my_town_id(%{assigns: %{current_user: %{town: %{id: town_id}}}}), do: town_id
+  defp my_town_id(_socket), do: nil
 
   # ————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
   # PUBSUB

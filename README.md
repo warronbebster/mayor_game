@@ -25,6 +25,8 @@ make sure Postgres is running, then start the Phoenix endpoint with `iex -S mix 
 
 Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 
+See [CLAUDE.md](CLAUDE.md) for an overview of how the game works (game loop, stats, migration) and the rules for changing it.
+
 ### Most of the important code is in `lib`
 
 - `mayor_game` folder has the server stuff

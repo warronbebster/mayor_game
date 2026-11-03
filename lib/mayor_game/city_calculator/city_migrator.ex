@@ -1,1084 +1,340 @@
 defmodule MayorGame.CityMigrator do
-  use GenServer, restart: :permanent
-  alias MayorGame.City.{Town, Citizens, Buildable, TownStats, ResourceStats}
-  alias MayorGame.{City, CityHelpers, Repo, Rules}
+  @moduledoc """
+  Moves citizens between cities. Runs once per game tick, called from `MayorGame.CityCalculator`.
+
+  `migrate/1` is pure: it takes the tick's cities (each a `%Town{}` merged with its `TownStats` and
+  `TownMigrationStatistics`, see `CityCalculator`) and decides where every citizen ends up.
+  `persist/3` writes the result (citizen blobs, births, deaths, emigration logs) to the DB.
+
+  Migration happens in rounds. Each round hands out the slots left over by the previous one:
+
+    1. employed citizens who want to move (restless, or taxed too much) compete for
+       job + housing slots at their education level. They only move if a city beats
+       their current one by `@home_city_advantage`.
+    2. unemployed citizens compete for the remaining job + housing slots at their level
+    3. unhoused citizens compete for the remaining job + housing slots at their level
+    4. unhoused citizens still without a slot take any open housing, at any level, if
+       they like it better than their current city. Those who end up without housing
+       die (`logs_deaths_housing`).
+
+  Within a round, citizens claim slots first-come-first-served, each picking the city with
+  an open slot that they score highest (`citizen_score/3`). Every citizen that goes in comes
+  out either in a city's citizen list or counted in `unhoused_deaths`.
+  """
+  alias MayorGame.City.{Citizens, Town, TownStats, ResourceStats}
+  alias MayorGame.{CityHelpers, Repo}
   import Ecto.Query
 
-  def start_link(initial_val) do
-    IO.puts('start_city_migrator_link')
-    # starts link based on this file
-    # which triggers init function in module
+  @home_city_advantage 0.05
+  # levels are processed from most to least educated
+  @levels 5..0//-1
+  # citizen keys kept when a citizen moves; town_id is re-derived from the city they end up in
+  @kept_citizen_keys ["education", "preferences", "age"]
 
-    # check here if world exists already
-    case City.get_world(initial_val) do
-      %City.World{} -> IO.puts("world exists already!")
-      nil -> City.create_world(%{day: 0, pollution: 0})
-    end
+  @type citizen :: %{String.t() => any}
+  @type result :: %{
+          citizens_by_id: %{integer => [citizen]},
+          tax: %{integer => %{integer => integer}},
+          jobs: %{integer => %{integer => integer}},
+          housing: %{integer => %{integer => integer}},
+          unhoused_deaths: %{integer => integer}
+        }
 
-    # this calls init function
-    GenServer.start_link(__MODULE__, initial_val)
+  @doc """
+  Decides where each citizen lives after this tick.
+
+  Returns the new citizen list for every city, plus per-city emigration counts by education level
+  (`tax`, `jobs`, `housing`: who left and why) and `unhoused_deaths`.
+  """
+  @spec migrate([map]) :: result
+  def migrate(cities) do
+    housing_slots = Map.new(cities, &{&1.id, &1.housing_left})
+    normalized_cities_by_id = normalize_cities(cities)
+    scores = preference_scores(normalized_cities_by_id)
+
+    # citizens that aren't looking stay where they are
+    citizens_by_id = Map.new(cities, &{&1.id, &1.staying_citizens})
+
+    # round 1: employed citizens looking to move
+    round_1 =
+      cities
+      |> Enum.flat_map(&(&1.migrating_citizens ++ &1.migrating_citizens_due_to_tax))
+      |> level_round(job_and_housing_slots_by_level(housing_slots, normalized_cities_by_id), scores, :employed)
+
+    # round 2: unemployed citizens, for the job slots left over from round 1
+    round_2 =
+      cities
+      |> Enum.flat_map(& &1.unemployed_citizens)
+      |> level_round(slots_left(round_1), scores, :other)
+
+    # round 3: unhoused citizens, for the job slots left over from round 2
+    round_3 =
+      cities
+      |> Enum.flat_map(& &1.unhoused_citizens)
+      |> level_round(slots_left(round_2), scores, :other)
+
+    # employed citizens who stay keep their job and home, unemployed ones keep their home.
+    # unhoused citizens who didn't find a slot in round 3 go on to round 4.
+    citizens_by_id =
+      citizens_by_id
+      |> settle(choices(round_1))
+      |> return_home(left_out(round_1))
+      |> settle(choices(round_2))
+      |> return_home(left_out(round_2))
+      |> settle(moves(round_3))
+
+    housing_slots =
+      housing_slots
+      |> apply_moves(moves(round_1))
+      |> apply_moves(moves(round_2))
+      |> apply_moves(moves(round_3))
+
+    # round 4: unhoused citizens still without a slot look for housing anywhere
+    {round_4_moves, citizens_by_id, unhoused_deaths} =
+      housing_round(unplaced(round_3) ++ left_out(round_3), housing_slots, scores, citizens_by_id)
+
+    %{
+      citizens_by_id: citizens_by_id,
+      tax: emigration_counts(moves(round_1)),
+      jobs: emigration_counts(moves(round_2)),
+      housing: emigration_counts(moves(round_3) ++ round_4_moves),
+      unhoused_deaths: unhoused_deaths
+    }
   end
 
-  def init(initial_world) do
-    buildables_map = %{
-      buildables_flat: Buildable.buildables_flat(),
-      buildables: Buildable.buildables(),
-      buildables_list: Buildable.buildables_list(),
-      buildables_ordered: Buildable.buildables_ordered()
+  # ——————————————————————————————————————————————————————————————————————————————————
+  # ROUNDS
+  # ——————————————————————————————————————————————————————————————————————————————————
+
+  # Per education level, citizens (in list order) each claim the best city that still has a
+  # slot at their level. Only as many citizens as there are slots take part; the rest are `left_out`.
+  # Returns %{level => %{choices: [{citizen, chosen_city_id}], slots: %{city_id => count}, left_out: [citizen]}}
+  defp level_round(citizens, slots_by_level, scores, mode) do
+    citizens_by_level = Enum.group_by(citizens, & &1["education"])
+
+    Map.new(@levels, fn level ->
+      slots = slots_by_level[level]
+
+      {racing, left_out} =
+        citizens_by_level
+        |> Map.get(level, [])
+        |> Enum.split(slots |> Map.values() |> Enum.sum())
+
+      result =
+        Enum.reduce(racing, %{choices: [], slots: slots}, fn citizen, acc ->
+          town_id = citizen["town_id"]
+          chosen_id = choose_city(citizen, acc.slots, scores, mode)
+
+          slots =
+            cond do
+              chosen_id == town_id -> acc.slots
+              # an employed citizen leaving frees up their old slot
+              mode == :employed -> acc.slots |> Map.update!(chosen_id, &(&1 - 1)) |> Map.update(town_id, 1, &(&1 + 1))
+              true -> Map.update!(acc.slots, chosen_id, &(&1 - 1))
+            end
+
+          %{choices: [{citizen, chosen_id} | acc.choices], slots: slots}
+        end)
+
+      {level, Map.put(result, :left_out, left_out)}
+    end)
+  end
+
+  # Picks the best-scoring city with an open slot, or the citizen's own city if none qualifies.
+  # :employed citizens only move for a city that beats their current one by @home_city_advantage.
+  # :other citizens (unemployed/unhoused) are looking for a slot their own city doesn't have.
+  defp choose_city(citizen, slots, scores, mode) do
+    town_id = citizen["town_id"]
+    citizen_scores = scores[citizen["preferences"]][citizen["education"]]
+    min_score = if mode == :employed, do: citizen_scores[town_id] + @home_city_advantage, else: -1
+
+    chosen =
+      Enum.reduce(slots, %{chosen_id: town_id, top_score: -1}, fn {city_id, count}, acc ->
+        score = citizen_scores[city_id]
+
+        if count > 0 && city_id != town_id && score > acc.top_score && score > min_score,
+          do: %{chosen_id: city_id, top_score: score},
+          else: acc
+      end)
+
+    chosen.chosen_id
+  end
+
+  # Unhoused citizens who didn't find a job slot take any city with open housing, if they like it more
+  # than their current one. Whoever ends up without housing dies.
+  defp housing_round(citizens, housing_slots, scores, citizens_by_id) do
+    open_slots = housing_slots |> Enum.filter(fn {_id, count} -> count > 0 end) |> Map.new()
+
+    # there's no point looking for more slots than there are
+    {racing, no_chance} = Enum.split(citizens, open_slots |> Map.values() |> Enum.sum())
+
+    %{choices: choices} =
+      Enum.reduce(racing, %{choices: [], slots: open_slots}, fn citizen, acc ->
+        town_id = citizen["town_id"]
+        citizen_scores = scores[citizen["preferences"]][citizen["education"]]
+
+        chosen =
+          Enum.reduce(acc.slots, %{chosen_id: town_id, top_score: citizen_scores[town_id]}, fn {city_id, count}, acc2 ->
+            score = citizen_scores[city_id]
+            if count > 0 && score > acc2.top_score, do: %{chosen_id: city_id, top_score: score}, else: acc2
+          end)
+
+        # staying home only works out if a slot opened up there
+        housed? = Map.get(acc.slots, chosen.chosen_id, 0) > 0
+        slots = if housed?, do: Map.update!(acc.slots, chosen.chosen_id, &(&1 - 1)), else: acc.slots
+
+        %{choices: [{citizen, if(housed?, do: chosen.chosen_id)} | acc.choices], slots: slots}
+      end)
+
+    {housed, unhoused} = Enum.split_with(choices, fn {_citizen, chosen_id} -> chosen_id end)
+    round_moves = Enum.filter(housed, fn {citizen, chosen_id} -> citizen["town_id"] != chosen_id end)
+
+    citizens_by_id =
+      Enum.reduce(housed, citizens_by_id, fn {citizen, chosen_id}, acc ->
+        Map.update!(acc, chosen_id, &[Map.take(citizen, @kept_citizen_keys) | &1])
+      end)
+
+    deaths = Enum.map(unhoused, fn {citizen, _} -> citizen end) ++ no_chance
+
+    {round_moves, citizens_by_id, Enum.frequencies_by(deaths, & &1["town_id"])}
+  end
+
+  # ——————————————————————————————————————————————————————————————————————————————————
+  # ROUND HELPERS
+  # ——————————————————————————————————————————————————————————————————————————————————
+
+  # Job + housing slots per education level: %{level => %{city_id => slot_count}}.
+  # A city's housing is handed out to its vacancies from the lowest job level up.
+  defp job_and_housing_slots_by_level(housing_slots, normalized_cities_by_id) do
+    empty = Map.new(@levels, &{&1, %{}})
+
+    Enum.reduce(housing_slots, empty, fn {city_id, housing_count}, acc ->
+      slots_per_level =
+        normalized_cities_by_id[city_id].jobs
+        |> Enum.reduce(%{housing_slots_left: housing_count}, fn {level, count}, acc2 ->
+          level_slots_count = if acc2.housing_slots_left > 0, do: min(count, acc2.housing_slots_left), else: 0
+
+          acc2
+          |> Map.update!(:housing_slots_left, &(&1 - level_slots_count))
+          |> Map.put(level, level_slots_count)
+        end)
+
+      Map.new(@levels, fn level -> {level, Map.put(acc[level], city_id, Map.get(slots_per_level, level, 0))} end)
+    end)
+  end
+
+  defp slots_left(round), do: Map.new(round, fn {level, %{slots: slots}} -> {level, slots} end)
+
+  defp left_out(round), do: Enum.flat_map(@levels, &round[&1].left_out)
+
+  # [{citizen, chosen_city_id}] for everyone who took part in a round
+  defp choices(round), do: Enum.flat_map(@levels, &round[&1].choices)
+
+  # choices of citizens who picked a city other than their own
+  defp moves(round),
+    do: round |> choices() |> Enum.filter(fn {citizen, chosen_id} -> citizen["town_id"] != chosen_id end)
+
+  # citizens who took part in a round but found nothing
+  defp unplaced(round) do
+    for {citizen, chosen_id} <- choices(round), citizen["town_id"] == chosen_id, do: citizen
+  end
+
+  # put each citizen in the city they chose (which may be their own)
+  defp settle(citizens_by_id, choices) do
+    Enum.reduce(choices, citizens_by_id, fn {citizen, chosen_id}, acc ->
+      Map.update!(acc, chosen_id, &[Map.take(citizen, @kept_citizen_keys) | &1])
+    end)
+  end
+
+  defp return_home(citizens_by_id, citizens) do
+    Enum.reduce(citizens, citizens_by_id, fn citizen, acc ->
+      Map.update!(acc, citizen["town_id"], &[Map.take(citizen, @kept_citizen_keys) | &1])
+    end)
+  end
+
+  # movers free a housing slot in the city they left and take one in the city they join
+  defp apply_moves(housing_slots, moves) do
+    vacated = moves |> Enum.map(fn {citizen, _chosen_id} -> citizen["town_id"] end) |> Enum.frequencies()
+    occupied = moves |> Enum.map(fn {_citizen, chosen_id} -> chosen_id end) |> Enum.frequencies()
+
+    housing_slots
+    |> Map.merge(vacated, fn _k, v1, v2 -> v1 + v2 end)
+    |> Map.merge(occupied, fn _k, v1, v2 -> v1 - v2 end)
+  end
+
+  # %{origin_city_id => %{education_level => count}}
+  defp emigration_counts(moves) do
+    moves
+    |> Enum.group_by(fn {citizen, _chosen_id} -> citizen["town_id"] end)
+    |> Map.new(fn {city_id, city_moves} ->
+      {city_id, Enum.frequencies_by(city_moves, fn {citizen, _} -> citizen["education"] end)}
+    end)
+  end
+
+  # ——————————————————————————————————————————————————————————————————————————————————
+  # SCORING
+  # ——————————————————————————————————————————————————————————————————————————————————
+
+  @doc """
+  Normalizes each city's desirability stats against every other city's: %{city_id => normalized_city}
+  """
+  def normalize_cities(cities) do
+    values = fn resource -> Enum.map(cities, &net_production(&1, resource)) end
+    spread = fn resource -> Enum.max(values.(resource)) - Enum.min(values.(resource)) end
+
+    divisors = %{
+      sprawl: Enum.max(values.(:sprawl)),
+      pollution: spread.(:pollution),
+      fun: Enum.max(values.(:fun)),
+      health: spread.(:health),
+      culture: Enum.max(values.(:culture)),
+      crime: Enum.max(values.(:crime))
     }
 
-    in_dev = Application.get_env(:mayor_game, :env) == :dev
-
-    IO.puts('init migrator')
-    # initial_val is 1 here, set in application.ex then started with start_link
-
-    game_world = City.get_world!(initial_world)
-
-    # send message :tax to self process after
-    # calls `handle_info` function
-    Process.send_after(self(), :tax, Application.get_env(:mayor_game, :tick_interval_ms, 5000))
-
-    # returns ok tuple when u start
-    {:ok, %{world: game_world, buildables_map: buildables_map, in_dev: in_dev, migration_tick: 0}}
+    Map.new(cities, &{&1.id, normalize_city(&1, divisors)})
   end
 
-  # when :tax is sent
-  def handle_info(
-        :tax,
-        %{
-          world: world,
-          buildables_map: buildables_map,
-          in_dev: in_dev,
-          migration_tick: migration_tick
-        } = _sent_map
-      ) do
-    # profiling
-    {:ok, datetime_pre} = DateTime.now("Etc/UTC")
+  defp normalize_city(city, divisors) do
+    normalized = fn resource -> zero_check(net_production(city, resource), divisors[resource]) end
 
-    # filter for
-
-    cities = CityHelpers.prepare_cities(datetime_pre, world.day, in_dev)
-
-    pollution_ceiling = 2_000_000_000 * Random.gammavariate(7.5, 1)
-
-    db_world = City.get_world!(1)
-
-    if length(cities) > 0 do
-      season = Rules.season_from_day(db_world.day)
-
-      cities_list = Enum.shuffle(cities)
-
-      time_to_learn = if in_dev, do: rem(migration_tick, 5) == 0, else: rem(migration_tick, 100) == 0
-      # if time_to_learn, do: IO.inspect("learning time")
-
-      leftovers =
-        cities_list
-        |> Enum.map(fn city ->
-          # result here is a %Town{} with stats calculated
-          city_stat =
-            CityHelpers.calculate_city_stats_with_drops(
-              city,
-              db_world,
-              pollution_ceiling,
-              season,
-              buildables_map,
-              in_dev,
-              time_to_learn
-            )
-
-          leftover =
-            CityHelpers.calculate_citizen_stats(
-              city,
-              city_stat,
-              db_world,
-              pollution_ceiling,
-              season,
-              buildables_map,
-              in_dev,
-              time_to_learn
-            )
-
-          # if city.id == 2 do
-          #   IO.inspect(length(leftover.staying_citizens), label: "staying_citizens")
-          #   IO.inspect(length(leftover.migrating_citizens_due_to_tax), label: "migrating_citizens_due_to_tax")
-          #   IO.inspect(length(leftover.migrating_citizens), label: "migrating_citizens")
-          #   IO.inspect(length(leftover.unemployed_citizens), label: "unemployed_citizens")
-          #   IO.inspect(length(leftover.unhoused_citizens), label: "unhoused_citizens")
-          #   IO.inspect(length(leftover.polluted_citizens), label: "polluted_citizens")
-
-          # end
-
-          # combine town and the calculated stats (TownStats + TownMigrationStatistics)
-          city |> Map.merge(city_stat) |> Map.merge(leftover)
-        end)
-
-      employed_looking_citizens =
-        List.flatten(
-          Enum.map(leftovers, fn city ->
-            city.migrating_citizens ++ city.migrating_citizens_due_to_tax
-          end)
-        )
-
-      unemployed_citizens = List.flatten(Enum.map(leftovers, fn city -> city.unemployed_citizens end))
-
-      unhoused_citizens = List.flatten(Enum.map(leftovers, fn city -> city.unhoused_citizens end))
-
-      housing_slots = Enum.map(leftovers, fn city -> {city.id, city.housing_left} end) |> Map.new()
-
-      # ok this is still good
-
-      sprawl_max =
-        Enum.max(
-          Enum.map(leftovers, fn city ->
-            city |> TownStats.getResource(:sprawl) |> ResourceStats.getNetProduction()
-          end)
-        )
-
-      pollution_enum =
-        Enum.map(leftovers, fn city ->
-          city |> TownStats.getResource(:pollution) |> ResourceStats.getNetProduction()
-        end)
-
-      pollution_max = Enum.max(pollution_enum)
-      pollution_min = Enum.min(pollution_enum)
-      pollution_spread = pollution_max - pollution_min
-
-      fun_max =
-        Enum.max(
-          Enum.map(leftovers, fn city ->
-            city |> TownStats.getResource(:fun) |> ResourceStats.getNetProduction()
-          end)
-        )
-
-      culture_max =
-        Enum.max(
-          Enum.map(leftovers, fn city ->
-            city |> TownStats.getResource(:culture) |> ResourceStats.getNetProduction()
-          end)
-        )
-
-      crime_max =
-        Enum.max(
-          Enum.map(leftovers, fn city ->
-            city |> TownStats.getResource(:crime) |> ResourceStats.getNetProduction()
-          end)
-        )
-
-      health_enum =
-        Enum.map(leftovers, fn city ->
-          city |> TownStats.getResource(:health) |> ResourceStats.getNetProduction()
-        end)
-
-      health_max = Enum.max(health_enum)
-      health_min = Enum.min(health_enum)
-      health_spread = health_max - health_min
-
-      home_city_advantage = 0.05
-
-      slotted_cities_by_id =
-        leftovers
-        |> Enum.map(fn city ->
-          normalize_city(
-            city,
-            fun_max,
-            health_spread,
-            pollution_spread,
-            sprawl_max,
-            culture_max,
-            crime_max
-          )
-        end)
-        |> Map.new(fn city ->
-          {city.id, city}
-        end)
-
-      city_preference_scores =
-        Enum.map(1..11, fn x ->
-          {x,
-           Enum.map(0..5, fn edu_level ->
-             {edu_level,
-              Enum.map(slotted_cities_by_id, fn {id, city} ->
-                {id,
-                 Float.round(
-                   citizen_score(
-                     Citizens.preset_preferences()[x],
-                     edu_level,
-                     city
-                   ),
-                   4
-                 )}
-              end)
-              |> Enum.into(%{})}
-           end)
-           |> Enum.into(%{})}
-        end)
-        |> Enum.into(%{})
-
-      # jobs still valid here
-      # and housing
-
-      updated_citizens_by_id =
-        leftovers
-        |> Map.new(fn city -> {city.id, city.staying_citizens} end)
-
-      # the TownMigrationStatistics part of the map contains all categorized citizens
-      # Those that take part in migration are
-      #   migrating_citizens_due_to_tax: [],
-      #   migrating_citizens: [],
-      #   unemployed_citizens: [],
-      #   unhoused_citizens: [],
-
-      # ——————————————————————————————————————————————————————————————————————————————————
-      # ————————————————————————————————————————— ROUND 1: MOVE CITIZENS PER JOB LEVEL
-      # ——————————————————————————————————————————————————————————————————————————————————
-
-      level_slots =
-        Map.new(0..5, fn x ->
-          {x, %{normalized_cities: %{}, job_and_housing_slots: 0, job_and_housing_slots_expanded: []}}
-        end)
-
-      # sets up empty map for below function
-      # SHAPE OF BELOW:
-      # %{
-      #   1: %{normalized_cities: [
-      #     {city_normalized, # of slots}, {city_normalized, # of slots}
-      #   ],
-      #     total_slots: int,
-      #     job_and_housing_slots_expanded: list of slots
-      #   }
-      # }
-      # all_cities_by_id = maybe make a map here of city in all_cities_new and their id
-      # or all_cities_new might already be that, by index
-      # or the map is just of the ones with housing slots (e.g. in housing_slots)
-      # all_cities_by_id =
-      #   leftovers
-      #   |> Map.new(fn city -> {city.id, city} end)
-
-      # NO FLOW
-
-      # housing_slots is a list of {city, number of slots}
-      # try FLOW here with a partition + reduce
-      # do a bunch of the housing calcs with ETS? instead of mapping over a map accumulator, put it in ets and manipulate it there?
-
-      job_and_housing_slots_normalized =
-        Enum.reduce(
-          housing_slots,
-          level_slots,
-          fn {normalized_city_id, housing_slots_count}, acc ->
-            slots_per_level =
-              Enum.reduce(
-                slotted_cities_by_id[normalized_city_id].jobs,
-                %{housing_slots_left: housing_slots_count},
-                fn {level, count}, acc2 ->
-                  if acc2.housing_slots_left > 0 do
-                    level_slots_count = min(count, acc2.housing_slots_left)
-
-                    acc2
-                    |> Map.update!(
-                      :housing_slots_left,
-                      &(&1 - level_slots_count)
-                    )
-                    |> Map.put(level, {normalized_city_id, level_slots_count})
-                  else
-                    acc2
-                    |> Map.put(level, {normalized_city_id, 0})
-                  end
-                end
-              )
-              |> Map.drop([:housing_slots_left])
-
-            # each value is [{city, count}]
-            # slots_taken_w_job = Enum.sum(Map.values(slots_per_level))
-            # slots_taken_w_job = Enum.sum(Keyword.values(Map.values(slots_per_level)))
-
-            # for each level in slots_per_level
-            #
-            level_results =
-              Enum.map(5..0, fn x ->
-                {x,
-                 %{
-                   normalized_cities:
-                     Map.put(
-                       acc[x].normalized_cities,
-                       elem(slots_per_level[x], 0),
-                       elem(slots_per_level[x], 1)
-                     ),
-
-                   #  acc[x].normalized_cities ++ [slots_per_level[x]],
-                   job_and_housing_slots: acc[x].job_and_housing_slots + elem(slots_per_level[x], 1),
-                   job_and_housing_slots_expanded:
-                     if elem(slots_per_level[x], 1) > 0 do
-                       acc[x].job_and_housing_slots_expanded ++
-                         Enum.map(1..elem(slots_per_level[x], 1), fn _ -> normalized_city_id end)
-                     else
-                       acc[x].job_and_housing_slots_expanded
-                     end
-                 }}
-              end)
-              |> Enum.into(%{})
-
-            level_results
-          end
-        )
-
-      # split by who will get to take the good slots
-      # shape is map with key level, tuple
-      # %{
-      #   0 => {[citizens_searching], [citizens_not]},
-      #   1 => {[citizens_searching], [citizens_not]},
-      # }
-      employed_citizens_split =
-        Map.new(5..0, fn x ->
-          {x,
-           Enum.split(
-             Enum.filter(employed_looking_citizens, fn cit -> cit["education"] == x end),
-             job_and_housing_slots_normalized[x].job_and_housing_slots
-           )}
-        end)
-
-      preferred_locations_by_level =
-        Map.new(5..0, fn level ->
-          {level,
-           Enum.reduce(
-             elem(employed_citizens_split[level], 0),
-             %{
-               choices: [],
-               slots: job_and_housing_slots_normalized[level].normalized_cities
-             },
-             fn citizen, acc ->
-               current_city_score =
-                 city_preference_scores[citizen["preferences"]][citizen["education"]][
-                   citizen["town_id"]
-                 ]
-
-               chosen_city =
-                 Enum.reduce(
-                   acc.slots,
-                   %{chosen_id: citizen["town_id"], top_score: -1},
-                   fn {city_id, count}, acc2 ->
-                     score =
-                       if count > 0 do
-                         city_preference_scores[citizen["preferences"]][citizen["education"]][
-                           city_id
-                         ]
-                       else
-                         0
-                       end
-
-                     if score > acc2.top_score && score > current_city_score + home_city_advantage do
-                       %{
-                         chosen_id: city_id,
-                         top_score: score
-                       }
-                     else
-                       acc2
-                     end
-                   end
-                 )
-
-               updated_slots =
-                 acc.slots
-                 |> Map.update(chosen_city.chosen_id, 0, &(&1 - 1))
-                 |> Map.update(citizen["town_id"], 0, &(&1 + 1))
-
-               %{
-                 choices: [{citizen, chosen_city.chosen_id} | acc.choices],
-                 slots: updated_slots
-               }
-             end
-           )}
-        end)
-
-      # find a way to return these to origin city
-      looking_but_not_in_job_race =
-        Enum.reduce(employed_citizens_split, [], fn {_k, v}, acc ->
-          List.flatten([elem(v, 1) | acc])
-        end)
-
-      # ^ array of citizens who are still looking, that didn't make it into the level-specific comparisons
-
-      # update the citizen's choice
-      updated_citizens_by_id_2 =
-        Enum.reduce(5..0, updated_citizens_by_id, fn x, acc ->
-          if preferred_locations_by_level[x].choices != [] do
-            Enum.reduce(preferred_locations_by_level[x].choices, acc, fn {citizen, chosen_city_id}, acc2 ->
-              if citizen["town_id"] != chosen_city_id do
-                acc2
-                |> Map.update!(
-                  chosen_city_id,
-                  &[
-                    citizen
-                    |> Map.take(["education", "preferences", "age"])
-                    | &1
-                  ]
-                )
-              else
-                acc2
-                |> Map.update!(
-                  chosen_city_id,
-                  &[citizen |> Map.take(["education", "preferences", "age"]) | &1]
-                )
-              end
-            end)
-          else
-            acc
-          end
-        end)
-
-      # add non-lookers back
-      updated_citizens_by_id_3 =
-        if looking_but_not_in_job_race != [] do
-          Enum.reduce(looking_but_not_in_job_race, updated_citizens_by_id_2, fn citizen, acc ->
-            acc
-            |> Map.update!(
-              citizen["town_id"],
-              &[citizen |> Map.take(["education", "preferences", "age"]) | &1]
-            )
-          end)
-        else
-          updated_citizens_by_id_2
-        end
-
-      vacated_slots =
-        Enum.flat_map(preferred_locations_by_level, fn {_level, preferred_locations} ->
-          preferred_locations.choices
-          |> Enum.filter(fn {citizen, city_id} -> citizen["town_id"] != city_id end)
-          |> Enum.map(fn {citizen, _city_id} -> citizen["town_id"] end)
-        end)
-
-      occupied_slots =
-        Enum.flat_map(preferred_locations_by_level, fn {_level, preferred_locations} ->
-          preferred_locations.choices
-          |> Enum.filter(fn {citizen, city_id} -> citizen["town_id"] != city_id end)
-          |> Enum.map(fn {_citizen, city_id} -> city_id end)
-        end)
-
-      vacated_freq = Enum.frequencies(vacated_slots)
-      occupied_freq = Enum.frequencies(occupied_slots)
-
-      housing_slots_2 =
-        housing_slots
-        |> Map.merge(vacated_freq, fn _k, v1, v2 -> v1 + v2 end)
-        |> Map.merge(occupied_freq, fn _k, v1, v2 -> v1 - v2 end)
-
-      # NEW UNEMPLOYED CODE ————————————————————————————————————————————————————————————————————————————
-      # ————————————————————————————————————————————————————————————————————————————
-      # ————————————————————————————————————————————————————————————————————————————
-      # ————————————————————————————————————————————————————————————————————————————
-      # ————————————————————————————————————————————————————————————————————————————
-
-      unemployed_citizens_split =
-        Map.new(5..0, fn x ->
-          {x,
-           Enum.split(
-             Enum.filter(unemployed_citizens, fn cit -> cit["education"] == x end),
-             Enum.sum(Map.values(preferred_locations_by_level[x].slots))
-           )}
-        end)
-
-      unemployed_preferred_locations_by_level =
-        Map.new(5..0, fn level ->
-          {level,
-           Enum.reduce(
-             elem(unemployed_citizens_split[level], 0),
-             %{
-               choices: [],
-               slots: preferred_locations_by_level[level].slots
-             },
-             fn citizen, acc ->
-               chosen_city =
-                 Enum.reduce(
-                   acc.slots,
-                   %{
-                     chosen_id: citizen["town_id"],
-                     top_score: -1
-                   },
-                   fn {city_id, count}, acc2 ->
-                     score =
-                       if count > 0 && city_id != citizen["town_id"] do
-                         city_preference_scores[citizen["preferences"]][citizen["education"]][
-                           city_id
-                         ]
-                       else
-                         0
-                       end
-
-                     if score > acc2.top_score do
-                       %{
-                         chosen_id: city_id,
-                         top_score: score
-                       }
-                     else
-                       acc2
-                     end
-                   end
-                 )
-
-               updated_slots =
-                 acc.slots
-                 |> Map.update(chosen_city.chosen_id, 0, &(&1 - 1))
-
-               %{
-                 choices: [{citizen, chosen_city.chosen_id} | acc.choices],
-                 slots: updated_slots
-               }
-             end
-           )}
-        end)
-
-      # find a way to return these to origin city
-      unemployed_split_2 =
-        Enum.reduce(unemployed_citizens_split, [], fn {_k, v}, acc ->
-          List.flatten([elem(v, 1) | acc])
-        end)
-
-      # update the citizen's choice
-      updated_citizens_by_id_4 =
-        Enum.reduce(5..0, updated_citizens_by_id_3, fn x, acc ->
-          # if unemployed_preferred_locations_by_level[x].choices != [] do
-          Enum.reduce(unemployed_preferred_locations_by_level[x].choices, acc, fn {citizen, chosen_city_id}, acc2 ->
-            if citizen["town_id"] != chosen_city_id do
-              acc2
-              |> Map.update!(
-                chosen_city_id,
-                &[
-                  citizen
-                  |> Map.take(["education", "preferences", "age"])
-                  | &1
-                ]
-              )
-            else
-              acc2
-              |> Map.update!(
-                chosen_city_id,
-                &[citizen |> Map.take(["education", "preferences", "age"]) | &1]
-              )
-            end
-          end)
-
-          # else
-          # acc
-          # end
-        end)
-
-      # add non-lookers back
-      updated_citizens_by_id_5 =
-        if unemployed_split_2 != [] do
-          Enum.reduce(unemployed_split_2, updated_citizens_by_id_4, fn citizen, acc ->
-            acc
-            |> Map.update!(
-              citizen["town_id"],
-              &[
-                citizen |> Map.take(["education", "preferences", "age"]) | &1
-              ]
-            )
-          end)
-        else
-          updated_citizens_by_id_4
-        end
-
-      vacated_slots_2 =
-        Enum.flat_map(unemployed_preferred_locations_by_level, fn {_level, preferred_locations} ->
-          preferred_locations.choices
-          |> Enum.filter(fn {citizen, city_id} -> citizen["town_id"] != city_id end)
-          |> Enum.map(fn {citizen, _city_id} -> citizen["town_id"] end)
-        end)
-
-      occupied_slots_2 =
-        Enum.flat_map(unemployed_preferred_locations_by_level, fn {_level, preferred_locations} ->
-          preferred_locations.choices
-          |> Enum.filter(fn {citizen, city_id} -> citizen["town_id"] != city_id end)
-          |> Enum.map(fn {_citizen, city_id} -> city_id end)
-        end)
-
-      vacated_freq_2 = Enum.frequencies(vacated_slots_2)
-      occupied_freq_2 = Enum.frequencies(occupied_slots_2)
-
-      housing_slots_3 =
-        housing_slots_2
-        |> Map.merge(vacated_freq_2, fn _k, v1, v2 -> v1 + v2 end)
-        |> Map.merge(occupied_freq_2, fn _k, v1, v2 -> v1 - v2 end)
-
-      # NEW UNHOUSED CODE —————————————————————————————————————————————————————————————
-      # ————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-      # ————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-      # ————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-      # ————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-      # ————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-
-      unhoused_citizens_split =
-        Map.new(5..0, fn x ->
-          {x,
-           Enum.split(
-             Enum.filter(unhoused_citizens, fn cit -> cit["education"] == x end),
-             Enum.sum(Map.values(unemployed_preferred_locations_by_level[x].slots))
-           )}
-        end)
-
-      unhoused_preferred_locations_by_level =
-        Map.new(5..0, fn level ->
-          {level,
-           Enum.reduce(
-             elem(unhoused_citizens_split[level], 0),
-             %{
-               choices: [],
-               slots: unemployed_preferred_locations_by_level[level].slots
-             },
-             fn citizen, acc ->
-               chosen_city =
-                 Enum.reduce(
-                   acc.slots,
-                   %{
-                     chosen_id: citizen["town_id"],
-                     top_score: -1
-                   },
-                   fn {city_id, count}, acc2 ->
-                     score =
-                       if count > 0 && city_id != citizen["town_id"] do
-                         city_preference_scores[citizen["preferences"]][citizen["education"]][
-                           city_id
-                         ]
-                       else
-                         0
-                       end
-
-                     if score > acc2.top_score do
-                       %{
-                         chosen_id: city_id,
-                         top_score: score
-                       }
-                     else
-                       acc2
-                     end
-                   end
-                 )
-
-               updated_slots =
-                 acc.slots
-                 |> Map.update(chosen_city.chosen_id, 0, &(&1 - 1))
-
-               %{
-                 choices: [{citizen, chosen_city.chosen_id} | acc.choices],
-                 slots: updated_slots
-               }
-             end
-           )}
-        end)
-
-      # find a way to return these to origin city
-      unhoused_split_2 =
-        Enum.reduce(unhoused_citizens_split, [], fn {_k, v}, acc ->
-          List.flatten([elem(v, 1) | acc])
-        end)
-
-      # ^ array of citizens who are still looking, that didn't make it into the level-specific comparisons
-
-      # update the citizen's choice
-      updated_citizens_by_id_6 =
-        Enum.reduce(5..0, updated_citizens_by_id_5, fn x, acc ->
-          if unhoused_preferred_locations_by_level[x].choices != [] do
-            Enum.reduce(unhoused_preferred_locations_by_level[x].choices, acc, fn {citizen, chosen_city_id}, acc2 ->
-              if citizen["town_id"] != chosen_city_id do
-                acc2
-                |> Map.update!(
-                  chosen_city_id,
-                  &[
-                    citizen
-                    |> Map.take(["education", "preferences", "age"])
-                    | &1
-                  ]
-                )
-              else
-                acc2
-                |> Map.update!(
-                  chosen_city_id,
-                  &[citizen |> Map.take(["education", "preferences", "age"]) | &1]
-                )
-              end
-            end)
-          else
-            acc
-          end
-        end)
-
-      vacated_slots_3 =
-        Enum.flat_map(unhoused_preferred_locations_by_level, fn {_level, preferred_locations} ->
-          preferred_locations.choices
-          |> Enum.filter(fn {citizen, city_id} -> citizen["town_id"] != city_id end)
-          |> Enum.map(fn {citizen, _city_id} -> citizen["town_id"] end)
-        end)
-
-      occupied_slots_3 =
-        Enum.flat_map(unhoused_preferred_locations_by_level, fn {_level, preferred_locations} ->
-          preferred_locations.choices
-          |> Enum.filter(fn {citizen, city_id} -> citizen["town_id"] != city_id end)
-          |> Enum.map(fn {_citizen, city_id} -> city_id end)
-        end)
-
-      vacated_freq_3 = Enum.frequencies(vacated_slots_3)
-      occupied_freq_3 = Enum.frequencies(occupied_slots_3)
-
-      housing_slots_4 =
-        housing_slots_3
-        |> Map.merge(vacated_freq_3, fn _k, v1, v2 -> v1 + v2 end)
-        |> Map.merge(occupied_freq_3, fn _k, v1, v2 -> v1 - v2 end)
-
-      # shape: [city_id, city_id, city_id]
-      # subtract these from housing_slots
-      # ok this is an array of… I think… housing to remove from those cities
-      # this means a job was taken from second elem, and giving housing to the first one
-      # yes
-      # adjust housing_slots here
-
-      # have to subtract from housing_slots and run again
-
-      # ok gotta make an updated slots thingy
-
-      # ——————————————————————————————————————————————————————————————————————————————————
-      # ————————————————————————————————————————— ROUND 1.5: MOVE UNEMPLOYED CITIZENS
-      # ——————————————————————————————————————————————————————————————————————————————————
-
-      # ——————————————————————————————————————————————————————————————————————————————————
-      # ————————————————————————————————————————— ROUND 2: MOVE CITIZENS ANYWHERE THERE IS HOUSING
-      # ——————————————————————————————————————————————————————————————————————————————————
-
-      slots_after_job_filtered = Enum.filter(housing_slots_4, fn {_k, v} -> v > 0 end) |> Enum.into(%{})
-
-      housing_slots_left = Enum.sum(Map.values(housing_slots_4))
-
-      unhoused_split_3 = unhoused_split_2 |> Enum.split(housing_slots_left)
-
-      # SHAPE OF unhoused_locations.choices is an array of {citizen, city_id}
-      unhoused_preferred_locations =
-        Enum.reduce(
-          elem(unhoused_split_3, 0),
-          %{choices: [], slots: slots_after_job_filtered},
-          fn citizen, acc ->
-            current_city_score =
-              city_preference_scores[citizen["preferences"]][citizen["education"]][
-                citizen["town_id"]
-              ]
-
-            chosen_city =
-              Enum.reduce(
-                acc.slots,
-                %{chosen_id: citizen["town_id"], top_score: current_city_score},
-                fn {city_id, count}, acc2 ->
-                  score =
-                    if count > 0 do
-                      city_preference_scores[citizen["preferences"]][citizen["education"]][
-                        city_id
-                      ]
-                    else
-                      0
-                    end
-
-                  if score > acc2.top_score && score do
-                    %{
-                      chosen_id: city_id,
-                      top_score: score
-                    }
-                  else
-                    acc2
-                  end
-                end
-              )
-
-            updated_slots =
-              acc.slots
-              |> Map.update(chosen_city.chosen_id, 0, &(&1 - 1))
-              |> Map.update(citizen["town_id"], 0, &(&1 + 1))
-
-            %{
-              choices:
-                if chosen_city.chosen_id == 0 do
-                  acc.choices
-                else
-                  [{citizen, chosen_city.chosen_id} | acc.choices]
-                end,
-              slots: updated_slots
-            }
-          end
-        )
-
-      updated_citizens_by_id_7 =
-        Enum.reduce(unhoused_preferred_locations.choices, updated_citizens_by_id_6, fn {citizen, chosen_city_id}, acc ->
-          if citizen["town_id"] != chosen_city_id do
-            acc |> Map.update!(chosen_city_id, &[citizen | &1])
-          else
-            acc
-          end
-        end)
-
-      unhoused_deaths = elem(unhoused_split_3, 1) |> Enum.frequencies_by(& &1["town_id"])
-      # ok cool
-      # logs_deaths_housing: integer,
-
-      # :logs_emigration_taxes,
-      for_tax_logs =
-        Enum.flat_map(preferred_locations_by_level, fn {_key, val} ->
-          Enum.filter(val.choices, fn {citizen, chosen_id} -> citizen["town_id"] != chosen_id end)
-        end)
-
-      # tax_cities_chosen = Enum.group_by(for_tax_logs, &elem(&1, 1))
-      tax_cities_left = Enum.group_by(for_tax_logs, &elem(&1, 0)["town_id"])
-
-      tax_cities_left_by_edu =
-        Enum.map(tax_cities_left, fn {city_id, array} ->
-          {city_id, Enum.frequencies_by(array, &elem(&1, 0)["education"])}
-        end)
-        |> Map.new()
-
-      # :logs_emigration_jobs,
-      for_jobs_logs =
-        Enum.flat_map(unemployed_preferred_locations_by_level, fn {_key, val} ->
-          Enum.filter(val.choices, fn {citizen, chosen_id} -> citizen["town_id"] != chosen_id end)
-        end)
-
-      # job_cities_chosen = Enum.group_by(for_jobs_logs, &elem(&1, 1))
-      job_cities_left = Enum.group_by(for_jobs_logs, &elem(&1, 0)["town_id"])
-
-      job_cities_left_by_edu =
-        Enum.map(job_cities_left, fn {city_id, array} ->
-          {city_id, Enum.frequencies_by(array, &elem(&1, 0)["education"])}
-        end)
-        |> Map.new()
-
-      # :logs_emigration_housing,
-      for_unhoused_logs =
-        Enum.flat_map(unhoused_preferred_locations_by_level, fn {_key, val} ->
-          Enum.filter(val.choices, fn {citizen, chosen_id} -> citizen["town_id"] != chosen_id end)
-        end)
-
-      for_unhoused_logs_2 =
-        Enum.filter(unhoused_preferred_locations.choices, fn {citizen, chosen_id} ->
-          citizen["town_id"] != chosen_id
-        end)
-
-      # housing_cities_chosen = Enum.group_by(for_unhoused_logs, &elem(&1, 1))
-      housing_cities_left = Enum.group_by(for_unhoused_logs, &elem(&1, 0)["town_id"])
-      housing_cities_left_2 = Enum.group_by(for_unhoused_logs_2, &elem(&1, 0)["town_id"])
-
-      merged_housing_cities_left = Map.merge(housing_cities_left, housing_cities_left_2, fn _k, v1, v2 -> v1 ++ v2 end)
-
-      housing_cities_left_by_edu =
-        Enum.map(merged_housing_cities_left, fn {city_id, array} ->
-          {city_id, Enum.frequencies_by(array, &elem(&1, 0)["education"])}
-        end)
-        |> Map.new()
-
-      # filter updated_citizens to remove jas_job and town_id before going in the DB
-
-      # ok this has all the ids I'd expect
-
-      updated_citizens_by_id_7
-      |> Enum.chunk_every(200)
-      |> Enum.each(fn chunk ->
-        Repo.checkout(
-          # each comes with a city_id and a list of citizens
-          fn ->
-            Enum.each(chunk, fn {id, list} ->
-              # each ID
-              logs_emigration_taxes =
-                if !is_nil(tax_cities_left_by_edu[id]) do
-                  Map.merge(
-                    CityHelpers.integerize_keys(slotted_cities_by_id[id].city.logs_emigration_taxes),
-                    tax_cities_left_by_edu[id],
-                    fn _k, v1, v2 -> v1 + v2 end
-                  )
-                else
-                  slotted_cities_by_id[id].city.logs_emigration_taxes
-                end
-
-              logs_emigration_jobs =
-                if !is_nil(job_cities_left_by_edu[id]) do
-                  Map.merge(
-                    CityHelpers.integerize_keys(slotted_cities_by_id[id].city.logs_emigration_jobs),
-                    job_cities_left_by_edu[id],
-                    fn _k, v1, v2 -> v1 + v2 end
-                  )
-                else
-                  slotted_cities_by_id[id].city.logs_emigration_jobs
-                end
-
-              logs_emigration_housing =
-                if !is_nil(housing_cities_left_by_edu[id]) do
-                  Map.merge(
-                    CityHelpers.integerize_keys(slotted_cities_by_id[id].city.logs_emigration_housing),
-                    housing_cities_left_by_edu[id],
-                    fn _k, v1, v2 -> v1 + v2 end
-                  )
-                else
-                  slotted_cities_by_id[id].city.logs_emigration_housing
-                end
-
-              updated_edu_logs =
-                Map.merge(
-                  CityHelpers.integerize_keys(slotted_cities_by_id[id].city.logs_edu),
-                  slotted_cities_by_id[id].city.educated_citizens,
-                  fn _k, v1, v2 ->
-                    v1 + v2
-                  end
-                )
-
-              births_count =
-                if slotted_cities_by_id[id].city.citizen_count > 20 do
-                  max(slotted_cities_by_id[id].city.aggregate_births, 0)
-                else
-                  if :rand.uniform() > 0.5 do
-                    1
-                  else
-                    0
-                  end
-                end
-
-              updated_citizens =
-                if births_count > 0 do
-                  Enum.map(1..births_count, fn _citizen ->
-                    %{
-                      "age" => 0,
-                      "town_id" => id,
-                      "education" => 0,
-                      "preferences" => :rand.uniform(11)
-                    }
-                  end) ++ list
-                else
-                  list
-                end
-
-              unhoused_deaths = if Map.has_key?(unhoused_deaths, id), do: unhoused_deaths[id], else: 0
-              compress_blob = Citizens.compress_citizen_blob(updated_citizens, world.day)
-
-              # if id == 2 do
-              # log deaths
-              # if births_count > 0,
-              #   do: IO.inspect(births_count, label: slotted_cities_by_id[id].city.title <> " births_count")
-
-              # if unhoused_deaths > 0,
-              #   do: IO.inspect(unhoused_deaths, label: slotted_cities_by_id[id].city.title <> " unhoused_deaths")
-
-              # if length(slotted_cities_by_id[id].city.polluted_citizens) > 0,
-              #   do:
-              #     IO.inspect(length(slotted_cities_by_id[id].city.polluted_citizens),
-              #       label: slotted_cities_by_id[id].city.title <> " pollution_deaths"
-              #     )
-
-              # if slotted_cities_by_id[id].city.aggregate_deaths_by_age > 0,
-              #   do:
-              #     IO.inspect(slotted_cities_by_id[id].city.aggregate_deaths_by_age,
-              #       label: slotted_cities_by_id[id].city.title <> " age_deaths"
-              #     )
-
-              # end
-
-              from(t in Town,
-                where: t.id == ^id,
-                update: [
-                  set: [
-                    logs_emigration_taxes: ^logs_emigration_taxes,
-                    logs_emigration_jobs: ^logs_emigration_jobs,
-                    logs_emigration_housing: ^logs_emigration_housing,
-                    logs_edu: ^updated_edu_logs,
-                    citizen_count: ^length(updated_citizens),
-                    # citizens_blob: ^updated_citizens,
-                    citizens_compressed: ^compress_blob
-                  ],
-                  inc: [
-                    logs_deaths_housing: ^unhoused_deaths,
-                    logs_deaths_pollution: ^slotted_cities_by_id[id].city.aggregate_deaths_by_pollution,
-                    logs_deaths_starvation: ^slotted_cities_by_id[id].city.aggregate_deaths_by_starvation,
-                    logs_deaths_age: ^slotted_cities_by_id[id].city.aggregate_deaths_by_age,
-                    logs_births: ^births_count
-                  ]
-                ]
-              )
-              |> Repo.update_all([])
-
-              # ok wtf even this seems to work
-            end)
-          end,
-          timeout: 6_000_000
-        )
-      end)
-    end
-
-    # SEND RESULTS TO CLIENTS
-    # send val to liveView process that manages front-end; this basically sends to every client.
-    MayorGameWeb.Endpoint.broadcast!(
-      "cityPubSub",
-      "pong",
-      db_world
-    )
-
-    # profiling
-    {:ok, datetime_post} = DateTime.now("Etc/UTC")
-
-    IO.puts(
-      (datetime_post |> DateTime.to_string()) <>
-        " | Migration Tick | Time: " <>
-        to_string(DateTime.diff(datetime_post, datetime_pre, :millisecond)) <> " ms"
-    )
-
-    # recurse, do it again
-    Process.send_after(self(), :tax, Application.get_env(:mayor_game, :tick_interval_ms, 5000))
-
-    # returns this to whatever calls ?
-    {:noreply,
-     %{
-       world: db_world,
-       buildables_map: buildables_map,
-       in_dev: in_dev,
-       migration_tick: migration_tick + 1
-     }}
-  end
-
-  def nil_value_check(map, key) do
-    if Map.has_key?(map, key), do: map[key], else: 0
-  end
-
-  def normalize_city(city, max_fun, spread_health, spread_pollution, max_sprawl, max_culture, max_crime) do
     %{
       city: city,
       jobs: city.vacancies_by_level,
       id: city.id,
-      sprawl_normalized:
-        zero_check(
-          city |> TownStats.getResource(:sprawl) |> ResourceStats.getNetProduction(),
-          max_sprawl
-        ),
-      pollution_normalized:
-        zero_check(
-          city |> TownStats.getResource(:pollution) |> ResourceStats.getNetProduction(),
-          spread_pollution
-        ),
-      fun_normalized:
-        zero_check(
-          city |> TownStats.getResource(:fun) |> ResourceStats.getNetProduction(),
-          max_fun
-        ),
-      health_normalized:
-        zero_check(
-          city |> TownStats.getResource(:health) |> ResourceStats.getNetProduction(),
-          spread_health
-        ),
-      culture_normalized:
-        zero_check(
-          city |> TownStats.getResource(:culture) |> ResourceStats.getNetProduction(),
-          max_culture
-        ),
-      crime_normalized:
-        zero_check(
-          city |> TownStats.getResource(:crime) |> ResourceStats.getNetProduction(),
-          max_crime
-        ),
+      sprawl_normalized: normalized.(:sprawl),
+      pollution_normalized: normalized.(:pollution),
+      fun_normalized: normalized.(:fun),
+      health_normalized: normalized.(:health),
+      culture_normalized: normalized.(:culture),
+      crime_normalized: normalized.(:crime),
       tax_rates: city.tax_rates
     }
   end
 
-  def zero_check(check, divisor) do
+  defp net_production(city, resource), do: city |> TownStats.getResource(resource) |> ResourceStats.getNetProduction()
+
+  defp zero_check(check, divisor) do
     if check == 0 or divisor == 0, do: 0, else: check / divisor
   end
 
+  # %{preference_set => %{education_level => %{city_id => score}}}
+  defp preference_scores(normalized_cities_by_id) do
+    preset_preferences = Citizens.preset_preferences()
+
+    Map.new(1..11, fn preference ->
+      {preference,
+       Map.new(0..5, fn edu_level ->
+         {edu_level,
+          Map.new(normalized_cities_by_id, fn {id, city} ->
+            {id, Float.round(citizen_score(preset_preferences[preference], edu_level, city), 4)}
+          end)}
+       end)}
+    end)
+  end
+
+  @doc """
+  How much a citizen with the given preferences and education level would like to live in a normalized city.
+  """
   def citizen_score(citizen_preferences, education_level, normalized_city) do
     # Clamp tax calculation preference between 0 & 1
     # Follows the following graph: https://www.desmos.com/calculator/69fewtjvma
@@ -1097,5 +353,78 @@ defmodule MayorGame.CityMigrator do
       normalized_city.fun_normalized * citizen_preferences.fun +
       normalized_city.health_normalized * citizen_preferences.health +
       normalized_city.culture_normalized * citizen_preferences.culture
+  end
+
+  # ——————————————————————————————————————————————————————————————————————————————————
+  # PERSISTENCE
+  # ——————————————————————————————————————————————————————————————————————————————————
+
+  @doc """
+  Writes the result of `migrate/1` to the DB, adding this tick's births.
+  """
+  @spec persist(result, [map], integer) :: :ok
+  def persist(result, cities, day) do
+    cities_by_id = Map.new(cities, &{&1.id, &1})
+
+    result.citizens_by_id
+    |> Enum.chunk_every(200)
+    |> Enum.each(fn chunk ->
+      Repo.checkout(
+        fn -> Enum.each(chunk, fn {id, citizens} -> persist_city(cities_by_id[id], citizens, result, day) end) end,
+        timeout: 6_000_000
+      )
+    end)
+  end
+
+  defp persist_city(city, citizens, result, day) do
+    id = city.id
+
+    births_count =
+      if city.citizen_count > 20 do
+        max(city.aggregate_births, 0)
+      else
+        # tiny cities get a random birth now and then so they can get going
+        if :rand.uniform() > 0.5, do: 1, else: 0
+      end
+
+    newborns =
+      if births_count > 0 do
+        Enum.map(1..births_count, fn _ ->
+          %{"age" => 0, "town_id" => id, "education" => 0, "preferences" => :rand.uniform(11)}
+        end)
+      else
+        []
+      end
+
+    citizens = newborns ++ citizens
+
+    from(t in Town,
+      where: t.id == ^id,
+      update: [
+        set: [
+          logs_emigration_taxes: ^add_counts(city.logs_emigration_taxes, result.tax[id]),
+          logs_emigration_jobs: ^add_counts(city.logs_emigration_jobs, result.jobs[id]),
+          logs_emigration_housing: ^add_counts(city.logs_emigration_housing, result.housing[id]),
+          logs_edu: ^add_counts(city.logs_edu, city.educated_citizens),
+          citizen_count: ^length(citizens),
+          citizens_compressed: ^Citizens.compress_citizen_blob(citizens, day)
+        ],
+        inc: [
+          logs_deaths_housing: ^Map.get(result.unhoused_deaths, id, 0),
+          logs_deaths_pollution: ^city.aggregate_deaths_by_pollution,
+          logs_deaths_starvation: ^city.aggregate_deaths_by_starvation,
+          logs_deaths_age: ^city.aggregate_deaths_by_age,
+          logs_births: ^births_count
+        ]
+      ]
+    )
+    |> Repo.update_all([])
+  end
+
+  # log maps come back from the DB with string keys
+  defp add_counts(existing, nil), do: existing
+
+  defp add_counts(existing, new_counts) do
+    Map.merge(CityHelpers.integerize_keys(existing), new_counts, fn _k, v1, v2 -> v1 + v2 end)
   end
 end

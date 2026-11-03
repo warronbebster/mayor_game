@@ -1,104 +1,58 @@
 defmodule MayorGame.CityCombat do
-  require Logger
-  alias MayorGame.City
   alias MayorGame.City.{Town, OngoingAttacks, Buildable}
   alias MayorGame.{Repo}
   import Ecto.Query, warn: false
 
+  @doc """
+  Fires `amount` missiles from the attacking town at the attacked town, one at a time:
+  each hits a shield while the attacked town has any, then buildings in `Buildable.buildables_attack_order/0`.
+  """
   def attack_city(%{} = attacked_city, attacking_town_id, amount) do
-    attacking_town_struct = Repo.get!(Town, attacking_town_id)
+    if amount > 0 and amount < Repo.get!(Town, attacking_town_id).missiles do
+      Enum.each(1..amount//1, fn _ ->
+        # re-read the target every shot; the previous shot changed it
+        attacked = Repo.get!(Town, attacked_city.id)
 
-    if amount < attacking_town_struct.missiles do
-      # should do a reduce on amount here and attack shield bases first
-
-      Enum.reduce(1..amount, attacked_city.shields, fn _amount, acc_shields ->
-        if acc_shields > 0 do
-          attack_shields(attacked_city, attacking_town_id, 1)
-          acc_shields - 1
+        if attacked.shields > 0 do
+          attack_shields(attacked, attacking_town_id, 1)
         else
-          # reduce over buildings
-
-          building_to_attack =
-            Enum.find(Buildable.buildables_attack_order(), fn building -> attacked_city[building] > 0 end)
-
-          if !is_nil(building_to_attack), do: attack_building(attacked_city, attacking_town_id, building_to_attack)
-
-          0
+          building_to_attack = Enum.find(Buildable.buildables_attack_order(), &(attacked[&1] > 0))
+          if building_to_attack, do: attack_building(attacked, attacking_town_id, building_to_attack)
         end
       end)
     end
   end
 
+  @doc """
+  Destroys one `building_to_attack_atom` in the attacked town, if the attacking town has an air base and enough
+  missiles (the building's size). Returns true if the building was destroyed.
+  """
   def attack_building(attacked_city, attacking_town_id, building_to_attack_atom) do
-    # check if user is mayor here?
-
-    attacking_town_struct = Repo.get!(Town, attacking_town_id)
-
+    attacking_town = Repo.get!(Town, attacking_town_id)
     building_cost = Buildable.buildables_flat()[building_to_attack_atom].size
 
-    attacked_town_struct =
-      if Map.has_key?(attacked_city, :__struct__), do: attacked_city, else: struct(City.Town, attacked_city)
-
-    updated_attacked_logs = Map.update(attacked_city.logs_attacks, attacking_town_struct.title, 1, &(&1 + 1))
-
-    attacked_town_changeset =
-      attacked_town_struct
-      |> City.Town.changeset(%{
-        logs_attacks: updated_attacked_logs
-      })
-
-    # if attacked_city.shields <= 0 &&
-    if attacking_town_struct.missiles >= building_cost &&
-         attacking_town_struct.air_bases > 0 && attacked_town_struct[building_to_attack_atom] > 0 do
-      attack =
-        Town
-        |> where(id: ^attacked_city.id)
-        |> Repo.update_all(inc: [{building_to_attack_atom, -1}])
-
-      case attack do
-        {_x, nil} ->
-          from(t in Town, where: [id: ^attacking_town_id])
-          |> Repo.update_all(inc: [missiles: -building_cost])
-
-          attack_building =
-            Ecto.Multi.new()
-            |> Ecto.Multi.update(
-              {:update_attacked_town, attacked_town_struct.id},
-              attacked_town_changeset
-            )
-            |> Repo.transaction(timeout: 10_000)
-
-          case attack_building do
-            {:ok, _updated_details} ->
-              IO.puts("attack success")
-
-            {:error, err} ->
-              Logger.error(inspect(err))
-          end
-
-        {:error, err} ->
-          Logger.error(inspect(err))
-      end
+    with true <- attacking_town.missiles >= building_cost && attacking_town.air_bases > 0,
+         true <- hit(attacked_city.id, building_to_attack_atom, 1, attacking_town.title) do
+      from(t in Town, where: [id: ^attacking_town_id]) |> Repo.update_all(inc: [missiles: -building_cost])
+      true
+    else
+      _ -> false
     end
   end
 
   @doc """
-  takes attacked city struct, attacking_user_id, attack amount
+  takes attacked city struct, attacking_town_id, attack amount
   executes an attack on shields
+
+  returns {:ok | :error, attacked city with updated shields and logs, changeset for the attack form}
   """
   def attack_shields(%{} = attacked_city, attacking_town_id, amount) do
-    # see if I can figure out how to only get the missiles count here
-    attacking_town_struct = Repo.get!(Town, attacking_town_id)
-
-    shielded_town_struct =
-      if Map.has_key?(attacked_city, :__struct__), do: attacked_city, else: struct(City.Town, attacked_city)
+    attacking_town = Repo.get!(Town, attacking_town_id)
 
     attack_set =
-      attacking_town_struct
+      attacking_town
       |> Town.changeset(%{missiles: amount})
-      |> Ecto.Changeset.validate_number(:missiles,
-        less_than: attacking_town_struct.missiles
-      )
+      |> Ecto.Changeset.validate_number(:missiles, less_than: attacking_town.missiles)
 
     attack_set =
       if attack_set.errors == [] do
@@ -109,33 +63,48 @@ defmodule MayorGame.CityCombat do
         |> Map.put(:action, :insert)
       end
 
-    # update cities
+    # never fire more missiles than the target has shields
+    amount = min(amount, Repo.get!(Town, attacked_city.id).shields)
 
-    if amount < attacking_town_struct.missiles && attacked_city.shields > 0 && attacking_town_struct.air_bases > 0 do
-      amount = if amount > attacked_city.shields, do: attacked_city.shields, else: amount
-      neg_amount = 0 - amount
-
-      from(t in Town, where: [id: ^attacking_town_id])
-      |> Repo.update_all(inc: [missiles: neg_amount])
-
-      from(t in Town, where: [id: ^attacked_city.id])
-      |> Repo.update_all(inc: [shields: neg_amount])
-
-      # update logs
-      updated_attacked_logs = Map.update(attacked_city.logs_attacks, attacking_town_struct.title, 1, &(&1 + amount))
-      City.update_town(shielded_town_struct, %{logs_attacks: updated_attacked_logs})
+    if amount > 0 && amount < attacking_town.missiles && attacking_town.air_bases > 0 &&
+         hit(attacked_city.id, :shields, amount, attacking_town.title) do
+      from(t in Town, where: [id: ^attacking_town_id]) |> Repo.update_all(inc: [missiles: -amount])
 
       updated_city =
         attacked_city
         |> Map.update!(:shields, &(&1 - amount))
-        |> Map.update!(:logs_attacks, fn current ->
-          Map.update(current, attacking_town_struct.title, 1, &(&1 + amount))
-        end)
+        |> Map.update!(:logs_attacks, &Map.update(&1, attacking_town.title, amount, fn hits -> hits + amount end))
 
       {:ok, updated_city, attack_set}
     else
       {:error, attacked_city, attack_set}
     end
+  end
+
+  # Removes `amount` of `field` (shields or a building) from the attacked town and adds `amount` to its
+  # logs_attacks for the attacker, in one atomic update. Does nothing if the town has less than `amount`.
+  defp hit(attacked_id, field, amount, attacker_title) do
+    {count, _} =
+      from(t in Town,
+        where: t.id == ^attacked_id and field(t, ^field) >= ^amount,
+        update: [
+          inc: ^[{field, -amount}],
+          set: [
+            logs_attacks:
+              fragment(
+                "jsonb_set(coalesce(?, '{}'::jsonb), ARRAY[?::text], to_jsonb(coalesce((?->>?::text)::bigint, 0) + ?))",
+                t.logs_attacks,
+                ^attacker_title,
+                t.logs_attacks,
+                ^attacker_title,
+                ^amount
+              )
+          ]
+        ]
+      )
+      |> Repo.update_all([])
+
+    count == 1
   end
 
   @doc """

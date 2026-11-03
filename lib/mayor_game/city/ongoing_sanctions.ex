@@ -2,8 +2,6 @@ defmodule MayorGame.City.OngoingSanctions do
   use Ecto.Schema
   alias MayorGame.City.Town
 
-  @attrs [:sanctioning, :sanctioned]
-
   @derive {Inspect, except: [:sanctioned, :sanctioning]}
 
   schema "sanctions" do

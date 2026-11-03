@@ -97,11 +97,6 @@ defmodule MayorGameWeb.LogsLive do
     {:noreply, socket |> assign(:world, world) |> update_city_by_title()}
   end
 
-  # this is what gets messages from CityCalculator
-  def handle_info(%{event: "pong", payload: _world}, socket) do
-    {:noreply, socket |> update_city_by_title()}
-  end
-
   # this is just the generic handle_info if nothing else matches
   def handle_info(_assigns, socket) do
     # just update the whole city
@@ -113,7 +108,7 @@ defmodule MayorGameWeb.LogsLive do
   defp update_city_by_title(%{assigns: %{title: title, world: world}} = socket) do
     # cities_count = MayorGame.Repo.aggregate(City.Town, :count, :id)
 
-    pollution_ceiling = 2_000_000_000 * Random.gammavariate(7.5, 1)
+    pollution_ceiling = Rules.pollution_ceiling()
 
     season = Rules.season_from_day(world.day)
 
@@ -183,48 +178,6 @@ defmodule MayorGameWeb.LogsLive do
   end
 
   # this takes the generic buildables map and builds the status (enabled, etc) for each buildable
-  defp calculate_buildables_statuses(city, world, buildables) do
-    Enum.map(buildables, fn {category, buildables} ->
-      {category,
-       buildables
-       |> Enum.map(fn {_key, buildable_stats} ->
-         {buildable_stats.title,
-          Map.from_struct(
-            calculate_buildable_status(
-              buildable_stats,
-              city,
-              world,
-              Map.get(city, buildable_stats.title)
-            )
-          )}
-       end)}
-    end)
-  end
-
-  # this takes a buildable, and builds purchasable status from database
-  # TODO: Clean this shit upppp
-  # why do I even need this lol. let you build but just
-  defp calculate_buildable_status(buildable, city, world, buildable_count) do
-    updated_price = Rules.building_price(buildable.price, buildable_count)
-
-    buildable
-    |> Map.put(
-      :actual_produces,
-      MayorGame.CityHelpers.get_production_map(
-        buildable.produces,
-        buildable.multipliers,
-        city.citizen_count,
-        city.region,
-        Rules.season_from_day(world.day)
-      )
-    )
-    |> Map.put(:price, updated_price)
-  end
-
-  # POW
-  # AUTH
-  # POW AUTH STUFF DOWN HERE BAYBEE ——————————————————————————————————————————————————————————————————
-
   defp assign_auth(socket, session) do
     date = Date.utc_today()
     # add an assign :current_user to the socket

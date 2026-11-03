@@ -7,12 +7,6 @@
 # General application configuration
 import Config
 
-mail_secret = "3ab294dfbb937aa9065ab365baeac51b"
-# System.get_env("MAIL_SECRET") ||
-#   raise """
-#   eyyyyy environment variable MAIL_SECRET is missing in config.
-#   """
-
 config :mayor_game,
   ecto_repos: [MayorGame.Repo],
   env: Mix.env()
@@ -44,10 +38,11 @@ config :mayor_game, :pow,
   controller_callbacks: Pow.Extension.Phoenix.ControllerCallbacks,
   mailer_backend: MayorGameWeb.Pow.Mailer
 
-config :mayor_game, MayorGameWeb.Pow.Mailer,
-  adapter: Swoosh.Adapters.Mailjet,
-  api_key: "71dfa3a267a5a221900658d68768d405",
-  secret: mail_secret
+# Emails: kept in memory in dev (Swoosh.Adapters.Local); sent with Resend in prod (config/runtime.exs)
+config :mayor_game, MayorGameWeb.Pow.Mailer, adapter: Swoosh.Adapters.Local
+
+# Swoosh's HTTP client for API-based adapters like Resend (a Finch pool started in MayorGame.Application)
+config :swoosh, api_client: Swoosh.ApiClient.Finch, finch_name: MayorGame.Finch
 
 # Configure esbuild (the version is required)
 config :esbuild,

@@ -43,3 +43,5 @@ npm-debug.log
 priv/repo/.DS_Store
 priv/.DS_Store
 priv/static/.DS_Store
+# macOS
+.DS_Store

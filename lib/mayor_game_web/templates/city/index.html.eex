@@ -1,6 +1,0 @@
-<%# if a user is logged in %>
-<%= if @current_user do %>
-  <%= live_render(@conn,
-                  MayorGameWeb.CityLive,
-                  session: %{"current_user" => @current_user}) %>
-<% end %>

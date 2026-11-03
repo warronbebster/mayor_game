@@ -1,4 +1,4 @@
-<%# if a user is logged in %>
+<% # if a user is logged in %>
 <%= if @current_user do %>
   <%= live_render(@conn,
                   MayorGameWeb.MarketLive,
