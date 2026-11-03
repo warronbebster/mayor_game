@@ -40,4 +40,13 @@ defmodule MayorGameWeb.ConnCase do
 
     {:ok, conn: Phoenix.ConnTest.build_conn()}
   end
+
+  @doc "Signs `user` in through the real session endpoint; the returned conn carries the session cookie."
+  def log_in(conn, user) do
+    conn
+    |> Phoenix.ConnTest.dispatch(MayorGameWeb.Endpoint, :post, "/session", %{
+      "user" => %{"email" => user.email, "password" => MayorGame.Fixtures.password()}
+    })
+    |> Phoenix.ConnTest.recycle()
+  end
 end

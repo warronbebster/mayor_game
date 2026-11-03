@@ -61,7 +61,8 @@ defmodule MayorGame.MixProject do
       {:number, "~> 1.0.3"},
       {:flow, "~> 1.0"},
       {:statistics, "~> 0.6.2"},
-      {:ecto_commons, "~> 0.3.3"}
+      {:ecto_commons, "~> 0.3.3"},
+      {:floki, "~> 0.37.1", only: :test}
     ]
   end
 

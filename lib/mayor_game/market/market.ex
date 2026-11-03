@@ -22,5 +22,6 @@ defmodule MayorGame.City.Market do
     |> validate_required([:town_id])
     |> validate_number(:min_price, greater_than: 0)
     |> validate_number(:amount_to_sell, greater_than: 0)
+    |> validate_inclusion(:resource, MayorGame.City.ResourceStats.tradable_resources())
   end
 end

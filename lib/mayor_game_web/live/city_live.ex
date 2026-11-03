@@ -215,8 +215,7 @@ defmodule MayorGameWeb.CityLive do
         %{"building" => building_to_buy},
         %{assigns: %{city: city}} = socket
       ) do
-    # check if user is mayor here?
-    building_to_buy_atom = String.to_existing_atom(building_to_buy)
+    building_to_buy_atom = buildable(building_to_buy)
 
     initial_purchase_price = get_in(socket.assigns.buildables_map.buildables_flat, [building_to_buy_atom, :price])
 
@@ -316,9 +315,7 @@ defmodule MayorGameWeb.CityLive do
         %{"building" => building_to_demolish},
         %{assigns: %{city: city}} = socket
       ) do
-    # check if user is mayor here?
-
-    buildable_to_demolish_atom = String.to_existing_atom(building_to_demolish)
+    buildable_to_demolish_atom = buildable(building_to_demolish)
 
     initial_purchase_price = get_in(Buildable.buildables_flat(), [buildable_to_demolish_atom, :price])
 
@@ -398,9 +395,9 @@ defmodule MayorGameWeb.CityLive do
       socket.assigns.is_user_verified && !socket.assigns.is_user_mayor && !is_nil(current_user.town) &&
         current_user.town.id != city.id && Repo.get!(Town, city.id).shields <= 0
 
-    building_to_attack_atom = String.to_existing_atom(building_to_attack)
+    building_to_attack_atom = buildable(building_to_attack)
 
-    if can_attack? && building_to_attack_atom in Buildable.buildables_list() do
+    if can_attack? && building_to_attack_atom do
       CityCombat.attack_building(city, current_user.town.id, building_to_attack_atom)
     end
 
@@ -418,14 +415,9 @@ defmodule MayorGameWeb.CityLive do
       giving_town_struct = Repo.get!(Town, current_user.town.id)
       receiving_town_struct = city
 
-      resource =
-        if city_form["resource"] != "",
-          do: String.to_existing_atom(city_form["resource"]),
-          else: nil
-
+      resource = tradable_resource(city_form["resource"])
       resource_key = if resource == :money, do: :treasury, else: resource
-
-      amount = if city_form["amount"] != "", do: String.to_integer(city_form["amount"]), else: 0
+      amount = parse_amount(city_form["amount"])
       neg_amount = 0 - amount
 
       changeset_check =
@@ -447,7 +439,8 @@ defmodule MayorGameWeb.CityLive do
 
       # update cities
 
-      if !is_nil(resource) && amount < giving_town_struct[resource_key] && amount > 0 do
+      if !is_nil(resource) && amount < giving_town_struct[resource_key] && amount > 0 &&
+           giving_town_struct.id != city.id do
         from(t in Town, where: [id: ^current_user.town.id])
         |> Repo.update_all(inc: [{resource_key, neg_amount}])
 
@@ -536,13 +529,9 @@ defmodule MayorGameWeb.CityLive do
     # new changeset from the form changes
     # new_changeset =
     #   Town.changeset(city, Map.put(city_form, "user_id", socket.assigns[:current_user].id))
-    resource =
-      if city_form["resource"] != "",
-        do: String.to_existing_atom(city_form["resource"]),
-        else: nil
-
+    resource = tradable_resource(city_form["resource"])
     resource_key = if resource == :money, do: :treasury, else: resource
-    amount = if city_form["amount"] != "", do: String.to_integer(city_form["amount"]), else: 0
+    amount = parse_amount(city_form["amount"])
 
     changeset_check =
       if !is_nil(resource),
@@ -945,6 +934,23 @@ defmodule MayorGameWeb.CityLive do
   # If its title is blank, build a title randomly
   # Finally, reload the current user's `cities` association, and re-assign it to the socket,
   # so the template will be re-rendered.
+  # event params come from the client, so only accept known buildables and resources.
+  # (an arbitrary atom here would let a crafted event change any integer column of a town)
+  defp buildable(name) do
+    Enum.find(Buildable.buildables_list(), &(to_string(&1) == name))
+  end
+
+  defp tradable_resource(name) do
+    Enum.find([:money | ResourceStats.resource_list()], &(to_string(&1) == name))
+  end
+
+  defp parse_amount(amount) do
+    case Integer.parse(amount || "") do
+      {amount, _} -> amount
+      :error -> 0
+    end
+  end
+
   defp assign_changesets(socket) do
     changeset =
       %Town{}

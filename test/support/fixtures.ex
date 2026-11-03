@@ -6,10 +6,20 @@ defmodule MayorGame.Fixtures do
   alias MayorGame.Auth.User
   alias MayorGame.City.{Buildable, Citizens, Town}
 
+  @password "correct horse battery"
+
+  def password, do: @password
+
+  @doc "A user with a confirmed email, who can sign in with `password/0`."
   def user_fixture(attrs \\ %{}) do
     n = System.unique_integer([:positive])
 
-    %User{email: "mayor#{n}@example.com", nickname: "mayor#{n}", password_hash: "not-a-real-hash"}
+    %User{
+      email: "mayor#{n}@example.com",
+      nickname: "mayor#{n}",
+      password_hash: Pow.Ecto.Schema.Password.pbkdf2_hash(@password),
+      email_confirmed_at: DateTime.utc_now() |> DateTime.truncate(:second)
+    }
     |> struct(attrs)
     |> Repo.insert!()
   end

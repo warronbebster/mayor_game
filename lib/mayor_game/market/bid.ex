@@ -21,5 +21,6 @@ defmodule MayorGame.Market.Bid do
     |> unique_constraint(:markets_and_resource, name: :bids_unique)
     |> validate_number(:max_price, greater_than: 0)
     |> validate_number(:amount, greater_than: 0)
+    |> validate_inclusion(:resource, MayorGame.City.ResourceStats.tradable_resources())
   end
 end
